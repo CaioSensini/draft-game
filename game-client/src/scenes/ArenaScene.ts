@@ -349,8 +349,8 @@ export default class ArenaScene extends Phaser.Scene {
     const sourceUnit = this.unitsById.get(pending.unitId)
     if (!sourceUnit) return
 
-    if (!this.isTileInRange(sourceUnit, col, row, pending.card.range)) {
-      this.updateInfo('Esse bloco está fora do alcance da carta.')
+    if (!this.isTileAllowedForCard(sourceUnit, pending.card, col, row)) {
+      this.updateInfo('Esse bloco não é válido para a carta selecionada.')
       return
     }
 
@@ -376,6 +376,22 @@ export default class ArenaScene extends Phaser.Scene {
   private isTileInRange(unit: UnitData, targetCol: number, targetRow: number, range: number) {
     const distance = Math.abs(unit.col - targetCol) + Math.abs(unit.row - targetRow)
     return distance > 0 && distance <= range
+  }
+
+  private isTileOnSide(col: number, side: TeamSide) {
+    return side === 'left' ? col <= 7 : col >= 8
+  }
+
+  private getTileTargetSide(sourceUnit: UnitData, card: CardData): TeamSide {
+    if (card.targetKind === 'enemy') {
+      return sourceUnit.side === 'left' ? 'right' : 'left'
+    }
+
+    return sourceUnit.side
+  }
+
+  private isTileAllowedForCard(sourceUnit: UnitData, card: CardData, col: number, row: number) {
+    return this.isTileInRange(sourceUnit, col, row, card.range) && this.isTileOnSide(col, this.getTileTargetSide(sourceUnit, card))
   }
 
   private showValidMoveMarkers(unit: UnitData) {
@@ -438,7 +454,7 @@ export default class ArenaScene extends Phaser.Scene {
       this.cardButtons.push(container)
     })
 
-    this.cardHintText?.setText('Escolha 1 carta de ataque e 1 carta de defesa. Cartas de alvo e bloco agora entram em modo de seleção.')
+    this.cardHintText?.setText('Escolha 1 carta de ataque e 1 carta de defesa. Ataques miram no campo inimigo e defesas no seu campo.')
   }
 
   private clearCardButtons() {
@@ -469,13 +485,15 @@ export default class ArenaScene extends Phaser.Scene {
     if (card.targetingMode === 'unit') {
       const validUnits = this.getUnitsInRange(sourceUnit, card.targetKind, card.range)
       validUnits.forEach((unit) => this.highlightedUnitIds.add(unit.id))
-      this.cardHintText?.setText(`Modo alvo ativo: clique em uma unidade válida para ${card.name}.`)
+      const targetLabel = card.targetKind === 'enemy' ? 'um inimigo' : card.targetKind === 'ally' ? 'um aliado' : 'a própria unidade'
+      this.cardHintText?.setText(`Modo alvo ativo: clique em ${targetLabel} para ${card.name}.`)
     }
 
     if (card.targetingMode === 'tile') {
+      const sideLabel = this.getTileTargetSide(sourceUnit, card) === sourceUnit.side ? 'seu campo' : 'campo inimigo'
       for (let row = 0; row < ROWS; row++) {
         for (let col = 0; col < COLS; col++) {
-          if (!this.isTileInRange(sourceUnit, col, row, card.range)) continue
+          if (!this.isTileAllowedForCard(sourceUnit, card, col, row)) continue
           const marker = this.add.rectangle(
             this.boardX + col * GRID_SIZE + GRID_SIZE / 2,
             this.boardY + row * GRID_SIZE + GRID_SIZE / 2,
@@ -487,7 +505,7 @@ export default class ArenaScene extends Phaser.Scene {
           this.targetTileMarkers.push(marker)
         }
       }
-      this.cardHintText?.setText(`Modo bloco ativo: clique em um tile no alcance para ${card.name}.`)
+      this.cardHintText?.setText(`Modo bloco ativo: clique em um tile válido no ${sideLabel} para ${card.name}.`)
     }
 
     this.refreshSelectionVisuals()
@@ -594,7 +612,7 @@ export default class ArenaScene extends Phaser.Scene {
       this.phaseTimeRemaining = 15
       this.phaseText?.setText('Fase: Ações')
       this.selectedUnitText?.setText('Selecione uma unidade do lado ativo para escolher ataque e defesa.')
-      this.cardHintText?.setText('Cartas [alvo] pedem clique em unidade. Cartas [bloco] pedem clique no tile.')
+      this.cardHintText?.setText('Cartas de ataque miram no campo inimigo. Cartas de defesa miram no seu campo.')
     }
 
     this.updateTopHud()
@@ -665,7 +683,7 @@ export default class ArenaScene extends Phaser.Scene {
     const sideColor = side === 'left' ? 0x274c77 : 0x7f1d1d
     const borderColor = side === 'left' ? 0xdbeafe : 0xfecaca
 
-    this.topBarText?.setText('Build atual: fluxo de turno + targeting visual base')
+    this.topBarText?.setText('Build atual: targeting por lado do campo + seleção visual')
     this.roundText?.setText(`Round ${this.roundNumber}`)
     this.sideBanner?.setFillStyle(sideColor, 1).setStrokeStyle(2, borderColor, 0.8)
     this.sideBannerText?.setText(sideLabel)
