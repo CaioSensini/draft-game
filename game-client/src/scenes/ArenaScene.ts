@@ -63,7 +63,6 @@ export default class ArenaScene extends Phaser.Scene {
   private phaseTimeRemaining = 20
   private phaseTimer?: Phaser.Time.TimerEvent
   private pendingTargeting: PendingTargeting | null = null
-  private highlightedUnitIds = new Set<string>()
 
   constructor() {
     super('ArenaScene')
@@ -248,7 +247,7 @@ export default class ArenaScene extends Phaser.Scene {
 
   private handleUnitClick(unitId: string) {
     if (this.pendingTargeting) {
-      this.handleTargetedUnitSelection(unitId)
+      this.updateInfo('Para lançar a habilidade, clique em uma casa do tabuleiro.')
       return
     }
 
@@ -285,28 +284,6 @@ export default class ArenaScene extends Phaser.Scene {
       this.selectedUnitText?.setText(`${unit.name} selecionado para escolher ações.`)
       this.renderCardButtons(unit)
     }
-  }
-
-  private handleTargetedUnitSelection(targetUnitId: string) {
-    const pending = this.pendingTargeting
-    if (!pending) return
-
-    const sourceUnit = this.unitsById.get(pending.unitId)
-    const targetUnit = this.unitsById.get(targetUnitId)
-    if (!sourceUnit || !targetUnit) return
-
-    const validTargetIds = this.getUnitsInRange(sourceUnit, pending.card.targetKind, pending.card.range).map((unit) => unit.id)
-    if (!validTargetIds.includes(targetUnitId)) {
-      this.updateInfo('Esse alvo não é válido para a carta selecionada.')
-      return
-    }
-
-    this.applyCardSelection(pending.unitId, pending.card, {
-      unitId: targetUnit.id,
-      label: targetUnit.name
-    })
-    this.updateInfo(`${sourceUnit.name} preparou ${pending.card.name} em ${targetUnit.name}.`)
-    this.clearTargetingState()
   }
 
   private handleTileClick(col: number, row: number) {
@@ -372,11 +349,30 @@ export default class ArenaScene extends Phaser.Scene {
       return
     }
 
+    if (pending.card.targetingMode === 'unit') {
+      const targetUnit = this.getUnitAt(col, row)
+      if (!targetUnit || !this.isUnitValidForCard(sourceUnit, pending.card, targetUnit)) {
+        this.updateInfo('Não tem alvo nessa casa.')
+        return
+      }
+
+      this.applyCardSelection(pending.unitId, pending.card, {
+        unitId: targetUnit.id,
+        tile: { col, row },
+        label: `${targetUnit.name} @ ${col},${row}`
+      })
+      this.updateInfo(`${sourceUnit.name} preparou ${pending.card.name} na casa ${col},${row}.`)
+      this.clearTargetingState()
+      return
+    }
+
+    const targetUnit = this.getUnitAt(col, row)
     this.applyCardSelection(pending.unitId, pending.card, {
       tile: { col, row },
-      label: `${col},${row}`
+      unitId: targetUnit?.id,
+      label: targetUnit ? `${col},${row} (${targetUnit.name})` : `${col},${row}`
     })
-    this.updateInfo(`${sourceUnit.name} preparou ${pending.card.name} no bloco ${col},${row}.`)
+    this.updateInfo(`${sourceUnit.name} preparou ${pending.card.name} na casa ${col},${row}.`)
     this.clearTargetingState()
   }
 
@@ -413,6 +409,20 @@ export default class ArenaScene extends Phaser.Scene {
 
   private isTileAllowedForCard(sourceUnit: UnitData, card: CardData, col: number, row: number) {
     return this.isTileInRange(sourceUnit, col, row, card.range) && this.isTileOnSide(col, this.getTileTargetSide(sourceUnit, card))
+  }
+
+  private getUnitAt(col: number, row: number) {
+    return [...this.unitsById.values()].find((unit) => unit.col === col && unit.row === row) ?? null
+  }
+
+  private isUnitValidForCard(sourceUnit: UnitData, card: CardData, targetUnit: UnitData) {
+    if (card.targetKind === 'enemy' && targetUnit.side === sourceUnit.side) return false
+    if (card.targetKind === 'ally' && targetUnit.side !== sourceUnit.side) return false
+    if (card.targetKind === 'self' && targetUnit.id !== sourceUnit.id) return false
+    if (card.targetKind !== 'self' && targetUnit.id === sourceUnit.id) return false
+
+    const distance = Math.abs(sourceUnit.col - targetUnit.col) + Math.abs(sourceUnit.row - targetUnit.row)
+    return distance <= card.range
   }
 
   private showValidMoveMarkers(unit: UnitData) {
@@ -453,7 +463,7 @@ export default class ArenaScene extends Phaser.Scene {
       const isAttack = card.category === 'attack'
       const fill = isAttack ? 0x7c2d12 : 0x164e63
       const border = isAttack ? 0xfb923c : 0x67e8f9
-      const targetingLabel = card.targetingMode === 'unit' ? 'alvo' : card.targetingMode === 'tile' ? 'bloco' : 'auto'
+      const targetingLabel = card.targetingMode === 'unit' ? 'target' : card.targetingMode === 'tile' ? 'bloco' : 'auto'
 
       const bg = this.add.rectangle(0, 0, 220, 56, fill, 0.95).setStrokeStyle(2, border, 0.9)
       const title = this.add.text(0, -10, `${card.name} [${targetingLabel}]`, {
@@ -475,7 +485,7 @@ export default class ArenaScene extends Phaser.Scene {
       this.cardButtons.push(container)
     })
 
-    this.cardHintText?.setText('Escolha 1 carta de ataque e 1 carta de defesa. Ataques miram no campo inimigo e defesas no seu campo.')
+    this.cardHintText?.setText('Todas as habilidades são escolhidas por casa. Habilidades target falham se não houver alvo na casa.')
   }
 
   private clearCardButtons() {
@@ -503,32 +513,27 @@ export default class ArenaScene extends Phaser.Scene {
     this.pendingTargeting = { unitId, card }
     this.clearTargetIndicators()
 
-    if (card.targetingMode === 'unit') {
-      const validUnits = this.getUnitsInRange(sourceUnit, card.targetKind, card.range)
-      validUnits.forEach((unit) => this.highlightedUnitIds.add(unit.id))
-      const targetLabel = card.targetKind === 'enemy' ? 'um inimigo' : card.targetKind === 'ally' ? 'um aliado' : 'a própria unidade'
-      this.cardHintText?.setText(`Modo alvo ativo: clique em ${targetLabel} para ${card.name}.`)
-    }
-
-    if (card.targetingMode === 'tile') {
-      const sideLabel = this.getTileTargetSide(sourceUnit, card) === sourceUnit.side ? 'seu campo' : 'campo inimigo'
-      for (let row = 0; row < ROWS; row++) {
-        for (let col = 0; col < COLS; col++) {
-          if (!this.isTileAllowedForCard(sourceUnit, card, col, row)) continue
-          const marker = this.add.rectangle(
-            this.boardX + col * GRID_SIZE + GRID_SIZE / 2,
-            this.boardY + row * GRID_SIZE + GRID_SIZE / 2,
-            GRID_SIZE - 18,
-            GRID_SIZE - 18,
-            0x22c55e,
-            0.18
-          ).setStrokeStyle(2, 0x86efac, 0.9)
-          this.targetTileMarkers.push(marker)
-        }
+    for (let row = 0; row < ROWS; row++) {
+      for (let col = 0; col < COLS; col++) {
+        if (!this.isTileAllowedForCard(sourceUnit, card, col, row)) continue
+        const marker = this.add.rectangle(
+          this.boardX + col * GRID_SIZE + GRID_SIZE / 2,
+          this.boardY + row * GRID_SIZE + GRID_SIZE / 2,
+          GRID_SIZE - 18,
+          GRID_SIZE - 18,
+          0x22c55e,
+          0.18
+        ).setStrokeStyle(2, 0x86efac, 0.9)
+        this.targetTileMarkers.push(marker)
       }
-      this.cardHintText?.setText(`Modo bloco ativo: clique em um tile válido no ${sideLabel} para ${card.name}.`)
     }
 
+    const sideLabel = this.getTileTargetSide(sourceUnit, card) === sourceUnit.side ? 'seu campo' : 'campo inimigo'
+    const modeLabel = card.targetingMode === 'unit'
+      ? 'Clique em uma casa. Se não houver alvo válido nela, a carta não sai.'
+      : 'Clique em uma casa do alcance. Essa carta pode ser lançada mesmo sem ninguém nela.'
+
+    this.cardHintText?.setText(`${card.name}: ${modeLabel} Área válida: ${sideLabel}.`)
     this.refreshSelectionVisuals()
     this.updateInfo(`${sourceUnit.name} entrou em modo de targeting com ${card.name}.`)
   }
@@ -561,25 +566,9 @@ export default class ArenaScene extends Phaser.Scene {
     this.refreshSelectionVisuals()
   }
 
-  private getUnitsInRange(sourceUnit: UnitData, targetKind: CardData['targetKind'], range: number) {
-    return [...this.unitsById.values()].filter((unit) => {
-      if (unit.id === sourceUnit.id) {
-        return targetKind === 'self'
-      }
-
-      if (targetKind === 'enemy' && unit.side === sourceUnit.side) return false
-      if (targetKind === 'ally' && unit.side !== sourceUnit.side) return false
-      if (targetKind === 'self') return false
-
-      const distance = Math.abs(sourceUnit.col - unit.col) + Math.abs(sourceUnit.row - unit.row)
-      return distance <= range
-    })
-  }
-
   private clearTargetIndicators() {
     this.targetTileMarkers.forEach((marker) => marker.destroy())
     this.targetTileMarkers = []
-    this.highlightedUnitIds.clear()
   }
 
   private clearTargetingState() {
@@ -646,6 +635,7 @@ export default class ArenaScene extends Phaser.Scene {
     if (defenseCard) {
       this.time.delayedCall(180, () => {
         this.spawnFloatingText(unit.col, unit.row, defenseCard.name, '#93c5fd')
+        this.playDefensePreview(unit, defenseCard, progress.selectedDefenseTarget)
       })
     }
 
@@ -657,13 +647,13 @@ export default class ArenaScene extends Phaser.Scene {
 
     const start = this.getBoardPoint(sourceUnit.col, sourceUnit.row)
 
-    if (target.unitId) {
+    if (card.targetingMode === 'unit' && target.unitId) {
       const targetUnit = this.unitsById.get(target.unitId)
       const targetSprite = this.unitSprites.get(target.unitId)
       if (!targetUnit || !targetSprite) return
 
       const end = this.getBoardPoint(targetUnit.col, targetUnit.row)
-      const projectile = this.add.circle(start.x, start.y, 8, card.category === 'attack' ? 0xfb7185 : 0x60a5fa, 0.95)
+      const projectile = this.add.circle(start.x, start.y, 8, 0xfb7185, 0.95)
 
       this.tweens.add({
         targets: projectile,
@@ -682,14 +672,14 @@ export default class ArenaScene extends Phaser.Scene {
         repeat: 1
       })
 
-      this.spawnFloatingText(targetUnit.col, targetUnit.row, card.category === 'attack' ? '-hit' : '+buff', card.category === 'attack' ? '#fda4af' : '#93c5fd')
+      this.spawnFloatingText(targetUnit.col, targetUnit.row, '-hit', '#fda4af')
       return
     }
 
     if (target.tile) {
-      const impact = this.add.circle(0, 0, 14, card.category === 'attack' ? 0xf97316 : 0x22c55e, 0.22)
-      impact.setPosition(this.boardX + target.tile.col * GRID_SIZE + GRID_SIZE / 2, this.boardY + target.tile.row * GRID_SIZE + GRID_SIZE / 2)
-      impact.setStrokeStyle(3, card.category === 'attack' ? 0xfdba74 : 0x86efac, 0.95)
+      const point = this.getBoardPoint(target.tile.col, target.tile.row)
+      const impact = this.add.circle(point.x, point.y, 14, 0xf97316, 0.22)
+      impact.setStrokeStyle(3, 0xfdba74, 0.95)
 
       this.tweens.add({
         targets: impact,
@@ -701,7 +691,62 @@ export default class ArenaScene extends Phaser.Scene {
         onComplete: () => impact.destroy()
       })
 
-      this.spawnFloatingText(target.tile.col, target.tile.row, card.name, card.category === 'attack' ? '#fdba74' : '#86efac')
+      const unitOnTile = this.getUnitAt(target.tile.col, target.tile.row)
+      if (unitOnTile) {
+        const targetSprite = this.unitSprites.get(unitOnTile.id)
+        if (targetSprite) {
+          this.tweens.add({
+            targets: targetSprite,
+            alpha: 0.35,
+            duration: 70,
+            yoyo: true,
+            repeat: 1
+          })
+        }
+        this.spawnFloatingText(target.tile.col, target.tile.row, '-area', '#fdba74')
+      } else {
+        this.spawnFloatingText(target.tile.col, target.tile.row, 'vazio', '#fdba74')
+      }
+    }
+  }
+
+  private playDefensePreview(sourceUnit: UnitData, card: CardData, target: TargetSelection | null) {
+    if (!target) return
+
+    if (card.targetingMode === 'unit' && target.unitId) {
+      const targetUnit = this.unitsById.get(target.unitId)
+      const targetSprite = this.unitSprites.get(target.unitId)
+      if (!targetUnit || !targetSprite) return
+
+      this.tweens.add({
+        targets: targetSprite,
+        scaleX: 1.12,
+        scaleY: 1.12,
+        duration: 120,
+        yoyo: true,
+        ease: 'Sine.easeInOut'
+      })
+      this.spawnFloatingText(targetUnit.col, targetUnit.row, '+buff', '#93c5fd')
+      return
+    }
+
+    if (target.tile) {
+      const point = this.getBoardPoint(target.tile.col, target.tile.row)
+      const aura = this.add.circle(point.x, point.y, 14, 0x22c55e, 0.18)
+      aura.setStrokeStyle(3, 0x86efac, 0.95)
+
+      this.tweens.add({
+        targets: aura,
+        scaleX: 2,
+        scaleY: 2,
+        alpha: 0,
+        duration: 280,
+        ease: 'Sine.easeOut',
+        onComplete: () => aura.destroy()
+      })
+
+      const unitOnTile = this.getUnitAt(target.tile.col, target.tile.row)
+      this.spawnFloatingText(target.tile.col, target.tile.row, unitOnTile ? '+def' : 'area', '#86efac')
     }
   }
 
@@ -763,7 +808,7 @@ export default class ArenaScene extends Phaser.Scene {
       this.phaseTimeRemaining = 15
       this.phaseText?.setText('Fase: Ações')
       this.selectedUnitText?.setText('Selecione uma unidade do lado ativo para escolher ataque e defesa.')
-      this.cardHintText?.setText('Cartas de ataque miram no campo inimigo. Cartas de defesa miram no seu campo.')
+      this.cardHintText?.setText('Todas as habilidades usam casas. Habilidades target exigem alvo válido na casa.')
     }
 
     this.updateTopHud()
@@ -836,7 +881,7 @@ export default class ArenaScene extends Phaser.Scene {
     const sideColor = side === 'left' ? 0x274c77 : 0x7f1d1d
     const borderColor = side === 'left' ? 0xdbeafe : 0xfecaca
 
-    this.topBarText?.setText('Build atual: targeting por lado do campo + preview visual de ações')
+    this.topBarText?.setText('Build atual: habilidades por casa + validação de alvo + preview visual')
     this.roundText?.setText(`Round ${this.roundNumber}`)
     this.sideBanner?.setFillStyle(sideColor, 1).setStrokeStyle(2, borderColor, 0.8)
     this.sideBannerText?.setText(sideLabel)
@@ -852,12 +897,8 @@ export default class ArenaScene extends Phaser.Scene {
     this.unitSprites.forEach((container, id) => {
       const body = container.list[1] as Phaser.GameObjects.Arc
       const isSelected = id === this.selectedUnitId
-      const isHighlightedTarget = this.highlightedUnitIds.has(id)
-      const strokeColor = isSelected ? 0xffffff : isHighlightedTarget ? 0x86efac : 0xf8fafc
-      const strokeWidth = isSelected || isHighlightedTarget ? 5 : 3
-
-      body.setStrokeStyle(strokeWidth, strokeColor, 0.95)
-      container.setScale(isSelected ? 1.08 : isHighlightedTarget ? 1.04 : 1)
+      body.setStrokeStyle(isSelected ? 5 : 3, isSelected ? 0xffffff : 0xf8fafc, 0.95)
+      container.setScale(isSelected ? 1.08 : 1)
       container.setAlpha(this.isUnitDimmed(id) ? 0.52 : 1)
     })
   }
@@ -867,7 +908,7 @@ export default class ArenaScene extends Phaser.Scene {
     const progress = this.unitProgress.get(unitId)
     if (!unit || !progress) return false
     if (this.pendingTargeting) {
-      return !this.highlightedUnitIds.has(unitId) && unitId !== this.pendingTargeting.unitId
+      return unitId !== this.pendingTargeting.unitId
     }
     if (unit.side !== this.currentSide()) return true
     return this.currentPhase === 'movement' ? progress.movedThisPhase : progress.actedThisPhase
