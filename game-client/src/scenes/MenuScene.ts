@@ -9,36 +9,38 @@ export default class MenuScene extends Phaser.Scene {
     const { width, height } = this.scale
 
     this.add.rectangle(width / 2, height / 2, width, height, 0x0f1117)
-    this.add.rectangle(width / 2, height / 2, 860, 420, 0x171b26, 0.95).setStrokeStyle(2, 0x39435c, 1)
+    this.add.rectangle(width / 2, height / 2, 920, 500, 0x171b26, 0.96).setStrokeStyle(2, 0x39435c, 1)
 
-    this.add.text(width / 2, 210, 'DRAFT GAME', {
+    this.add.text(width / 2, 180, 'DRAFT GAME', {
       fontFamily: 'Arial',
-      fontSize: '52px',
+      fontSize: '58px',
       color: '#f8e7b9',
       fontStyle: 'bold'
     }).setOrigin(0.5)
 
-    this.add.text(width / 2, 280, 'Protótipo inicial da arena tática', {
+    this.add.text(width / 2, 250, 'Protótipo tático - movimento, turnos e ações base', {
       fontFamily: 'Arial',
       fontSize: '24px',
       color: '#cfd7ea'
     }).setOrigin(0.5)
 
-    const startButton = this.add.rectangle(width / 2, 420, 320, 74, 0x3a7a45, 1)
+    const startButton = this.add.rectangle(width / 2, 390, 360, 80, 0x3a7a45, 1)
       .setStrokeStyle(2, 0x9ee6a9, 1)
       .setInteractive({ useHandCursor: true })
 
-    const startLabel = this.add.text(width / 2, 420, 'CLIQUE PARA INICIAR', {
+    const startLabel = this.add.text(width / 2, 390, 'CLIQUE PARA INICIAR', {
       fontFamily: 'Arial',
-      fontSize: '28px',
+      fontSize: '30px',
       color: '#ffffff',
       fontStyle: 'bold'
     }).setOrigin(0.5)
 
-    this.add.text(width / 2, 520, 'Próximas etapas: movimentação, turnos e cartas', {
+    this.add.text(width / 2, 500, 'Neste build você já pode mover, alternar fases e escolher ações mock por personagem.', {
       fontFamily: 'Arial',
       fontSize: '20px',
-      color: '#8ea0c9'
+      color: '#8ea0c9',
+      wordWrap: { width: 800 },
+      align: 'center'
     }).setOrigin(0.5)
 
     startButton.on('pointerover', () => {

@@ -1,12 +1,21 @@
 import Phaser from 'phaser'
 import { initialUnits } from '../data/initialUnits'
-import type { TeamSide, UnitData } from '../types'
+import { getRoleCards } from '../data/cardTemplates'
+import type { CardData, PhaseType, TeamSide, UnitData } from '../types'
 
 const GRID_SIZE = 64
 const COLS = 16
 const ROWS = 6
 const BOARD_WIDTH = COLS * GRID_SIZE
 const BOARD_HEIGHT = ROWS * GRID_SIZE
+const SIDES: TeamSide[] = ['left', 'right']
+
+type UnitProgress = {
+  movedThisPhase: boolean
+  actedThisPhase: boolean
+  selectedAttackId: string | null
+  selectedDefenseId: string | null
+}
 
 export default class ArenaScene extends Phaser.Scene {
   private boardX = 0
@@ -16,8 +25,24 @@ export default class ArenaScene extends Phaser.Scene {
   private unitsById = new Map<string, UnitData>()
   private unitSprites = new Map<string, Phaser.GameObjects.Container>()
   private infoText?: Phaser.GameObjects.Text
-  private turnText?: Phaser.GameObjects.Text
-  private activeSide: TeamSide = 'left'
+  private topBarText?: Phaser.GameObjects.Text
+  private phaseText?: Phaser.GameObjects.Text
+  private roundText?: Phaser.GameObjects.Text
+  private timerText?: Phaser.GameObjects.Text
+  private sideBanner?: Phaser.GameObjects.Rectangle
+  private sideBannerText?: Phaser.GameObjects.Text
+  private selectedUnitText?: Phaser.GameObjects.Text
+  private cardHintText?: Phaser.GameObjects.Text
+  private actionButton?: Phaser.GameObjects.Rectangle
+  private actionButtonText?: Phaser.GameObjects.Text
+  private validMoveMarkers: Phaser.GameObjects.Rectangle[] = []
+  private cardButtons: Phaser.GameObjects.Container[] = []
+  private unitProgress = new Map<string, UnitProgress>()
+  private currentSideIndex = 0
+  private currentPhase: PhaseType = 'movement'
+  private roundNumber = 1
+  private phaseTimeRemaining = 20
+  private phaseTimer?: Phaser.Time.TimerEvent
 
   constructor() {
     super('ArenaScene')
@@ -25,8 +50,9 @@ export default class ArenaScene extends Phaser.Scene {
 
   create() {
     this.boardX = Math.floor((this.scale.width - BOARD_WIDTH) / 2)
-    this.boardY = Math.floor((this.scale.height - BOARD_HEIGHT) / 2) + 30
+    this.boardY = 150
 
+    this.bootstrapState()
     this.drawBackground()
     this.drawBoardFrame()
     this.drawTiles()
@@ -34,29 +60,46 @@ export default class ArenaScene extends Phaser.Scene {
     this.createUnits()
     this.createHud()
     this.createHover()
+    this.startPhase('movement')
+  }
+
+  private bootstrapState() {
+    initialUnits.forEach((unit) => {
+      this.unitsById.set(unit.id, { ...unit })
+      this.unitProgress.set(unit.id, {
+        movedThisPhase: false,
+        actedThisPhase: false,
+        selectedAttackId: null,
+        selectedDefenseId: null
+      })
+    })
   }
 
   private drawBackground() {
-    this.add.rectangle(this.scale.width / 2, this.scale.height / 2, this.scale.width, this.scale.height, 0x0f1117)
-    this.add.rectangle(this.scale.width / 2, 50, this.scale.width, 100, 0x121826)
-    this.add.text(this.scale.width / 2, 42, 'Arena de Batalha - Protótipo', {
+    this.add.rectangle(this.scale.width / 2, this.scale.height / 2, this.scale.width, this.scale.height, 0x0c1018)
+    this.add.rectangle(this.scale.width / 2, 48, this.scale.width, 96, 0x101827)
+    this.add.rectangle(this.scale.width / 2, this.scale.height - 90, this.scale.width, 180, 0x101827)
+
+    this.add.text(this.scale.width / 2, 40, 'Draft Game - Arena Tática', {
       fontFamily: 'Arial',
-      fontSize: '32px',
-      color: '#f3f4f6',
+      fontSize: '34px',
+      color: '#f8e7b9',
       fontStyle: 'bold'
     }).setOrigin(0.5)
   }
 
   private drawBoardFrame() {
-    this.add.rectangle(this.boardX + BOARD_WIDTH / 2, this.boardY + BOARD_HEIGHT / 2, BOARD_WIDTH + 24, BOARD_HEIGHT + 24, 0x171b26)
-      .setStrokeStyle(2, 0x3d4866)
+    this.add.rectangle(this.boardX + BOARD_WIDTH / 2, this.boardY + BOARD_HEIGHT / 2, BOARD_WIDTH + 28, BOARD_HEIGHT + 28, 0x151b29)
+      .setStrokeStyle(2, 0x38445e)
   }
 
   private drawTiles() {
     for (let row = 0; row < ROWS; row++) {
       for (let col = 0; col < COLS; col++) {
-        const sideColor = col < 8 ? 0x1a2942 : 0x3b1f2d
-        const tileColor = (row + col) % 2 === 0 ? Phaser.Display.Color.IntegerToColor(sideColor).darken(8).color : sideColor
+        const sideColor = col < 8 ? 0x1f3354 : 0x4b2534
+        const tileColor = (row + col) % 2 === 0
+          ? Phaser.Display.Color.IntegerToColor(sideColor).darken(10).color
+          : sideColor
         const tileX = this.boardX + col * GRID_SIZE + GRID_SIZE / 2
         const tileY = this.boardY + row * GRID_SIZE + GRID_SIZE / 2
 
@@ -75,15 +118,13 @@ export default class ArenaScene extends Phaser.Scene {
     for (let row = 0; row < ROWS; row++) {
       const wallX = this.boardX + 8 * GRID_SIZE
       const wallY = this.boardY + row * GRID_SIZE + GRID_SIZE / 2
-
-      this.add.rectangle(wallX, wallY, 8, GRID_SIZE - 6, 0x8b949e, 0.95)
-      this.add.rectangle(wallX - 4, wallY, 3, GRID_SIZE - 10, 0xc7ccd4, 0.7)
+      this.add.rectangle(wallX, wallY, 10, GRID_SIZE - 6, 0x8c97a4, 0.95)
+      this.add.rectangle(wallX - 4, wallY, 3, GRID_SIZE - 12, 0xd1d5db, 0.8)
     }
   }
 
   private createUnits() {
     initialUnits.forEach((unit) => {
-      this.unitsById.set(unit.id, { ...unit })
       this.unitSprites.set(unit.id, this.createUnitSprite(unit))
     })
   }
@@ -92,9 +133,8 @@ export default class ArenaScene extends Phaser.Scene {
     const x = this.boardX + unit.col * GRID_SIZE + GRID_SIZE / 2
     const y = this.boardY + unit.row * GRID_SIZE + GRID_SIZE / 2
 
-    const body = this.add.circle(0, 0, 22, unit.color)
-      .setStrokeStyle(3, 0xf8fafc, 0.85)
-
+    const outer = this.add.circle(0, 0, 24, 0x0b1020).setStrokeStyle(2, 0xffffff, 0.2)
+    const body = this.add.circle(0, 0, 21, unit.color).setStrokeStyle(3, 0xf8fafc, 0.9)
     const label = this.add.text(0, 0, unit.symbol, {
       fontFamily: 'Arial',
       fontSize: '22px',
@@ -102,31 +142,79 @@ export default class ArenaScene extends Phaser.Scene {
       fontStyle: 'bold'
     }).setOrigin(0.5)
 
-    const container = this.add.container(x, y, [body, label]).setSize(44, 44).setInteractive({ useHandCursor: true })
-
-    container.on('pointerdown', () => {
-      this.selectedUnitId = unit.id
-      this.refreshSelectionVisuals()
-      this.updateInfo(`${unit.name} (${unit.side === 'left' ? 'esquerda' : 'direita'}) selecionado. Clique em uma casa válida.`)
-    })
-
+    const container = this.add.container(x, y, [outer, body, label]).setSize(48, 48).setInteractive({ useHandCursor: true })
+    container.on('pointerdown', () => this.handleUnitClick(unit.id))
     return container
   }
 
   private createHud() {
-    this.turnText = this.add.text(this.boardX, this.boardY - 48, 'Turno atual: Time Azul', {
+    this.topBarText = this.add.text(this.boardX, 82, '', {
       fontFamily: 'Arial',
-      fontSize: '24px',
-      color: '#dbeafe',
+      fontSize: '22px',
+      color: '#cbd5e1'
+    })
+
+    this.roundText = this.add.text(this.boardX, 112, '', {
+      fontFamily: 'Arial',
+      fontSize: '22px',
+      color: '#f8fafc',
       fontStyle: 'bold'
     })
 
-    this.infoText = this.add.text(this.boardX, this.boardY + BOARD_HEIGHT + 24, 'Selecione um personagem e clique em uma casa vazia do seu lado.', {
+    this.phaseText = this.add.text(this.boardX + 320, 112, '', {
+      fontFamily: 'Arial',
+      fontSize: '22px',
+      color: '#fef3c7',
+      fontStyle: 'bold'
+    })
+
+    this.timerText = this.add.text(this.boardX + 600, 112, '', {
+      fontFamily: 'Arial',
+      fontSize: '22px',
+      color: '#fca5a5',
+      fontStyle: 'bold'
+    })
+
+    this.sideBanner = this.add.rectangle(this.boardX + BOARD_WIDTH - 90, 104, 170, 48, 0x274c77, 1)
+      .setStrokeStyle(2, 0xdbeafe, 0.7)
+    this.sideBannerText = this.add.text(this.boardX + BOARD_WIDTH - 90, 104, '', {
       fontFamily: 'Arial',
       fontSize: '20px',
-      color: '#d1d5db',
+      color: '#ffffff',
+      fontStyle: 'bold'
+    }).setOrigin(0.5)
+
+    this.selectedUnitText = this.add.text(this.boardX, this.boardY + BOARD_HEIGHT + 22, 'Selecione uma unidade do lado ativo.', {
+      fontFamily: 'Arial',
+      fontSize: '20px',
+      color: '#e5e7eb'
+    })
+
+    this.infoText = this.add.text(this.boardX, this.boardY + BOARD_HEIGHT + 50, '', {
+      fontFamily: 'Arial',
+      fontSize: '18px',
+      color: '#9fb0d9',
       wordWrap: { width: BOARD_WIDTH }
     })
+
+    this.cardHintText = this.add.text(this.boardX, this.boardY + BOARD_HEIGHT + 86, '', {
+      fontFamily: 'Arial',
+      fontSize: '18px',
+      color: '#fde68a',
+      wordWrap: { width: BOARD_WIDTH }
+    })
+
+    this.actionButton = this.add.rectangle(this.boardX + BOARD_WIDTH - 130, this.boardY + BOARD_HEIGHT + 120, 250, 52, 0x3a7a45, 1)
+      .setStrokeStyle(2, 0x9ee6a9, 0.9)
+      .setInteractive({ useHandCursor: true })
+    this.actionButtonText = this.add.text(this.boardX + BOARD_WIDTH - 130, this.boardY + BOARD_HEIGHT + 120, 'Encerrar fase', {
+      fontFamily: 'Arial',
+      fontSize: '22px',
+      color: '#ffffff',
+      fontStyle: 'bold'
+    }).setOrigin(0.5)
+
+    this.actionButton.on('pointerdown', () => this.forceAdvancePhase())
   }
 
   private createHover() {
@@ -135,19 +223,50 @@ export default class ArenaScene extends Phaser.Scene {
       .setVisible(false)
   }
 
-  private updateHover(col: number, row: number, visible: boolean) {
-    if (!this.hoverRect) return
+  private handleUnitClick(unitId: string) {
+    const unit = this.unitsById.get(unitId)
+    if (!unit) return
 
-    this.hoverRect.setPosition(
-      this.boardX + col * GRID_SIZE + GRID_SIZE / 2,
-      this.boardY + row * GRID_SIZE + GRID_SIZE / 2
-    )
-    this.hoverRect.setVisible(visible)
+    if (unit.side !== this.currentSide()) {
+      this.updateInfo('Você só pode interagir com unidades do lado ativo.')
+      return
+    }
+
+    const progress = this.unitProgress.get(unitId)
+    if (!progress) return
+
+    if (this.currentPhase === 'movement' && progress.movedThisPhase) {
+      this.updateInfo('Essa unidade já se moveu nesta fase.')
+      return
+    }
+
+    if (this.currentPhase === 'action' && progress.actedThisPhase) {
+      this.updateInfo('Essa unidade já escolheu as ações desta fase.')
+      return
+    }
+
+    this.selectedUnitId = unitId
+    this.refreshSelectionVisuals()
+
+    if (this.currentPhase === 'movement') {
+      this.showValidMoveMarkers(unit)
+      this.selectedUnitText?.setText(`${unit.name} selecionado para movimento.`)
+      this.cardHintText?.setText('Fase de movimento: clique em uma casa válida do seu lado.')
+    } else {
+      this.clearValidMoveMarkers()
+      this.selectedUnitText?.setText(`${unit.name} selecionado para escolher ações.`)
+      this.renderCardButtons(unit)
+    }
   }
 
   private handleTileClick(col: number, row: number) {
+    if (this.currentPhase !== 'movement') {
+      this.updateInfo('No momento, você está na fase de ações.')
+      return
+    }
+
     if (!this.selectedUnitId) {
-      this.updateInfo('Primeiro selecione um personagem.')
+      this.updateInfo('Primeiro selecione uma unidade do lado ativo.')
       return
     }
 
@@ -155,12 +274,15 @@ export default class ArenaScene extends Phaser.Scene {
     if (!unit) return
 
     if (!this.isMoveAllowed(unit, col, row)) {
-      this.updateInfo('Movimento inválido para este protótipo.')
+      this.updateInfo('Movimento inválido para esta unidade.')
       return
     }
 
     unit.col = col
     unit.row = row
+
+    const progress = this.unitProgress.get(unit.id)
+    if (progress) progress.movedThisPhase = true
 
     const sprite = this.unitSprites.get(unit.id)
     if (sprite) {
@@ -173,9 +295,14 @@ export default class ArenaScene extends Phaser.Scene {
       })
     }
 
+    this.updateInfo(`${unit.name} moveu para ${col},${row}.`)
     this.selectedUnitId = null
     this.refreshSelectionVisuals()
-    this.swapActiveSide()
+    this.clearValidMoveMarkers()
+
+    if (this.haveAllActiveUnitsMoved()) {
+      this.startPhase('action')
+    }
   }
 
   private isMoveAllowed(unit: UnitData, targetCol: number, targetRow: number) {
@@ -192,19 +319,243 @@ export default class ArenaScene extends Phaser.Scene {
     return distance <= maxDistance
   }
 
-  private swapActiveSide() {
-    this.activeSide = this.activeSide === 'left' ? 'right' : 'left'
-    const label = this.activeSide === 'left' ? 'Time Azul' : 'Time Vermelho'
-    this.turnText?.setText(`Turno atual: ${label}`)
-    this.updateInfo(`Movimento concluído. Agora é a vez do ${label}.`)
+  private showValidMoveMarkers(unit: UnitData) {
+    this.clearValidMoveMarkers()
+
+    for (let row = 0; row < ROWS; row++) {
+      for (let col = 0; col < COLS; col++) {
+        if (!this.isMoveAllowed(unit, col, row)) continue
+        const marker = this.add.rectangle(
+          this.boardX + col * GRID_SIZE + GRID_SIZE / 2,
+          this.boardY + row * GRID_SIZE + GRID_SIZE / 2,
+          GRID_SIZE - 22,
+          GRID_SIZE - 22,
+          0xfacc15,
+          0.24
+        ).setStrokeStyle(2, 0xfef08a, 0.75)
+        this.validMoveMarkers.push(marker)
+      }
+    }
+  }
+
+  private clearValidMoveMarkers() {
+    this.validMoveMarkers.forEach((marker) => marker.destroy())
+    this.validMoveMarkers = []
+  }
+
+  private renderCardButtons(unit: UnitData) {
+    this.clearCardButtons()
+    const cards = getRoleCards(unit.role)
+    const startX = this.boardX
+    const y = this.boardY + BOARD_HEIGHT + 120
+
+    cards.forEach((card, index) => {
+      const col = index % 4
+      const row = Math.floor(index / 4)
+      const x = startX + col * 250 + 110
+      const cy = y + row * 72
+      const isAttack = card.category === 'attack'
+      const fill = isAttack ? 0x7c2d12 : 0x164e63
+      const border = isAttack ? 0xfb923c : 0x67e8f9
+
+      const bg = this.add.rectangle(0, 0, 220, 56, fill, 0.95).setStrokeStyle(2, border, 0.9)
+      const title = this.add.text(0, -10, card.name, {
+        fontFamily: 'Arial',
+        fontSize: '17px',
+        color: '#ffffff',
+        fontStyle: 'bold'
+      }).setOrigin(0.5)
+      const desc = this.add.text(0, 12, card.shortDescription, {
+        fontFamily: 'Arial',
+        fontSize: '11px',
+        color: '#f8fafc',
+        align: 'center',
+        wordWrap: { width: 190 }
+      }).setOrigin(0.5)
+
+      const container = this.add.container(x, cy, [bg, title, desc]).setSize(220, 56).setInteractive({ useHandCursor: true })
+      container.on('pointerdown', () => this.selectCardForUnit(unit.id, card))
+      this.cardButtons.push(container)
+    })
+
+    this.cardHintText?.setText('Escolha 1 carta de ataque e 1 carta de defesa para a unidade selecionada.')
+  }
+
+  private clearCardButtons() {
+    this.cardButtons.forEach((button) => button.destroy())
+    this.cardButtons = []
+  }
+
+  private selectCardForUnit(unitId: string, card: CardData) {
+    const progress = this.unitProgress.get(unitId)
+    const unit = this.unitsById.get(unitId)
+    if (!progress || !unit) return
+
+    if (card.category === 'attack') {
+      progress.selectedAttackId = card.id
+    } else {
+      progress.selectedDefenseId = card.id
+    }
+
+    this.updateInfo(`${unit.name}: ${card.name} selecionada.`)
+
+    if (progress.selectedAttackId && progress.selectedDefenseId) {
+      progress.actedThisPhase = true
+      this.selectedUnitText?.setText(`${unit.name} já confirmou ataque e defesa.`)
+      this.cardHintText?.setText('Selecione outra unidade do lado ativo ou encerre a fase.')
+      this.selectedUnitId = null
+      this.refreshSelectionVisuals()
+      this.clearCardButtons()
+
+      if (this.haveAllActiveUnitsActed()) {
+        this.resolveCurrentSideActions()
+      }
+    }
+  }
+
+  private resolveCurrentSideActions() {
+    const side = this.currentSide()
+    const sideUnits = this.getSideUnits(side)
+    const executionOrder = ['king', 'tank', 'dps', 'healer']
+    const lines: string[] = []
+
+    executionOrder.forEach((role) => {
+      const unit = sideUnits.find((entry) => entry.role === role)
+      const progress = unit ? this.unitProgress.get(unit.id) : null
+      if (!unit || !progress) return
+      lines.push(`${unit.name}: ataque=${progress.selectedAttackId ?? '-'} | defesa=${progress.selectedDefenseId ?? '-'}`)
+    })
+
+    this.updateInfo(`Ações preparadas do ${side === 'left' ? 'Time Azul' : 'Time Vermelho'}: ${lines.join(' / ')}`)
+    this.time.delayedCall(700, () => this.advanceAfterActionResolution())
+  }
+
+  private advanceAfterActionResolution() {
+    if (this.currentSideIndex === 0) {
+      this.currentSideIndex = 1
+      this.resetProgressForSide(this.currentSide())
+      this.startPhase('movement')
+    } else {
+      this.currentSideIndex = 0
+      this.roundNumber += 1
+      SIDES.forEach((side) => this.resetProgressForSide(side))
+      this.startPhase('movement')
+    }
+  }
+
+  private startPhase(phase: PhaseType) {
+    this.currentPhase = phase
+    this.selectedUnitId = null
+    this.refreshSelectionVisuals()
+    this.clearValidMoveMarkers()
+    this.clearCardButtons()
+
+    if (phase === 'movement') {
+      this.phaseTimeRemaining = 20
+      this.phaseText?.setText('Fase: Movimento')
+      this.selectedUnitText?.setText('Selecione uma unidade do lado ativo para mover.')
+      this.cardHintText?.setText('Rei pode teleportar para qualquer casa do seu lado. DPS move 3. Tank/Healer movem 2.')
+    } else {
+      this.phaseTimeRemaining = 15
+      this.phaseText?.setText('Fase: Ações')
+      this.selectedUnitText?.setText('Selecione uma unidade do lado ativo para escolher ataque e defesa.')
+      this.cardHintText?.setText('Neste protótipo, as ações ainda não causam dano real. Estamos validando fluxo e ordem.')
+    }
+
+    this.updateTopHud()
+    this.restartPhaseTimer()
+  }
+
+  private restartPhaseTimer() {
+    this.phaseTimer?.remove(false)
+    this.timerText?.setText(`Tempo: ${this.phaseTimeRemaining}s`)
+
+    this.phaseTimer = this.time.addEvent({
+      delay: 1000,
+      loop: true,
+      callback: () => {
+        this.phaseTimeRemaining -= 1
+        this.timerText?.setText(`Tempo: ${Math.max(this.phaseTimeRemaining, 0)}s`)
+
+        if (this.phaseTimeRemaining <= 0) {
+          this.phaseTimer?.remove(false)
+          this.forceAdvancePhase()
+        }
+      }
+    })
+  }
+
+  private forceAdvancePhase() {
+    if (this.currentPhase === 'movement') {
+      this.updateInfo('Tempo da fase de movimento encerrado. Indo para a fase de ações.')
+      this.startPhase('action')
+      return
+    }
+
+    this.updateInfo('Tempo da fase de ações encerrado. Resolvendo ações mock do lado ativo.')
+    this.resolveCurrentSideActions()
+  }
+
+  private haveAllActiveUnitsMoved() {
+    return this.getSideUnits(this.currentSide()).every((unit) => this.unitProgress.get(unit.id)?.movedThisPhase)
+  }
+
+  private haveAllActiveUnitsActed() {
+    return this.getSideUnits(this.currentSide()).every((unit) => this.unitProgress.get(unit.id)?.actedThisPhase)
+  }
+
+  private getSideUnits(side: TeamSide) {
+    return [...this.unitsById.values()].filter((unit) => unit.side === side)
+  }
+
+  private currentSide(): TeamSide {
+    return SIDES[this.currentSideIndex]
+  }
+
+  private resetProgressForSide(side: TeamSide) {
+    this.getSideUnits(side).forEach((unit) => {
+      const progress = this.unitProgress.get(unit.id)
+      if (!progress) return
+      progress.movedThisPhase = false
+      progress.actedThisPhase = false
+      progress.selectedAttackId = null
+      progress.selectedDefenseId = null
+    })
+  }
+
+  private updateTopHud() {
+    const side = this.currentSide()
+    const sideLabel = side === 'left' ? 'Time Azul' : 'Time Vermelho'
+    const sideColor = side === 'left' ? 0x274c77 : 0x7f1d1d
+    const borderColor = side === 'left' ? 0xdbeafe : 0xfecaca
+
+    this.topBarText?.setText('Build atual: fluxo de turno, seleção e cartas mock')
+    this.roundText?.setText(`Round ${this.roundNumber}`)
+    this.sideBanner?.setFillStyle(sideColor, 1).setStrokeStyle(2, borderColor, 0.8)
+    this.sideBannerText?.setText(sideLabel)
+  }
+
+  private updateHover(col: number, row: number, visible: boolean) {
+    if (!this.hoverRect) return
+    this.hoverRect.setPosition(this.boardX + col * GRID_SIZE + GRID_SIZE / 2, this.boardY + row * GRID_SIZE + GRID_SIZE / 2)
+    this.hoverRect.setVisible(visible)
   }
 
   private refreshSelectionVisuals() {
     this.unitSprites.forEach((container, id) => {
-      const circle = container.list[0] as Phaser.GameObjects.Arc
-      circle.setStrokeStyle(id === this.selectedUnitId ? 5 : 3, id === this.selectedUnitId ? 0xffffff : 0xf8fafc, 0.95)
+      const body = container.list[1] as Phaser.GameObjects.Arc
+      body.setStrokeStyle(id === this.selectedUnitId ? 5 : 3, id === this.selectedUnitId ? 0xffffff : 0xf8fafc, 0.95)
       container.setScale(id === this.selectedUnitId ? 1.08 : 1)
+      container.setAlpha(this.isUnitDimmed(id) ? 0.52 : 1)
     })
+  }
+
+  private isUnitDimmed(unitId: string) {
+    const unit = this.unitsById.get(unitId)
+    const progress = this.unitProgress.get(unitId)
+    if (!unit || !progress) return false
+    if (unit.side !== this.currentSide()) return true
+    return this.currentPhase === 'movement' ? progress.movedThisPhase : progress.actedThisPhase
   }
 
   private updateInfo(text: string) {
