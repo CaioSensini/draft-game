@@ -18,7 +18,7 @@ export default class MenuScene extends Phaser.Scene {
       fontStyle: 'bold'
     }).setOrigin(0.5)
 
-    this.add.text(width / 2, 250, 'Protótipo tático - movimento, turnos e ações base', {
+    this.add.text(width / 2, 250, 'Protótipo tático - combate real, turnos e cartas base', {
       fontFamily: 'Arial',
       fontSize: '24px',
       color: '#cfd7ea'
@@ -35,7 +35,7 @@ export default class MenuScene extends Phaser.Scene {
       fontStyle: 'bold'
     }).setOrigin(0.5)
 
-    this.add.text(width / 2, 500, 'Neste build você já pode mover, alternar fases e escolher ações mock por personagem.', {
+    this.add.text(width / 2, 500, 'Neste build você já move, escolhe cartas, causa dano real, vê HP, buffs e vitória por morte do rei.', {
       fontFamily: 'Arial',
       fontSize: '20px',
       color: '#8ea0c9',

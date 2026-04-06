@@ -21,4 +21,13 @@ export interface CardData {
   category: CardCategory
   group: CardGroup
   shortDescription: string
+  power: number
+  effect: 'damage' | 'heal' | 'shield' | 'bleed' | 'stun' | 'evade' | 'reflect' | 'regen' | 'area'
+}
+
+export interface UnitBaseStats {
+  maxHp: number
+  attack: number
+  defense: number
+  mobility: number
 }
