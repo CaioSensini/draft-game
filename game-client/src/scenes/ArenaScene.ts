@@ -10,11 +10,24 @@ const BOARD_WIDTH = COLS * GRID_SIZE
 const BOARD_HEIGHT = ROWS * GRID_SIZE
 const SIDES: TeamSide[] = ['left', 'right']
 
+type TileTarget = {
+  col: number
+  row: number
+}
+
+type TargetSelection = {
+  label: string
+  unitId?: string
+  tile?: TileTarget
+}
+
 type UnitProgress = {
   movedThisPhase: boolean
   actedThisPhase: boolean
   selectedAttackId: string | null
   selectedDefenseId: string | null
+  selectedAttackTarget: TargetSelection | null
+  selectedDefenseTarget: TargetSelection | null
 }
 
 type PendingTargeting = {
@@ -78,7 +91,9 @@ export default class ArenaScene extends Phaser.Scene {
         movedThisPhase: false,
         actedThisPhase: false,
         selectedAttackId: null,
-        selectedDefenseId: null
+        selectedDefenseId: null,
+        selectedAttackTarget: null,
+        selectedDefenseTarget: null
       })
     })
   }
@@ -286,7 +301,10 @@ export default class ArenaScene extends Phaser.Scene {
       return
     }
 
-    this.applyCardSelection(pending.unitId, pending.card)
+    this.applyCardSelection(pending.unitId, pending.card, {
+      unitId: targetUnit.id,
+      label: targetUnit.name
+    })
     this.updateInfo(`${sourceUnit.name} preparou ${pending.card.name} em ${targetUnit.name}.`)
     this.clearTargetingState()
   }
@@ -354,7 +372,10 @@ export default class ArenaScene extends Phaser.Scene {
       return
     }
 
-    this.applyCardSelection(pending.unitId, pending.card)
+    this.applyCardSelection(pending.unitId, pending.card, {
+      tile: { col, row },
+      label: `${col},${row}`
+    })
     this.updateInfo(`${sourceUnit.name} preparou ${pending.card.name} no bloco ${col},${row}.`)
     this.clearTargetingState()
   }
@@ -467,7 +488,7 @@ export default class ArenaScene extends Phaser.Scene {
     if (!unit) return
 
     if (card.targetingMode === 'none') {
-      this.applyCardSelection(unitId, card)
+      this.applyCardSelection(unitId, card, { label: 'auto' })
       this.updateInfo(`${unit.name}: ${card.name} selecionada.`)
       return
     }
@@ -512,15 +533,17 @@ export default class ArenaScene extends Phaser.Scene {
     this.updateInfo(`${sourceUnit.name} entrou em modo de targeting com ${card.name}.`)
   }
 
-  private applyCardSelection(unitId: string, card: CardData) {
+  private applyCardSelection(unitId: string, card: CardData, target: TargetSelection) {
     const progress = this.unitProgress.get(unitId)
     const unit = this.unitsById.get(unitId)
     if (!progress || !unit) return
 
     if (card.category === 'attack') {
       progress.selectedAttackId = card.id
+      progress.selectedAttackTarget = target
     } else {
       progress.selectedDefenseId = card.id
+      progress.selectedDefenseTarget = target
     }
 
     if (progress.selectedAttackId && progress.selectedDefenseId) {
@@ -568,18 +591,146 @@ export default class ArenaScene extends Phaser.Scene {
   private resolveCurrentSideActions() {
     const side = this.currentSide()
     const sideUnits = this.getSideUnits(side)
-    const executionOrder = ['king', 'tank', 'dps', 'healer']
+    const executionOrder: Array<UnitData['role']> = ['king', 'tank', 'dps', 'healer']
     const lines: string[] = []
 
     executionOrder.forEach((role) => {
       const unit = sideUnits.find((entry) => entry.role === role)
       const progress = unit ? this.unitProgress.get(unit.id) : null
       if (!unit || !progress) return
-      lines.push(`${unit.name}: ataque=${progress.selectedAttackId ?? '-'} | defesa=${progress.selectedDefenseId ?? '-'}`)
+
+      const attackCard = progress.selectedAttackId ? getRoleCards(unit.role).find((card) => card.id === progress.selectedAttackId) : null
+      const defenseCard = progress.selectedDefenseId ? getRoleCards(unit.role).find((card) => card.id === progress.selectedDefenseId) : null
+      const attackLabel = attackCard ? `${attackCard.name}${progress.selectedAttackTarget ? ` -> ${progress.selectedAttackTarget.label}` : ''}` : '-'
+      const defenseLabel = defenseCard ? `${defenseCard.name}${progress.selectedDefenseTarget ? ` -> ${progress.selectedDefenseTarget.label}` : ''}` : '-'
+
+      lines.push(`${unit.name}: ataque=${attackLabel} | defesa=${defenseLabel}`)
     })
 
     this.updateInfo(`Ações preparadas do ${side === 'left' ? 'Time Azul' : 'Time Vermelho'}: ${lines.join(' / ')}`)
-    this.time.delayedCall(700, () => this.advanceAfterActionResolution())
+    this.playMockResolution(sideUnits, executionOrder, 0)
+  }
+
+  private playMockResolution(sideUnits: UnitData[], executionOrder: Array<UnitData['role']>, index: number) {
+    if (index >= executionOrder.length) {
+      this.time.delayedCall(450, () => this.advanceAfterActionResolution())
+      return
+    }
+
+    const unit = sideUnits.find((entry) => entry.role === executionOrder[index])
+    const progress = unit ? this.unitProgress.get(unit.id) : null
+    const sourceSprite = unit ? this.unitSprites.get(unit.id) : null
+
+    if (!unit || !progress || !sourceSprite) {
+      this.playMockResolution(sideUnits, executionOrder, index + 1)
+      return
+    }
+
+    const attackCard = progress.selectedAttackId ? getRoleCards(unit.role).find((card) => card.id === progress.selectedAttackId) : null
+    const defenseCard = progress.selectedDefenseId ? getRoleCards(unit.role).find((card) => card.id === progress.selectedDefenseId) : null
+
+    this.tweens.add({
+      targets: sourceSprite,
+      scaleX: 1.12,
+      scaleY: 1.12,
+      duration: 120,
+      yoyo: true,
+      ease: 'Sine.easeInOut'
+    })
+
+    if (attackCard) {
+      this.spawnFloatingText(unit.col, unit.row, attackCard.name, '#fca5a5')
+      this.playAttackPreview(unit, attackCard, progress.selectedAttackTarget)
+    }
+
+    if (defenseCard) {
+      this.time.delayedCall(180, () => {
+        this.spawnFloatingText(unit.col, unit.row, defenseCard.name, '#93c5fd')
+      })
+    }
+
+    this.time.delayedCall(700, () => this.playMockResolution(sideUnits, executionOrder, index + 1))
+  }
+
+  private playAttackPreview(sourceUnit: UnitData, card: CardData, target: TargetSelection | null) {
+    if (!target) return
+
+    const start = this.getBoardPoint(sourceUnit.col, sourceUnit.row)
+
+    if (target.unitId) {
+      const targetUnit = this.unitsById.get(target.unitId)
+      const targetSprite = this.unitSprites.get(target.unitId)
+      if (!targetUnit || !targetSprite) return
+
+      const end = this.getBoardPoint(targetUnit.col, targetUnit.row)
+      const projectile = this.add.circle(start.x, start.y, 8, card.category === 'attack' ? 0xfb7185 : 0x60a5fa, 0.95)
+
+      this.tweens.add({
+        targets: projectile,
+        x: end.x,
+        y: end.y,
+        duration: 260,
+        ease: 'Sine.easeOut',
+        onComplete: () => projectile.destroy()
+      })
+
+      this.tweens.add({
+        targets: targetSprite,
+        alpha: 0.35,
+        duration: 70,
+        yoyo: true,
+        repeat: 1
+      })
+
+      this.spawnFloatingText(targetUnit.col, targetUnit.row, card.category === 'attack' ? '-hit' : '+buff', card.category === 'attack' ? '#fda4af' : '#93c5fd')
+      return
+    }
+
+    if (target.tile) {
+      const impact = this.add.circle(0, 0, 14, card.category === 'attack' ? 0xf97316 : 0x22c55e, 0.22)
+      impact.setPosition(this.boardX + target.tile.col * GRID_SIZE + GRID_SIZE / 2, this.boardY + target.tile.row * GRID_SIZE + GRID_SIZE / 2)
+      impact.setStrokeStyle(3, card.category === 'attack' ? 0xfdba74 : 0x86efac, 0.95)
+
+      this.tweens.add({
+        targets: impact,
+        scaleX: 2.1,
+        scaleY: 2.1,
+        alpha: 0,
+        duration: 280,
+        ease: 'Sine.easeOut',
+        onComplete: () => impact.destroy()
+      })
+
+      this.spawnFloatingText(target.tile.col, target.tile.row, card.name, card.category === 'attack' ? '#fdba74' : '#86efac')
+    }
+  }
+
+  private spawnFloatingText(col: number, row: number, text: string, color: string) {
+    const point = this.getBoardPoint(col, row)
+    const floating = this.add.text(point.x, point.y - 20, text, {
+      fontFamily: 'Arial',
+      fontSize: '18px',
+      color,
+      fontStyle: 'bold',
+      stroke: '#0b1020',
+      strokeThickness: 4
+    }).setOrigin(0.5)
+
+    this.tweens.add({
+      targets: floating,
+      y: floating.y - 34,
+      alpha: 0,
+      duration: 550,
+      ease: 'Sine.easeOut',
+      onComplete: () => floating.destroy()
+    })
+  }
+
+  private getBoardPoint(col: number, row: number) {
+    return {
+      x: this.boardX + col * GRID_SIZE + GRID_SIZE / 2,
+      y: this.boardY + row * GRID_SIZE + GRID_SIZE / 2
+    }
   }
 
   private advanceAfterActionResolution() {
@@ -674,6 +825,8 @@ export default class ArenaScene extends Phaser.Scene {
       progress.actedThisPhase = false
       progress.selectedAttackId = null
       progress.selectedDefenseId = null
+      progress.selectedAttackTarget = null
+      progress.selectedDefenseTarget = null
     })
   }
 
@@ -683,7 +836,7 @@ export default class ArenaScene extends Phaser.Scene {
     const sideColor = side === 'left' ? 0x274c77 : 0x7f1d1d
     const borderColor = side === 'left' ? 0xdbeafe : 0xfecaca
 
-    this.topBarText?.setText('Build atual: targeting por lado do campo + seleção visual')
+    this.topBarText?.setText('Build atual: targeting por lado do campo + preview visual de ações')
     this.roundText?.setText(`Round ${this.roundNumber}`)
     this.sideBanner?.setFillStyle(sideColor, 1).setStrokeStyle(2, borderColor, 0.8)
     this.sideBannerText?.setText(sideLabel)
