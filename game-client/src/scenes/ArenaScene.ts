@@ -17,6 +17,11 @@ type UnitProgress = {
   selectedDefenseId: string | null
 }
 
+type PendingTargeting = {
+  unitId: string
+  card: CardData
+}
+
 export default class ArenaScene extends Phaser.Scene {
   private boardX = 0
   private boardY = 0
@@ -36,6 +41,7 @@ export default class ArenaScene extends Phaser.Scene {
   private actionButton?: Phaser.GameObjects.Rectangle
   private actionButtonText?: Phaser.GameObjects.Text
   private validMoveMarkers: Phaser.GameObjects.Rectangle[] = []
+  private targetTileMarkers: Phaser.GameObjects.Rectangle[] = []
   private cardButtons: Phaser.GameObjects.Container[] = []
   private unitProgress = new Map<string, UnitProgress>()
   private currentSideIndex = 0
@@ -43,6 +49,8 @@ export default class ArenaScene extends Phaser.Scene {
   private roundNumber = 1
   private phaseTimeRemaining = 20
   private phaseTimer?: Phaser.Time.TimerEvent
+  private pendingTargeting: PendingTargeting | null = null
+  private highlightedUnitIds = new Set<string>()
 
   constructor() {
     super('ArenaScene')
@@ -224,6 +232,11 @@ export default class ArenaScene extends Phaser.Scene {
   }
 
   private handleUnitClick(unitId: string) {
+    if (this.pendingTargeting) {
+      this.handleTargetedUnitSelection(unitId)
+      return
+    }
+
     const unit = this.unitsById.get(unitId)
     if (!unit) return
 
@@ -259,7 +272,31 @@ export default class ArenaScene extends Phaser.Scene {
     }
   }
 
+  private handleTargetedUnitSelection(targetUnitId: string) {
+    const pending = this.pendingTargeting
+    if (!pending) return
+
+    const sourceUnit = this.unitsById.get(pending.unitId)
+    const targetUnit = this.unitsById.get(targetUnitId)
+    if (!sourceUnit || !targetUnit) return
+
+    const validTargetIds = this.getUnitsInRange(sourceUnit, pending.card.targetKind, pending.card.range).map((unit) => unit.id)
+    if (!validTargetIds.includes(targetUnitId)) {
+      this.updateInfo('Esse alvo não é válido para a carta selecionada.')
+      return
+    }
+
+    this.applyCardSelection(pending.unitId, pending.card)
+    this.updateInfo(`${sourceUnit.name} preparou ${pending.card.name} em ${targetUnit.name}.`)
+    this.clearTargetingState()
+  }
+
   private handleTileClick(col: number, row: number) {
+    if (this.pendingTargeting) {
+      this.handleTargetedTileSelection(col, row)
+      return
+    }
+
     if (this.currentPhase !== 'movement') {
       this.updateInfo('No momento, você está na fase de ações.')
       return
@@ -305,6 +342,23 @@ export default class ArenaScene extends Phaser.Scene {
     }
   }
 
+  private handleTargetedTileSelection(col: number, row: number) {
+    const pending = this.pendingTargeting
+    if (!pending) return
+
+    const sourceUnit = this.unitsById.get(pending.unitId)
+    if (!sourceUnit) return
+
+    if (!this.isTileInRange(sourceUnit, col, row, pending.card.range)) {
+      this.updateInfo('Esse bloco está fora do alcance da carta.')
+      return
+    }
+
+    this.applyCardSelection(pending.unitId, pending.card)
+    this.updateInfo(`${sourceUnit.name} preparou ${pending.card.name} no bloco ${col},${row}.`)
+    this.clearTargetingState()
+  }
+
   private isMoveAllowed(unit: UnitData, targetCol: number, targetRow: number) {
     const onCorrectSide = unit.side === 'left' ? targetCol <= 7 : targetCol >= 8
     if (!onCorrectSide) return false
@@ -317,6 +371,11 @@ export default class ArenaScene extends Phaser.Scene {
 
     const maxDistance = unit.role === 'dps' ? 3 : unit.role === 'king' ? 99 : 2
     return distance <= maxDistance
+  }
+
+  private isTileInRange(unit: UnitData, targetCol: number, targetRow: number, range: number) {
+    const distance = Math.abs(unit.col - targetCol) + Math.abs(unit.row - targetRow)
+    return distance > 0 && distance <= range
   }
 
   private showValidMoveMarkers(unit: UnitData) {
@@ -357,11 +416,12 @@ export default class ArenaScene extends Phaser.Scene {
       const isAttack = card.category === 'attack'
       const fill = isAttack ? 0x7c2d12 : 0x164e63
       const border = isAttack ? 0xfb923c : 0x67e8f9
+      const targetingLabel = card.targetingMode === 'unit' ? 'alvo' : card.targetingMode === 'tile' ? 'bloco' : 'auto'
 
       const bg = this.add.rectangle(0, 0, 220, 56, fill, 0.95).setStrokeStyle(2, border, 0.9)
-      const title = this.add.text(0, -10, card.name, {
+      const title = this.add.text(0, -10, `${card.name} [${targetingLabel}]`, {
         fontFamily: 'Arial',
-        fontSize: '17px',
+        fontSize: '16px',
         color: '#ffffff',
         fontStyle: 'bold'
       }).setOrigin(0.5)
@@ -378,7 +438,7 @@ export default class ArenaScene extends Phaser.Scene {
       this.cardButtons.push(container)
     })
 
-    this.cardHintText?.setText('Escolha 1 carta de ataque e 1 carta de defesa para a unidade selecionada.')
+    this.cardHintText?.setText('Escolha 1 carta de ataque e 1 carta de defesa. Cartas de alvo e bloco agora entram em modo de seleção.')
   }
 
   private clearCardButtons() {
@@ -387,6 +447,54 @@ export default class ArenaScene extends Phaser.Scene {
   }
 
   private selectCardForUnit(unitId: string, card: CardData) {
+    const unit = this.unitsById.get(unitId)
+    if (!unit) return
+
+    if (card.targetingMode === 'none') {
+      this.applyCardSelection(unitId, card)
+      this.updateInfo(`${unit.name}: ${card.name} selecionada.`)
+      return
+    }
+
+    this.beginTargeting(unitId, card)
+  }
+
+  private beginTargeting(unitId: string, card: CardData) {
+    const sourceUnit = this.unitsById.get(unitId)
+    if (!sourceUnit) return
+
+    this.pendingTargeting = { unitId, card }
+    this.clearTargetIndicators()
+
+    if (card.targetingMode === 'unit') {
+      const validUnits = this.getUnitsInRange(sourceUnit, card.targetKind, card.range)
+      validUnits.forEach((unit) => this.highlightedUnitIds.add(unit.id))
+      this.cardHintText?.setText(`Modo alvo ativo: clique em uma unidade válida para ${card.name}.`)
+    }
+
+    if (card.targetingMode === 'tile') {
+      for (let row = 0; row < ROWS; row++) {
+        for (let col = 0; col < COLS; col++) {
+          if (!this.isTileInRange(sourceUnit, col, row, card.range)) continue
+          const marker = this.add.rectangle(
+            this.boardX + col * GRID_SIZE + GRID_SIZE / 2,
+            this.boardY + row * GRID_SIZE + GRID_SIZE / 2,
+            GRID_SIZE - 18,
+            GRID_SIZE - 18,
+            0x22c55e,
+            0.18
+          ).setStrokeStyle(2, 0x86efac, 0.9)
+          this.targetTileMarkers.push(marker)
+        }
+      }
+      this.cardHintText?.setText(`Modo bloco ativo: clique em um tile no alcance para ${card.name}.`)
+    }
+
+    this.refreshSelectionVisuals()
+    this.updateInfo(`${sourceUnit.name} entrou em modo de targeting com ${card.name}.`)
+  }
+
+  private applyCardSelection(unitId: string, card: CardData) {
     const progress = this.unitProgress.get(unitId)
     const unit = this.unitsById.get(unitId)
     if (!progress || !unit) return
@@ -397,20 +505,46 @@ export default class ArenaScene extends Phaser.Scene {
       progress.selectedDefenseId = card.id
     }
 
-    this.updateInfo(`${unit.name}: ${card.name} selecionada.`)
-
     if (progress.selectedAttackId && progress.selectedDefenseId) {
       progress.actedThisPhase = true
       this.selectedUnitText?.setText(`${unit.name} já confirmou ataque e defesa.`)
       this.cardHintText?.setText('Selecione outra unidade do lado ativo ou encerre a fase.')
       this.selectedUnitId = null
-      this.refreshSelectionVisuals()
       this.clearCardButtons()
 
       if (this.haveAllActiveUnitsActed()) {
         this.resolveCurrentSideActions()
       }
     }
+
+    this.refreshSelectionVisuals()
+  }
+
+  private getUnitsInRange(sourceUnit: UnitData, targetKind: CardData['targetKind'], range: number) {
+    return [...this.unitsById.values()].filter((unit) => {
+      if (unit.id === sourceUnit.id) {
+        return targetKind === 'self'
+      }
+
+      if (targetKind === 'enemy' && unit.side === sourceUnit.side) return false
+      if (targetKind === 'ally' && unit.side !== sourceUnit.side) return false
+      if (targetKind === 'self') return false
+
+      const distance = Math.abs(sourceUnit.col - unit.col) + Math.abs(sourceUnit.row - unit.row)
+      return distance <= range
+    })
+  }
+
+  private clearTargetIndicators() {
+    this.targetTileMarkers.forEach((marker) => marker.destroy())
+    this.targetTileMarkers = []
+    this.highlightedUnitIds.clear()
+  }
+
+  private clearTargetingState() {
+    this.pendingTargeting = null
+    this.clearTargetIndicators()
+    this.refreshSelectionVisuals()
   }
 
   private resolveCurrentSideActions() {
@@ -446,6 +580,7 @@ export default class ArenaScene extends Phaser.Scene {
   private startPhase(phase: PhaseType) {
     this.currentPhase = phase
     this.selectedUnitId = null
+    this.clearTargetingState()
     this.refreshSelectionVisuals()
     this.clearValidMoveMarkers()
     this.clearCardButtons()
@@ -459,7 +594,7 @@ export default class ArenaScene extends Phaser.Scene {
       this.phaseTimeRemaining = 15
       this.phaseText?.setText('Fase: Ações')
       this.selectedUnitText?.setText('Selecione uma unidade do lado ativo para escolher ataque e defesa.')
-      this.cardHintText?.setText('Neste protótipo, as ações ainda não causam dano real. Estamos validando fluxo e ordem.')
+      this.cardHintText?.setText('Cartas [alvo] pedem clique em unidade. Cartas [bloco] pedem clique no tile.')
     }
 
     this.updateTopHud()
@@ -492,6 +627,7 @@ export default class ArenaScene extends Phaser.Scene {
       return
     }
 
+    this.clearTargetingState()
     this.updateInfo('Tempo da fase de ações encerrado. Resolvendo ações mock do lado ativo.')
     this.resolveCurrentSideActions()
   }
@@ -529,7 +665,7 @@ export default class ArenaScene extends Phaser.Scene {
     const sideColor = side === 'left' ? 0x274c77 : 0x7f1d1d
     const borderColor = side === 'left' ? 0xdbeafe : 0xfecaca
 
-    this.topBarText?.setText('Build atual: fluxo de turno, seleção e cartas mock')
+    this.topBarText?.setText('Build atual: fluxo de turno + targeting visual base')
     this.roundText?.setText(`Round ${this.roundNumber}`)
     this.sideBanner?.setFillStyle(sideColor, 1).setStrokeStyle(2, borderColor, 0.8)
     this.sideBannerText?.setText(sideLabel)
@@ -544,8 +680,13 @@ export default class ArenaScene extends Phaser.Scene {
   private refreshSelectionVisuals() {
     this.unitSprites.forEach((container, id) => {
       const body = container.list[1] as Phaser.GameObjects.Arc
-      body.setStrokeStyle(id === this.selectedUnitId ? 5 : 3, id === this.selectedUnitId ? 0xffffff : 0xf8fafc, 0.95)
-      container.setScale(id === this.selectedUnitId ? 1.08 : 1)
+      const isSelected = id === this.selectedUnitId
+      const isHighlightedTarget = this.highlightedUnitIds.has(id)
+      const strokeColor = isSelected ? 0xffffff : isHighlightedTarget ? 0x86efac : 0xf8fafc
+      const strokeWidth = isSelected || isHighlightedTarget ? 5 : 3
+
+      body.setStrokeStyle(strokeWidth, strokeColor, 0.95)
+      container.setScale(isSelected ? 1.08 : isHighlightedTarget ? 1.04 : 1)
       container.setAlpha(this.isUnitDimmed(id) ? 0.52 : 1)
     })
   }
@@ -554,6 +695,9 @@ export default class ArenaScene extends Phaser.Scene {
     const unit = this.unitsById.get(unitId)
     const progress = this.unitProgress.get(unitId)
     if (!unit || !progress) return false
+    if (this.pendingTargeting) {
+      return !this.highlightedUnitIds.has(unitId) && unitId !== this.pendingTargeting.unitId
+    }
     if (unit.side !== this.currentSide()) return true
     return this.currentPhase === 'movement' ? progress.movedThisPhase : progress.actedThisPhase
   }
