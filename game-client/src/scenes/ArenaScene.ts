@@ -390,11 +390,6 @@ export default class ArenaScene extends Phaser.Scene {
     return distance <= maxDistance
   }
 
-  private isTileInRange(unit: UnitData, targetCol: number, targetRow: number, range: number) {
-    const distance = Math.abs(unit.col - targetCol) + Math.abs(unit.row - targetRow)
-    return distance > 0 && distance <= range
-  }
-
   private isTileOnSide(col: number, side: TeamSide) {
     return side === 'left' ? col <= 7 : col >= 8
   }
@@ -407,8 +402,8 @@ export default class ArenaScene extends Phaser.Scene {
     return sourceUnit.side
   }
 
-  private isTileAllowedForCard(sourceUnit: UnitData, card: CardData, col: number, row: number) {
-    return this.isTileInRange(sourceUnit, col, row, card.range) && this.isTileOnSide(col, this.getTileTargetSide(sourceUnit, card))
+  private isTileAllowedForCard(sourceUnit: UnitData, card: CardData, col: number, _row: number) {
+    return this.isTileOnSide(col, this.getTileTargetSide(sourceUnit, card))
   }
 
   private getUnitAt(col: number, row: number) {
@@ -420,9 +415,7 @@ export default class ArenaScene extends Phaser.Scene {
     if (card.targetKind === 'ally' && targetUnit.side !== sourceUnit.side) return false
     if (card.targetKind === 'self' && targetUnit.id !== sourceUnit.id) return false
     if (card.targetKind !== 'self' && targetUnit.id === sourceUnit.id) return false
-
-    const distance = Math.abs(sourceUnit.col - targetUnit.col) + Math.abs(sourceUnit.row - targetUnit.row)
-    return distance <= card.range
+    return true
   }
 
   private showValidMoveMarkers(unit: UnitData) {
@@ -485,7 +478,7 @@ export default class ArenaScene extends Phaser.Scene {
       this.cardButtons.push(container)
     })
 
-    this.cardHintText?.setText('Todas as habilidades são escolhidas por casa. Habilidades target falham se não houver alvo na casa.')
+    this.cardHintText?.setText('Todas as habilidades usam casas. Skills target exigem alvo na casa. Skills de área podem sair em qualquer casa válida do lado correto.')
   }
 
   private clearCardButtons() {
@@ -531,7 +524,7 @@ export default class ArenaScene extends Phaser.Scene {
     const sideLabel = this.getTileTargetSide(sourceUnit, card) === sourceUnit.side ? 'seu campo' : 'campo inimigo'
     const modeLabel = card.targetingMode === 'unit'
       ? 'Clique em uma casa. Se não houver alvo válido nela, a carta não sai.'
-      : 'Clique em uma casa do alcance. Essa carta pode ser lançada mesmo sem ninguém nela.'
+      : 'Clique em qualquer casa válida. Essa carta pode ser lançada mesmo sem ninguém nela.'
 
     this.cardHintText?.setText(`${card.name}: ${modeLabel} Área válida: ${sideLabel}.`)
     this.refreshSelectionVisuals()
@@ -710,10 +703,10 @@ export default class ArenaScene extends Phaser.Scene {
     }
   }
 
-  private playDefensePreview(sourceUnit: UnitData, card: CardData, target: TargetSelection | null) {
+  private playDefensePreview(_sourceUnit: UnitData, _card: CardData, target: TargetSelection | null) {
     if (!target) return
 
-    if (card.targetingMode === 'unit' && target.unitId) {
+    if (target.unitId) {
       const targetUnit = this.unitsById.get(target.unitId)
       const targetSprite = this.unitSprites.get(target.unitId)
       if (!targetUnit || !targetSprite) return
@@ -808,7 +801,7 @@ export default class ArenaScene extends Phaser.Scene {
       this.phaseTimeRemaining = 15
       this.phaseText?.setText('Fase: Ações')
       this.selectedUnitText?.setText('Selecione uma unidade do lado ativo para escolher ataque e defesa.')
-      this.cardHintText?.setText('Todas as habilidades usam casas. Habilidades target exigem alvo válido na casa.')
+      this.cardHintText?.setText('Todas as habilidades usam casas. Skills target exigem alvo válido na casa.')
     }
 
     this.updateTopHud()
@@ -881,7 +874,7 @@ export default class ArenaScene extends Phaser.Scene {
     const sideColor = side === 'left' ? 0x274c77 : 0x7f1d1d
     const borderColor = side === 'left' ? 0xdbeafe : 0xfecaca
 
-    this.topBarText?.setText('Build atual: habilidades por casa + validação de alvo + preview visual')
+    this.topBarText?.setText('Build atual: habilidades por casa + área liberada no campo correto')
     this.roundText?.setText(`Round ${this.roundNumber}`)
     this.sideBanner?.setFillStyle(sideColor, 1).setStrokeStyle(2, borderColor, 0.8)
     this.sideBannerText?.setText(sideLabel)
