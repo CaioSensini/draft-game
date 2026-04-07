@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import { GameState, GameStateManager } from '../core/GameState'
 
 export default class MenuScene extends Phaser.Scene {
   constructor() {
@@ -6,6 +7,7 @@ export default class MenuScene extends Phaser.Scene {
   }
 
   create() {
+    GameStateManager.set(GameState.MENU)
     const { width, height } = this.scale
 
     this.add.rectangle(width / 2, height / 2, width, height, 0x0f1117)
@@ -18,7 +20,7 @@ export default class MenuScene extends Phaser.Scene {
       fontStyle: 'bold'
     }).setOrigin(0.5)
 
-    this.add.text(width / 2, 245, 'Protótipo tático - classes finais, target manual e deck rotativo base', {
+    this.add.text(width / 2, 245, 'Jogo tático — monte seu deck, enfrente o bot e derrote o Rei inimigo', {
       fontFamily: 'Arial',
       fontSize: '22px',
       color: '#cfd7ea',
@@ -37,7 +39,7 @@ export default class MenuScene extends Phaser.Scene {
       fontStyle: 'bold'
     }).setOrigin(0.5)
 
-    this.add.text(width / 2, 500, 'Este build já possui combate real, passivas por classe, seleção manual de alvo/área, barras de vida, status e rotação básica das cartas usadas.', {
+    this.add.text(width / 2, 500, 'Monte um deck de 8 habilidades por unidade (2 por grupo), posicione suas tropas e vença o Rei adversário controlado pelo bot.', {
       fontFamily: 'Arial',
       fontSize: '20px',
       color: '#8ea0c9',
@@ -56,7 +58,7 @@ export default class MenuScene extends Phaser.Scene {
     })
 
     startButton.on('pointerdown', () => {
-      this.scene.start('ArenaScene')
+      this.scene.start('DeckBuildScene')
     })
   }
 }

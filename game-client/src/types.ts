@@ -46,61 +46,15 @@ export interface UnitLevelData {
 }
 
 /**
- * Runtime state for a unit in the current battle
- * Tracks health, status effects, and special mechanics
+ * Selected deck for a single unit:
+ *   attackCards  — 4 IDs (exactly 2 from attack1 + 2 from attack2)
+ *   defenseCards — 4 IDs (exactly 2 from defense1 + 2 from defense2)
  */
-export interface RuntimeState {
-  id: string
-  hp: number
-  maxHp: number
-  alive: boolean
-  shield: number
-  bleedTicks: number
-  bleedPower: number
-  stunTicks: number
-  healReduction: number
-  evadePower: number
-  reflectPower: number
-  regenPower: number
+export interface UnitDeckConfig {
+  attackCards: string[]
+  defenseCards: string[]
 }
 
-/**
- * Unit progress tracking for turn phases
- */
-export interface UnitProgress {
-  unitId: string
-  moved: boolean
-  acted: boolean
-  selectedCard: CardData | null
-  selectedTarget: string | { col: number; row: number } | null
-}
+/** Full team deck config, one entry per role. */
+export type TeamDeckConfig = Record<UnitRole, UnitDeckConfig>
 
-/**
- * Unit visual representation
- */
-export interface UnitVisual {
-  container: Phaser.GameObjects.Container
-  healthBar: Phaser.GameObjects.Rectangle
-  healthFill: Phaser.GameObjects.Rectangle
-  statusText: Phaser.GameObjects.Text
-  symbol: Phaser.GameObjects.Text
-}
-
-/**
- * Unit deck rotation for card cycling
- */
-export interface UnitDeck {
-  unitId: string
-  allCards: CardData[]
-  currentIndex: number
-  availableCards: CardData[]
-}
-
-/**
- * Pending target selection state
- */
-export interface PendingTargetSelection {
-  unitId: string
-  card: CardData
-  mode: 'unit' | 'tile' | 'none'
-}
