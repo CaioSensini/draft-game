@@ -87,7 +87,6 @@ export default class ArenaScene extends Phaser.Scene {
   private cardHintText?: Phaser.GameObjects.Text
   private deckInfoText?: Phaser.GameObjects.Text
   private actionButton?: Phaser.GameObjects.Rectangle
-  private actionButtonText?: Phaser.GameObjects.Text
   private overlayGroup?: Phaser.GameObjects.Container
   private validMoveMarkers: Phaser.GameObjects.Rectangle[] = []
   private targetMarkers: Phaser.GameObjects.Rectangle[] = []
@@ -322,7 +321,7 @@ export default class ArenaScene extends Phaser.Scene {
     this.actionButton = this.add.rectangle(this.boardX + 950, this.boardY + BOARD_HEIGHT + 150, 240, 48, 0x3a7a45, 1)
       .setStrokeStyle(2, 0x9ee6a9, 0.9)
       .setInteractive({ useHandCursor: true })
-    this.actionButtonText = this.add.text(this.boardX + 950, this.boardY + BOARD_HEIGHT + 150, 'Encerrar fase', {
+    this.add.text(this.boardX + 950, this.boardY + BOARD_HEIGHT + 150, 'Encerrar fase', {
       fontFamily: 'Arial',
       fontSize: '21px',
       color: '#ffffff',
@@ -970,7 +969,7 @@ export default class ArenaScene extends Phaser.Scene {
     })
   }
 
-  private findLowestHpAlly(side: TeamSide) {
+  private findLowestHpAlly(side: TeamSide): UnitData | null {
     let best: UnitData | null = null
     let bestRatio = Number.MAX_SAFE_INTEGER
 
