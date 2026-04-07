@@ -11,17 +11,19 @@ export default class MenuScene extends Phaser.Scene {
     this.add.rectangle(width / 2, height / 2, width, height, 0x0f1117)
     this.add.rectangle(width / 2, height / 2, 920, 500, 0x171b26, 0.96).setStrokeStyle(2, 0x39435c, 1)
 
-    this.add.text(width / 2, 180, 'DRAFT GAME', {
+    this.add.text(width / 2, 170, 'DRAFT GAME', {
       fontFamily: 'Arial',
       fontSize: '58px',
       color: '#f8e7b9',
       fontStyle: 'bold'
     }).setOrigin(0.5)
 
-    this.add.text(width / 2, 250, 'Protótipo tático - movimento, turnos e ações base', {
+    this.add.text(width / 2, 245, 'Protótipo tático - classes finais, target manual e deck rotativo base', {
       fontFamily: 'Arial',
-      fontSize: '24px',
-      color: '#cfd7ea'
+      fontSize: '22px',
+      color: '#cfd7ea',
+      align: 'center',
+      wordWrap: { width: 760 }
     }).setOrigin(0.5)
 
     const startButton = this.add.rectangle(width / 2, 390, 360, 80, 0x3a7a45, 1)
@@ -35,11 +37,11 @@ export default class MenuScene extends Phaser.Scene {
       fontStyle: 'bold'
     }).setOrigin(0.5)
 
-    this.add.text(width / 2, 500, 'Neste build você já pode mover, alternar fases e escolher ações mock por personagem.', {
+    this.add.text(width / 2, 500, 'Este build já possui combate real, passivas por classe, seleção manual de alvo/área, barras de vida, status e rotação básica das cartas usadas.', {
       fontFamily: 'Arial',
       fontSize: '20px',
       color: '#8ea0c9',
-      wordWrap: { width: 800 },
+      wordWrap: { width: 820 },
       align: 'center'
     }).setOrigin(0.5)
 

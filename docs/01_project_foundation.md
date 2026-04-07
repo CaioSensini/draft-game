@@ -15,8 +15,8 @@
 - docs: documentação
 - assets_base: assets
 
-## Próximos passos
-1. Criar base do game-client (Phaser)
-2. Criar backend (NestJS)
-3. Criar admin (Next.js)
-4. Conectar tudo
+## Direção atual do protótipo
+- Arena 16x6
+- Combate 4x4
+- Classes finais: Rei, Guerreiro, Especialista, Executor
+- Core atual focado em combate, UX e base para evolução futura

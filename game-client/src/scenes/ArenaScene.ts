@@ -1,7 +1,9 @@
+
 import Phaser from 'phaser'
 import { initialUnits } from '../data/initialUnits'
-import { getRoleCards } from '../data/cardTemplates'
-import type { CardData, PhaseType, TeamSide, UnitData } from '../types'
+import { getRoleAttackCards, getRoleCards, getRoleDefenseCards } from '../data/cardTemplates'
+import { unitStatsByRole } from '../data/unitStats'
+import type { CardData, CardTargetType, PhaseType, TeamSide, UnitData, UnitRole } from '../types'
 
 const GRID_SIZE = 64
 const COLS = 16
@@ -10,29 +12,57 @@ const BOARD_WIDTH = COLS * GRID_SIZE
 const BOARD_HEIGHT = ROWS * GRID_SIZE
 const SIDES: TeamSide[] = ['left', 'right']
 
-type TileTarget = {
-  col: number
-  row: number
-}
-
-type TargetSelection = {
-  label: string
-  unitId?: string
-  tile?: TileTarget
-}
+const WARRIOR_GUARD_REDUCTION = 6
+const EXECUTOR_ISOLATION_BONUS = 8
+const HEAL_REDUCTION_TICKS = 2
+const HEAL_REDUCTION_FACTOR = 0.5
+const WALL_TOUCH_BONUS_PER_UNIT = 2
 
 type UnitProgress = {
   movedThisPhase: boolean
   actedThisPhase: boolean
   selectedAttackId: string | null
   selectedDefenseId: string | null
-  selectedAttackTarget: TargetSelection | null
-  selectedDefenseTarget: TargetSelection | null
+  selectedTargetUnitId: string | null
+  selectedArea: { col: number; row: number } | null
 }
 
-type PendingTargeting = {
+type RuntimeState = {
+  hp: number
+  maxHp: number
+  attack: number
+  defense: number
+  mobility: number
+  shield: number
+  evadeCharges: number
+  reflectPower: number
+  bleedTicks: number
+  bleedPower: number
+  regenTicks: number
+  regenPower: number
+  stunTicks: number
+  healReductionTicks: number
+  healReductionFactor: number
+  alive: boolean
+}
+
+type UnitDeck = {
+  attackQueue: string[]
+  defenseQueue: string[]
+}
+
+type UnitVisual = {
+  container: Phaser.GameObjects.Container
+  body: Phaser.GameObjects.Arc
+  hpBar: Phaser.GameObjects.Rectangle
+  hpText: Phaser.GameObjects.Text
+  statusText: Phaser.GameObjects.Text
+}
+
+type PendingTargetSelection = {
   unitId: string
-  card: CardData
+  cardId: string
+  targetType: Extract<CardTargetType, 'single' | 'area'>
 }
 
 export default class ArenaScene extends Phaser.Scene {
@@ -41,8 +71,12 @@ export default class ArenaScene extends Phaser.Scene {
   private hoverRect?: Phaser.GameObjects.Rectangle
   private selectedUnitId: string | null = null
   private unitsById = new Map<string, UnitData>()
-  private unitSprites = new Map<string, Phaser.GameObjects.Container>()
+  private unitSprites = new Map<string, UnitVisual>()
+  private unitState = new Map<string, RuntimeState>()
+  private unitProgress = new Map<string, UnitProgress>()
+  private unitDecks = new Map<string, UnitDeck>()
   private infoText?: Phaser.GameObjects.Text
+  private battleLogText?: Phaser.GameObjects.Text
   private topBarText?: Phaser.GameObjects.Text
   private phaseText?: Phaser.GameObjects.Text
   private roundText?: Phaser.GameObjects.Text
@@ -51,18 +85,21 @@ export default class ArenaScene extends Phaser.Scene {
   private sideBannerText?: Phaser.GameObjects.Text
   private selectedUnitText?: Phaser.GameObjects.Text
   private cardHintText?: Phaser.GameObjects.Text
+  private deckInfoText?: Phaser.GameObjects.Text
   private actionButton?: Phaser.GameObjects.Rectangle
   private actionButtonText?: Phaser.GameObjects.Text
+  private overlayGroup?: Phaser.GameObjects.Container
   private validMoveMarkers: Phaser.GameObjects.Rectangle[] = []
-  private targetTileMarkers: Phaser.GameObjects.Rectangle[] = []
+  private targetMarkers: Phaser.GameObjects.Rectangle[] = []
   private cardButtons: Phaser.GameObjects.Container[] = []
-  private unitProgress = new Map<string, UnitProgress>()
+  private battleLog: string[] = []
   private currentSideIndex = 0
   private currentPhase: PhaseType = 'movement'
   private roundNumber = 1
   private phaseTimeRemaining = 20
   private phaseTimer?: Phaser.Time.TimerEvent
-  private pendingTargeting: PendingTargeting | null = null
+  private battleEnded = false
+  private pendingTargetSelection: PendingTargetSelection | null = null
 
   constructor() {
     super('ArenaScene')
@@ -80,19 +117,45 @@ export default class ArenaScene extends Phaser.Scene {
     this.createUnits()
     this.createHud()
     this.createHover()
+    this.addLog('Combate iniciado. Objetivo: eliminar o rei inimigo.')
     this.startPhase('movement')
   }
 
   private bootstrapState() {
     initialUnits.forEach((unit) => {
       this.unitsById.set(unit.id, { ...unit })
+      const stats = unitStatsByRole[unit.role]
+      this.unitState.set(unit.id, {
+        hp: stats.maxHp,
+        maxHp: stats.maxHp,
+        attack: stats.attack,
+        defense: stats.defense,
+        mobility: stats.mobility,
+        shield: 0,
+        evadeCharges: 0,
+        reflectPower: 0,
+        bleedTicks: 0,
+        bleedPower: 0,
+        regenTicks: 0,
+        regenPower: 0,
+        stunTicks: 0,
+        healReductionTicks: 0,
+        healReductionFactor: 0,
+        alive: true
+      })
+
       this.unitProgress.set(unit.id, {
         movedThisPhase: false,
         actedThisPhase: false,
         selectedAttackId: null,
         selectedDefenseId: null,
-        selectedAttackTarget: null,
-        selectedDefenseTarget: null
+        selectedTargetUnitId: null,
+        selectedArea: null
+      })
+
+      this.unitDecks.set(unit.id, {
+        attackQueue: getRoleAttackCards(unit.role).map((card) => card.id),
+        defenseQueue: getRoleDefenseCards(unit.role).map((card) => card.id)
       })
     })
   }
@@ -100,7 +163,7 @@ export default class ArenaScene extends Phaser.Scene {
   private drawBackground() {
     this.add.rectangle(this.scale.width / 2, this.scale.height / 2, this.scale.width, this.scale.height, 0x0c1018)
     this.add.rectangle(this.scale.width / 2, 48, this.scale.width, 96, 0x101827)
-    this.add.rectangle(this.scale.width / 2, this.scale.height - 90, this.scale.width, 180, 0x101827)
+    this.add.rectangle(this.scale.width / 2, this.scale.height - 110, this.scale.width, 220, 0x101827)
 
     this.add.text(this.scale.width / 2, 40, 'Draft Game - Arena Tática', {
       fontFamily: 'Arial',
@@ -149,9 +212,10 @@ export default class ArenaScene extends Phaser.Scene {
     initialUnits.forEach((unit) => {
       this.unitSprites.set(unit.id, this.createUnitSprite(unit))
     })
+    this.refreshAllUnitVisuals()
   }
 
-  private createUnitSprite(unit: UnitData) {
+  private createUnitSprite(unit: UnitData): UnitVisual {
     const x = this.boardX + unit.col * GRID_SIZE + GRID_SIZE / 2
     const y = this.boardY + unit.row * GRID_SIZE + GRID_SIZE / 2
 
@@ -164,9 +228,24 @@ export default class ArenaScene extends Phaser.Scene {
       fontStyle: 'bold'
     }).setOrigin(0.5)
 
-    const container = this.add.container(x, y, [outer, body, label]).setSize(48, 48).setInteractive({ useHandCursor: true })
+    const hpBarBg = this.add.rectangle(0, -33, 42, 6, 0x111827, 0.9).setStrokeStyle(1, 0xffffff, 0.15)
+    const hpBar = this.add.rectangle(-20, -33, 40, 4, 0x22c55e, 1).setOrigin(0, 0.5)
+    const hpText = this.add.text(0, -45, '', {
+      fontFamily: 'Arial',
+      fontSize: '10px',
+      color: '#f8fafc'
+    }).setOrigin(0.5)
+    const statusText = this.add.text(0, 33, '', {
+      fontFamily: 'Arial',
+      fontSize: '10px',
+      color: '#fde68a',
+      align: 'center'
+    }).setOrigin(0.5)
+
+    const container = this.add.container(x, y, [outer, body, label, hpBarBg, hpBar, hpText, statusText]).setSize(58, 72).setInteractive({ useHandCursor: true })
     container.on('pointerdown', () => this.handleUnitClick(unit.id))
-    return container
+
+    return { container, body, hpBar, hpText, statusText }
   }
 
   private createHud() {
@@ -206,32 +285,46 @@ export default class ArenaScene extends Phaser.Scene {
       fontStyle: 'bold'
     }).setOrigin(0.5)
 
-    this.selectedUnitText = this.add.text(this.boardX, this.boardY + BOARD_HEIGHT + 22, 'Selecione uma unidade do lado ativo.', {
+    this.selectedUnitText = this.add.text(this.boardX, this.boardY + BOARD_HEIGHT + 12, 'Selecione uma unidade do lado ativo.', {
       fontFamily: 'Arial',
       fontSize: '20px',
       color: '#e5e7eb'
     })
 
-    this.infoText = this.add.text(this.boardX, this.boardY + BOARD_HEIGHT + 50, '', {
+    this.infoText = this.add.text(this.boardX, this.boardY + BOARD_HEIGHT + 42, '', {
       fontFamily: 'Arial',
       fontSize: '18px',
       color: '#9fb0d9',
-      wordWrap: { width: BOARD_WIDTH }
+      wordWrap: { width: 640 }
     })
 
-    this.cardHintText = this.add.text(this.boardX, this.boardY + BOARD_HEIGHT + 86, '', {
+    this.cardHintText = this.add.text(this.boardX, this.boardY + BOARD_HEIGHT + 84, '', {
       fontFamily: 'Arial',
-      fontSize: '18px',
+      fontSize: '17px',
       color: '#fde68a',
-      wordWrap: { width: BOARD_WIDTH }
+      wordWrap: { width: 640 }
     })
 
-    this.actionButton = this.add.rectangle(this.boardX + BOARD_WIDTH - 130, this.boardY + BOARD_HEIGHT + 120, 250, 52, 0x3a7a45, 1)
+    this.deckInfoText = this.add.text(this.boardX, this.boardY + BOARD_HEIGHT + 136, '', {
+      fontFamily: 'Courier New',
+      fontSize: '14px',
+      color: '#c7d2fe',
+      wordWrap: { width: 640 }
+    })
+
+    this.battleLogText = this.add.text(this.boardX + 680, this.boardY + BOARD_HEIGHT + 8, '', {
+      fontFamily: 'Courier New',
+      fontSize: '14px',
+      color: '#dbeafe',
+      wordWrap: { width: 340 }
+    })
+
+    this.actionButton = this.add.rectangle(this.boardX + 950, this.boardY + BOARD_HEIGHT + 150, 240, 48, 0x3a7a45, 1)
       .setStrokeStyle(2, 0x9ee6a9, 0.9)
       .setInteractive({ useHandCursor: true })
-    this.actionButtonText = this.add.text(this.boardX + BOARD_WIDTH - 130, this.boardY + BOARD_HEIGHT + 120, 'Encerrar fase', {
+    this.actionButtonText = this.add.text(this.boardX + 950, this.boardY + BOARD_HEIGHT + 150, 'Encerrar fase', {
       fontFamily: 'Arial',
-      fontSize: '22px',
+      fontSize: '21px',
       color: '#ffffff',
       fontStyle: 'bold'
     }).setOrigin(0.5)
@@ -246,13 +339,26 @@ export default class ArenaScene extends Phaser.Scene {
   }
 
   private handleUnitClick(unitId: string) {
-    if (this.pendingTargeting) {
-      this.updateInfo('Para lançar a habilidade, clique em uma casa do tabuleiro.')
+    if (this.battleEnded) return
+
+    if (this.pendingTargetSelection) {
+      const pendingUnit = this.unitsById.get(this.pendingTargetSelection.unitId)
+      const clicked = this.unitsById.get(unitId)
+      if (!pendingUnit || !clicked) return
+      if (this.pendingTargetSelection.targetType !== 'single') return
+      if (clicked.side === pendingUnit.side) {
+        this.updateInfo('Selecione um inimigo para essa skill.')
+        return
+      }
+      const clickedState = this.unitState.get(clicked.id)
+      if (!clickedState?.alive) return
+      this.confirmAttackTarget(this.pendingTargetSelection.unitId, this.pendingTargetSelection.cardId, clicked.id)
       return
     }
 
     const unit = this.unitsById.get(unitId)
-    if (!unit) return
+    const runtime = this.unitState.get(unitId)
+    if (!unit || !runtime || !runtime.alive) return
 
     if (unit.side !== this.currentSide()) {
       this.updateInfo('Você só pode interagir com unidades do lado ativo.')
@@ -262,33 +368,45 @@ export default class ArenaScene extends Phaser.Scene {
     const progress = this.unitProgress.get(unitId)
     if (!progress) return
 
+    if (runtime.stunTicks > 0) {
+      this.updateInfo(`${unit.name} está atordoado e perde esta fase.`)
+      return
+    }
+
     if (this.currentPhase === 'movement' && progress.movedThisPhase) {
       this.updateInfo('Essa unidade já se moveu nesta fase.')
       return
     }
 
     if (this.currentPhase === 'action' && progress.actedThisPhase) {
-      this.updateInfo('Essa unidade já escolheu as ações desta fase.')
+      this.updateInfo('Essa unidade já confirmou as ações desta fase.')
       return
     }
 
+    this.pendingTargetSelection = null
+    this.clearTargetMarkers()
     this.selectedUnitId = unitId
     this.refreshSelectionVisuals()
+    this.syncSelectedUnitPanel()
 
     if (this.currentPhase === 'movement') {
       this.showValidMoveMarkers(unit)
       this.selectedUnitText?.setText(`${unit.name} selecionado para movimento.`)
-      this.cardHintText?.setText('Fase de movimento: clique em uma casa válida do seu lado.')
-    } else {
-      this.clearValidMoveMarkers()
-      this.selectedUnitText?.setText(`${unit.name} selecionado para escolher ações.`)
-      this.renderCardButtons(unit)
+      this.cardHintText?.setText(this.getRolePassiveText(unit.role))
+      return
     }
+
+    this.clearValidMoveMarkers()
+    this.selectedUnitText?.setText(`${unit.name} selecionado para escolher ações.`)
+    this.cardHintText?.setText(`${this.getRolePassiveText(unit.role)} | Escolha 1 ataque e 1 defesa.`)
+    this.renderCardButtons(unit)
   }
 
   private handleTileClick(col: number, row: number) {
-    if (this.pendingTargeting) {
-      this.handleTargetedTileSelection(col, row)
+    if (this.battleEnded) return
+
+    if (this.pendingTargetSelection?.targetType === 'area') {
+      this.confirmAreaTarget(this.pendingTargetSelection.unitId, this.pendingTargetSelection.cardId, col, row)
       return
     }
 
@@ -303,7 +421,8 @@ export default class ArenaScene extends Phaser.Scene {
     }
 
     const unit = this.unitsById.get(this.selectedUnitId)
-    if (!unit) return
+    const runtime = this.unitState.get(this.selectedUnitId)
+    if (!unit || !runtime || !runtime.alive) return
 
     if (!this.isMoveAllowed(unit, col, row)) {
       this.updateInfo('Movimento inválido para esta unidade.')
@@ -316,10 +435,10 @@ export default class ArenaScene extends Phaser.Scene {
     const progress = this.unitProgress.get(unit.id)
     if (progress) progress.movedThisPhase = true
 
-    const sprite = this.unitSprites.get(unit.id)
-    if (sprite) {
+    const visual = this.unitSprites.get(unit.id)
+    if (visual) {
       this.tweens.add({
-        targets: sprite,
+        targets: visual.container,
         x: this.boardX + col * GRID_SIZE + GRID_SIZE / 2,
         y: this.boardY + row * GRID_SIZE + GRID_SIZE / 2,
         duration: 180,
@@ -328,94 +447,34 @@ export default class ArenaScene extends Phaser.Scene {
     }
 
     this.updateInfo(`${unit.name} moveu para ${col},${row}.`)
+    this.addLog(`${unit.name} reposicionou para ${col},${row}.`)
     this.selectedUnitId = null
     this.refreshSelectionVisuals()
     this.clearValidMoveMarkers()
+    this.syncSelectedUnitPanel()
 
     if (this.haveAllActiveUnitsMoved()) {
       this.startPhase('action')
     }
   }
 
-  private handleTargetedTileSelection(col: number, row: number) {
-    const pending = this.pendingTargeting
-    if (!pending) return
-
-    const sourceUnit = this.unitsById.get(pending.unitId)
-    if (!sourceUnit) return
-
-    if (!this.isTileAllowedForCard(sourceUnit, pending.card, col, row)) {
-      this.updateInfo('Esse bloco não é válido para a carta selecionada.')
-      return
-    }
-
-    if (pending.card.targetingMode === 'unit') {
-      const targetUnit = this.getUnitAt(col, row)
-      if (!targetUnit || !this.isUnitValidForCard(sourceUnit, pending.card, targetUnit)) {
-        this.updateInfo('Não tem alvo nessa casa.')
-        return
-      }
-
-      this.applyCardSelection(pending.unitId, pending.card, {
-        unitId: targetUnit.id,
-        tile: { col, row },
-        label: `${targetUnit.name} @ ${col},${row}`
-      })
-      this.updateInfo(`${sourceUnit.name} preparou ${pending.card.name} na casa ${col},${row}.`)
-      this.clearTargetingState()
-      return
-    }
-
-    const targetUnit = this.getUnitAt(col, row)
-    this.applyCardSelection(pending.unitId, pending.card, {
-      tile: { col, row },
-      unitId: targetUnit?.id,
-      label: targetUnit ? `${col},${row} (${targetUnit.name})` : `${col},${row}`
-    })
-    this.updateInfo(`${sourceUnit.name} preparou ${pending.card.name} na casa ${col},${row}.`)
-    this.clearTargetingState()
-  }
-
   private isMoveAllowed(unit: UnitData, targetCol: number, targetRow: number) {
+    const runtime = this.unitState.get(unit.id)
+    if (!runtime || !runtime.alive) return false
+
     const onCorrectSide = unit.side === 'left' ? targetCol <= 7 : targetCol >= 8
     if (!onCorrectSide) return false
 
-    const occupied = [...this.unitsById.values()].some((other) => other.id !== unit.id && other.col === targetCol && other.row === targetRow)
+    const occupied = [...this.unitsById.values()].some((other) => {
+      const otherState = this.unitState.get(other.id)
+      return other.id !== unit.id && otherState?.alive && other.col === targetCol && other.row === targetRow
+    })
     if (occupied) return false
 
     const distance = Math.abs(unit.col - targetCol) + Math.abs(unit.row - targetRow)
     if (distance === 0) return false
 
-    const maxDistance = unit.role === 'dps' ? 3 : unit.role === 'king' ? 99 : 2
-    return distance <= maxDistance
-  }
-
-  private isTileOnSide(col: number, side: TeamSide) {
-    return side === 'left' ? col <= 7 : col >= 8
-  }
-
-  private getTileTargetSide(sourceUnit: UnitData, card: CardData): TeamSide {
-    if (card.targetKind === 'enemy') {
-      return sourceUnit.side === 'left' ? 'right' : 'left'
-    }
-
-    return sourceUnit.side
-  }
-
-  private isTileAllowedForCard(sourceUnit: UnitData, card: CardData, col: number, _row: number) {
-    return this.isTileOnSide(col, this.getTileTargetSide(sourceUnit, card))
-  }
-
-  private getUnitAt(col: number, row: number) {
-    return [...this.unitsById.values()].find((unit) => unit.col === col && unit.row === row) ?? null
-  }
-
-  private isUnitValidForCard(sourceUnit: UnitData, card: CardData, targetUnit: UnitData) {
-    if (card.targetKind === 'enemy' && targetUnit.side === sourceUnit.side) return false
-    if (card.targetKind === 'ally' && targetUnit.side !== sourceUnit.side) return false
-    if (card.targetKind === 'self' && targetUnit.id !== sourceUnit.id) return false
-    if (card.targetKind !== 'self' && targetUnit.id === sourceUnit.id) return false
-    return true
+    return distance <= runtime.mobility
   }
 
   private showValidMoveMarkers(unit: UnitData) {
@@ -442,13 +501,59 @@ export default class ArenaScene extends Phaser.Scene {
     this.validMoveMarkers = []
   }
 
+  private showTargetMarkers(targetType: Extract<CardTargetType, 'single' | 'area'>, unit: UnitData) {
+    this.clearTargetMarkers()
+
+    if (targetType === 'single') {
+      this.getSideUnits(unit.side === 'left' ? 'right' : 'left').forEach((enemy) => {
+        const state = this.unitState.get(enemy.id)
+        if (!state?.alive) return
+        const marker = this.add.rectangle(
+          this.boardX + enemy.col * GRID_SIZE + GRID_SIZE / 2,
+          this.boardY + enemy.row * GRID_SIZE + GRID_SIZE / 2,
+          GRID_SIZE - 16,
+          GRID_SIZE - 16,
+          0xef4444,
+          0.2
+        ).setStrokeStyle(3, 0xfca5a5, 0.9)
+        this.targetMarkers.push(marker)
+      })
+      return
+    }
+
+    for (let row = 0; row < ROWS; row++) {
+      for (let col = 0; col < COLS; col++) {
+        const marker = this.add.rectangle(
+          this.boardX + col * GRID_SIZE + GRID_SIZE / 2,
+          this.boardY + row * GRID_SIZE + GRID_SIZE / 2,
+          GRID_SIZE - 20,
+          GRID_SIZE - 20,
+          0x22c55e,
+          0.16
+        ).setStrokeStyle(2, 0x86efac, 0.85)
+        this.targetMarkers.push(marker)
+      }
+    }
+  }
+
+  private clearTargetMarkers() {
+    this.targetMarkers.forEach((marker) => marker.destroy())
+    this.targetMarkers = []
+  }
+
   private renderCardButtons(unit: UnitData) {
     this.clearCardButtons()
-    const cards = getRoleCards(unit.role)
-    const startX = this.boardX
-    const y = this.boardY + BOARD_HEIGHT + 120
+    const deck = this.unitDecks.get(unit.id)
+    if (!deck) return
 
-    cards.forEach((card, index) => {
+    const startX = this.boardX
+    const y = this.boardY + BOARD_HEIGHT + 192
+
+    const attackCards = deck.attackQueue.map((id) => this.getCardById(unit.role, id)).filter(Boolean) as CardData[]
+    const defenseCards = deck.defenseQueue.map((id) => this.getCardById(unit.role, id)).filter(Boolean) as CardData[]
+    const visibleCards = [...attackCards, ...defenseCards]
+
+    visibleCards.forEach((card, index) => {
       const col = index % 4
       const row = Math.floor(index / 4)
       const x = startX + col * 250 + 110
@@ -456,16 +561,15 @@ export default class ArenaScene extends Phaser.Scene {
       const isAttack = card.category === 'attack'
       const fill = isAttack ? 0x7c2d12 : 0x164e63
       const border = isAttack ? 0xfb923c : 0x67e8f9
-      const targetingLabel = card.targetingMode === 'unit' ? 'target' : card.targetingMode === 'tile' ? 'bloco' : 'auto'
 
       const bg = this.add.rectangle(0, 0, 220, 56, fill, 0.95).setStrokeStyle(2, border, 0.9)
-      const title = this.add.text(0, -10, `${card.name} [${targetingLabel}]`, {
+      const title = this.add.text(0, -10, card.name, {
         fontFamily: 'Arial',
         fontSize: '16px',
         color: '#ffffff',
         fontStyle: 'bold'
       }).setOrigin(0.5)
-      const desc = this.add.text(0, 12, card.shortDescription, {
+      const desc = this.add.text(0, 12, `${card.shortDescription} [${card.power}]`, {
         fontFamily: 'Arial',
         fontSize: '11px',
         color: '#f8fafc',
@@ -478,7 +582,7 @@ export default class ArenaScene extends Phaser.Scene {
       this.cardButtons.push(container)
     })
 
-    this.cardHintText?.setText('Todas as habilidades usam casas. Skills target exigem alvo na casa. Skills de área podem sair em qualquer casa válida do lado correto.')
+    this.syncSelectedUnitPanel()
   }
 
   private clearCardButtons() {
@@ -487,323 +591,495 @@ export default class ArenaScene extends Phaser.Scene {
   }
 
   private selectCardForUnit(unitId: string, card: CardData) {
-    const unit = this.unitsById.get(unitId)
-    if (!unit) return
-
-    if (card.targetingMode === 'none') {
-      this.applyCardSelection(unitId, card, { label: 'auto' })
-      this.updateInfo(`${unit.name}: ${card.name} selecionada.`)
-      return
-    }
-
-    this.beginTargeting(unitId, card)
-  }
-
-  private beginTargeting(unitId: string, card: CardData) {
-    const sourceUnit = this.unitsById.get(unitId)
-    if (!sourceUnit) return
-
-    this.pendingTargeting = { unitId, card }
-    this.clearTargetIndicators()
-
-    for (let row = 0; row < ROWS; row++) {
-      for (let col = 0; col < COLS; col++) {
-        if (!this.isTileAllowedForCard(sourceUnit, card, col, row)) continue
-        const marker = this.add.rectangle(
-          this.boardX + col * GRID_SIZE + GRID_SIZE / 2,
-          this.boardY + row * GRID_SIZE + GRID_SIZE / 2,
-          GRID_SIZE - 18,
-          GRID_SIZE - 18,
-          0x22c55e,
-          0.18
-        ).setStrokeStyle(2, 0x86efac, 0.9)
-        this.targetTileMarkers.push(marker)
-      }
-    }
-
-    const sideLabel = this.getTileTargetSide(sourceUnit, card) === sourceUnit.side ? 'seu campo' : 'campo inimigo'
-    const modeLabel = card.targetingMode === 'unit'
-      ? 'Clique em uma casa. Se não houver alvo válido nela, a carta não sai.'
-      : 'Clique em qualquer casa válida. Essa carta pode ser lançada mesmo sem ninguém nela.'
-
-    this.cardHintText?.setText(`${card.name}: ${modeLabel} Área válida: ${sideLabel}.`)
-    this.refreshSelectionVisuals()
-    this.updateInfo(`${sourceUnit.name} entrou em modo de targeting com ${card.name}.`)
-  }
-
-  private applyCardSelection(unitId: string, card: CardData, target: TargetSelection) {
     const progress = this.unitProgress.get(unitId)
     const unit = this.unitsById.get(unitId)
     if (!progress || !unit) return
 
     if (card.category === 'attack') {
-      progress.selectedAttackId = card.id
-      progress.selectedAttackTarget = target
+      if (card.targetType === 'single' || card.targetType === 'area') {
+        this.pendingTargetSelection = {
+          unitId,
+          cardId: card.id,
+          targetType: card.targetType
+        }
+        this.showTargetMarkers(card.targetType, unit)
+        this.updateInfo(card.targetType === 'single'
+          ? `${unit.name}: selecione um inimigo para ${card.name}.`
+          : `${unit.name}: selecione uma região do mapa para ${card.name}.`)
+      } else {
+        progress.selectedAttackId = card.id
+      }
     } else {
       progress.selectedDefenseId = card.id
-      progress.selectedDefenseTarget = target
+      this.updateInfo(`${unit.name}: defesa ${card.name} selecionada.`)
     }
 
-    if (progress.selectedAttackId && progress.selectedDefenseId) {
-      progress.actedThisPhase = true
-      this.selectedUnitText?.setText(`${unit.name} já confirmou ataque e defesa.`)
-      this.cardHintText?.setText('Selecione outra unidade do lado ativo ou encerre a fase.')
-      this.selectedUnitId = null
-      this.clearCardButtons()
-
-      if (this.haveAllActiveUnitsActed()) {
-        this.resolveCurrentSideActions()
-      }
+    if (card.category === 'defense') {
+      this.addLog(`${unit.name} preparou ${card.name}.`)
     }
 
-    this.refreshSelectionVisuals()
+    this.tryFinalizeUnitAction(unitId)
+    this.syncSelectedUnitPanel()
   }
 
-  private clearTargetIndicators() {
-    this.targetTileMarkers.forEach((marker) => marker.destroy())
-    this.targetTileMarkers = []
+  private confirmAttackTarget(unitId: string, cardId: string, targetUnitId: string) {
+    const progress = this.unitProgress.get(unitId)
+    const unit = this.unitsById.get(unitId)
+    const target = this.unitsById.get(targetUnitId)
+    if (!progress || !unit || !target) return
+
+    progress.selectedAttackId = cardId
+    progress.selectedTargetUnitId = targetUnitId
+    progress.selectedArea = null
+    this.pendingTargetSelection = null
+    this.clearTargetMarkers()
+    this.updateInfo(`${unit.name}: alvo de ataque definido em ${target.name}.`)
+    this.addLog(`${unit.name} travou alvo em ${target.name}.`)
+    this.tryFinalizeUnitAction(unitId)
+    this.syncSelectedUnitPanel()
   }
 
-  private clearTargetingState() {
-    this.pendingTargeting = null
-    this.clearTargetIndicators()
+  private confirmAreaTarget(unitId: string, cardId: string, col: number, row: number) {
+    const progress = this.unitProgress.get(unitId)
+    const unit = this.unitsById.get(unitId)
+    if (!progress || !unit) return
+
+    progress.selectedAttackId = cardId
+    progress.selectedArea = { col, row }
+    progress.selectedTargetUnitId = null
+    this.pendingTargetSelection = null
+    this.clearTargetMarkers()
+    this.updateInfo(`${unit.name}: área de ataque definida em ${col},${row}.`)
+    this.addLog(`${unit.name} marcou área em ${col},${row}.`)
+    this.tryFinalizeUnitAction(unitId)
+    this.syncSelectedUnitPanel()
+  }
+
+  private tryFinalizeUnitAction(unitId: string) {
+    const progress = this.unitProgress.get(unitId)
+    const unit = this.unitsById.get(unitId)
+    if (!progress || !unit) return
+
+    if (!progress.selectedDefenseId) return
+    if (!progress.selectedAttackId) return
+
+    const attackCard = this.getCardById(unit.role, progress.selectedAttackId)
+    if (!attackCard) return
+
+    if (attackCard.targetType === 'single' && !progress.selectedTargetUnitId) return
+    if (attackCard.targetType === 'area' && !progress.selectedArea) return
+
+    progress.actedThisPhase = true
+    this.selectedUnitText?.setText(`${unit.name} já confirmou ataque e defesa.`)
+    this.cardHintText?.setText('Selecione outra unidade do lado ativo ou encerre a fase.')
+    this.selectedUnitId = null
     this.refreshSelectionVisuals()
+    this.clearCardButtons()
+    this.clearTargetMarkers()
+    this.pendingTargetSelection = null
+    this.addLog(`${unit.name} confirmou suas 2 skills da rodada.`)
+    this.syncSelectedUnitPanel()
+
+    if (this.haveAllActiveUnitsActed()) {
+      this.resolveCurrentSideActions()
+    }
   }
 
   private resolveCurrentSideActions() {
+    if (this.battleEnded) return
     const side = this.currentSide()
     const sideUnits = this.getSideUnits(side)
-    const executionOrder: Array<UnitData['role']> = ['king', 'tank', 'dps', 'healer']
-    const lines: string[] = []
+    const executionOrder: UnitRole[] = ['king', 'warrior', 'executor', 'specialist']
 
     executionOrder.forEach((role) => {
       const unit = sideUnits.find((entry) => entry.role === role)
-      const progress = unit ? this.unitProgress.get(unit.id) : null
-      if (!unit || !progress) return
+      if (!unit) return
+      const runtime = this.unitState.get(unit.id)
+      const progress = this.unitProgress.get(unit.id)
+      if (!runtime || !progress || !runtime.alive) return
 
-      const attackCard = progress.selectedAttackId ? getRoleCards(unit.role).find((card) => card.id === progress.selectedAttackId) : null
-      const defenseCard = progress.selectedDefenseId ? getRoleCards(unit.role).find((card) => card.id === progress.selectedDefenseId) : null
-      const attackLabel = attackCard ? `${attackCard.name}${progress.selectedAttackTarget ? ` -> ${progress.selectedAttackTarget.label}` : ''}` : '-'
-      const defenseLabel = defenseCard ? `${defenseCard.name}${progress.selectedDefenseTarget ? ` -> ${progress.selectedDefenseTarget.label}` : ''}` : '-'
+      if (runtime.stunTicks > 0) {
+        this.addLog(`${unit.name} perdeu a ação por atordoamento.`)
+        runtime.stunTicks = Math.max(runtime.stunTicks - 1, 0)
+        return
+      }
 
-      lines.push(`${unit.name}: ataque=${attackLabel} | defesa=${defenseLabel}`)
-    })
-
-    this.updateInfo(`Ações preparadas do ${side === 'left' ? 'Time Azul' : 'Time Vermelho'}: ${lines.join(' / ')}`)
-    this.playMockResolution(sideUnits, executionOrder, 0)
-  }
-
-  private playMockResolution(sideUnits: UnitData[], executionOrder: Array<UnitData['role']>, index: number) {
-    if (index >= executionOrder.length) {
-      this.time.delayedCall(450, () => this.advanceAfterActionResolution())
-      return
-    }
-
-    const unit = sideUnits.find((entry) => entry.role === executionOrder[index])
-    const progress = unit ? this.unitProgress.get(unit.id) : null
-    const sourceSprite = unit ? this.unitSprites.get(unit.id) : null
-
-    if (!unit || !progress || !sourceSprite) {
-      this.playMockResolution(sideUnits, executionOrder, index + 1)
-      return
-    }
-
-    const attackCard = progress.selectedAttackId ? getRoleCards(unit.role).find((card) => card.id === progress.selectedAttackId) : null
-    const defenseCard = progress.selectedDefenseId ? getRoleCards(unit.role).find((card) => card.id === progress.selectedDefenseId) : null
-
-    this.tweens.add({
-      targets: sourceSprite,
-      scaleX: 1.12,
-      scaleY: 1.12,
-      duration: 120,
-      yoyo: true,
-      ease: 'Sine.easeInOut'
-    })
-
-    if (attackCard) {
-      this.spawnFloatingText(unit.col, unit.row, attackCard.name, '#fca5a5')
-      this.playAttackPreview(unit, attackCard, progress.selectedAttackTarget)
-    }
-
-    if (defenseCard) {
-      this.time.delayedCall(180, () => {
-        this.spawnFloatingText(unit.col, unit.row, defenseCard.name, '#93c5fd')
-        this.playDefensePreview(unit, defenseCard, progress.selectedDefenseTarget)
-      })
-    }
-
-    this.time.delayedCall(700, () => this.playMockResolution(sideUnits, executionOrder, index + 1))
-  }
-
-  private playAttackPreview(sourceUnit: UnitData, card: CardData, target: TargetSelection | null) {
-    if (!target) return
-
-    const start = this.getBoardPoint(sourceUnit.col, sourceUnit.row)
-
-    if (card.targetingMode === 'unit' && target.unitId) {
-      const targetUnit = this.unitsById.get(target.unitId)
-      const targetSprite = this.unitSprites.get(target.unitId)
-      if (!targetUnit || !targetSprite) return
-
-      const end = this.getBoardPoint(targetUnit.col, targetUnit.row)
-      const projectile = this.add.circle(start.x, start.y, 8, 0xfb7185, 0.95)
-
-      this.tweens.add({
-        targets: projectile,
-        x: end.x,
-        y: end.y,
-        duration: 260,
-        ease: 'Sine.easeOut',
-        onComplete: () => projectile.destroy()
-      })
-
-      this.tweens.add({
-        targets: targetSprite,
-        alpha: 0.35,
-        duration: 70,
-        yoyo: true,
-        repeat: 1
-      })
-
-      this.spawnFloatingText(targetUnit.col, targetUnit.row, '-hit', '#fda4af')
-      return
-    }
-
-    if (target.tile) {
-      const point = this.getBoardPoint(target.tile.col, target.tile.row)
-      const impact = this.add.circle(point.x, point.y, 14, 0xf97316, 0.22)
-      impact.setStrokeStyle(3, 0xfdba74, 0.95)
-
-      this.tweens.add({
-        targets: impact,
-        scaleX: 2.1,
-        scaleY: 2.1,
-        alpha: 0,
-        duration: 280,
-        ease: 'Sine.easeOut',
-        onComplete: () => impact.destroy()
-      })
-
-      const unitOnTile = this.getUnitAt(target.tile.col, target.tile.row)
-      if (unitOnTile) {
-        const targetSprite = this.unitSprites.get(unitOnTile.id)
-        if (targetSprite) {
-          this.tweens.add({
-            targets: targetSprite,
-            alpha: 0.35,
-            duration: 70,
-            yoyo: true,
-            repeat: 1
-          })
+      if (progress.selectedDefenseId) {
+        const defenseCard = this.getCardById(unit.role, progress.selectedDefenseId)
+        if (defenseCard) {
+          this.applyDefenseCard(unit, defenseCard)
+          this.rotateCardInDeck(unit.id, defenseCard)
         }
-        this.spawnFloatingText(target.tile.col, target.tile.row, '-area', '#fdba74')
-      } else {
-        this.spawnFloatingText(target.tile.col, target.tile.row, 'vazio', '#fdba74')
+      }
+
+      if (progress.selectedAttackId) {
+        const attackCard = this.getCardById(unit.role, progress.selectedAttackId)
+        if (attackCard) {
+          this.applyAttackCard(unit, attackCard, progress)
+          this.rotateCardInDeck(unit.id, attackCard)
+        }
+      }
+    })
+
+    this.refreshAllUnitVisuals()
+    this.checkVictory()
+
+    if (!this.battleEnded) {
+      this.time.delayedCall(900, () => this.advanceAfterActionResolution())
+    }
+  }
+
+  private applyDefenseCard(unit: UnitData, card: CardData) {
+    const selfState = this.unitState.get(unit.id)
+    if (!selfState || !selfState.alive) return
+
+    switch (card.effect) {
+      case 'evade':
+        selfState.evadeCharges = 1
+        this.addLog(`${unit.name} ativou esquiva.`)
+        break
+      case 'regen':
+        selfState.regenTicks = 2
+        selfState.regenPower = card.power
+        this.addLog(`${unit.name} recebeu regeneração.`)
+        break
+      case 'shield':
+        if (card.targetType === 'all_allies') {
+          this.getSideUnits(unit.side).forEach((ally) => {
+            const allyState = this.unitState.get(ally.id)
+            if (!allyState || !allyState.alive) return
+            allyState.shield += card.power
+          })
+          this.addLog(`${unit.name} aplicou shield em grupo.`)
+        } else {
+          selfState.shield += card.power
+          this.addLog(`${unit.name} ganhou ${card.power} de shield.`)
+        }
+        break
+      case 'heal':
+        if (card.targetType === 'all_allies') {
+          this.getSideUnits(unit.side).forEach((ally) => this.healUnit(ally.id, card.power, unit.id))
+          this.addLog(`${unit.name} curou todo o time.`)
+        } else {
+          const ally = this.findLowestHpAlly(unit.side)
+          if (ally) {
+            this.healUnit(ally.id, card.power, unit.id)
+            this.addLog(`${unit.name} curou ${ally.name}.`)
+          }
+        }
+        break
+      case 'reflect':
+        selfState.reflectPower = card.power
+        this.addLog(`${unit.name} ficará refletindo dano.`)
+        break
+      default:
+        break
+    }
+  }
+
+  private applyAttackCard(unit: UnitData, card: CardData, progress: UnitProgress) {
+    if (card.targetType === 'single') {
+      const target = progress.selectedTargetUnitId ? this.unitsById.get(progress.selectedTargetUnitId) : null
+      const state = target ? this.unitState.get(target.id) : null
+      if (!target || !state?.alive) {
+        this.addLog(`${unit.name} perdeu o alvo de ${card.name}.`)
+        return
+      }
+      this.applyCardOnUnit(unit, target, card)
+      return
+    }
+
+    if (card.targetType === 'area') {
+      const area = progress.selectedArea
+      if (!area) return
+      this.addLog(`${unit.name} executou ${card.name} na área ${area.col},${area.row}.`)
+      const hits = this.getUnitsInArea(area.col, area.row, unit.side === 'left' ? 'right' : 'left')
+      if (hits.length === 0) {
+        this.addLog(`${card.name} não acertou nenhum inimigo.`)
+        this.spawnAreaPulse(area.col, area.row, 0x86efac)
+        return
+      }
+
+      this.spawnAreaPulse(area.col, area.row, 0xf97316)
+      hits.forEach((target) => this.applyCardOnUnit(unit, target, card))
+    }
+  }
+
+  private applyCardOnUnit(caster: UnitData, target: UnitData, card: CardData) {
+    switch (card.effect) {
+      case 'damage':
+        this.damageUnit(target.id, this.computeDirectDamage(caster, target, card.power), caster.id)
+        this.addLog(`${caster.name} usou ${card.name} em ${target.name}.`)
+        if (caster.role === 'king' && card.id === 'king-a1') {
+          this.healUnit(caster.id, 8, caster.id)
+        }
+        if (caster.role === 'specialist') {
+          this.applyHealReduction(target.id)
+        }
+        break
+      case 'stun':
+        this.damageUnit(target.id, this.computeDirectDamage(caster, target, card.power), caster.id)
+        this.applyStun(target.id, 1)
+        this.addLog(`${caster.name} atordoou ${target.name}.`)
+        if (caster.role === 'specialist') {
+          this.applyHealReduction(target.id)
+        }
+        break
+      case 'bleed':
+        this.damageUnit(target.id, this.computeDirectDamage(caster, target, card.power), caster.id)
+        this.applyBleed(target.id, 2, 6)
+        this.addLog(`${caster.name} aplicou sangramento em ${target.name}.`)
+        break
+      case 'area':
+        this.damageUnit(target.id, this.computeDirectDamage(caster, target, card.power), caster.id)
+        this.applyHealReduction(target.id)
+        this.addLog(`${target.name} foi atingido pela zona de ${caster.name}.`)
+        break
+      default:
+        break
+    }
+  }
+
+  private computeDirectDamage(caster: UnitData, target: UnitData, basePower: number) {
+    const casterState = this.unitState.get(caster.id)
+    const targetState = this.unitState.get(target.id)
+    if (!casterState || !targetState) return basePower
+
+    let damage = basePower + casterState.attack - targetState.defense
+    damage -= this.getWarriorGuardReduction(target)
+    damage -= this.getWallTouchReduction(target)
+    if (caster.role === 'executor' && this.isIsolated(caster.id)) {
+      damage += EXECUTOR_ISOLATION_BONUS
+    }
+
+    return Math.max(damage, 5)
+  }
+
+  private damageUnit(unitId: string, amount: number, sourceUnitId?: string) {
+    const runtime = this.unitState.get(unitId)
+    const unit = this.unitsById.get(unitId)
+    if (!runtime || !unit || !runtime.alive) return
+
+    if (runtime.evadeCharges > 0) {
+      runtime.evadeCharges -= 1
+      this.addLog(`${unit.name} desviou totalmente do dano.`)
+      return
+    }
+
+    let remaining = amount
+    if (runtime.shield > 0) {
+      const absorbed = Math.min(runtime.shield, remaining)
+      runtime.shield -= absorbed
+      remaining -= absorbed
+      this.addLog(`${unit.name} absorveu ${absorbed} com shield.`)
+    }
+
+    if (remaining > 0) {
+      runtime.hp = Math.max(runtime.hp - remaining, 0)
+    }
+
+    if (runtime.reflectPower > 0 && sourceUnitId) {
+      const reflect = runtime.reflectPower
+      runtime.reflectPower = 0
+      this.damageUnit(sourceUnitId, reflect)
+      this.addLog(`${unit.name} refletiu ${reflect} de dano.`)
+    }
+
+    if (runtime.hp <= 0) {
+      runtime.alive = false
+      this.addLog(`${unit.name} foi derrotado.`)
+    }
+  }
+
+  private healUnit(unitId: string, amount: number, sourceUnitId?: string) {
+    const runtime = this.unitState.get(unitId)
+    const unit = this.unitsById.get(unitId)
+    if (!runtime || !runtime.alive || !unit) return
+
+    const effective = runtime.healReductionTicks > 0
+      ? Math.max(1, Math.floor(amount * (1 - runtime.healReductionFactor)))
+      : amount
+
+    runtime.hp = Math.min(runtime.hp + effective, runtime.maxHp)
+
+    if (runtime.healReductionTicks > 0 && sourceUnitId) {
+      const source = this.unitsById.get(sourceUnitId)
+      if (source) {
+        this.addLog(`${unit.name} recebeu cura reduzida por anti-heal.`)
       }
     }
   }
 
-  private playDefensePreview(_sourceUnit: UnitData, _card: CardData, target: TargetSelection | null) {
-    if (!target) return
-
-    if (target.unitId) {
-      const targetUnit = this.unitsById.get(target.unitId)
-      const targetSprite = this.unitSprites.get(target.unitId)
-      if (!targetUnit || !targetSprite) return
-
-      this.tweens.add({
-        targets: targetSprite,
-        scaleX: 1.12,
-        scaleY: 1.12,
-        duration: 120,
-        yoyo: true,
-        ease: 'Sine.easeInOut'
-      })
-      this.spawnFloatingText(targetUnit.col, targetUnit.row, '+buff', '#93c5fd')
-      return
-    }
-
-    if (target.tile) {
-      const point = this.getBoardPoint(target.tile.col, target.tile.row)
-      const aura = this.add.circle(point.x, point.y, 14, 0x22c55e, 0.18)
-      aura.setStrokeStyle(3, 0x86efac, 0.95)
-
-      this.tweens.add({
-        targets: aura,
-        scaleX: 2,
-        scaleY: 2,
-        alpha: 0,
-        duration: 280,
-        ease: 'Sine.easeOut',
-        onComplete: () => aura.destroy()
-      })
-
-      const unitOnTile = this.getUnitAt(target.tile.col, target.tile.row)
-      this.spawnFloatingText(target.tile.col, target.tile.row, unitOnTile ? '+def' : 'area', '#86efac')
-    }
+  private applyBleed(unitId: string, ticks: number, power: number) {
+    const runtime = this.unitState.get(unitId)
+    if (!runtime || !runtime.alive) return
+    runtime.bleedTicks = Math.max(runtime.bleedTicks, ticks)
+    runtime.bleedPower = Math.max(runtime.bleedPower, power)
   }
 
-  private spawnFloatingText(col: number, row: number, text: string, color: string) {
-    const point = this.getBoardPoint(col, row)
-    const floating = this.add.text(point.x, point.y - 20, text, {
-      fontFamily: 'Arial',
-      fontSize: '18px',
-      color,
-      fontStyle: 'bold',
-      stroke: '#0b1020',
-      strokeThickness: 4
-    }).setOrigin(0.5)
+  private applyStun(unitId: string, ticks: number) {
+    const runtime = this.unitState.get(unitId)
+    if (!runtime || !runtime.alive) return
+    runtime.stunTicks = Math.max(runtime.stunTicks, ticks)
+  }
 
-    this.tweens.add({
-      targets: floating,
-      y: floating.y - 34,
-      alpha: 0,
-      duration: 550,
-      ease: 'Sine.easeOut',
-      onComplete: () => floating.destroy()
+  private applyHealReduction(unitId: string) {
+    const runtime = this.unitState.get(unitId)
+    const unit = this.unitsById.get(unitId)
+    if (!runtime || !runtime.alive || !unit) return
+    runtime.healReductionTicks = Math.max(runtime.healReductionTicks, HEAL_REDUCTION_TICKS)
+    runtime.healReductionFactor = Math.max(runtime.healReductionFactor, HEAL_REDUCTION_FACTOR)
+    this.addLog(`${unit.name} ficou com cura reduzida.`)
+  }
+
+  private getWarriorGuardReduction(target: UnitData) {
+    const allies = this.getAdjacentAllies(target.id)
+    const hasWarrior = allies.some((ally) => ally.role === 'warrior')
+    return hasWarrior ? WARRIOR_GUARD_REDUCTION : 0
+  }
+
+  private getWallTouchReduction(target: UnitData) {
+    if (!this.isTouchingWall(target)) return 0
+    return this.countWallTouchUnits(target.side) * WALL_TOUCH_BONUS_PER_UNIT
+  }
+
+  private isTouchingWall(unit: UnitData) {
+    return unit.side === 'left' ? unit.col === 7 : unit.col === 8
+  }
+
+  private countWallTouchUnits(side: TeamSide) {
+    return this.getSideUnits(side).filter((ally) => {
+      const state = this.unitState.get(ally.id)
+      return state?.alive && this.isTouchingWall(ally)
+    }).length
+  }
+
+  private isIsolated(unitId: string) {
+    return this.getAdjacentAllies(unitId).length === 0
+  }
+
+  private getAdjacentAllies(unitId: string) {
+    const unit = this.unitsById.get(unitId)
+    if (!unit) return []
+    return this.getSideUnits(unit.side).filter((ally) => {
+      if (ally.id === unitId) return false
+      const state = this.unitState.get(ally.id)
+      if (!state?.alive) return false
+      const distance = Math.abs(ally.col - unit.col) + Math.abs(ally.row - unit.row)
+      return distance === 1
     })
   }
 
-  private getBoardPoint(col: number, row: number) {
-    return {
-      x: this.boardX + col * GRID_SIZE + GRID_SIZE / 2,
-      y: this.boardY + row * GRID_SIZE + GRID_SIZE / 2
-    }
+  private findLowestHpAlly(side: TeamSide) {
+    let best: UnitData | null = null
+    let bestRatio = Number.MAX_SAFE_INTEGER
+
+    this.getSideUnits(side).forEach((ally) => {
+      const state = this.unitState.get(ally.id)
+      if (!state?.alive) return
+      const ratio = state.hp / state.maxHp
+      if (ratio < bestRatio) {
+        bestRatio = ratio
+        best = ally
+      }
+    })
+
+    return best
+  }
+
+  private getUnitsInArea(centerCol: number, centerRow: number, side: TeamSide) {
+    return this.getSideUnits(side).filter((unit) => {
+      const state = this.unitState.get(unit.id)
+      if (!state?.alive) return false
+      const distance = Math.abs(unit.col - centerCol) + Math.abs(unit.row - centerRow)
+      return distance <= 1
+    })
+  }
+
+  private processOngoingEffectsForSide(side: TeamSide) {
+    this.getSideUnits(side).forEach((unit) => {
+      const runtime = this.unitState.get(unit.id)
+      if (!runtime || !runtime.alive) return
+
+      if (runtime.bleedTicks > 0) {
+        runtime.bleedTicks -= 1
+        runtime.hp = Math.max(runtime.hp - runtime.bleedPower, 0)
+        this.addLog(`${unit.name} sofreu ${runtime.bleedPower} de sangramento.`)
+        if (runtime.hp <= 0) {
+          runtime.alive = false
+          this.addLog(`${unit.name} caiu pelo sangramento.`)
+        }
+      }
+
+      if (runtime.regenTicks > 0 && runtime.alive) {
+        runtime.regenTicks -= 1
+        runtime.hp = Math.min(runtime.hp + runtime.regenPower, runtime.maxHp)
+        this.addLog(`${unit.name} regenerou ${runtime.regenPower} de vida.`)
+      }
+
+      if (runtime.healReductionTicks > 0) {
+        runtime.healReductionTicks -= 1
+        if (runtime.healReductionTicks === 0) {
+          runtime.healReductionFactor = 0
+        }
+      }
+    })
+  }
+
+  private rotateCardInDeck(unitId: string, card: CardData) {
+    const deck = this.unitDecks.get(unitId)
+    if (!deck) return
+
+    const queue = card.category === 'attack' ? deck.attackQueue : deck.defenseQueue
+    const index = queue.indexOf(card.id)
+    if (index === -1) return
+
+    queue.splice(index, 1)
+    queue.push(card.id)
   }
 
   private advanceAfterActionResolution() {
     if (this.currentSideIndex === 0) {
       this.currentSideIndex = 1
       this.resetProgressForSide(this.currentSide())
-      this.startPhase('movement')
+      this.processOngoingEffectsForSide(this.currentSide())
+      this.refreshAllUnitVisuals()
+      this.checkVictory()
+      if (!this.battleEnded) this.startPhase('movement')
     } else {
       this.currentSideIndex = 0
       this.roundNumber += 1
       SIDES.forEach((side) => this.resetProgressForSide(side))
-      this.startPhase('movement')
+      this.processOngoingEffectsForSide(this.currentSide())
+      this.refreshAllUnitVisuals()
+      this.checkVictory()
+      if (!this.battleEnded) this.startPhase('movement')
     }
   }
 
   private startPhase(phase: PhaseType) {
+    if (this.battleEnded) return
     this.currentPhase = phase
+    this.pendingTargetSelection = null
     this.selectedUnitId = null
-    this.clearTargetingState()
     this.refreshSelectionVisuals()
     this.clearValidMoveMarkers()
+    this.clearTargetMarkers()
     this.clearCardButtons()
 
     if (phase === 'movement') {
       this.phaseTimeRemaining = 20
       this.phaseText?.setText('Fase: Movimento')
       this.selectedUnitText?.setText('Selecione uma unidade do lado ativo para mover.')
-      this.cardHintText?.setText('Rei pode teleportar para qualquer casa do seu lado. DPS move 3. Tank/Healer movem 2.')
+      this.cardHintText?.setText('Rei teleporta no próprio lado. Executor move 3. Guerreiro/Especialista movem 2.')
     } else {
-      this.phaseTimeRemaining = 15
+      this.phaseTimeRemaining = 18
       this.phaseText?.setText('Fase: Ações')
       this.selectedUnitText?.setText('Selecione uma unidade do lado ativo para escolher ataque e defesa.')
-      this.cardHintText?.setText('Todas as habilidades usam casas. Skills target exigem alvo válido na casa.')
+      this.cardHintText?.setText('Ataques single seguem o alvo travado. Skills de área ficam na região marcada.')
     }
 
+    this.syncSelectedUnitPanel()
     this.updateTopHud()
     this.restartPhaseTimer()
   }
@@ -828,23 +1104,35 @@ export default class ArenaScene extends Phaser.Scene {
   }
 
   private forceAdvancePhase() {
+    if (this.battleEnded) return
     if (this.currentPhase === 'movement') {
       this.updateInfo('Tempo da fase de movimento encerrado. Indo para a fase de ações.')
       this.startPhase('action')
       return
     }
 
-    this.clearTargetingState()
-    this.updateInfo('Tempo da fase de ações encerrado. Resolvendo ações mock do lado ativo.')
+    this.updateInfo('Tempo da fase de ações encerrado. Resolvendo ações do lado ativo.')
     this.resolveCurrentSideActions()
   }
 
   private haveAllActiveUnitsMoved() {
-    return this.getSideUnits(this.currentSide()).every((unit) => this.unitProgress.get(unit.id)?.movedThisPhase)
+    return this.getSideUnits(this.currentSide()).every((unit) => {
+      const state = this.unitState.get(unit.id)
+      const progress = this.unitProgress.get(unit.id)
+      if (!state?.alive) return true
+      if (state.stunTicks > 0) return true
+      return !!progress?.movedThisPhase
+    })
   }
 
   private haveAllActiveUnitsActed() {
-    return this.getSideUnits(this.currentSide()).every((unit) => this.unitProgress.get(unit.id)?.actedThisPhase)
+    return this.getSideUnits(this.currentSide()).every((unit) => {
+      const state = this.unitState.get(unit.id)
+      const progress = this.unitProgress.get(unit.id)
+      if (!state?.alive) return true
+      if (state.stunTicks > 0) return true
+      return !!progress?.actedThisPhase
+    })
   }
 
   private getSideUnits(side: TeamSide) {
@@ -858,13 +1146,14 @@ export default class ArenaScene extends Phaser.Scene {
   private resetProgressForSide(side: TeamSide) {
     this.getSideUnits(side).forEach((unit) => {
       const progress = this.unitProgress.get(unit.id)
-      if (!progress) return
+      const state = this.unitState.get(unit.id)
+      if (!progress || !state || !state.alive) return
       progress.movedThisPhase = false
       progress.actedThisPhase = false
       progress.selectedAttackId = null
       progress.selectedDefenseId = null
-      progress.selectedAttackTarget = null
-      progress.selectedDefenseTarget = null
+      progress.selectedTargetUnitId = null
+      progress.selectedArea = null
     })
   }
 
@@ -874,7 +1163,7 @@ export default class ArenaScene extends Phaser.Scene {
     const sideColor = side === 'left' ? 0x274c77 : 0x7f1d1d
     const borderColor = side === 'left' ? 0xdbeafe : 0xfecaca
 
-    this.topBarText?.setText('Build atual: habilidades por casa + área liberada no campo correto')
+    this.topBarText?.setText('Build atual: classes finais, passivas, target manual e deck rotativo base')
     this.roundText?.setText(`Round ${this.roundNumber}`)
     this.sideBanner?.setFillStyle(sideColor, 1).setStrokeStyle(2, borderColor, 0.8)
     this.sideBannerText?.setText(sideLabel)
@@ -887,24 +1176,158 @@ export default class ArenaScene extends Phaser.Scene {
   }
 
   private refreshSelectionVisuals() {
-    this.unitSprites.forEach((container, id) => {
-      const body = container.list[1] as Phaser.GameObjects.Arc
-      const isSelected = id === this.selectedUnitId
-      body.setStrokeStyle(isSelected ? 5 : 3, isSelected ? 0xffffff : 0xf8fafc, 0.95)
-      container.setScale(isSelected ? 1.08 : 1)
-      container.setAlpha(this.isUnitDimmed(id) ? 0.52 : 1)
+    this.unitSprites.forEach((visual, id) => {
+      visual.body.setStrokeStyle(id === this.selectedUnitId ? 5 : 3, id === this.selectedUnitId ? 0xffffff : 0xf8fafc, 0.95)
+      visual.container.setScale(id === this.selectedUnitId ? 1.08 : 1)
+      visual.container.setAlpha(this.isUnitDimmed(id) ? 0.48 : 1)
     })
   }
 
   private isUnitDimmed(unitId: string) {
     const unit = this.unitsById.get(unitId)
     const progress = this.unitProgress.get(unitId)
-    if (!unit || !progress) return false
-    if (this.pendingTargeting) {
-      return unitId !== this.pendingTargeting.unitId
+    const state = this.unitState.get(unitId)
+    if (!unit || !progress || !state) return false
+    if (!state.alive) return true
+    if (this.pendingTargetSelection) {
+      return unit.side === this.currentSide()
     }
     if (unit.side !== this.currentSide()) return true
-    return this.currentPhase === 'movement' ? progress.movedThisPhase : progress.actedThisPhase
+    return this.currentPhase === 'movement' ? !!progress.movedThisPhase : !!progress.actedThisPhase
+  }
+
+  private refreshAllUnitVisuals() {
+    this.unitSprites.forEach((visual, unitId) => {
+      const state = this.unitState.get(unitId)
+      const unit = this.unitsById.get(unitId)
+      if (!state || !unit) return
+
+      const ratio = Math.max(state.hp, 0) / state.maxHp
+      visual.hpBar.width = 40 * ratio
+      visual.hpBar.setFillStyle(ratio > 0.55 ? 0x22c55e : ratio > 0.25 ? 0xf59e0b : 0xef4444)
+      visual.hpText.setText(`${Math.max(0, state.hp)}/${state.maxHp}`)
+      visual.container.setVisible(state.alive)
+
+      const statuses: string[] = []
+      if (state.shield > 0) statuses.push(`S${state.shield}`)
+      if (state.bleedTicks > 0) statuses.push(`B${state.bleedTicks}`)
+      if (state.stunTicks > 0) statuses.push('ST')
+      if (state.evadeCharges > 0) statuses.push('EV')
+      if (state.reflectPower > 0) statuses.push('RF')
+      if (state.regenTicks > 0) statuses.push(`RG${state.regenTicks}`)
+      if (state.healReductionTicks > 0) statuses.push('CR')
+      if (unit.role === 'executor' && this.isIsolated(unit.id)) statuses.push('ISO')
+      if (this.isTouchingWall(unit)) statuses.push(`MU${this.countWallTouchUnits(unit.side)}`)
+      visual.statusText.setText(statuses.join(' '))
+    })
+
+    this.refreshSelectionVisuals()
+  }
+
+  private syncSelectedUnitPanel() {
+    if (!this.selectedUnitId) {
+      this.deckInfoText?.setText('Deck: selecione uma unidade para ver fila de ataques, defesas e passiva ativa.')
+      return
+    }
+
+    const unit = this.unitsById.get(this.selectedUnitId)
+    const deck = this.unitDecks.get(this.selectedUnitId)
+    const progress = this.unitProgress.get(this.selectedUnitId)
+    if (!unit || !deck || !progress) return
+
+    const attackNames = deck.attackQueue.map((id) => this.getCardById(unit.role, id)?.name ?? id).join(' -> ')
+    const defenseNames = deck.defenseQueue.map((id) => this.getCardById(unit.role, id)?.name ?? id).join(' -> ')
+    const attackPick = progress.selectedAttackId ? this.getCardById(unit.role, progress.selectedAttackId)?.name ?? progress.selectedAttackId : '-'
+    const defensePick = progress.selectedDefenseId ? this.getCardById(unit.role, progress.selectedDefenseId)?.name ?? progress.selectedDefenseId : '-'
+
+    this.deckInfoText?.setText(
+      `Passiva: ${this.getRolePassiveText(unit.role)}\n` +
+      `Ataques na fila: ${attackNames}\n` +
+      `Defesas na fila: ${defenseNames}\n` +
+      `Escolhas atuais: ataque=${attackPick} | defesa=${defensePick}`
+    )
+  }
+
+  private getRolePassiveText(role: UnitRole) {
+    switch (role) {
+      case 'king':
+        return 'Rei: teleporte livre no próprio lado.'
+      case 'warrior':
+        return 'Guerreiro: reduz dano em aliados adjacentes.'
+      case 'specialist':
+        return 'Especialista: ataques aplicam redução de cura.'
+      case 'executor':
+        return 'Executor: ganha dano extra quando isolado.'
+    }
+  }
+
+  private getCardById(role: UnitRole, cardId: string) {
+    return getRoleCards(role).find((card) => card.id === cardId) ?? null
+  }
+
+  private checkVictory() {
+    const leftKingAlive = this.isRoleAlive('left', 'king')
+    const rightKingAlive = this.isRoleAlive('right', 'king')
+
+    if (leftKingAlive && rightKingAlive) return
+
+    this.battleEnded = true
+    this.phaseTimer?.remove(false)
+    const winner = leftKingAlive ? 'Time Azul' : 'Time Vermelho'
+    const color = leftKingAlive ? 0x1d4ed8 : 0x991b1b
+    this.showBattleEndOverlay(`${winner} venceu!`, color)
+  }
+
+  private isRoleAlive(side: TeamSide, role: UnitRole) {
+    return this.getSideUnits(side).some((unit) => unit.role === role && this.unitState.get(unit.id)?.alive)
+  }
+
+  private showBattleEndOverlay(message: string, fill: number) {
+    this.overlayGroup?.destroy(true)
+    const bg = this.add.rectangle(this.scale.width / 2, this.scale.height / 2, 520, 240, 0x0b1020, 0.95).setStrokeStyle(2, 0xf8fafc, 0.3)
+    const banner = this.add.rectangle(this.scale.width / 2, this.scale.height / 2 - 24, 420, 74, fill, 1)
+    const title = this.add.text(this.scale.width / 2, this.scale.height / 2 - 24, message, {
+      fontFamily: 'Arial',
+      fontSize: '34px',
+      color: '#ffffff',
+      fontStyle: 'bold'
+    }).setOrigin(0.5)
+    const subtitle = this.add.text(this.scale.width / 2, this.scale.height / 2 + 34, 'Clique abaixo para reiniciar a batalha.', {
+      fontFamily: 'Arial',
+      fontSize: '20px',
+      color: '#cbd5e1'
+    }).setOrigin(0.5)
+    const button = this.add.rectangle(this.scale.width / 2, this.scale.height / 2 + 92, 240, 52, 0x3a7a45, 1)
+      .setStrokeStyle(2, 0x9ee6a9, 0.9)
+      .setInteractive({ useHandCursor: true })
+    const buttonLabel = this.add.text(this.scale.width / 2, this.scale.height / 2 + 92, 'Reiniciar', {
+      fontFamily: 'Arial',
+      fontSize: '24px',
+      color: '#ffffff',
+      fontStyle: 'bold'
+    }).setOrigin(0.5)
+    button.on('pointerdown', () => this.scene.restart())
+
+    this.overlayGroup = this.add.container(0, 0, [bg, banner, title, subtitle, button, buttonLabel])
+  }
+
+  private spawnAreaPulse(col: number, row: number, color: number) {
+    const x = this.boardX + col * GRID_SIZE + GRID_SIZE / 2
+    const y = this.boardY + row * GRID_SIZE + GRID_SIZE / 2
+    const pulse = this.add.circle(x, y, 12, color, 0.35).setStrokeStyle(2, color, 0.9)
+    this.tweens.add({
+      targets: pulse,
+      scale: 3,
+      alpha: 0,
+      duration: 450,
+      onComplete: () => pulse.destroy()
+    })
+  }
+
+  private addLog(text: string) {
+    this.battleLog.unshift(text)
+    this.battleLog = this.battleLog.slice(0, 8)
+    this.battleLogText?.setText(this.battleLog.map((line, index) => `${index + 1}. ${line}`).join('\n'))
   }
 
   private updateInfo(text: string) {

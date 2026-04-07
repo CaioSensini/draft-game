@@ -1,11 +1,9 @@
 export type TeamSide = 'left' | 'right'
-export type UnitRole = 'tank' | 'king' | 'healer' | 'dps'
+export type UnitRole = 'warrior' | 'king' | 'specialist' | 'executor'
 export type PhaseType = 'movement' | 'action'
 export type CardCategory = 'attack' | 'defense'
 export type CardGroup = 'attack1' | 'attack2' | 'defense1' | 'defense2'
-export type CardEffect = 'damage' | 'heal' | 'shield' | 'bleed' | 'stun' | 'evade' | 'reflect' | 'regen' | 'area'
-export type CardTargetKind = 'enemy' | 'ally' | 'self'
-export type TargetingMode = 'unit' | 'tile' | 'none'
+export type CardTargetType = 'single' | 'self' | 'lowest_ally' | 'all_allies' | 'area'
 
 export interface UnitData {
   id: string
@@ -25,11 +23,8 @@ export interface CardData {
   group: CardGroup
   shortDescription: string
   power: number
-  effect: CardEffect
-  range: number
-  targetKind: CardTargetKind
-  targetingMode: TargetingMode
-  areaRadius?: number
+  effect: 'damage' | 'heal' | 'shield' | 'bleed' | 'stun' | 'evade' | 'reflect' | 'regen' | 'area'
+  targetType: CardTargetType
 }
 
 export interface UnitBaseStats {
