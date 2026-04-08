@@ -22,6 +22,7 @@ import { SKILL_CATALOG }   from '../data/skillCatalog'
 import { DECK_ASSIGNMENTS } from '../data/deckAssignments'
 import { PASSIVE_CATALOG }  from '../data/passiveCatalog'
 import { GLOBAL_RULES }     from '../data/globalRules'
+import { EventType }        from '../engine/types'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -141,7 +142,7 @@ function makeLogger(battle: Battle) {
   return function onEvent(event: ReturnType<typeof battle.getCharacter> extends never ? never : Parameters<Parameters<CombatEngine['on']>[0]>[0]): void {
     switch (event.type) {
 
-      case 'DAMAGE_APPLIED': {
+      case EventType.DAMAGE_APPLIED: {
         const victim = battle.getCharacter(event.unitId)!
         const src    = event.sourceId ? nameOf(event.sourceId) : '?'
         console.log(
@@ -152,7 +153,7 @@ function makeLogger(battle: Battle) {
         break
       }
 
-      case 'SHIELD_ABSORBED': {
+      case EventType.SHIELD_ABSORBED: {
         console.log(
           `${PAD}${C.blue}🛡  ${nameOf(event.unitId)}${C.reset}'s shield absorbs ${event.shieldDamage}`
           + ` (shield left: ${event.newShield})`,
@@ -160,18 +161,18 @@ function makeLogger(battle: Battle) {
         break
       }
 
-      case 'EVADE_TRIGGERED':
+      case EventType.EVADE_TRIGGERED:
         console.log(`${PAD}${C.cyan}💨 ${nameOf(event.unitId)}${C.reset} evades the attack!`)
         break
 
-      case 'REFLECT_TRIGGERED':
+      case EventType.REFLECT_TRIGGERED:
         console.log(
           `${PAD}${C.cyan}🪞 ${nameOf(event.unitId)}${C.reset} reflects`
           + ` ${event.amount} dmg back to ${C.red}${nameOf(event.sourceId)}${C.reset}`,
         )
         break
 
-      case 'HEAL_APPLIED': {
+      case EventType.HEAL_APPLIED: {
         const char = battle.getCharacter(event.unitId)!
         const src  = event.sourceId ? ` (from ${nameOf(event.sourceId)})` : ''
         console.log(
@@ -181,11 +182,11 @@ function makeLogger(battle: Battle) {
         break
       }
 
-      case 'SHIELD_APPLIED':
+      case EventType.SHIELD_APPLIED:
         console.log(`${PAD}${C.blue}🛡  ${nameOf(event.unitId)}${C.reset} gains +${event.amount} shield`)
         break
 
-      case 'STATUS_APPLIED': {
+      case EventType.STATUS_APPLIED: {
         const icons: Record<string, string> = {
           bleed: '🩸', poison: '☠ ', stun: '⚡', regen: '🌿', reflect: '🪞', evade: '💨',
           def_down: '🔻', atk_down: '🔻', mov_down: '🔻',
@@ -208,28 +209,28 @@ function makeLogger(battle: Battle) {
         break
       }
 
-      case 'BLEED_TICK':
+      case EventType.BLEED_TICK:
         console.log(
           `${PAD}🩸 ${C.red}${nameOf(event.unitId)}${C.reset} bleeds`
           + ` ${event.damage} dmg → HP ${event.newHp}`,
         )
         break
 
-      case 'POISON_TICK':
+      case EventType.POISON_TICK:
         console.log(
           `${PAD}☠  ${C.red}${nameOf(event.unitId)}${C.reset} poisoned`
           + ` ${event.damage} dmg → HP ${event.newHp}`,
         )
         break
 
-      case 'REGEN_TICK':
+      case EventType.REGEN_TICK:
         console.log(
           `${PAD}🌿 ${C.green}${nameOf(event.unitId)}${C.reset} regenerates`
           + ` +${event.heal} HP → ${event.newHp}`,
         )
         break
 
-      case 'STAT_MODIFIER_EXPIRED': {
+      case EventType.STAT_MODIFIER_EXPIRED: {
         const labels: Record<string, string> = {
           def_down: 'DEF debuff', atk_down: 'ATK debuff', mov_down: 'MOV debuff',
           def_up:   'DEF buff',   atk_up:   'ATK buff',
@@ -240,7 +241,7 @@ function makeLogger(battle: Battle) {
         break
       }
 
-      case 'CHARACTER_DIED': {
+      case EventType.CHARACTER_DIED: {
         const kingTag  = event.wasKing ? ` ${C.yellow}[KING]${C.reset}` : ''
         const killerTag = event.killedBy
           ? ` — killed by ${C.cyan}${nameOf(event.killedBy)}${C.reset}`
@@ -251,14 +252,14 @@ function makeLogger(battle: Battle) {
         break
       }
 
-      case 'AREA_RESOLVED':
+      case EventType.AREA_RESOLVED:
         console.log(
           `${PAD}💥 Area at (${event.centerCol},${event.centerRow})`
           + ` hits: ${event.hitIds.map(nameOf).join(', ')}`,
         )
         break
 
-      case 'TURN_STARTED': {
+      case EventType.TURN_STARTED: {
         const sideC = battle.getCharacter(event.unitId)?.side === 'left' ? C.blue : C.red
         console.log(
           `\n${PAD}${sideC}${C.bold}[${event.order}/${event.total}] ${nameOf(event.unitId)}'s turn${C.reset}`,
@@ -266,11 +267,11 @@ function makeLogger(battle: Battle) {
         break
       }
 
-      case 'TURN_COMMITTED':
+      case EventType.TURN_COMMITTED:
         console.log(`${PAD}${C.gray}✓ ${nameOf(event.unitId)} committed${C.reset}`)
         break
 
-      case 'TURN_SKIPPED': {
+      case EventType.TURN_SKIPPED: {
         const labels: Record<string, string> = {
           stunned:      'stunned',
           dead:         'dead',
@@ -281,7 +282,7 @@ function makeLogger(battle: Battle) {
         break
       }
 
-      case 'COMBAT_RULE_ACTIVE': {
+      case EventType.COMBAT_RULE_ACTIVE: {
         const sideC = event.side === 'left' ? C.blue : C.red
         console.log(
           `${PAD}${C.gray}⚖  [Rule] ${event.ruleId} → ${sideC}${event.side}${C.reset}`
@@ -290,7 +291,7 @@ function makeLogger(battle: Battle) {
         break
       }
 
-      case 'PASSIVE_TRIGGERED': {
+      case EventType.PASSIVE_TRIGGERED: {
         const tgt = event.targetId ? ` → ${nameOf(event.targetId)}` : ''
         console.log(
           `${PAD}${C.gray}✦ [Passive] ${nameOf(event.unitId)}: ${event.passiveId}${tgt}${C.reset}`,
@@ -298,7 +299,7 @@ function makeLogger(battle: Battle) {
         break
       }
 
-      case 'BATTLE_ENDED': {
+      case EventType.BATTLE_ENDED: {
         const reasons: Record<string, string> = {
           king_slain:         'King slain',
           simultaneous_kings: 'Simultaneous kings — DRAW',

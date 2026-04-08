@@ -22,6 +22,7 @@ import type { CharacterRole } from '../domain/Character'
 import type { Battle } from '../domain/Battle'
 import { HealReductionEffect } from '../domain/Effect'
 import type { EngineEvent } from './types'
+import { EventType } from './types'
 
 // ── PassiveSystem ─────────────────────────────────────────────────────────────
 
@@ -151,14 +152,14 @@ export class PassiveSystem {
         target.addEffect(new HealReductionEffect(def.value, ticks))
 
         events.push({
-          type:      'PASSIVE_TRIGGERED',
+          type:      EventType.PASSIVE_TRIGGERED,
           unitId:    caster.id,
           passiveId: def.id,
           targetId:  target.id,
         })
         // Also let the UI know a debuff was applied
         events.push({
-          type:   'STATUS_APPLIED',
+          type:   EventType.STATUS_APPLIED,
           unitId: target.id,
           status: 'heal_reduction' as never,   // narrow cast — see note below
           value:  def.value,

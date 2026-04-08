@@ -24,6 +24,7 @@ import type { CombatRuleDefinition } from '../domain/CombatRule'
 import type { Character } from '../domain/Character'
 import type { Battle } from '../domain/Battle'
 import type { EngineEvent, TeamSide } from './types'
+import { EventType } from './types'
 
 // ── CombatRuleSystem ──────────────────────────────────────────────────────────
 
@@ -151,7 +152,7 @@ export class CombatRuleSystem {
             const count = team.wallTouchCount()
             if (count > 0) {
               events.push({
-                type:      'COMBAT_RULE_ACTIVE',
+                type:      EventType.COMBAT_RULE_ACTIVE,
                 ruleId:    rule.id,
                 side,
                 value:     rule.value * count,
@@ -167,7 +168,7 @@ export class CombatRuleSystem {
             const team = battle.teamOf(side)
             if (team.livingCount === 1 && team.king?.alive) {
               events.push({
-                type:   'COMBAT_RULE_ACTIVE',
+                type:   EventType.COMBAT_RULE_ACTIVE,
                 ruleId: rule.id,
                 side,
                 value:  rule.value,
@@ -185,7 +186,7 @@ export class CombatRuleSystem {
             const enemyTeam = battle.teamOf(enemySide)
             if (myTeam.livingCount < enemyTeam.livingCount) {
               events.push({
-                type:   'COMBAT_RULE_ACTIVE',
+                type:   EventType.COMBAT_RULE_ACTIVE,
                 ruleId: rule.id,
                 side,
                 value:  rule.value,

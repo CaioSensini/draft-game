@@ -41,6 +41,7 @@
 import type { GameController } from './GameController'
 import type { AutoPlayer }     from './AutoPlayer'
 import type { TeamSide }       from './types'
+import { EventType }           from './types'
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 
@@ -95,10 +96,15 @@ export class BattleDriver {
 
     // ── Phase lifecycle ───────────────────────────────────���────────────────
 
-    unsubs.push(this._ctrl.onType('PHASE_STARTED', (e) => {
+    unsubs.push(this._ctrl.onType(EventType.PHASE_STARTED, (e) => {
       if (e.phase === 'movement') {
-        // Movement phase: currently auto-skipped.
-        // Future: allow player input here before advancing.
+        // Player's movement phase: the scene handles input and calls advancePhase().
+        const isPlayerMovement =
+          this._delays.playerSide !== undefined &&
+          e.side === this._delays.playerSide
+        if (isPlayerMovement) return
+
+        // Bot movement phase: auto-skip after a short pause.
         this._after(this._delays.movementSkipMs, () => {
           if (!this._ctrl.isBattleOver) this._ctrl.advancePhase()
         })
@@ -112,7 +118,7 @@ export class BattleDriver {
 
     // ── Turn lifecycle ─────────────────────────────────────────────────────
 
-    unsubs.push(this._ctrl.onType('TURN_STARTED', (_e) => {
+    unsubs.push(this._ctrl.onType(EventType.TURN_STARTED, (_e) => {
       const actor = this._ctrl.currentActor
       const isPlayerTurn =
         this._delays.playerSide !== undefined &&
@@ -132,7 +138,7 @@ export class BattleDriver {
 
     // ── Phase completion ───────────────────────────────────────────────────
 
-    unsubs.push(this._ctrl.onType('ACTIONS_RESOLVED', (_e) => {
+    unsubs.push(this._ctrl.onType(EventType.ACTIONS_RESOLVED, (_e) => {
       this._after(this._delays.phaseAdvanceMs, () => {
         if (!this._ctrl.isBattleOver) this._ctrl.advancePhase()
       })

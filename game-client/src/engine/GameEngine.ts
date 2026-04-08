@@ -22,7 +22,7 @@ import type {
   Result, TeamSide, PhaseType,
   UnitRuntime, UnitDef,
 } from './types'
-import { Ok, Err } from './types'
+import { Ok, Err, EventType } from './types'
 import {
   type BattleState,
   makeRuntime, makeTurn, makeDeck, makeStats,
@@ -67,7 +67,7 @@ export class GameEngine {
   /** Begin the battle. Emits `battle_started` and `phase_started`. */
   start(): void {
     if (this.state.battleOver) return
-    this.bus.emit({ type: 'BATTLE_STARTED' })
+    this.bus.emit({ type: EventType.BATTLE_STARTED })
     this._emit(startPhase(this.state, 'movement', this._phaseDurations()))
     this._maybeRunBot()
   }

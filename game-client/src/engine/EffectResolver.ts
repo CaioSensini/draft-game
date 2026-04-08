@@ -38,6 +38,7 @@ import {
 } from '../domain/Effect'
 import type { EffectType } from '../domain/Effect'
 import type { EngineEvent } from './types'
+import { EventType } from './types'
 
 // ── Context ───────────────────────────────────────────────────────────────────
 
@@ -163,13 +164,13 @@ function _applyRawDamage(ctx: EffectContext): EffectResult {
   const events: EngineEvent[] = []
 
   if (result.evaded) {
-    events.push({ type: 'EVADE_TRIGGERED', unitId: ctx.target.id })
+    events.push({ type: EventType.EVADE_TRIGGERED, unitId: ctx.target.id })
     return { ...EMPTY, events, evaded: true }
   }
 
   if (result.shieldAbsorbed > 0) {
     events.push({
-      type:        'SHIELD_ABSORBED',
+      type:        EventType.SHIELD_ABSORBED,
       unitId:      ctx.target.id,
       shieldDamage: result.shieldAbsorbed,
       newShield:   ctx.target.shieldAmount,
@@ -178,7 +179,7 @@ function _applyRawDamage(ctx: EffectContext): EffectResult {
 
   if (result.hpDamage > 0) {
     events.push({
-      type:     'DAMAGE_APPLIED',
+      type:     EventType.DAMAGE_APPLIED,
       unitId:   ctx.target.id,
       amount:   result.hpDamage,
       newHp:    ctx.target.hp,
@@ -188,7 +189,7 @@ function _applyRawDamage(ctx: EffectContext): EffectResult {
 
   if (result.reflected > 0) {
     events.push({
-      type:     'REFLECT_TRIGGERED',
+      type:     EventType.REFLECT_TRIGGERED,
       unitId:   ctx.target.id,
       amount:   result.reflected,
       sourceId: ctx.caster.id,
@@ -197,7 +198,7 @@ function _applyRawDamage(ctx: EffectContext): EffectResult {
 
   if (result.killed) {
     events.push({
-      type:     'CHARACTER_DIED',
+      type:     EventType.CHARACTER_DIED,
       unitId:   ctx.target.id,
       killedBy: ctx.caster.id,
       wasKing:  ctx.target.role === 'king',
@@ -239,7 +240,7 @@ const handleBleed: EffectHandler = (ctx) => {
     ...hit,
     events: [
       ...hit.events,
-      { type: 'STATUS_APPLIED', unitId: ctx.target.id, status: 'bleed', value: tickDmg },
+      { type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'bleed', value: tickDmg },
     ],
   }
 }
@@ -257,7 +258,7 @@ const handlePoison: EffectHandler = (ctx) => {
     ...hit,
     events: [
       ...hit.events,
-      { type: 'STATUS_APPLIED', unitId: ctx.target.id, status: 'poison', value: tickDmg },
+      { type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'poison', value: tickDmg },
     ],
   }
 }
@@ -275,7 +276,7 @@ const handleStun: EffectHandler = (ctx) => {
     ...hit,
     events: [
       ...hit.events,
-      { type: 'STATUS_APPLIED', unitId: ctx.target.id, status: 'stun', value: stunTicks },
+      { type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'stun', value: stunTicks },
     ],
   }
 }
@@ -293,7 +294,7 @@ const handleDefDown: EffectHandler = (ctx) => {
     ...hit,
     events: [
       ...hit.events,
-      { type: 'STATUS_APPLIED', unitId: ctx.target.id, status: 'def_down', value: ctx.power },
+      { type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'def_down', value: ctx.power },
     ],
   }
 }
@@ -309,7 +310,7 @@ const handleAtkDown: EffectHandler = (ctx) => {
     ...hit,
     events: [
       ...hit.events,
-      { type: 'STATUS_APPLIED', unitId: ctx.target.id, status: 'atk_down', value: ctx.power },
+      { type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'atk_down', value: ctx.power },
     ],
   }
 }
@@ -320,7 +321,7 @@ const handleMovDown: EffectHandler = (ctx) => {
   ctx.target.addEffect(new MovReductionEffect(ctx.power, ticks))
   return {
     ...EMPTY,
-    events: [{ type: 'STATUS_APPLIED', unitId: ctx.target.id, status: 'mov_down', value: ctx.power }],
+    events: [{ type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'mov_down', value: ctx.power }],
   }
 }
 
@@ -334,7 +335,7 @@ const handleHeal: EffectHandler = (ctx) => {
     ...EMPTY,
     healed: result.actual,
     events: [{
-      type:     'HEAL_APPLIED',
+      type:     EventType.HEAL_APPLIED,
       unitId:   ctx.target.id,
       amount:   result.actual,
       newHp:    ctx.target.hp,
@@ -350,7 +351,7 @@ const handleShield: EffectHandler = (ctx) => {
   ctx.target.addEffect(new ShieldEffect(ctx.power))
   return {
     ...EMPTY,
-    events: [{ type: 'SHIELD_APPLIED', unitId: ctx.target.id, amount: ctx.power }],
+    events: [{ type: EventType.SHIELD_APPLIED, unitId: ctx.target.id, amount: ctx.power }],
   }
 }
 
@@ -361,7 +362,7 @@ const handleEvade: EffectHandler = (ctx) => {
   ctx.target.addEffect(new EvadeEffect(1))
   return {
     ...EMPTY,
-    events: [{ type: 'STATUS_APPLIED', unitId: ctx.target.id, status: 'evade', value: 1 }],
+    events: [{ type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'evade', value: 1 }],
   }
 }
 
@@ -372,7 +373,7 @@ const handleReflect: EffectHandler = (ctx) => {
   ctx.target.addEffect(new ReflectEffect(ctx.power))
   return {
     ...EMPTY,
-    events: [{ type: 'STATUS_APPLIED', unitId: ctx.target.id, status: 'reflect', value: ctx.power }],
+    events: [{ type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'reflect', value: ctx.power }],
   }
 }
 
@@ -383,7 +384,7 @@ const handleRegen: EffectHandler = (ctx) => {
   ctx.target.addEffect(new RegenEffect(ctx.power, ctx.ticks ?? REGEN_TICKS))
   return {
     ...EMPTY,
-    events: [{ type: 'STATUS_APPLIED', unitId: ctx.target.id, status: 'regen', value: ctx.power }],
+    events: [{ type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'regen', value: ctx.power }],
   }
 }
 
@@ -394,7 +395,7 @@ const handleDefUp: EffectHandler = (ctx) => {
   ctx.target.addEffect(new DefBoostEffect(ctx.power, ctx.ticks ?? STAT_MOD_TICKS))
   return {
     ...EMPTY,
-    events: [{ type: 'STATUS_APPLIED', unitId: ctx.target.id, status: 'def_up', value: ctx.power }],
+    events: [{ type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'def_up', value: ctx.power }],
   }
 }
 
@@ -403,7 +404,7 @@ const handleAtkUp: EffectHandler = (ctx) => {
   ctx.target.addEffect(new AtkBoostEffect(ctx.power, ctx.ticks ?? STAT_MOD_TICKS))
   return {
     ...EMPTY,
-    events: [{ type: 'STATUS_APPLIED', unitId: ctx.target.id, status: 'atk_up', value: ctx.power }],
+    events: [{ type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'atk_up', value: ctx.power }],
   }
 }
 
@@ -416,7 +417,7 @@ const handleCleanse: EffectHandler = (ctx) => {
   return {
     ...EMPTY,
     dispelled: removed,
-    events: [{ type: 'EFFECTS_CLEANSED', unitId: ctx.target.id, removed }],
+    events: [{ type: EventType.EFFECTS_CLEANSED, unitId: ctx.target.id, removed }],
   }
 }
 
@@ -429,7 +430,7 @@ const handlePurge: EffectHandler = (ctx) => {
   return {
     ...EMPTY,
     dispelled: removed,
-    events: [{ type: 'EFFECTS_PURGED', unitId: ctx.target.id, removed }],
+    events: [{ type: EventType.EFFECTS_PURGED, unitId: ctx.target.id, removed }],
   }
 }
 

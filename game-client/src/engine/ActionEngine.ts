@@ -11,6 +11,7 @@
  */
 
 import type { CardDef, CardTargetType, EngineEvent, TeamSide } from './types'
+import { EventType } from './types'
 import type { BattleState } from './BattleState'
 import { Ok, Err } from './types'
 import type { Result } from './types'
@@ -71,7 +72,7 @@ export function selectCard(
   }
 
   const events: EngineEvent[] = [
-    { type: 'CARD_SELECTED', unitId, cardId, category: card.category },
+    { type: EventType.CARD_SELECTED, unitId, cardId, category: card.category },
   ]
   return Ok(events)
 }
@@ -113,7 +114,7 @@ export function selectTarget(
   if (targetDef.side !== expectedSide) return Err('Invalid target side')
 
   turn.selectedTargetId = targetId
-  return Ok([{ type: 'TARGET_SELECTED', unitId, targetId }])
+  return Ok([{ type: EventType.TARGET_SELECTED, unitId, targetId }])
 }
 
 /**
@@ -140,7 +141,7 @@ export function selectArea(
   if (card.targetType !== 'area') return Err('Card does not target an area')
 
   turn.selectedArea = { col, row }
-  return Ok([{ type: 'AREA_TARGET_SET', unitId, col, row }])
+  return Ok([{ type: EventType.AREA_TARGET_SET, unitId, col, row }])
 }
 
 // ── Resolution ────────────────────────────────────────────────────────────────
@@ -246,7 +247,7 @@ function resolveAttackCard(
         events.push(...resolveSingleHit(state, casterId, targetId, card, enemySide))
       }
       if (hitIds.length > 0) {
-        events.push({ type: 'AREA_RESOLVED', centerCol: area.col, centerRow: area.row, hitIds })
+        events.push({ type: EventType.AREA_RESOLVED, centerCol: area.col, centerRow: area.row, hitIds })
       }
       break
     }
@@ -369,7 +370,7 @@ export function rotateCard(
   queue.push(cardId)
 
   const nextCardId = queue[0] ?? cardId
-  return [{ type: 'CARD_ROTATED', unitId, cardId, category, nextCardId }]
+  return [{ type: EventType.CARD_ROTATED, unitId, cardId, category, nextCardId }]
 }
 
 /** Returns the two card IDs currently at the head of the attack queue. */

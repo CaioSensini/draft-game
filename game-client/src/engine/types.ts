@@ -129,6 +129,90 @@ export type Result<T, E = string> =
 export function Ok<T>(value: T): Result<T>         { return { ok: true, value } }
 export function Err<T = never>(error: string): Result<T> { return { ok: false, error } }
 
+// ── Event type constants ──────────────────────────────────────────────────────
+
+/**
+ * All engine event type strings, centralised as a single const object.
+ *
+ * Every emit site and every subscriber must reference these constants instead
+ * of raw string literals, so a rename only ever touches one place.
+ *
+ * Usage:
+ *   import { EventType } from './types'
+ *   emit({ type: EventType.CHARACTER_MOVED, ... })
+ *   engine.onType(EventType.DAMAGE_APPLIED, handler)
+ */
+export const EventType = {
+  // ── Movement
+  CHARACTER_MOVED:        'CHARACTER_MOVED',
+  UNIT_PUSHED:            'UNIT_PUSHED',
+  PUSH_COLLISION:         'PUSH_COLLISION',
+
+  // ── Damage / HP
+  DAMAGE_APPLIED:         'DAMAGE_APPLIED',
+  SHIELD_ABSORBED:        'SHIELD_ABSORBED',
+  EVADE_TRIGGERED:        'EVADE_TRIGGERED',
+  REFLECT_TRIGGERED:      'REFLECT_TRIGGERED',
+  CHARACTER_DIED:         'CHARACTER_DIED',
+
+  // ── Healing / buffs
+  HEAL_APPLIED:           'HEAL_APPLIED',
+  SHIELD_APPLIED:         'SHIELD_APPLIED',
+
+  // ── Status effects
+  STATUS_APPLIED:         'STATUS_APPLIED',
+  BLEED_TICK:             'BLEED_TICK',
+  POISON_TICK:            'POISON_TICK',
+  REGEN_TICK:             'REGEN_TICK',
+  STAT_MODIFIER_EXPIRED:  'STAT_MODIFIER_EXPIRED',
+
+  // ── Passives
+  PASSIVE_TRIGGERED:      'PASSIVE_TRIGGERED',
+
+  // ── Dispel
+  EFFECTS_CLEANSED:       'EFFECTS_CLEANSED',
+  EFFECTS_PURGED:         'EFFECTS_PURGED',
+
+  // ── Area
+  AREA_RESOLVED:          'AREA_RESOLVED',
+
+  // ── Card / selection
+  CARD_SELECTED:          'CARD_SELECTED',
+  TARGET_SELECTED:        'TARGET_SELECTED',
+  AREA_TARGET_SET:        'AREA_TARGET_SET',
+  CARD_ROTATED:           'CARD_ROTATED',
+
+  // ── Skill execution
+  SKILL_USED:             'SKILL_USED',
+
+  // ── Per-character turn sequencing
+  TURN_STARTED:           'TURN_STARTED',
+  TURN_COMMITTED:         'TURN_COMMITTED',
+  TURN_SKIPPED:           'TURN_SKIPPED',
+
+  // ── Global combat rules
+  COMBAT_RULE_ACTIVE:     'COMBAT_RULE_ACTIVE',
+
+  // ── Player action state (controller-level)
+  CHARACTER_FOCUSED:        'CHARACTER_FOCUSED',
+  AWAITING_TARGET:          'AWAITING_TARGET',
+  SELECTION_READY:          'SELECTION_READY',
+  SELECTION_CANCELLED:      'SELECTION_CANCELLED',
+  MOVE_CHARACTER_SELECTED:  'MOVE_CHARACTER_SELECTED',
+  MOVE_SELECTION_CLEARED:   'MOVE_SELECTION_CLEARED',
+
+  // ── Phase / round lifecycle
+  PHASE_STARTED:          'PHASE_STARTED',
+  PHASE_ENDED:            'PHASE_ENDED',
+  ACTIONS_RESOLVED:       'ACTIONS_RESOLVED',
+  ROUND_STARTED:          'ROUND_STARTED',
+  BATTLE_STARTED:         'BATTLE_STARTED',
+  BATTLE_ENDED:           'BATTLE_ENDED',
+} as const
+
+/** Union of all valid event type strings — derived from EventType so they stay in sync. */
+export type EventTypeName = typeof EventType[keyof typeof EventType]
+
 // ── Engine events emitted to subscribers (renderer, sound, etc.) ──────────────
 
 export type EngineEvent =
@@ -287,6 +371,16 @@ export type EngineEvent =
    * UI should highlight the character and show its available cards.
    */
   | { type: 'CHARACTER_FOCUSED'; unitId: string }
+  /**
+   * The player selected a character to move during the movement phase.
+   * UI should highlight valid destination tiles (call ctrl.getValidMoves(unitId)).
+   */
+  | { type: 'MOVE_CHARACTER_SELECTED'; unitId: string }
+  /**
+   * The movement selection was cleared (character moved or phase ended).
+   * UI should remove move-destination overlays.
+   */
+  | { type: 'MOVE_SELECTION_CLEARED' }
   /**
    * An attack skill requiring explicit targeting was selected.
    * UI should enter target-selection mode.

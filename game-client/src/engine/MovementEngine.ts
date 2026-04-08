@@ -8,6 +8,7 @@
  */
 
 import type { Position, TeamSide, UnitRole, EngineEvent } from './types'
+import { EventType } from './types'
 import type { BattleState } from './BattleState'
 import { BOARD } from './BattleState'
 import { Ok, Err } from './types'
@@ -113,7 +114,7 @@ export function applyMove(
   rt.row   = row
   turn.movedThisPhase = true
 
-  return [{ type: 'CHARACTER_MOVED', unitId, fromCol, fromRow, toCol: col, toRow: row }]
+  return [{ type: EventType.CHARACTER_MOVED, unitId, fromCol, fromRow, toCol: col, toRow: row }]
 }
 
 /** Return all valid destination tiles for `unitId` in the current state. */

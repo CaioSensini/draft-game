@@ -24,55 +24,55 @@
  *       this._bridge = new PhaserBridge(ctrl)
  *
  *         // ── Visual animations ─────────────────────────────────────────────
- *         .onAnimation('skill_used', (e) => {
+ *         .onAnimation(EventType.SKILL_USED, (e) => {
  *           // e.category === 'attack' → play projectile from e.unitId → e.targetId
  *           // e.areaCenter            → play blast overlay at e.areaCenter
  *         })
- *         .onAnimation('unit_died', (e) => {
+ *         .onAnimation(EventType.CHARACTER_DIED, (e) => {
  *           // Play death animation for e.unitId
  *         })
- *         .onAnimation('area_resolved', (e) => {
+ *         .onAnimation(EventType.AREA_RESOLVED, (e) => {
  *           // Shake tiles at e.centerCol, e.centerRow
  *         })
  *
  *         // ── HUD updates ───────────────────────────────────────────────────
- *         .onHUD('damage_taken', (e) => {
+ *         .onHUD(EventType.DAMAGE_APPLIED, (e) => {
  *           // Update HP bar for e.unitId to e.newHp
  *         })
- *         .onHUD('heal_applied', (e) => {
+ *         .onHUD(EventType.HEAL_APPLIED, (e) => {
  *           // Update HP bar for e.unitId to e.newHp
  *         })
- *         .onHUD('turn_started', (e) => {
+ *         .onHUD(EventType.TURN_STARTED, (e) => {
  *           // Highlight the active character indicator for e.unitId
  *         })
- *         .onHUD('round_started', (e) => {
+ *         .onHUD(EventType.ROUND_STARTED, (e) => {
  *           // Update round counter display to e.round
  *         })
- *         .onHUD('phase_started', (e) => {
+ *         .onHUD(EventType.PHASE_STARTED, (e) => {
  *           // Show phase banner (e.phase, e.side) and start timer (e.duration)
  *         })
- *         .onHUD('battle_ended', (e) => {
+ *         .onHUD(EventType.BATTLE_ENDED, (e) => {
  *           // Show victory screen (e.winner, e.reason)
  *         })
  *
  *         // ── Audio cues ────────────────────────────────────────────────────
- *         .onAudio('damage_taken', (_e) => this.sound.play('sfx_hit'))
- *         .onAudio('unit_died',    (_e) => this.sound.play('sfx_death'))
- *         .onAudio('skill_used',   (e)  => {
+ *         .onAudio(EventType.DAMAGE_APPLIED, (_e) => this.sound.play('sfx_hit'))
+ *         .onAudio(EventType.CHARACTER_DIED,    (_e) => this.sound.play('sfx_death'))
+ *         .onAudio(EventType.SKILL_USED,   (e)  => {
  *           if (e.category === 'attack') this.sound.play('sfx_attack')
  *           else                         this.sound.play('sfx_buff')
  *         })
  *
  *         // ── Player action state ───────────────────────────────────────────
- *         .on('character_focused', (e) => {
+ *         .on(EventType.CHARACTER_FOCUSED, (e) => {
  *           // Highlight the selected character (e.unitId)
  *         })
- *         .on('awaiting_target', (e) => {
+ *         .on(EventType.AWAITING_TARGET, (e) => {
  *           // Enter target-selection mode
  *           // e.targetMode === 'unit' → show valid unit targets
  *           // e.targetMode === 'tile' → show valid tile targets
  *         })
- *         .on('selection_ready', (e) => {
+ *         .on(EventType.SELECTION_READY, (e) => {
  *           // Show "ready" indicator for e.unitId
  *         })
  *
@@ -85,27 +85,27 @@
  *
  * ── Event timing reference (in order of emission per turn) ──────────────────
  *
- *   turn_started        → whose turn begins, time budget
- *   character_focused   → (controller) player focused a character
- *   card_selected       → player selected a card (UI feedback)
- *   awaiting_target     → (controller) waiting for player to pick target
- *   selection_ready     → (controller) both cards selected, ready to commit
- *   turn_committed      → the turn executes:
- *     skill_used        →   defense skill fires (with targetId = self)
- *     shield_applied    →   shield buff applied
- *     skill_used        →   attack skill fires (with targetId or areaCenter)
- *     damage_taken      →   HP loss on target
- *     status_applied    →   bleed/stun/etc. applied
- *     unit_died         →   target killed (may end battle)
- *     passive_triggered →   passive ability activated
- *     card_rotated      →   cards rotate to next in queue
- *   turn_skipped        → (if dead/stunned/no selection)
- *   actions_resolved    → all actors done this phase
- *   phase_ended         → phase closes
- *   phase_started       → next phase opens
- *   round_started       → (at round boundary) new round
- *   bleed_tick          → (end of round) DoT damage
- *   regen_tick          → (end of round) HoT healing
+ * EventType.TURN_STARTED     → whose turn begins, time budget
+ * EventType.CHARACTER_FOCUSED → (controller) player focused a character
+ * EventType.CARD_SELECTED     → player selected a card (UI feedback)
+ * EventType.AWAITING_TARGET   → (controller) waiting for player to pick target
+ * EventType.SELECTION_READY   → (controller) both cards selected, ready to commit
+ * EventType.TURN_COMMITTED    → the turn executes:
+ *   EventType.SKILL_USED      →   defense skill fires (with targetId = self)
+ *   EventType.SHIELD_APPLIED  →   shield buff applied
+ *   EventType.SKILL_USED      →   attack skill fires (with targetId or areaCenter)
+ *   EventType.DAMAGE_APPLIED  →   HP loss on target
+ *   EventType.STATUS_APPLIED  →   bleed/stun/etc. applied
+ *   EventType.CHARACTER_DIED  →   target killed (may end battle)
+ *   EventType.PASSIVE_TRIGGERED →   passive ability activated
+ *   EventType.CARD_ROTATED    →   cards rotate to next in queue
+ * EventType.TURN_SKIPPED      → (if dead/stunned/no selection)
+ * EventType.ACTIONS_RESOLVED  → all actors done this phase
+ * EventType.PHASE_ENDED       → phase closes
+ * EventType.PHASE_STARTED     → next phase opens
+ * EventType.ROUND_STARTED     → (at round boundary) new round
+ * EventType.BLEED_TICK        → (end of round) DoT damage
+ * EventType.REGEN_TICK        → (end of round) HoT healing
  */
 
 import type { GameController }      from './GameController'

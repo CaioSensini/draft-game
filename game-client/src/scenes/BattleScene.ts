@@ -39,6 +39,7 @@ import { Team }               from '../domain/Team'
 import { Battle }             from '../domain/Battle'
 import { GameController }     from '../engine/GameController'
 import { PhaserBridge }       from '../engine/PhaserBridge'
+import { EventType }          from '../engine/types'
 import { AutoPlayer }         from '../engine/AutoPlayer'
 import { BattleDriver }       from '../engine/BattleDriver'
 import { SKILL_CATALOG }      from '../data/skillCatalog'
@@ -58,6 +59,13 @@ const ROWS      = 6
 const GRID_X    = (W - COLS * TILE) / 2   // 128
 const GRID_Y    = 72
 const CHAR_SIZE = 48
+
+// ── Turn tracker sidebar (right 128px margin) ─────────────────────────────────
+
+const TRK_X  = GRID_X + COLS * TILE + 6   // 1158  left edge of tracker
+const TRK_CX = TRK_X + 57                 // 1215  centre x
+const TRK_W  = W - TRK_X - 8             // 114   width
+const TRK_Y  = GRID_Y + 4                 // 76    top edge
 
 // ── Player panel layout ───────────────────────────────────────────────────────
 
@@ -115,12 +123,26 @@ const ROLE_LABEL: Record<UnitRole, string> = {
 interface UnitSprite {
   container:  Phaser.GameObjects.Container
   rect:       Phaser.GameObjects.Rectangle
+  baseColor:  number                          // original fill colour (restored after flash)
+  flashRect:  Phaser.GameObjects.Rectangle   // damage / heal flash overlay
   hpBar:      Phaser.GameObjects.Rectangle
   hpText:     Phaser.GameObjects.Text
-  focusRing:  Phaser.GameObjects.Rectangle   // selection highlight (white)
-  activeRing: Phaser.GameObjects.Rectangle   // turn-active highlight (green)
+  focusRing:  Phaser.GameObjects.Rectangle   // action-selection highlight (white)
+  moveRing:   Phaser.GameObjects.Rectangle   // movement-selection highlight (cyan)
+  activeRing: Phaser.GameObjects.Rectangle   // turn-active highlight (green, pulsing)
   posText:    Phaser.GameObjects.Text        // grid coords "(col,row)"
   maxHp:      number
+}
+
+// ── Turn tracker entry ────────────────────────────────────────────────────────
+
+interface TurnEntry {
+  unitId: string
+  name:   string
+  role:   string
+  order:  number
+  total:  number
+  status: 'active' | 'done' | 'skipped'
 }
 
 // ── Incoming scene data ───────────────────────────────────────────────────────
@@ -144,11 +166,28 @@ export default class BattleScene extends Phaser.Scene {
   private _logLines:   Phaser.GameObjects.Text[] = []
   private _logMsgs:    string[]                  = []
 
+  // ── Turn tracker (right sidebar) ────────────────────────────────────────────
+  private _turnEntries:     TurnEntry[]                     = []
+  private _trackerObjs:     Phaser.GameObjects.GameObject[] = []
+  private _trackerHeader!:  Phaser.GameObjects.Text
+
+  // ── Phase banner (transient overlay) ────────────────────────────────────────
+  private _bannerObjs:      Phaser.GameObjects.GameObject[] = []
+
+  // ── Actor nameplate (above acting unit) ─────────────────────────────────────
+  private _actorLabel:      Phaser.GameObjects.Container | null = null
+
   // ── Player input state ──────────────────────────────────────────────────────
   private readonly _playerSide: CharacterSide  = 'left'
   private _currentActorId: string | null        = null
   private _awaitingMode: 'unit' | 'tile' | null = null
   private _selReady     = false
+
+  // ── Movement phase state ─────────────────────────────────────────────────────
+  private _isPlayerMovementPhase = false
+  private _moveSelectedId: string | null        = null
+  private _moveOverlays: Phaser.GameObjects.Rectangle[] = []
+  private _endMovementBtn!: Phaser.GameObjects.Container
 
   // ── Player panel — persistent shell ────────────────────────────────────────
   private _panelBg!:    Phaser.GameObjects.Rectangle
@@ -199,28 +238,70 @@ export default class BattleScene extends Phaser.Scene {
     // 3. Player panel (persistent shell, hidden by default)
     this._buildPanelShell()
     this._buildActionButtons()
+    this._buildEndMovementButton()
+    this._buildTurnTrackerShell()
 
     // 4. Event subscriptions — ONLY visual reactions + input forwarding
     this._bridge = new PhaserBridge(this._ctrl)
 
       // ── Phase / round labels ──────────────────────────────────────────────
-      .onHUD('ROUND_STARTED', (e) => {
+      .onHUD(EventType.ROUND_STARTED, (e) => {
         this._roundText.setText(`Round ${e.round}`)
         this._addLog(`— Round ${e.round} —`)
       })
-      .onHUD('PHASE_STARTED', (e) => {
-        const side  = e.side  === 'left'     ? 'Azul'     : 'Vermelho'
-        const phase = e.phase === 'movement' ? 'Movimento' : 'Ação'
-        this._phaseText.setText(`${phase} — ${side}`)
-        this._addLog(`Fase de ${phase} (${side})`)
+      .onHUD(EventType.PHASE_STARTED, (e) => {
+        const sideLabel  = e.side  === 'left'     ? 'Azul'     : 'Vermelho'
+        const phaseLabel = e.phase === 'movement' ? 'Movimento' : 'Ação'
+        this._phaseText.setText(`${phaseLabel} — ${sideLabel}`)
+        this._addLog(`Fase de ${phaseLabel} (${sideLabel})`)
+        const isPlayer = e.side === this._playerSide
+        this._showPhaseBanner(isPlayer, e.phase)
+        // Tracker: reset on action phase, hide on movement
+        if (e.phase === 'action') {
+          this._turnEntries = []
+          this._trackerHeader.setText(`${sideLabel} — Ação`)
+          this._renderTurnTracker()
+        } else {
+          this._trackerHeader.setText(`${sideLabel} — Movimento`)
+          this._turnEntries = []
+          this._renderTurnTracker()
+        }
+        const isPlayerMovement = e.phase === 'movement' && isPlayer
+        this._setMovementPhaseUI(isPlayerMovement)
       })
 
       // ── Turn sequencing indicators ─────────────────────────────────────────
-      .on('TURN_STARTED', (e) => {
-        this._sprite(e.unitId)?.activeRing.setVisible(true)
+      .on(EventType.TURN_STARTED, (e) => {
+        const sprite = this._sprite(e.unitId)
+        if (sprite) {
+          sprite.activeRing.setVisible(true).setScale(1)
+          this.tweens.add({
+            targets: sprite.activeRing,
+            scaleX: 1.12, scaleY: 1.12,
+            yoyo: true, repeat: -1,
+            duration: 550, ease: 'Sine.InOut',
+          })
+        }
         this._addLog(`Turno: ${this._name(e.unitId)}`)
-        // Player turn: auto-focus actor and open skill panel
+        // Tracker
         const char = this._ctrl.getCharacter(e.unitId)
+        const existing = this._turnEntries.find(t => t.unitId === e.unitId)
+        if (existing) {
+          existing.status = 'active'
+        } else {
+          this._turnEntries.push({
+            unitId: e.unitId,
+            name:   char?.name ?? e.unitId,
+            role:   char?.role ?? '',
+            order:  e.order,
+            total:  e.total,
+            status: 'active',
+          })
+        }
+        this._renderTurnTracker()
+        // Actor nameplate
+        this._showActorLabel(e.unitId, char?.side === this._playerSide)
+        // Player turn: auto-focus actor and open skill panel
         if (char?.side === this._playerSide) {
           this._currentActorId = e.unitId
           this._selReady       = false
@@ -228,17 +309,23 @@ export default class BattleScene extends Phaser.Scene {
           this._ctrl.selectCharacter(e.unitId)
         }
       })
-      .on('TURN_COMMITTED', (e) => {
-        this._sprite(e.unitId)?.activeRing.setVisible(false)
+      .on(EventType.TURN_COMMITTED, (e) => {
+        this._stopActiveRing(e.unitId)
         this._clearFocusRings()
+        this._hideActorLabel()
+        const entry = this._turnEntries.find(t => t.unitId === e.unitId)
+        if (entry) { entry.status = 'done'; this._renderTurnTracker() }
         if (e.unitId === this._currentActorId) {
           this._hidePanel()
           this._currentActorId = null
         }
       })
-      .on('TURN_SKIPPED', (e) => {
-        this._sprite(e.unitId)?.activeRing.setVisible(false)
+      .on(EventType.TURN_SKIPPED, (e) => {
+        this._stopActiveRing(e.unitId)
         this._clearFocusRings()
+        this._hideActorLabel()
+        const entry = this._turnEntries.find(t => t.unitId === e.unitId)
+        if (entry) { entry.status = 'skipped'; this._renderTurnTracker() }
         this._addLog(`${this._name(e.unitId)} pulou (${e.reason})`)
         if (e.unitId === this._currentActorId) {
           this._hidePanel()
@@ -247,25 +334,39 @@ export default class BattleScene extends Phaser.Scene {
       })
 
       // ── Player action state ────────────────────────────────────────────────
-      .on('CHARACTER_FOCUSED', (e) => {
+      .on(EventType.CHARACTER_FOCUSED, (e) => {
         this._showFocusRing(e.unitId)
         if (e.unitId !== this._currentActorId) return
         this._rebuildCardButtons(e.unitId)
       })
-      .on('AWAITING_TARGET', (e) => {
+      .on(EventType.MOVE_CHARACTER_SELECTED, (e) => {
+        this._moveSelectedId = e.unitId
+        this._showMoveRing(e.unitId)
+        this._clearMoveOverlays()
+        for (const pos of this._ctrl.getValidMoves(e.unitId)) {
+          this._addMoveOverlay(pos.col, pos.row)
+        }
+        this._addLog(`${this._name(e.unitId)}: selecione destino`)
+      })
+      .on(EventType.MOVE_SELECTION_CLEARED, (_e) => {
+        this._moveSelectedId = null
+        this._clearMoveOverlays()
+        this._clearMoveRings()
+      })
+      .on(EventType.AWAITING_TARGET, (e) => {
         this._awaitingMode = e.targetMode
         this._buildTargetOverlays(e.unitId, e.skillId, e.targetMode)
       })
-      .on('CARD_SELECTED', (e) => {
+      .on(EventType.CARD_SELECTED, (e) => {
         // Track last selected card of each category; keep latest attack highlight
         this._selectedCardId = e.cardId
         this._refreshCardHighlights()
       })
-      .on('SELECTION_READY', (_e) => {
+      .on(EventType.SELECTION_READY, (_e) => {
         this._selReady = true
         this._confirmBtn.setVisible(true)
       })
-      .on('SELECTION_CANCELLED', (_e) => {
+      .on(EventType.SELECTION_CANCELLED, (_e) => {
         // Panel stays open. Clear target mode and overlays.
         // The Cancel button handler will re-call selectCharacter immediately
         // after cancelAction(), triggering CHARACTER_FOCUSED → panel rebuild.
@@ -277,16 +378,22 @@ export default class BattleScene extends Phaser.Scene {
       })
 
       // ── Movement animation + position label ────────────────────────────────
-      .onAnimation('CHARACTER_MOVED', (e) => {
+      .onAnimation(EventType.CHARACTER_MOVED, (e) => {
         const sprite = this._sprite(e.unitId)
         if (!sprite) return
         const { x, y } = _tileCenter(e.toCol, e.toRow)
         this.tweens.add({ targets: sprite.container, x, y, duration: 300, ease: 'Quad.Out' })
         sprite.posText.setText(`(${e.toCol},${e.toRow})`)
+        // Clear move overlays — controller already cleared _selectedForMove via auto-reset
+        if (e.unitId === this._moveSelectedId) {
+          this._moveSelectedId = null
+          this._clearMoveOverlays()
+          this._clearMoveRings()
+        }
       })
 
       // ── Skill pulse animation ──────────────────────────────────────────────
-      .onAnimation('SKILL_USED', (e) => {
+      .onAnimation(EventType.SKILL_USED, (e) => {
         const sprite = this._sprite(e.unitId)
         if (sprite) {
           this.tweens.add({
@@ -299,33 +406,38 @@ export default class BattleScene extends Phaser.Scene {
       })
 
       // ── HP bar + floating damage ───────────────────────────────────────────
-      .onHUD('DAMAGE_APPLIED', (e) => {
+      .onHUD(EventType.DAMAGE_APPLIED, (e) => {
         this._updateHpBar(e.unitId, e.newHp)
+        this._flashUnit(e.unitId, 0xff2222, 0.70)
         this._floatingText(e.unitId, `-${e.amount}`, '#ff4444')
         this._addLog(`${this._name(e.unitId)} recebe ${e.amount} dano (HP ${e.newHp})`)
       })
-      .onHUD('HEAL_APPLIED', (e) => {
+      .onHUD(EventType.HEAL_APPLIED, (e) => {
         this._updateHpBar(e.unitId, e.newHp)
+        this._flashUnit(e.unitId, 0x22ff88, 0.55)
         this._floatingText(e.unitId, `+${e.amount}`, '#44ff88')
       })
-      .onHUD('BLEED_TICK', (e) => {
+      .onHUD(EventType.BLEED_TICK, (e) => {
         this._updateHpBar(e.unitId, e.newHp)
+        this._flashUnit(e.unitId, 0xcc1133, 0.60)
         this._floatingText(e.unitId, `🩸-${e.damage}`, '#cc2244')
       })
-      .onHUD('POISON_TICK', (e) => {
+      .onHUD(EventType.POISON_TICK, (e) => {
         this._updateHpBar(e.unitId, e.newHp)
+        this._flashUnit(e.unitId, 0x88cc22, 0.55)
         this._floatingText(e.unitId, `☠-${e.damage}`, '#88cc22')
       })
-      .onHUD('REGEN_TICK', (e) => {
+      .onHUD(EventType.REGEN_TICK, (e) => {
         this._updateHpBar(e.unitId, e.newHp)
+        this._flashUnit(e.unitId, 0x22dd66, 0.50)
         this._floatingText(e.unitId, `🌿+${e.heal}`, '#44ff88')
       })
-      .onHUD('SHIELD_APPLIED', (e) => {
+      .onHUD(EventType.SHIELD_APPLIED, (e) => {
         this._floatingText(e.unitId, `🛡+${e.amount}`, '#88aaff')
       })
 
       // ── Status effect icons ────────────────────────────────────────────────
-      .onHUD('STATUS_APPLIED', (e) => {
+      .onHUD(EventType.STATUS_APPLIED, (e) => {
         const icons: Record<string, string> = {
           bleed: '🩸', stun: '⚡', regen: '🌿', evade: '💨',
           reflect: '🪞', def_down: '🔻DEF', atk_down: '🔻ATK',
@@ -334,18 +446,26 @@ export default class BattleScene extends Phaser.Scene {
       })
 
       // ── Death animation ────────────────────────────────────────────────────
-      .onAnimation('CHARACTER_DIED', (e) => {
+      .onAnimation(EventType.CHARACTER_DIED, (e) => {
         const sprite = this._sprite(e.unitId)
         if (!sprite) return
-        sprite.activeRing.setVisible(false)
-        sprite.rect.setFillStyle(0x444444)
-        this.tweens.add({ targets: sprite.container, alpha: 0.2, duration: 600, ease: 'Quad.Out' })
+        this._stopActiveRing(e.unitId)
+        sprite.focusRing.setVisible(false)
+        sprite.moveRing.setVisible(false)
+        this._flashUnit(e.unitId, 0xffffff, 0.90)
+        this.time.delayedCall(180, () => {
+          sprite.rect.setFillStyle(0x444444)
+          this.tweens.add({ targets: sprite.container, alpha: 0.22, duration: 600, ease: 'Quad.Out' })
+        })
         this._addLog(`💀 ${this._name(e.unitId)} morreu (Round ${e.round})`)
       })
 
       // ── Victory overlay ────────────────────────────────────────────────────
-      .onHUD('BATTLE_ENDED', (e) => {
+      .onHUD(EventType.BATTLE_ENDED, (e) => {
         this._hidePanel()
+        this._hideActorLabel()
+        for (const obj of this._bannerObjs) (obj as Phaser.GameObjects.GameObject).destroy()
+        this._bannerObjs = []
         const winText = e.winner
           ? `${e.winner === 'left' ? '🔵 Azul' : '🔴 Vermelho'} venceu!`
           : 'Empate!'
@@ -362,6 +482,10 @@ export default class BattleScene extends Phaser.Scene {
     this._driver.destroy()
     this._destroyCardButtons()
     this._clearTargetOverlays()
+    this._clearMoveOverlays()
+    for (const obj of this._trackerObjs) (obj as Phaser.GameObjects.GameObject).destroy()
+    for (const obj of this._bannerObjs)  (obj as Phaser.GameObjects.GameObject).destroy()
+    this._actorLabel?.destroy()
   }
 
   // ── Player panel — shell (built once) ────────────────────────────────────────
@@ -418,6 +542,185 @@ export default class BattleScene extends Phaser.Scene {
     bg.on('pointerdown', onDown)
 
     return this.add.container(x, y, [bg, txt])
+  }
+
+  private _buildEndMovementButton(): void {
+    this._endMovementBtn = this._makeActionBtn(
+      BTN_X, PANEL_Y + PANEL_H / 2, BTN_W, BTN_H,
+      'Fim Mov.', 0x0a1a0a, 0x22aa44, '#44ff88',
+      () => {
+        this._ctrl.clearMoveSelection()
+        this._ctrl.advancePhase()
+      },
+    ).setVisible(false).setDepth(8)
+  }
+
+  // ── Movement phase UI ────────────────────────────────────────────────────────
+
+  private _setMovementPhaseUI(active: boolean): void {
+    this._isPlayerMovementPhase = active
+    this._clearMoveOverlays()
+    this._moveSelectedId = null
+    this._clearFocusRings()
+    if (active) {
+      this._panelBg.setVisible(true)
+      this._endMovementBtn.setVisible(true)
+    } else {
+      this._endMovementBtn.setVisible(false)
+      if (!this._currentActorId) this._panelBg.setVisible(false)
+    }
+  }
+
+  private _addMoveOverlay(col: number, row: number): void {
+    const { x, y } = _tileCenter(col, row)
+    const tile = this.add.rectangle(x, y, TILE - 4, TILE - 4)
+      .setStrokeStyle(2, 0x44ddff, 1)
+      .setFillStyle(0x44ddff, 0.14)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(4)
+
+    tile.on('pointerover', () => tile.setFillStyle(0x44ddff, 0.30))
+    tile.on('pointerout',  () => tile.setFillStyle(0x44ddff, 0.14))
+    tile.on('pointerdown', () => {
+      if (!this._moveSelectedId) return
+      const result = this._ctrl.moveCharacter(this._moveSelectedId, col, row)
+      if (!result.ok) this._addLog(`[!] ${result.error}`)
+    })
+
+    this._moveOverlays.push(tile)
+  }
+
+  private _clearMoveOverlays(): void {
+    for (const tile of this._moveOverlays) tile.destroy()
+    this._moveOverlays = []
+  }
+
+  // ── Turn tracker sidebar ─────────────────────────────────────────────────────
+
+  /** Creates the static background panel + header text. Called once in create(). */
+  private _buildTurnTrackerShell(): void {
+    this.add.rectangle(TRK_CX, TRK_Y + 190, TRK_W, 380, 0x0a1020)
+      .setStrokeStyle(1, 0x1e3a5f).setDepth(3)
+
+    this._trackerHeader = this.add.text(TRK_CX, TRK_Y + 8, '…', {
+      fontFamily: 'Arial', fontSize: '10px', color: '#64748b', fontStyle: 'bold',
+    }).setOrigin(0.5, 0).setDepth(4)
+  }
+
+  /** Destroys and recreates all dynamic tracker rows from `_turnEntries`. */
+  private _renderTurnTracker(): void {
+    for (const obj of this._trackerObjs) (obj as Phaser.GameObjects.GameObject).destroy()
+    this._trackerObjs = []
+
+    const rowH  = 28
+    const baseY = TRK_Y + 26
+
+    this._turnEntries.forEach((entry, i) => {
+      const y = baseY + i * rowH
+
+      const isActive = entry.status === 'active'
+      const isDone   = entry.status === 'done'
+
+      // Row background for active actor
+      if (isActive) {
+        const rowBg = this.add.rectangle(TRK_CX, y + rowH / 2, TRK_W - 4, rowH - 2, 0x112233)
+          .setStrokeStyle(1, 0x2255aa).setDepth(3)
+        this._trackerObjs.push(rowBg)
+      }
+
+      const icon  = isActive ? '▶' : isDone ? '✓' : '—'
+      const color = isActive ? '#e2e8f0' : isDone ? '#44dd88' : '#475569'
+
+      const iconTxt = this.add.text(TRK_X + 6, y + 4, icon, {
+        fontFamily: 'Arial', fontSize: '10px', color,
+      }).setDepth(4)
+
+      const nameTxt = this.add.text(TRK_X + 18, y + 4, entry.name, {
+        fontFamily: 'Arial', fontSize: '10px', color,
+        fontStyle: isActive ? 'bold' : 'normal',
+      }).setDepth(4)
+
+      const progressColor = isActive ? '#7ab8ff' : '#334155'
+      const progressTxt = this.add.text(TRK_CX + TRK_W / 2 - 6, y + 4,
+        `${entry.order}/${entry.total}`, {
+          fontFamily: 'Arial', fontSize: '9px', color: progressColor,
+        }).setOrigin(1, 0).setDepth(4)
+
+      this._trackerObjs.push(iconTxt, nameTxt, progressTxt)
+    })
+  }
+
+  // ── Phase banner ─────────────────────────────────────────────────────────────
+
+  private _showPhaseBanner(isPlayer: boolean, phase: 'movement' | 'action'): void {
+    // Kill previous banner immediately
+    for (const obj of this._bannerObjs) (obj as Phaser.GameObjects.GameObject).destroy()
+    this._bannerObjs = []
+
+    const title    = isPlayer ? 'SUA VEZ' : 'INIMIGO'
+    const sub      = phase === 'movement' ? 'Fase de Movimento' : 'Fase de Ação'
+    const bgColor  = isPlayer ? 0x071428 : 0x1a0707
+    const stroke   = isPlayer ? 0x2255cc : 0xcc2222
+    const titleCol = isPlayer ? '#88bbff' : '#ff8888'
+
+    const bannerY = GRID_Y + ROWS * TILE / 2 - 14   // vertical centre of grid
+
+    const bg = this.add.rectangle(W / 2, bannerY, 380, 68, bgColor)
+      .setStrokeStyle(2, stroke).setAlpha(0).setDepth(14)
+    const titleTxt = this.add.text(W / 2, bannerY - 13, title, {
+      fontFamily: 'Arial Black', fontSize: '26px', color: titleCol, fontStyle: 'bold',
+    }).setOrigin(0.5).setAlpha(0).setDepth(15)
+    const subTxt = this.add.text(W / 2, bannerY + 14, sub, {
+      fontFamily: 'Arial', fontSize: '13px', color: '#94a3b8',
+    }).setOrigin(0.5).setAlpha(0).setDepth(15)
+
+    this._bannerObjs = [bg, titleTxt, subTxt]
+
+    this.tweens.add({
+      targets: this._bannerObjs, alpha: 1, duration: 200, ease: 'Quad.Out',
+      onComplete: () => {
+        this.time.delayedCall(1100, () => {
+          this.tweens.add({
+            targets: this._bannerObjs, alpha: 0, duration: 350, ease: 'Quad.In',
+            onComplete: () => {
+              for (const obj of this._bannerObjs) (obj as Phaser.GameObjects.GameObject).destroy()
+              this._bannerObjs = []
+            },
+          })
+        })
+      },
+    })
+  }
+
+  // ── Actor nameplate ──────────────────────────────────────────────────────────
+
+  private _showActorLabel(unitId: string, isPlayer: boolean): void {
+    this._actorLabel?.destroy()
+    this._actorLabel = null
+
+    const sprite = this._sprite(unitId)
+    if (!sprite) return
+
+    const label    = isPlayer ? '▶ SUA VEZ' : '▶ INIMIGO'
+    const bgColor  = isPlayer ? 0x071428 : 0x1a0707
+    const stroke   = isPlayer ? 0x2255cc : 0xcc2222
+    const txtColor = isPlayer ? '#88bbff' : '#ff8888'
+
+    const bg  = this.add.rectangle(0, 0, 82, 17, bgColor).setStrokeStyle(1, stroke)
+    const txt = this.add.text(0, 0, label, {
+      fontFamily: 'Arial', fontSize: '9px', color: txtColor, fontStyle: 'bold',
+    }).setOrigin(0.5)
+
+    this._actorLabel = this.add.container(
+      sprite.container.x,
+      sprite.container.y - CHAR_SIZE - 22,
+      [bg, txt],
+    ).setDepth(9)
+  }
+
+  private _hideActorLabel(): void {
+    this._actorLabel?.destroy()
+    this._actorLabel = null
   }
 
   // ── Player panel — card buttons (rebuilt each turn) ───────────────────────
@@ -695,16 +998,31 @@ export default class BattleScene extends Phaser.Scene {
       const barW      = CHAR_SIZE - 4
       const barOffY   = half + 8
 
-      // Selection ring (white) — shown on CHARACTER_FOCUSED
-      const focusRing = this.add.rectangle(0, 0, CHAR_SIZE + 14, CHAR_SIZE + 14)
-        .setStrokeStyle(2, 0xffffff, 1).setFillStyle(0x000000, 0).setVisible(false)
+      // Movement-selection ring (cyan) — shown on MOVE_CHARACTER_SELECTED
+      const moveRing = this.add.rectangle(0, 0, CHAR_SIZE + 14, CHAR_SIZE + 14)
+        .setStrokeStyle(2, 0x44ddff, 1).setFillStyle(0x44ddff, 0.06).setVisible(false)
 
-      // Turn-active ring (green) — shown on TURN_STARTED
+      // Action-selection ring (white) — shown on CHARACTER_FOCUSED
+      const focusRing = this.add.rectangle(0, 0, CHAR_SIZE + 14, CHAR_SIZE + 14)
+        .setStrokeStyle(2, 0xffffff, 1).setFillStyle(0xffffff, 0.06).setVisible(false)
+
+      // Turn-active ring (green, pulsing) — shown on TURN_STARTED
       const activeRing = this.add.rectangle(0, 0, CHAR_SIZE + 8, CHAR_SIZE + 8)
-        .setStrokeStyle(3, 0x00ff88).setFillStyle(0x000000, 0).setVisible(false)
+        .setStrokeStyle(3, 0x00ff88).setFillStyle(0x00ff88, 0.04).setVisible(false)
 
       const rect = this.add.rectangle(0, 0, CHAR_SIZE, CHAR_SIZE, color)
         .setStrokeStyle(1, 0x000000, 0.6)
+        .setInteractive({ useHandCursor: true })
+
+      rect.on('pointerdown', () => {
+        if (this._isPlayerMovementPhase && u.side === this._playerSide) {
+          const result = this._ctrl.selectForMove(u.id)
+          if (!result.ok) this._addLog(`[!] ${result.error}`)
+        }
+      })
+
+      // Flash overlay — colour-filled rectangle tweened to alpha=0 on damage/heal
+      const flashRect = this.add.rectangle(0, 0, CHAR_SIZE, CHAR_SIZE, 0xff2222).setAlpha(0)
 
       const roleText = this.add.text(0, -4, ROLE_LABEL[u.role], {
         fontFamily: 'Arial Black', fontSize: '18px', color: '#ffffff', fontStyle: 'bold',
@@ -728,11 +1046,14 @@ export default class BattleScene extends Phaser.Scene {
       }).setOrigin(0.5, 1)
 
       const container = this.add.container(x, y, [
-        focusRing, activeRing, rect, roleText, nameText,
+        moveRing, focusRing, activeRing, rect, flashRect, roleText, nameText,
         hpBarBg, hpBar, hpText, posText,
       ])
 
-      this._sprites.set(u.id, { container, rect, hpBar, hpText, focusRing, activeRing, posText, maxHp: char.maxHp })
+      this._sprites.set(u.id, {
+        container, rect, baseColor: color, flashRect,
+        hpBar, hpText, focusRing, moveRing, activeRing, posText, maxHp: char.maxHp,
+      })
     }
   }
 
@@ -748,6 +1069,12 @@ export default class BattleScene extends Phaser.Scene {
     // HP number: colour mirrors the bar
     const textColor = ratio > 0.5 ? '#88cc88' : ratio > 0.25 ? '#ccaa44' : '#cc4444'
     sprite.hpText.setText(`${hp}/${sprite.maxHp}`).setColor(textColor)
+    // Critical HP: red border on the unit square
+    if (ratio <= 0.25) {
+      sprite.rect.setStrokeStyle(2, 0xff3311, 1)
+    } else {
+      sprite.rect.setStrokeStyle(1, 0x000000, 0.6)
+    }
   }
 
   private _floatingText(unitId: string, text: string, color: string) {
@@ -767,13 +1094,45 @@ export default class BattleScene extends Phaser.Scene {
 
   private _showFocusRing(unitId: string): void {
     this._clearFocusRings()
-    this._sprite(unitId)?.focusRing.setVisible(true)
+    const sprite = this._sprite(unitId)
+    if (!sprite) return
+    sprite.focusRing.setVisible(true).setScale(1.2)
+    this.tweens.add({ targets: sprite.focusRing, scaleX: 1, scaleY: 1, duration: 140, ease: 'Back.Out' })
   }
 
   private _clearFocusRings(): void {
     for (const sprite of this._sprites.values()) {
-      sprite.focusRing.setVisible(false)
+      sprite.focusRing.setVisible(false).setScale(1)
     }
+  }
+
+  private _showMoveRing(unitId: string): void {
+    this._clearMoveRings()
+    const sprite = this._sprite(unitId)
+    if (!sprite) return
+    sprite.moveRing.setVisible(true).setScale(1.2)
+    this.tweens.add({ targets: sprite.moveRing, scaleX: 1, scaleY: 1, duration: 140, ease: 'Back.Out' })
+  }
+
+  private _clearMoveRings(): void {
+    for (const sprite of this._sprites.values()) {
+      sprite.moveRing.setVisible(false).setScale(1)
+    }
+  }
+
+  private _stopActiveRing(unitId: string): void {
+    const sprite = this._sprite(unitId)
+    if (!sprite) return
+    this.tweens.killTweensOf(sprite.activeRing)
+    sprite.activeRing.setScale(1).setVisible(false)
+  }
+
+  private _flashUnit(unitId: string, color: number, intensity: number): void {
+    const sprite = this._sprite(unitId)
+    if (!sprite) return
+    this.tweens.killTweensOf(sprite.flashRect)
+    sprite.flashRect.setFillStyle(color).setAlpha(intensity)
+    this.tweens.add({ targets: sprite.flashRect, alpha: 0, duration: 380, ease: 'Quad.In' })
   }
 
   private _showVictoryOverlay(winText: string, reason: string, round: number) {

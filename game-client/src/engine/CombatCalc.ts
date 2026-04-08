@@ -10,6 +10,7 @@
  */
 
 import type { TeamSide, EngineEvent } from './types'
+import { EventType } from './types'
 import type { BattleState } from './BattleState'
 import {
   isIsolated,
@@ -63,20 +64,20 @@ export function applyDamage(
   const target = state.runtime.get(targetId)
   if (!target || !target.alive) return []
   const events: EngineEvent[] = []
-  if (target.evadeCharges > 0) { target.evadeCharges--; events.push({ type: 'EVADE_TRIGGERED', unitId: targetId }); return events }
+  if (target.evadeCharges > 0) { target.evadeCharges--; events.push({ type: EventType.EVADE_TRIGGERED, unitId: targetId }); return events }
   let remaining = rawDamage
   if (target.shield > 0) {
     const absorbed = Math.min(target.shield, remaining)
     target.shield -= absorbed; remaining -= absorbed
-    events.push({ type: 'SHIELD_ABSORBED', unitId: targetId, shieldDamage: absorbed, newShield: target.shield })
+    events.push({ type: EventType.SHIELD_ABSORBED, unitId: targetId, shieldDamage: absorbed, newShield: target.shield })
     if (remaining <= 0) return events
   }
   target.hp = Math.max(0, target.hp - remaining)
-  events.push({ type: 'DAMAGE_APPLIED', unitId: targetId, amount: remaining, newHp: target.hp, sourceId })
+  events.push({ type: EventType.DAMAGE_APPLIED, unitId: targetId, amount: remaining, newHp: target.hp, sourceId })
   if (target.hp === 0) {
     target.alive = false
     events.push({
-      type:     'CHARACTER_DIED',
+      type:     EventType.CHARACTER_DIED,
       unitId:   targetId,
       killedBy: sourceId,
       wasKing:  state.defs.get(targetId)?.role === 'king',
@@ -90,7 +91,7 @@ export function applyReflect(state: BattleState, targetId: string, sourceId: str
   const target = state.runtime.get(targetId)
   if (!target?.alive || target.reflectPower <= 0) return []
   const events: EngineEvent[] = []
-  events.push({ type: 'REFLECT_TRIGGERED', unitId: targetId, amount: target.reflectPower, sourceId })
+  events.push({ type: EventType.REFLECT_TRIGGERED, unitId: targetId, amount: target.reflectPower, sourceId })
   events.push(...applyDamage(state, sourceId, target.reflectPower, targetId))
   return events
 }
@@ -100,49 +101,49 @@ export function applyHeal(state: BattleState, targetId: string, amount: number, 
   if (!target?.alive) return []
   const actual = Math.min(amount, target.maxHp - target.hp)
   target.hp += actual
-  return actual > 0 ? [{ type: 'HEAL_APPLIED', unitId: targetId, amount: actual, newHp: target.hp, sourceId }] : []
+  return actual > 0 ? [{ type: EventType.HEAL_APPLIED, unitId: targetId, amount: actual, newHp: target.hp, sourceId }] : []
 }
 
 export function applyShield(state: BattleState, targetId: string, amount: number): EngineEvent[] {
   const target = state.runtime.get(targetId)
   if (!target?.alive) return []
   target.shield += amount
-  return [{ type: 'SHIELD_APPLIED', unitId: targetId, amount }]
+  return [{ type: EventType.SHIELD_APPLIED, unitId: targetId, amount }]
 }
 
 export function applyBleed(state: BattleState, targetId: string, damagePerTick: number): EngineEvent[] {
   const target = state.runtime.get(targetId)
   if (!target?.alive) return []
   target.bleedTicks = BLEED_TICKS; target.bleedPower = damagePerTick
-  return [{ type: 'STATUS_APPLIED', unitId: targetId, status: 'bleed', value: damagePerTick }]
+  return [{ type: EventType.STATUS_APPLIED, unitId: targetId, status: 'bleed', value: damagePerTick }]
 }
 
 export function applyStun(state: BattleState, targetId: string): EngineEvent[] {
   const target = state.runtime.get(targetId)
   if (!target?.alive) return []
   target.stunTicks = STUN_TICKS
-  return [{ type: 'STATUS_APPLIED', unitId: targetId, status: 'stun', value: STUN_TICKS }]
+  return [{ type: EventType.STATUS_APPLIED, unitId: targetId, status: 'stun', value: STUN_TICKS }]
 }
 
 export function applyEvade(state: BattleState, targetId: string, charges = 1): EngineEvent[] {
   const target = state.runtime.get(targetId)
   if (!target?.alive) return []
   target.evadeCharges += charges
-  return [{ type: 'STATUS_APPLIED', unitId: targetId, status: 'evade', value: charges }]
+  return [{ type: EventType.STATUS_APPLIED, unitId: targetId, status: 'evade', value: charges }]
 }
 
 export function applyReflectBuff(state: BattleState, targetId: string, power: number): EngineEvent[] {
   const target = state.runtime.get(targetId)
   if (!target?.alive) return []
   target.reflectPower = power
-  return [{ type: 'STATUS_APPLIED', unitId: targetId, status: 'reflect', value: power }]
+  return [{ type: EventType.STATUS_APPLIED, unitId: targetId, status: 'reflect', value: power }]
 }
 
 export function applyRegen(state: BattleState, targetId: string, healPerTick: number): EngineEvent[] {
   const target = state.runtime.get(targetId)
   if (!target?.alive) return []
   target.regenTicks = REGEN_TICKS; target.regenPower = healPerTick
-  return [{ type: 'STATUS_APPLIED', unitId: targetId, status: 'regen', value: healPerTick }]
+  return [{ type: EventType.STATUS_APPLIED, unitId: targetId, status: 'regen', value: healPerTick }]
 }
 
 export function applyHealReduction(state: BattleState, targetId: string): void {
@@ -157,11 +158,11 @@ export function tickStatusEffects(state: BattleState, unitId: string): EngineEve
   const events: EngineEvent[] = []
   if (target.bleedTicks > 0) {
     const dmg = target.bleedPower; target.hp = Math.max(0, target.hp - dmg); target.bleedTicks--
-    events.push({ type: 'BLEED_TICK', unitId, damage: dmg, newHp: target.hp })
+    events.push({ type: EventType.BLEED_TICK, unitId, damage: dmg, newHp: target.hp })
     if (target.hp === 0) {
       target.alive = false
       events.push({
-        type:     'CHARACTER_DIED',
+        type:     EventType.CHARACTER_DIED,
         unitId,
         killedBy: null,
         wasKing:  state.defs.get(unitId)?.role === 'king',
@@ -172,7 +173,7 @@ export function tickStatusEffects(state: BattleState, unitId: string): EngineEve
   if (target.regenTicks > 0 && target.alive) {
     const heal = target.regenPower; const actual = Math.min(heal, target.maxHp - target.hp)
     target.hp += actual; target.regenTicks--
-    if (actual > 0) events.push({ type: 'REGEN_TICK', unitId, heal: actual, newHp: target.hp })
+    if (actual > 0) events.push({ type: EventType.REGEN_TICK, unitId, heal: actual, newHp: target.hp })
   }
   if (target.stunTicks > 0)          target.stunTicks--
   if (target.healReductionTicks > 0) target.healReductionTicks--

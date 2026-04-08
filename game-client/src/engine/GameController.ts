@@ -34,15 +34,14 @@ import type { VictoryResult } from '../domain/Battle'
 import { Character }          from '../domain/Character'
 import { Skill }              from '../domain/Skill'
 import { SkillRegistry }      from '../domain/SkillRegistry'
-import { Grid }               from '../domain/Grid'
-import type { Position, GridSide } from '../domain/Grid'
+import type { Position }      from '../domain/Grid'
 import { CombatEngine }       from './CombatEngine'
 import type { TargetSpec, ActionSelection } from './CombatEngine'
 import type { PassiveDefinition } from '../domain/Passive'
 import type { CombatRuleDefinition } from '../domain/CombatRule'
 import { EventBus }           from './EventBus'
 import type { EngineEvent, TeamSide, PhaseType } from './types'
-import { Ok, Err }            from './types'
+import { Ok, Err, EventType } from './types'
 import type { Result }        from './types'
 import type { SkipReason }    from './TurnManager'
 
@@ -83,14 +82,7 @@ export class GameController {
   private readonly _engine:   CombatEngine
   private readonly _registry: SkillRegistry
   private readonly _bus:      EventBus
-  private readonly _grid:     Grid
   private readonly _durations: { movement: number; action: number }
-
-  /**
-   * Tracks which characters have already moved during the current movement phase.
-   * Cleared at the start of every new movement phase.
-   */
-  private readonly _movedThisPhase: Set<string> = new Set()
 
   // ── Action-selection state (controller-level UX flow) ───────────────────────
 
@@ -104,6 +96,11 @@ export class GameController {
    */
   private _awaitingTarget: { skill: Skill; characterId: string } | null = null
 
+  // ── Movement-selection state ─────────────────────────────────────────────────
+
+  /** The character the player has selected to move during the movement phase. */
+  private _selectedForMove: string | null = null
+
   // ── Constructor ─────────────────────────────────────────────────────────────
 
   constructor(config: GameControllerConfig) {
@@ -111,7 +108,6 @@ export class GameController {
     this._engine    = config.engine
     this._registry  = config.registry
     this._bus       = new EventBus()
-    this._grid      = new Grid()
     this._durations = config.phaseDurations ?? DEFAULT_DURATIONS
 
     // Forward every engine event to the controller bus so consumers only need
@@ -119,9 +115,15 @@ export class GameController {
     this._engine.on((event) => this._bus.emit(event))
 
     // Auto-reset action state whenever a turn completes, is skipped, or battle ends
-    this._bus.onType('TURN_COMMITTED',  () => this._resetActionState())
-    this._bus.onType('TURN_SKIPPED',    () => this._resetActionState())
-    this._bus.onType('BATTLE_ENDED',    () => this._resetActionState())
+    this._bus.onType(EventType.TURN_COMMITTED,  () => this._resetActionState())
+    this._bus.onType(EventType.TURN_SKIPPED,    () => this._resetActionState())
+    this._bus.onType(EventType.BATTLE_ENDED,    () => this._resetActionState())
+
+    // Auto-reset move selection after the character moves or the phase ends
+    this._bus.onType(EventType.CHARACTER_MOVED, (e) => {
+      if (e.unitId === this._selectedForMove) this._clearMoveSelectionInternal()
+    })
+    this._bus.onType(EventType.PHASE_ENDED, () => this._clearMoveSelectionInternal())
   }
 
   // ── Static factory ──────────────────────────────────────────────────────────
@@ -192,12 +194,12 @@ export class GameController {
    */
   startBattle(): void {
     this._battle.start()
-    this._syncGrid()
-    this._bus.emit({ type: 'BATTLE_STARTED' })
-    this._bus.emit({ type: 'ROUND_STARTED', round: this._battle.round })
+    this._engine.syncGrid(this._battle.allCharacters)
+    this._bus.emit({ type: EventType.BATTLE_STARTED })
+    this._bus.emit({ type: EventType.ROUND_STARTED, round: this._battle.round })
     this._engine.applyRoundStartRules()
     this._bus.emit({
-      type:     'PHASE_STARTED',
+      type:     EventType.PHASE_STARTED,
       phase:    this._battle.phase,
       side:     this._battle.currentSide as TeamSide,
       duration: this._durations[this._battle.phase],
@@ -215,6 +217,48 @@ export class GameController {
   // ── Movement phase commands ─────────────────────────────────────────────────
 
   /**
+   * Select a character for movement during the movement phase.
+   *
+   * Validates:
+   *   - Current phase is 'movement'
+   *   - Character exists, is alive, and belongs to the active side
+   *   - Character has not already moved this phase
+   *
+   * Emits `MOVE_CHARACTER_SELECTED`. The UI should then call
+   * `getValidMoves(characterId)` to show destination tiles.
+   * Clears any previous move selection first.
+   */
+  selectForMove(characterId: string): Result<void> {
+    const char = this._battle.getCharacter(characterId)
+    if (!char)       return Err(`Character '${characterId}' not found`)
+    if (!char.alive) return Err(`${char.name} is dead`)
+    if (this._battle.phase !== 'movement')
+      return Err('Character movement selection requires the movement phase')
+    if (char.side !== this._battle.currentSide)
+      return Err(`Not ${char.side} side's turn`)
+    if (this._engine.hasMoved(characterId))
+      return Err(`${char.name} already moved this phase`)
+
+    // Clear previous selection silently, then announce new one
+    this._selectedForMove = characterId
+    this._bus.emit({ type: EventType.MOVE_CHARACTER_SELECTED, unitId: characterId })
+    return Ok(undefined)
+  }
+
+  /**
+   * Clear the current move selection without advancing the phase.
+   * Emits `MOVE_SELECTION_CLEARED`.
+   */
+  clearMoveSelection(): void {
+    this._clearMoveSelectionInternal()
+  }
+
+  /** The character currently selected for movement, or null. */
+  get selectedForMoveId(): string | null {
+    return this._selectedForMove
+  }
+
+  /**
    * Move `characterId` to tile (toCol, toRow).
    *
    * Validates:
@@ -227,29 +271,18 @@ export class GameController {
    *
    * On success: updates domain position, emits `unit_moved`.
    */
+  /**
+   * Move `characterId` to (toCol, toRow).
+   * All validation is performed by CombatEngine (phase, side, alive, range, occupancy).
+   * CHARACTER_MOVED is emitted by CombatEngine and forwarded to this bus automatically.
+   */
   moveCharacter(characterId: string, toCol: number, toRow: number): Result<void> {
-    const char = this._battle.getCharacter(characterId)
-    if (!char) return Err(`Character '${characterId}' not found`)
-
-    const validation = this._validateMove(char, toCol, toRow)
-    if (!validation.ok) return validation
-
-    const fromCol = char.col
-    const fromRow = char.row
-
-    // Update domain entity position
-    char.moveTo(toCol, toRow)
-    // Update grid occupancy (used by subsequent validMove queries this phase)
-    this._grid.moveCharacter(characterId, toCol, toRow)
-    this._movedThisPhase.add(characterId)
-
-    this._bus.emit({ type: 'CHARACTER_MOVED', unitId: characterId, fromCol, fromRow, toCol, toRow })
-    return Ok(undefined)
+    return this._engine.moveCharacter(characterId, toCol, toRow)
   }
 
-  /** True if `characterId` has already moved during this movement phase. */
+  /** True if `characterId` has already moved during the current movement phase. */
   hasMoved(characterId: string): boolean {
-    return this._movedThisPhase.has(characterId)
+    return this._engine.hasMoved(characterId)
   }
 
   // ── Action phase commands ───────────────────────────────────────────────────
@@ -348,7 +381,7 @@ export class GameController {
     const endedPhase = this._battle.phase
     const endedSide  = this._battle.currentSide as TeamSide
 
-    this._bus.emit({ type: 'PHASE_ENDED', phase: endedPhase, side: endedSide })
+    this._bus.emit({ type: EventType.PHASE_ENDED, phase: endedPhase, side: endedSide })
 
     const wasActionPhase = endedPhase === 'action'
     const wasRightSide   = endedSide  === 'right'
@@ -361,20 +394,20 @@ export class GameController {
     if (wasActionPhase && wasRightSide) {
       this._engine.tickStatusEffects()
       if (!this._battle.isOver) {
-        this._bus.emit({ type: 'ROUND_STARTED', round: this._battle.round })
+        this._bus.emit({ type: EventType.ROUND_STARTED, round: this._battle.round })
         this._engine.applyRoundStartRules()
       }
     }
 
     if (!this._battle.isOver) {
-      // Reset movement tracking and re-sync positions for the new movement phase
+      // Reset movement tracking and re-sync grid for the new movement phase
       if (this._battle.phase === 'movement') {
-        this._movedThisPhase.clear()
-        this._syncGrid()
+        this._engine.resetMovementPhase()
+        this._engine.syncGrid(this._battle.allCharacters)
       }
 
       this._bus.emit({
-        type:     'PHASE_STARTED',
+        type:     EventType.PHASE_STARTED,
         phase:    this._battle.phase,
         side:     this._battle.currentSide as TeamSide,
         duration: this._durations[this._battle.phase],
@@ -454,15 +487,9 @@ export class GameController {
    * King: full territory (no range limit).
    * Others: Manhattan distance ≤ character.mobility.
    */
+  /** All tile positions the character can legally move to. Delegates to CombatEngine. */
   getValidMoves(characterId: string): Position[] {
-    const char = this._battle.getCharacter(characterId)
-    if (!char?.alive) return []
-    if (this._movedThisPhase.has(characterId)) return []
-
-    const side = char.side as GridSide
-    return char.role === 'king'
-      ? this._grid.kingDestinations(characterId, side)
-      : this._grid.validDestinations(characterId, char.mobility, side)
+    return this._engine.getValidMoves(characterId)
   }
 
   /**
@@ -515,23 +542,22 @@ export class GameController {
    * Emits `character_focused`. Cancels any previous focus (emits
    * `selection_cancelled` for the previously focused character first).
    */
+  /**
+   * Focus a character for action selection.
+   * All invariant validation (phase, alive, correct side) is performed by
+   * CombatEngine.canActThisTurn(). GameController only manages the UX focus state.
+   */
   selectCharacter(characterId: string): Result<void> {
-    if (this._battle.phase !== 'action')
-      return Err('selectCharacter requires the action phase')
+    const validation = this._engine.canActThisTurn(characterId)
+    if (!validation.ok) return validation
 
-    const char = this._battle.getCharacter(characterId)
-    if (!char)  return Err(`Character '${characterId}' not found`)
-    if (!char.alive) return Err(`${char.name} is dead`)
-    if (char.side !== this._battle.currentSide)
-      return Err(`Not ${char.side} side's turn`)
-
-    // If a different character was already focused, cancel that focus first
+    // Cancel any previous focus before switching to a new character
     if (this._focusedCharacterId && this._focusedCharacterId !== characterId) {
       this._resetActionState()
     }
 
     this._focusedCharacterId = characterId
-    this._bus.emit({ type: 'CHARACTER_FOCUSED', unitId: characterId })
+    this._bus.emit({ type: EventType.CHARACTER_FOCUSED, unitId: characterId })
     return Ok(undefined)
   }
 
@@ -577,7 +603,7 @@ export class GameController {
         this._awaitingTarget = { skill, characterId }
         const targetMode: 'unit' | 'tile' =
           skill.targetType === 'area' ? 'tile' : 'unit'
-        this._bus.emit({ type: 'AWAITING_TARGET', unitId: characterId, skillId, targetMode })
+        this._bus.emit({ type: EventType.AWAITING_TARGET, unitId: characterId, skillId, targetMode })
         return Ok(undefined)
       }
     }
@@ -620,7 +646,7 @@ export class GameController {
   cancelAction(): void {
     const prev = this._focusedCharacterId
     this._resetActionState()
-    this._bus.emit({ type: 'SELECTION_CANCELLED', unitId: prev })
+    this._bus.emit({ type: EventType.SELECTION_CANCELLED, unitId: prev })
   }
 
   // ── Action-state queries ────────────────────────────────────────────────────
@@ -643,20 +669,6 @@ export class GameController {
   // ── Private helpers ─────────────────────────────────────────────────────────
 
   /**
-   * (Re-)synchronise the controller's Grid with the current character positions.
-   * Called on battle start and at the start of each movement phase.
-   */
-  private _syncGrid(): void {
-    for (const char of this._battle.allCharacters) {
-      if (char.alive) {
-        this._grid.place(char.id, char.col, char.row)
-      } else {
-        this._grid.remove(char.id)
-      }
-    }
-  }
-
-  /**
    * Reset all action-selection state without emitting any event.
    * Used internally by auto-reset listeners and cancelAction().
    */
@@ -666,13 +678,23 @@ export class GameController {
   }
 
   /**
+   * Clear move selection state and emit MOVE_SELECTION_CLEARED.
+   * No-op if nothing is selected.
+   */
+  private _clearMoveSelectionInternal(): void {
+    if (this._selectedForMove === null) return
+    this._selectedForMove = null
+    this._bus.emit({ type: EventType.MOVE_SELECTION_CLEARED })
+  }
+
+  /**
    * If the focused character now has both attack and defense selected,
    * emit `selection_ready`.
    */
   private _maybeEmitSelectionReady(characterId: string): void {
     const sel = this._engine.getSelection(characterId)
     if (sel?.attackSkill && sel.defenseSkill) {
-      this._bus.emit({ type: 'SELECTION_READY', unitId: characterId })
+      this._bus.emit({ type: EventType.SELECTION_READY, unitId: characterId })
     }
   }
 
@@ -689,30 +711,4 @@ export class GameController {
     }
   }
 
-  /**
-   * Validate a move command before committing it to the domain.
-   * Returns Ok(undefined) on success, Err(reason) on any violation.
-   */
-  private _validateMove(char: Character, toCol: number, toRow: number): Result<void> {
-    if (!char.alive)
-      return Err(`${char.name} is dead`)
-
-    if (this._battle.phase !== 'movement')
-      return Err('Not the movement phase')
-
-    if (char.side !== this._battle.currentSide)
-      return Err(`Not ${char.side} side's turn`)
-
-    if (this._movedThisPhase.has(char.id))
-      return Err(`${char.name} already moved this phase`)
-
-    // Delegate range / territory / occupancy checks to the Grid
-    // (Grid was synced at phase start; moves update it incrementally)
-    const result = char.role === 'king'
-      ? this._grid.canKingMoveTo(char.id, toCol, toRow, char.side as GridSide)
-      : this._grid.canMoveTo(char.id, toCol, toRow, char.mobility, char.side as GridSide)
-
-    // GridResult is structurally identical to Result — return directly
-    return result
-  }
 }
