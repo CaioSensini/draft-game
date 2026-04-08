@@ -588,7 +588,7 @@ export default class DeckBuildScene extends Phaser.Scene {
       specialist: this.buildUnitDeck('specialist'),
       executor:   this.buildUnitDeck('executor'),
     }
-    this.scene.start('ArenaScene', { deckConfig, difficulty: this.difficulty })
+    this.scene.start('BattleScene', { deckConfig, difficulty: this.difficulty })
   }
 
   private buildUnitDeck(role: UnitRole) {

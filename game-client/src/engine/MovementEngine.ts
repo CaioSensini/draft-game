@@ -113,7 +113,7 @@ export function applyMove(
   rt.row   = row
   turn.movedThisPhase = true
 
-  return [{ type: 'unit_moved', unitId, fromCol, fromRow, toCol: col, toRow: row }]
+  return [{ type: 'CHARACTER_MOVED', unitId, fromCol, fromRow, toCol: col, toRow: row }]
 }
 
 /** Return all valid destination tiles for `unitId` in the current state. */

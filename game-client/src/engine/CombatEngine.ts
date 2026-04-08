@@ -200,11 +200,11 @@ export class CombatEngine {
     sel.attackSkill = skill
     sel.target      = target
 
-    this.emit({ type: 'card_selected', unitId: characterId, cardId: skill.id, category: 'attack' })
+    this.emit({ type: 'CARD_SELECTED', unitId: characterId, cardId: skill.id, category: 'attack' })
     if (target.kind === 'character') {
-      this.emit({ type: 'target_selected', unitId: characterId, targetId: target.characterId })
+      this.emit({ type: 'TARGET_SELECTED', unitId: characterId, targetId: target.characterId })
     } else if (target.kind === 'area') {
-      this.emit({ type: 'area_target_set', unitId: characterId, col: target.col, row: target.row })
+      this.emit({ type: 'AREA_TARGET_SET', unitId: characterId, col: target.col, row: target.row })
     }
     return Ok(undefined)
   }
@@ -229,7 +229,7 @@ export class CombatEngine {
     const sel = this._getOrCreateSelection(characterId)
     sel.defenseSkill = skill
 
-    this.emit({ type: 'card_selected', unitId: characterId, cardId: skill.id, category: 'defense' })
+    this.emit({ type: 'CARD_SELECTED', unitId: characterId, cardId: skill.id, category: 'defense' })
     return Ok(undefined)
   }
 
@@ -302,7 +302,7 @@ export class CombatEngine {
     const char = this.battle.getCharacter(characterId)
     if (!char || !char.alive) {
       this._turn.skip('dead')
-      this.emit({ type: 'turn_skipped', unitId: characterId, reason: 'dead' })
+      this.emit({ type: 'TURN_SKIPPED', unitId: characterId, reason: 'dead' })
       this._emitPhaseAdvance(side)
       return
     }
@@ -310,7 +310,7 @@ export class CombatEngine {
     if (char.isStunned) {
       char.tickEffects()
       this._turn.skip('stunned')
-      this.emit({ type: 'turn_skipped', unitId: characterId, reason: 'stunned' })
+      this.emit({ type: 'TURN_SKIPPED', unitId: characterId, reason: 'stunned' })
       this._emitPhaseAdvance(side)
       return
     }
@@ -318,7 +318,7 @@ export class CombatEngine {
     const sel = this.selections.get(char.id)
     if (!sel || (!sel.attackSkill && !sel.defenseSkill)) {
       this._turn.skip('no_selection')
-      this.emit({ type: 'turn_skipped', unitId: characterId, reason: 'no_selection' })
+      this.emit({ type: 'TURN_SKIPPED', unitId: characterId, reason: 'no_selection' })
       this._emitPhaseAdvance(side)
       return
     }
@@ -333,7 +333,7 @@ export class CombatEngine {
     this.selections.delete(char.id)
 
     this._turn.commit()
-    this.emit({ type: 'turn_committed', unitId: characterId, timeUsedMs: snap.timeUsedMs })
+    this.emit({ type: 'TURN_COMMITTED', unitId: characterId, timeUsedMs: snap.timeUsedMs })
 
     if (this.battle.isOver) return   // king died mid-turn — stop sequencing
     this._emitPhaseAdvance(side)
@@ -348,7 +348,7 @@ export class CombatEngine {
     const side = this.battle.currentSide
     if (!id) return
     this._turn.skip(reason)
-    this.emit({ type: 'turn_skipped', unitId: id, reason })
+    this.emit({ type: 'TURN_SKIPPED', unitId: id, reason })
     this._emitPhaseAdvance(side)
   }
 
@@ -439,7 +439,7 @@ export class CombatEngine {
     }
 
     this.selections.clear()
-    this.emit({ type: 'actions_resolved', side: side as import('./types').TeamSide })
+    this.emit({ type: 'ACTIONS_RESOLVED', side: side as import('./types').TeamSide })
   }
 
   // ── Status effect ticks ───────────────────────────────────────────────────
@@ -470,18 +470,18 @@ export class CombatEngine {
 
       for (const tick of result.ticks) {
         if (tick.effectType === 'bleed' && tick.value > 0) {
-          this.emit({ type: 'bleed_tick',  unitId: char.id, damage: tick.value, newHp: char.hp })
+          this.emit({ type: 'BLEED_TICK',  unitId: char.id, damage: tick.value, newHp: char.hp })
         }
         if (tick.effectType === 'poison' && tick.value > 0) {
-          this.emit({ type: 'poison_tick', unitId: char.id, damage: tick.value, newHp: char.hp })
+          this.emit({ type: 'POISON_TICK', unitId: char.id, damage: tick.value, newHp: char.hp })
         }
         if (tick.effectType === 'regen' && tick.value > 0) {
-          this.emit({ type: 'regen_tick',  unitId: char.id, heal: tick.value,   newHp: char.hp })
+          this.emit({ type: 'REGEN_TICK',  unitId: char.id, heal: tick.value,   newHp: char.hp })
         }
         // Emit when a stat modifier expires so the renderer can clear its debuff icon
         if (tick.expired && _isStatModType(tick.effectType)) {
           this.emit({
-            type:       'stat_modifier_expired',
+            type:       'STAT_MODIFIER_EXPIRED',
             unitId:     char.id,
             effectType: tick.effectType as 'def_down' | 'atk_down' | 'mov_down' | 'def_up' | 'atk_up',
           })
@@ -492,7 +492,7 @@ export class CombatEngine {
         // DoT kill — no explicit attacker
         this._recordDeath(char.id, null)
         this.emit({
-          type:     'unit_died',
+          type:     'CHARACTER_DIED',
           unitId:   char.id,
           killedBy: null,
           wasKing:  char.role === 'king',
@@ -593,7 +593,7 @@ export class CombatEngine {
     const result = this.battle.resolveVictory()
     this._victoryResult = result
     this.emit({
-      type:   'battle_ended',
+      type:   'BATTLE_ENDED',
       winner: result.winner as import('./types').TeamSide | null,
       reason: result.reason,
       round:  result.round,
@@ -608,6 +608,12 @@ export class CombatEngine {
    */
   private _applyDefenseSkill(char: Character, skill: Skill | null): void {
     if (!skill) return
+
+    // Signal to Phaser: this defense skill is now executing (start cast animation)
+    this.emit({
+      type: 'SKILL_USED', unitId: char.id, skillId: skill.id,
+      skillName: skill.name, category: 'defense', targetId: char.id,
+    })
 
     const ctx: EffectContext = {
       caster: char, target: char,
@@ -648,14 +654,20 @@ export class CombatEngine {
 
       case 'area': {
         if (target.kind !== 'area') return
+        // Top-level area announcement (lets Phaser show the blast overlay before per-hit damage)
+        this.emit({
+          type: 'SKILL_USED', unitId: caster.id, skillId: skill.id,
+          skillName: skill.name, category: 'attack',
+          areaCenter: { col: target.col, row: target.row },
+        })
         const hits = this._targeting.resolveTargets(skill, caster, target, this.battle) as Character[]
         for (const hit of hits) {
           if (this.battle.isOver) break
           this._applyOffensiveSkill(caster, hit, skill)
         }
-        // Always emit area_resolved (even on 0 hits) so the renderer can show the blast
+        // Always emit AREA_RESOLVED (even on 0 hits) so the renderer can show the blast
         this.emit({
-          type: 'area_resolved',
+          type: 'AREA_RESOLVED',
           centerCol: target.col, centerRow: target.row,
           hitIds: hits.map((c) => c.id),
         })
@@ -696,6 +708,16 @@ export class CombatEngine {
    */
   private _applyOffensiveSkill(caster: Character, target: Character, skill: Skill): void {
     if (!target.alive) return
+
+    // Signal to Phaser: this attack is now executing against this target.
+    // Suppressed for area skills — the top-level area announcement in
+    // _applyAttackSkill already fired with areaCenter; per-hit events would duplicate it.
+    if (skill.targetType !== 'area') {
+      this.emit({
+        type: 'SKILL_USED', unitId: caster.id, skillId: skill.id,
+        skillName: skill.name, category: 'attack', targetId: target.id,
+      })
+    }
 
     // true_damage bypasses the ATK/DEF formula — use power directly
     const rawDamage = skill.effectType === 'true_damage'
@@ -762,14 +784,14 @@ export class CombatEngine {
   private _applyReflectDamage(reflector: Character, caster: Character, amount: number): void {
     const result = caster.takeDamage(amount)
     if (result.hpDamage > 0) {
-      this.emit({ type: 'damage_taken', unitId: caster.id, amount: result.hpDamage, newHp: caster.hp, sourceId: reflector.id })
+      this.emit({ type: 'DAMAGE_APPLIED', unitId: caster.id, amount: result.hpDamage, newHp: caster.hp, sourceId: reflector.id })
       this._addStat(reflector.id, 'damageDealt',   result.hpDamage)
       this._addStat(caster.id,   'damageReceived', result.hpDamage)
     }
     if (result.killed) {
       this._recordDeath(caster.id, reflector.id)
       this.emit({
-        type:     'unit_died',
+        type:     'CHARACTER_DIED',
         unitId:   caster.id,
         killedBy: reflector.id,
         wasKing:  caster.role === 'king',
@@ -790,7 +812,7 @@ export class CombatEngine {
       if (deck) {
         const result = deck.use(sel.attackSkill.id)
         if (result) {
-          this.emit({ type: 'card_rotated', unitId: char.id, cardId: sel.attackSkill.id, category: 'attack', nextCardId: result.newHand[0]?.id ?? sel.attackSkill.id })
+          this.emit({ type: 'CARD_ROTATED', unitId: char.id, cardId: sel.attackSkill.id, category: 'attack', nextCardId: result.newHand[0]?.id ?? sel.attackSkill.id })
         }
       }
     }
@@ -800,7 +822,7 @@ export class CombatEngine {
       if (deck) {
         const result = deck.use(sel.defenseSkill.id)
         if (result) {
-          this.emit({ type: 'card_rotated', unitId: char.id, cardId: sel.defenseSkill.id, category: 'defense', nextCardId: result.newHand[0]?.id ?? sel.defenseSkill.id })
+          this.emit({ type: 'CARD_ROTATED', unitId: char.id, cardId: sel.defenseSkill.id, category: 'defense', nextCardId: result.newHand[0]?.id ?? sel.defenseSkill.id })
         }
       }
     }
@@ -811,7 +833,7 @@ export class CombatEngine {
   /** Emit turn_started for the current slot, or actions_resolved if done. */
   private _emitPhaseAdvance(side: CharacterSide): void {
     if (this._turn.isPhaseComplete) {
-      this.emit({ type: 'actions_resolved', side: side as import('./types').TeamSide })
+      this.emit({ type: 'ACTIONS_RESOLVED', side: side as import('./types').TeamSide })
     } else {
       this._emitNextTurnStarted()
     }
@@ -822,7 +844,7 @@ export class CombatEngine {
     const snap = this._turn.currentSnapshot
     if (snap) {
       this.emit({
-        type: 'turn_started',
+        type: 'TURN_STARTED',
         unitId:       snap.characterId,
         order:        snap.order,
         total:        snap.total,
@@ -853,7 +875,7 @@ export class CombatEngine {
     const result = this.battle.resolveVictory()
     this._victoryResult = result
     this.emit({
-      type:   'battle_ended',
+      type:   'BATTLE_ENDED',
       winner: result.winner as import('./types').TeamSide | null,
       reason: result.reason,
       round:  result.round,

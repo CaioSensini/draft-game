@@ -3,6 +3,7 @@ import BootScene from '../scenes/BootScene'
 import MenuScene from '../scenes/MenuScene'
 import DeckBuildScene from '../scenes/DeckBuildScene'
 import ArenaScene from '../scenes/ArenaScene'
+import BattleScene from '../scenes/BattleScene'
 
 /**
  * Central Phaser game configuration.
@@ -15,7 +16,7 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
   height: 720,
   parent: 'game',
   backgroundColor: '#0f1117',
-  scene: [BootScene, MenuScene, DeckBuildScene, ArenaScene],
+  scene: [BootScene, MenuScene, DeckBuildScene, ArenaScene, BattleScene],
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,

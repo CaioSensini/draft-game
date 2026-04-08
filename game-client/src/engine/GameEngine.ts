@@ -67,7 +67,7 @@ export class GameEngine {
   /** Begin the battle. Emits `battle_started` and `phase_started`. */
   start(): void {
     if (this.state.battleOver) return
-    this.bus.emit({ type: 'battle_started' })
+    this.bus.emit({ type: 'BATTLE_STARTED' })
     this._emit(startPhase(this.state, 'movement', this._phaseDurations()))
     this._maybeRunBot()
   }

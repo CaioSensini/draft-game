@@ -39,7 +39,7 @@ export function startPhase(
 
   resetTurns(state, side)
 
-  return [{ type: 'phase_started', phase, side, duration }]
+  return [{ type: 'PHASE_STARTED', phase, side, duration }]
 }
 
 // ── Phase end / advancement ───────────────────────────────────────────────────
@@ -62,7 +62,7 @@ export function endPhase(
   const events: EngineEvent[] = []
   const side = currentSide(state)
 
-  events.push({ type: 'phase_ended', phase: state.phase, side })
+  events.push({ type: 'PHASE_ENDED', phase: state.phase, side })
 
   if (state.phase === 'movement') {
     // Movement → action (same side)
@@ -71,7 +71,7 @@ export function endPhase(
   } else {
     // Action phase ends → resolve actions for this side
     events.push(...resolveAllActions(state, side, cardRegistry))
-    events.push({ type: 'actions_resolved', side })
+    events.push({ type: 'ACTIONS_RESOLVED', side })
 
     // Check win condition after resolution
     const battleEndEvents = checkBattleEnd(state)
@@ -97,7 +97,7 @@ export function endPhase(
 
       state.sideIndex  = 0
       state.roundNumber++
-      events.push({ type: 'round_started', round: state.roundNumber })
+      events.push({ type: 'ROUND_STARTED', round: state.roundNumber })
       events.push(...startPhase(state, 'movement', phaseDurations))
     }
   }
@@ -161,7 +161,7 @@ export function checkBattleEnd(state: BattleState): EngineEvent[] {
 
   const bothDead = !leftKingAlive && !rightKingAlive
   return [{
-    type:   'battle_ended',
+    type:   'BATTLE_ENDED',
     winner: bothDead ? null : winner,
     reason: bothDead ? 'simultaneous_kings' : 'king_slain',
     round:  state.roundNumber,

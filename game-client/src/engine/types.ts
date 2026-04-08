@@ -133,14 +133,14 @@ export function Err<T = never>(error: string): Result<T> { return { ok: false, e
 
 export type EngineEvent =
   // ── Movement ──
-  | { type: 'unit_moved';        unitId: string; fromCol: number; fromRow: number; toCol: number; toRow: number }
+  | { type: 'CHARACTER_MOVED';      unitId: string; fromCol: number; fromRow: number; toCol: number; toRow: number }
 
   // ── Damage / HP ──
-  | { type: 'damage_taken';      unitId: string; amount: number; newHp: number; sourceId: string | null }
-  | { type: 'shield_absorbed';   unitId: string; shieldDamage: number; newShield: number }
-  | { type: 'evade_triggered';   unitId: string }
-  | { type: 'reflect_triggered'; unitId: string; amount: number; sourceId: string }
-  | { type: 'unit_died';
+  | { type: 'DAMAGE_APPLIED';       unitId: string; amount: number; newHp: number; sourceId: string | null }
+  | { type: 'SHIELD_ABSORBED';      unitId: string; shieldDamage: number; newShield: number }
+  | { type: 'EVADE_TRIGGERED';      unitId: string }
+  | { type: 'REFLECT_TRIGGERED';    unitId: string; amount: number; sourceId: string }
+  | { type: 'CHARACTER_DIED';
       unitId:   string
       /** Who dealt the killing blow. Null when killed by a DoT tick. */
       killedBy: string | null
@@ -149,21 +149,21 @@ export type EngineEvent =
       round:    number }
 
   // ── Healing / buffs ──
-  | { type: 'heal_applied';      unitId: string; amount: number; newHp: number; sourceId: string | null }
-  | { type: 'shield_applied';    unitId: string; amount: number }
+  | { type: 'HEAL_APPLIED';         unitId: string; amount: number; newHp: number; sourceId: string | null }
+  | { type: 'SHIELD_APPLIED';       unitId: string; amount: number }
 
   // ── Status effects ──
-  | { type: 'status_applied';
+  | { type: 'STATUS_APPLIED';
       unitId: string
       status: 'bleed' | 'poison' | 'stun' | 'regen' | 'reflect' | 'evade'
             | 'def_down' | 'atk_down' | 'mov_down'
             | 'def_up'   | 'atk_up'
             | 'heal_reduction'
       value: number }
-  | { type: 'bleed_tick';          unitId: string; damage: number; newHp: number }
-  | { type: 'poison_tick';         unitId: string; damage: number; newHp: number }
-  | { type: 'regen_tick';          unitId: string; heal: number;   newHp: number }
-  | { type: 'stat_modifier_expired'; unitId: string
+  | { type: 'BLEED_TICK';           unitId: string; damage: number; newHp: number }
+  | { type: 'POISON_TICK';          unitId: string; damage: number; newHp: number }
+  | { type: 'REGEN_TICK';           unitId: string; heal: number;   newHp: number }
+  | { type: 'STAT_MODIFIER_EXPIRED'; unitId: string
       effectType: 'def_down' | 'atk_down' | 'mov_down' | 'def_up' | 'atk_up' }
 
   // ── Passives ──
@@ -172,7 +172,7 @@ export type EngineEvent =
    * Emitted by PassiveSystem.onDamageDealt (and future injection points).
    * Renderers can use this to display passive-activation indicators (sparkles, icons).
    */
-  | { type: 'passive_triggered'
+  | { type: 'PASSIVE_TRIGGERED'
       /** Character whose passive fired. */
       unitId:    string
       /** Which passive definition was triggered (matches PassiveDefinition.id). */
@@ -182,19 +182,19 @@ export type EngineEvent =
 
   // ── Dispel ──
   /** Debuffs removed from an ally/self by a cleanse effect. */
-  | { type: 'effects_cleansed'; unitId: string; removed: string[] }
+  | { type: 'EFFECTS_CLEANSED'; unitId: string; removed: string[] }
   /** Buffs stripped from an enemy by a purge effect. */
-  | { type: 'effects_purged';   unitId: string; removed: string[] }
+  | { type: 'EFFECTS_PURGED';   unitId: string; removed: string[] }
 
   // ── Area ──
-  | { type: 'area_resolved';     centerCol: number; centerRow: number; hitIds: string[] }
+  | { type: 'AREA_RESOLVED';        centerCol: number; centerRow: number; hitIds: string[] }
 
   // ── Push / knockback ──
   /**
    * A character was pushed in a direction.
    * `distanceMoved` may be less than `force` when blocked.
    */
-  | { type: 'unit_pushed'
+  | { type: 'UNIT_PUSHED'
       unitId:        string
       fromCol:       number
       fromRow:       number
@@ -210,9 +210,9 @@ export type EngineEvent =
       collidedWith:  string | null }
   /**
    * A pushed unit collided with another unit and was stopped.
-   * Emitted in addition to `unit_pushed` when collidedWith !== null.
+   * Emitted in addition to `UNIT_PUSHED` when collidedWith !== null.
    */
-  | { type: 'push_collision'
+  | { type: 'PUSH_COLLISION'
       /** The unit that was pushed and stopped. */
       pushedId:  string
       /** The unit that blocked the push. */
@@ -222,22 +222,46 @@ export type EngineEvent =
       row:       number }
 
   // ── Card / selection ──
-  | { type: 'card_selected';     unitId: string; cardId: string; category: CardCategory }
-  | { type: 'target_selected';   unitId: string; targetId: string }
-  | { type: 'area_target_set';   unitId: string; col: number; row: number }
-  | { type: 'card_rotated';      unitId: string; cardId: string; category: CardCategory; nextCardId: string }
+  | { type: 'CARD_SELECTED';        unitId: string; cardId: string; category: CardCategory }
+  | { type: 'TARGET_SELECTED';      unitId: string; targetId: string }
+  | { type: 'AREA_TARGET_SET';      unitId: string; col: number; row: number }
+  | { type: 'CARD_ROTATED';         unitId: string; cardId: string; category: CardCategory; nextCardId: string }
+
+  // ── Skill execution ──
+  /**
+   * A skill is about to be resolved in combat (fires BEFORE damage/effects events).
+   * Phaser should use this as the trigger to start skill animations (projectile,
+   * cast glow, etc.), before the outcome events arrive.
+   *
+   * Distinction from `CARD_SELECTED`:
+   *   CARD_SELECTED  → player selected a card in the UI (selection phase)
+   *   SKILL_USED     → the skill is actually executing this turn (resolution phase)
+   *
+   * For defense skills: targetId is the caster's own id.
+   * For area skills:    areaCenter is set; targetId is absent.
+   */
+  | { type: 'SKILL_USED'
+      /** Character executing the skill. */
+      unitId:      string
+      skillId:     string
+      skillName:   string
+      category:    CardCategory
+      /** Target unit ID — set for single-target attacks and all defense skills. */
+      targetId?:   string
+      /** Center tile — set for area skills. */
+      areaCenter?: { col: number; row: number } }
 
   // ── Per-character turn sequencing ──
-  | { type: 'turn_started';
+  | { type: 'TURN_STARTED';
       unitId:       string
       /** 1-based position in the phase sequence. */
       order:        number
       total:        number
       timeBudgetMs: number }
-  | { type: 'turn_committed';
+  | { type: 'TURN_COMMITTED';
       unitId:     string
       timeUsedMs: number }
-  | { type: 'turn_skipped';
+  | { type: 'TURN_SKIPPED';
       unitId: string
       reason: 'stunned' | 'dead' | 'no_selection' | 'timed_out' }
 
@@ -250,20 +274,47 @@ export type EngineEvent =
    * `value` is the total computed bonus for this round
    * (e.g. 2 wall-touchers × 0.05 = 0.10).
    */
-  | { type: 'combat_rule_active'
+  | { type: 'COMBAT_RULE_ACTIVE'
       ruleId: string
       /** The side this bonus applies to (or 'left'/'right' for ATK bonuses). */
       side:   TeamSide
       /** Effective bonus value for the current round state. */
       value:  number }
 
+  // ── Player action state (controller-level) ──
+  /**
+   * The player focused a character during the action phase.
+   * UI should highlight the character and show its available cards.
+   */
+  | { type: 'CHARACTER_FOCUSED'; unitId: string }
+  /**
+   * An attack skill requiring explicit targeting was selected.
+   * UI should enter target-selection mode.
+   *   targetMode 'unit' → player must call chooseTarget with a unitId
+   *   targetMode 'tile' → player must call chooseTarget with a col/row
+   */
+  | { type: 'AWAITING_TARGET'
+      unitId:     string
+      skillId:    string
+      targetMode: 'unit' | 'tile' }
+  /**
+   * Both attack and defense have been selected for the focused character.
+   * UI can show a "confirm" indicator; the turn can be committed.
+   */
+  | { type: 'SELECTION_READY'; unitId: string }
+  /**
+   * The current action selection was cancelled (or the focused character changed).
+   * unitId is null when no character was focused at the time of cancellation.
+   */
+  | { type: 'SELECTION_CANCELLED'; unitId: string | null }
+
   // ── Phase / round lifecycle ──
-  | { type: 'phase_started';     phase: PhaseType; side: TeamSide; duration: number }
-  | { type: 'phase_ended';       phase: PhaseType; side: TeamSide }
-  | { type: 'actions_resolved';  side: TeamSide }
-  | { type: 'round_started';     round: number }
-  | { type: 'battle_started' }
-  | { type: 'battle_ended'
+  | { type: 'PHASE_STARTED';     phase: PhaseType; side: TeamSide; duration: number }
+  | { type: 'PHASE_ENDED';       phase: PhaseType; side: TeamSide }
+  | { type: 'ACTIONS_RESOLVED';  side: TeamSide }
+  | { type: 'ROUND_STARTED';     round: number }
+  | { type: 'BATTLE_STARTED' }
+  | { type: 'BATTLE_ENDED'
       /** Winning side, or null on draw (simultaneous kings / timeout / forfeit draw). */
       winner: TeamSide | null
       reason: 'king_slain' | 'simultaneous_kings' | 'timeout' | 'forfeit'

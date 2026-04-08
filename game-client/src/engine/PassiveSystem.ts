@@ -151,14 +151,14 @@ export class PassiveSystem {
         target.addEffect(new HealReductionEffect(def.value, ticks))
 
         events.push({
-          type:      'passive_triggered',
+          type:      'PASSIVE_TRIGGERED',
           unitId:    caster.id,
           passiveId: def.id,
           targetId:  target.id,
         })
         // Also let the UI know a debuff was applied
         events.push({
-          type:   'status_applied',
+          type:   'STATUS_APPLIED',
           unitId: target.id,
           status: 'heal_reduction' as never,   // narrow cast — see note below
           value:  def.value,
