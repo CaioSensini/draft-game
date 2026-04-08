@@ -24,7 +24,11 @@ import { Character } from '../domain/Character'
 import {
   BleedEffect,
   PoisonEffect,
+  BurnEffect,
   StunEffect,
+  SnareEffect,
+  MarkEffect,
+  ReviveEffect,
   RegenEffect,
   ShieldEffect,
   EvadeEffect,
@@ -37,6 +41,8 @@ import {
   AtkBoostEffect,
 } from '../domain/Effect'
 import type { EffectType } from '../domain/Effect'
+import type { Direction } from '../domain/Grid'
+import { Position } from '../domain/Grid'
 import type { EngineEvent } from './types'
 import { EventType } from './types'
 
@@ -85,6 +91,16 @@ export interface EffectResult {
   readonly reflected: number
   /** Effect types removed (for cleanse / purge). */
   readonly dispelled: EffectType[]
+  /**
+   * Push request — set by the 'push' handler.
+   * CombatEngine reads this after resolve() and calls Grid.applyPush().
+   * Null when no push is requested.
+   */
+  readonly pushRequest?: {
+    readonly targetId:  string
+    readonly direction: import('../domain/Grid').Direction
+    readonly force:     number
+  } | null
 }
 
 const EMPTY: EffectResult = {
@@ -141,12 +157,18 @@ export class EffectResolver {
 
 const BLEED_TICKS     = 3
 const POISON_TICKS    = 3
+const BURN_TICKS      = 3
 const REGEN_TICKS     = 3
 const STAT_MOD_TICKS  = 3
 const STUN_TICKS      = 1
+const SNARE_TICKS     = 2
 const HEAL_RED_TICKS  = 2
 const HEAL_RED_FACTOR = 0.50
 const BLEED_PER_TICK_RATIO = 0.4   // tick damage = power × this
+const BURN_PER_TICK_RATIO  = 0.4   // burn tick damage = power × this
+const MARK_BONUS_RATIO     = 0.50  // bonus damage when mark is consumed = power × this
+const REVIVE_HP_RATIO      = 0.20  // revive restores 20% of target's maxHp
+const LIFESTEAL_RATIO      = 0.50  // default lifesteal % (power overrides this)
 
 // ── Built-in handlers ─────────────────────────────────────────────────────────
 //
@@ -193,6 +215,14 @@ function _applyRawDamage(ctx: EffectContext): EffectResult {
       unitId:   ctx.target.id,
       amount:   result.reflected,
       sourceId: ctx.caster.id,
+    })
+  }
+
+  if (result.revived) {
+    events.push({
+      type:       EventType.REVIVE_TRIGGERED,
+      unitId:     ctx.target.id,
+      restoredHp: result.revivedHp,
     })
   }
 
@@ -442,6 +472,205 @@ const handleHealReduction: EffectHandler = (ctx) => {
   return EMPTY   // no visual event for this passive — Specialist applies it silently
 }
 
+// ── Burn — damage hit + fire DoT ──
+
+const handleBurn: EffectHandler = (ctx) => {
+  const hit = _applyRawDamage(ctx)
+  if (hit.evaded || !ctx.target.alive) return hit
+
+  const tickDmg = Math.max(1, Math.round(ctx.power * BURN_PER_TICK_RATIO))
+  ctx.target.addEffect(new BurnEffect(tickDmg, ctx.ticks ?? BURN_TICKS))
+
+  return {
+    ...hit,
+    events: [
+      ...hit.events,
+      { type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'burn' as const, value: tickDmg },
+    ],
+  }
+}
+
+// ── Snare — optional light hit + movement lock ──
+
+const handleSnare: EffectHandler = (ctx) => {
+  const hit = ctx.rawDamage > 0 ? _applyRawDamage(ctx) : EMPTY
+  if (hit.evaded || hit.killed || !ctx.target.alive) return hit
+
+  const snareTicks = ctx.ticks ?? SNARE_TICKS
+  ctx.target.addEffect(new SnareEffect(snareTicks))
+
+  return {
+    ...hit,
+    events: [
+      ...hit.events,
+      { type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'snare' as const, value: snareTicks },
+    ],
+  }
+}
+
+// ── Push — returns a push request for CombatEngine to execute via Grid ──
+
+const handlePush: EffectHandler = (ctx) => {
+  const hit = ctx.rawDamage > 0 ? _applyRawDamage(ctx) : EMPTY
+  if (hit.evaded || hit.killed || !ctx.target.alive) return hit
+
+  // Determine push direction: away from caster
+  const casterPos = Position.of(ctx.caster.col, ctx.caster.row)
+  const targetPos = Position.of(ctx.target.col, ctx.target.row)
+  const dc = Math.sign(targetPos.col - casterPos.col)
+  const dr = Math.sign(targetPos.row - casterPos.row)
+  const direction = _offsetToDirection(dc, dr)
+
+  // Push force = power (capped at reasonable range)
+  const force = Math.max(1, Math.min(ctx.power, 5))
+
+  return {
+    ...hit,
+    pushRequest: {
+      targetId:  ctx.target.id,
+      direction,
+      force,
+    },
+  }
+}
+
+/** Map (Δcol, Δrow) sign to a Direction string. Defaults to 'east' if ambiguous. */
+function _offsetToDirection(dc: number, dr: number): Direction {
+  if (dc > 0 && dr === 0) return 'east'
+  if (dc < 0 && dr === 0) return 'west'
+  if (dc === 0 && dr < 0) return 'north'
+  if (dc === 0 && dr > 0) return 'south'
+  if (dc > 0 && dr < 0)   return 'northeast'
+  if (dc > 0 && dr > 0)   return 'southeast'
+  if (dc < 0 && dr < 0)   return 'northwest'
+  if (dc < 0 && dr > 0)   return 'southwest'
+  return 'east'  // fallback (same tile — shouldn't happen in practice)
+}
+
+// ── Lifesteal — damage + heal caster for a percentage of damage dealt ──
+
+const handleLifesteal: EffectHandler = (ctx) => {
+  const hit = _applyRawDamage(ctx)
+  if (hit.evaded || hit.hpDamage <= 0) return hit
+
+  // power = lifesteal percentage (e.g. 50 = 50%)
+  const stealPct = ctx.power > 0 ? ctx.power / 100 : LIFESTEAL_RATIO
+  const healAmount = Math.max(1, Math.round(hit.hpDamage * stealPct))
+
+  const healResult = ctx.caster.heal(healAmount)
+  const events = [...hit.events]
+
+  if (healResult.actual > 0) {
+    events.push({
+      type:   EventType.LIFESTEAL_HEAL,
+      unitId: ctx.caster.id,
+      amount: healResult.actual,
+      newHp:  ctx.caster.hp,
+    })
+  }
+
+  return { ...hit, events, healed: healResult.actual }
+}
+
+// ── Mark — tag target for bonus damage; if already marked, consume and deal bonus ──
+
+const handleMark: EffectHandler = (ctx) => {
+  if (!ctx.target.alive) return EMPTY
+
+  const existingMark = ctx.target.markEffect
+  if (existingMark) {
+    // Consume the mark — deal bonus damage
+    const bonus = existingMark.consume()
+    const bonusResult = ctx.target.takeDamage(bonus)
+
+    const events: EngineEvent[] = [
+      { type: EventType.MARK_CONSUMED, unitId: ctx.target.id, bonusDamage: bonus, sourceId: ctx.caster.id },
+    ]
+    if (bonusResult.hpDamage > 0) {
+      events.push({
+        type: EventType.DAMAGE_APPLIED, unitId: ctx.target.id,
+        amount: bonusResult.hpDamage, newHp: ctx.target.hp, sourceId: ctx.caster.id,
+      })
+    }
+    if (bonusResult.killed) {
+      events.push({
+        type: EventType.CHARACTER_DIED, unitId: ctx.target.id,
+        killedBy: ctx.caster.id, wasKing: ctx.target.role === 'king', round: ctx.round,
+      })
+    }
+
+    return {
+      ...EMPTY,
+      events,
+      hpDamage: bonusResult.hpDamage,
+      killed:   bonusResult.killed,
+    }
+  }
+
+  // No existing mark — apply a new one
+  const bonusDmg = Math.max(1, Math.round(ctx.power * MARK_BONUS_RATIO))
+  ctx.target.addEffect(new MarkEffect(ctx.caster.id, bonusDmg))
+
+  return {
+    ...EMPTY,
+    events: [
+      { type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'mark' as const, value: bonusDmg },
+    ],
+  }
+}
+
+// ── Revive — grant a one-time death-prevention buffer to the target ──
+
+const handleRevive: EffectHandler = (ctx) => {
+  if (!ctx.target.alive) return EMPTY
+
+  // Restore HP = power if set, else 20% of maxHp
+  const reviveHp = ctx.power > 0
+    ? ctx.power
+    : Math.max(1, Math.round(ctx.target.maxHp * REVIVE_HP_RATIO))
+
+  ctx.target.addEffect(new ReviveEffect(reviveHp))
+
+  return {
+    ...EMPTY,
+    events: [
+      { type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'revive' as const, value: reviveHp },
+    ],
+  }
+}
+
+// ── Double Attack — self-buff that grants 2 attack skills next turn ──
+
+const handleDoubleAttack: EffectHandler = (ctx) => {
+  if (!ctx.caster.alive) return EMPTY
+  ctx.caster.setDoubleAttackNextTurn(true)
+  return {
+    ...EMPTY,
+    events: [
+      { type: EventType.STATUS_APPLIED, unitId: ctx.caster.id, status: 'double_attack' as const, value: 1 },
+      { type: EventType.DOUBLE_ATTACK_READY, unitId: ctx.caster.id },
+    ],
+  }
+}
+
+// ── Silence Defense — blocks enemy from using defense skills next turn ──
+
+const handleSilenceDefense: EffectHandler = (ctx) => {
+  const hit = ctx.rawDamage > 0 ? _applyRawDamage(ctx) : EMPTY
+  if (hit.evaded || hit.killed || !ctx.target.alive) return hit
+
+  ctx.target.setSilencedDefenseTicks(ctx.ticks ?? 1)
+
+  return {
+    ...hit,
+    events: [
+      ...hit.events,
+      { type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'silence_defense' as const, value: 1 },
+      { type: EventType.DEFENSE_SILENCED, unitId: ctx.target.id, sourceId: ctx.caster.id },
+    ],
+  }
+}
+
 // ── Factory ───────────────────────────────────────────────────────────────────
 
 /**
@@ -489,6 +718,18 @@ export function createDefaultResolver(): EffectResolver {
 
   // Passive (registered so secondary-effect combos can reference it)
   r.register('heal_reduction', handleHealReduction)
+
+  // New mechanics
+  r.register('burn',      handleBurn)
+  r.register('snare',     handleSnare)
+  r.register('push',      handlePush)
+  r.register('lifesteal', handleLifesteal)
+  r.register('mark',      handleMark)
+  r.register('revive',    handleRevive)
+
+  // Turn-modifier mechanics
+  r.register('double_attack',    handleDoubleAttack)
+  r.register('silence_defense',  handleSilenceDefense)
 
   return r
 }

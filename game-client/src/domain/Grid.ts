@@ -579,7 +579,62 @@ export class Grid {
   }
 
   /**
+   * Get all reachable tiles within mobility range using BFS.
+   * Respects walls, occupied tiles, and territory boundaries.
+   * Unlike validDestinations (Manhattan distance), this cannot "jump" over walls.
+   */
+  getReachableTiles(charId: string, mobility: number, side: GridSide): Position[] {
+    const start = this._occupants.get(charId)
+    if (!start) return []
+
+    const visited = new Set<string>()
+    const result: Position[] = []
+    const queue: Array<{ pos: Position; steps: number }> = [{ pos: start, steps: 0 }]
+    visited.add(`${start.col},${start.row}`)
+
+    while (queue.length > 0) {
+      const { pos, steps } = queue.shift()!
+
+      // Add to results if not the starting position
+      if (steps > 0) {
+        result.push(pos)
+      }
+
+      // Don't expand further if we've used all movement
+      if (steps >= mobility) continue
+
+      // Check all 4 cardinal directions
+      for (const [dc, dr] of [[0, -1], [0, 1], [-1, 0], [1, 0]] as Array<[number, number]>) {
+        const nc = pos.col + dc
+        const nr = pos.row + dr
+        const key = `${nc},${nr}`
+
+        if (visited.has(key)) continue
+        visited.add(key)
+
+        // Must be in bounds
+        if (!this.isInBounds(nc, nr)) continue
+
+        // Must not be a wall
+        const cell = this._cells[nc][nr]
+        if (cell.isWall) continue
+
+        // Must be in own territory
+        if (!this.isInTerritory(nc, side)) continue
+
+        // Must not be occupied by another unit
+        if (cell.isOccupied && cell.occupantId !== charId) continue
+
+        queue.push({ pos: Position.of(nc, nr), steps: steps + 1 })
+      }
+    }
+
+    return result
+  }
+
+  /**
    * All valid king teleport destinations (full territory, ignores mobility).
+   * @deprecated King no longer teleports; kept for backward compatibility.
    */
   kingDestinations(characterId: string, side: GridSide): Position[] {
     const from = this._occupants.get(characterId)

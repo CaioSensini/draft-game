@@ -35,7 +35,7 @@ import type { EngineEvent, TeamSide } from './types'
 import { Ok, Err, EventType } from './types'
 import type { Result } from './types'
 import { Grid, Position } from '../domain/Grid'
-import type { GridSide } from '../domain/Grid'
+import type { Direction, GridSide } from '../domain/Grid'
 
 // ── Supporting types ──────────────────────────────────────────────────────────
 
@@ -55,6 +55,10 @@ export interface ActionSelection {
   attackSkill:  Skill | null
   defenseSkill: Skill | null
   target:       TargetSpec | null
+  /** Second attack skill — only used when character has doubleAttackNextTurn active. */
+  secondAttackSkill?: Skill | null
+  /** Target for the second attack skill. */
+  secondTarget?:      TargetSpec | null
 }
 
 /** Accumulated stats for one battle. */
@@ -255,6 +259,39 @@ export class CombatEngine {
     return Ok(undefined)
   }
 
+  /**
+   * Record a second attack skill for `characterId` (double_attack mode).
+   *
+   * Only valid when the character has `doubleAttackNextTurn` active.
+   * Validation mirrors `selectAttack`.
+   */
+  selectSecondAttack(
+    characterId: string,
+    skill: Skill,
+    target: TargetSpec,
+  ): Result<void> {
+    const char = this.battle.getCharacter(characterId)
+    if (!char)          return Err(`Character '${characterId}' not found`)
+    if (!char.alive)    return Err(`${char.name} is dead`)
+    if (!char.doubleAttackNextTurn)
+      return Err(`${char.name} is not in double-attack mode`)
+    if (this.battle.phase !== 'action')
+      return Err('Skill selection requires the action phase')
+    if (char.side !== this.battle.currentSide)
+      return Err(`Not ${char.side} side's turn`)
+    if (skill.category !== 'attack') return Err(`'${skill.name}' is not an attack skill`)
+
+    const deck = this.battle.teamOf(char.side).attackDeck(characterId)
+    if (deck && !deck.inHand(skill.id)) return Err(`'${skill.name}' is not in ${char.name}'s current hand`)
+
+    const sel = this._getOrCreateSelection(characterId)
+    sel.secondAttackSkill = skill
+    sel.secondTarget      = target
+
+    this.emit({ type: EventType.CARD_SELECTED, unitId: characterId, cardId: skill.id, category: 'attack' })
+    return Ok(undefined)
+  }
+
   /** Remove all selections for a character (used on phase reset or cancel). */
   clearSelection(characterId: string): void {
     this.selections.delete(characterId)
@@ -265,10 +302,21 @@ export class CombatEngine {
     return this.selections.get(characterId) ?? null
   }
 
-  /** True if character has selected both an attack and a defense. */
+  /**
+   * True if character has selected all required skills for the turn.
+   * In double_attack mode: requires two attack skills (no defense).
+   * In normal mode: requires one attack + one defense.
+   */
   hasFullSelection(characterId: string): boolean {
     const sel = this.selections.get(characterId)
-    return sel !== undefined && sel.attackSkill !== null && sel.defenseSkill !== null
+    if (!sel || sel.attackSkill === null) return false
+
+    const char = this.battle.getCharacter(characterId)
+    if (char?.doubleAttackNextTurn) {
+      // Double-attack mode: need 2 attack skills
+      return sel.secondAttackSkill !== null && sel.secondAttackSkill !== undefined
+    }
+    return sel.defenseSkill !== null
   }
 
   /**
@@ -311,18 +359,16 @@ export class CombatEngine {
   /**
    * All tile positions the character can legally move to this phase.
    *   - Empty when dead, already moved, or not the movement phase.
-   *   - King: any unoccupied tile in own territory (no range cap).
-   *   - Others: Manhattan distance ≤ character.mobility.
+   *   - All roles use BFS-based reachable tiles within their mobility range.
    */
   getValidMoves(characterId: string): Position[] {
     const char = this.battle.getCharacter(characterId)
     if (!char?.alive)                        return []
+    if (char.isSnared)                       return []
     if (this._movedThisPhase.has(characterId)) return []
 
     const side = char.side as GridSide
-    return char.role === 'king'
-      ? this._grid.kingDestinations(characterId, side)
-      : this._grid.validDestinations(characterId, char.mobility, side)
+    return this._grid.getReachableTiles(characterId, char.mobility, side)
   }
 
   /**
@@ -342,6 +388,7 @@ export class CombatEngine {
     const char = this.battle.getCharacter(characterId)
     if (!char)       return Err(`Character '${characterId}' not found`)
     if (!char.alive) return Err(`${char.name} is dead`)
+    if (char.isSnared) return Err(`${char.name} is snared and cannot move`)
 
     if (this.battle.phase !== 'movement')
       return Err('Not the movement phase')
@@ -350,10 +397,10 @@ export class CombatEngine {
     if (this._movedThisPhase.has(characterId))
       return Err(`${char.name} already moved this phase`)
 
-    const gridResult = char.role === 'king'
-      ? this._grid.canKingMoveTo(characterId, toCol, toRow, char.side as GridSide)
-      : this._grid.canMoveTo(characterId, toCol, toRow, char.mobility, char.side as GridSide)
-    if (!gridResult.ok) return gridResult
+    // Validate move against BFS-reachable tiles (respects walls and occupied tiles)
+    const reachable = this._grid.getReachableTiles(characterId, char.mobility, char.side as GridSide)
+    const isReachable = reachable.some((p) => p.col === toCol && p.row === toRow)
+    if (!isReachable) return Err(`(${toCol},${toRow}) is not reachable within mobility ${char.mobility}`)
 
     const fromCol = char.col
     const fromRow = char.row
@@ -450,9 +497,33 @@ export class CombatEngine {
       return
     }
 
-    this._applyDefenseSkill(char, sel.defenseSkill)
-    if (!this.battle.isOver) {
-      this._applyAttackSkill(char, sel.attackSkill, sel.target, char.side)
+    // ── Double Attack: use 2 attacks, skip defense ──
+    if (char.doubleAttackNextTurn) {
+      char.setDoubleAttackNextTurn(false)
+      // First attack
+      if (!this.battle.isOver) {
+        this._applyAttackSkill(char, sel.attackSkill, sel.target, char.side)
+      }
+      // Second attack (stored in secondAttackSkill, or falls back to defenseSkill slot
+      // which the UI may have repurposed as a second attack when double_attack is active)
+      if (!this.battle.isOver) {
+        const secondSkill  = sel.secondAttackSkill ?? sel.defenseSkill
+        const secondTarget = sel.secondTarget      ?? sel.target
+        if (secondSkill && secondSkill.category === 'attack') {
+          this._applyAttackSkill(char, secondSkill, secondTarget, char.side)
+        }
+      }
+    } else {
+      // ── Normal flow: 1 defense + 1 attack ──
+      // Silence Defense: skip the defense skill when silenced
+      if (char.isDefenseSilenced) {
+        this.emit({ type: EventType.DEFENSE_SILENCED, unitId: char.id, sourceId: '' })
+      } else {
+        this._applyDefenseSkill(char, sel.defenseSkill)
+      }
+      if (!this.battle.isOver) {
+        this._applyAttackSkill(char, sel.attackSkill, sel.target, char.side)
+      }
     }
     if (!this.battle.isOver) {
       this._rotateUsedCards(char, sel)
@@ -556,11 +627,29 @@ export class CombatEngine {
       const sel = this.selections.get(char.id)
       if (!sel) continue
 
-      this._applyDefenseSkill(char, sel.defenseSkill)
-      if (this.battle.isOver) break   // defense could theoretically end things (reflect)
+      // ── Double Attack: use 2 attacks, skip defense ──
+      if (char.doubleAttackNextTurn) {
+        char.setDoubleAttackNextTurn(false)
+        this._applyAttackSkill(char, sel.attackSkill, sel.target, side)
+        if (this.battle.isOver) break
+        const secondSkill  = sel.secondAttackSkill ?? sel.defenseSkill
+        const secondTarget = sel.secondTarget      ?? sel.target
+        if (secondSkill && secondSkill.category === 'attack') {
+          this._applyAttackSkill(char, secondSkill, secondTarget, side)
+        }
+        if (this.battle.isOver) break
+      } else {
+        // ── Normal flow: 1 defense + 1 attack ──
+        if (char.isDefenseSilenced) {
+          this.emit({ type: EventType.DEFENSE_SILENCED, unitId: char.id, sourceId: '' })
+        } else {
+          this._applyDefenseSkill(char, sel.defenseSkill)
+        }
+        if (this.battle.isOver) break
 
-      this._applyAttackSkill(char, sel.attackSkill, sel.target, side)
-      if (this.battle.isOver) break
+        this._applyAttackSkill(char, sel.attackSkill, sel.target, side)
+        if (this.battle.isOver) break
+      }
 
       this._rotateUsedCards(char, sel)
     }
@@ -601,6 +690,9 @@ export class CombatEngine {
         }
         if (tick.effectType === 'poison' && tick.value > 0) {
           this.emit({ type: EventType.POISON_TICK, unitId: char.id, damage: tick.value, newHp: char.hp })
+        }
+        if (tick.effectType === 'burn' && tick.value > 0) {
+          this.emit({ type: EventType.BURN_TICK, unitId: char.id, damage: tick.value, newHp: char.hp })
         }
         if (tick.effectType === 'regen' && tick.value > 0) {
           this.emit({ type: EventType.REGEN_TICK,  unitId: char.id, heal: tick.value,   newHp: char.hp })
@@ -730,32 +822,80 @@ export class CombatEngine {
   // ── Private — defense resolution ─────────────────────────────────────────
 
   /**
-   * Apply a defensive skill to `char` (always self-targeted).
+   * Apply a defensive skill from `char`.
+   *
+   * Supports all targetTypes:
+   *   - 'self'        → apply to caster
+   *   - 'lowest_ally' → apply to the ally with lowest HP
+   *   - 'all_allies'  → apply to every living ally
+   *   - 'area'        → apply to all allies within the skill's areaShape
+   *                     centred on the caster's position
+   *
    * Delegates entirely to the EffectResolver — no switch needed here.
    */
   private _applyDefenseSkill(char: Character, skill: Skill | null): void {
     if (!skill) return
 
+    // Collect the list of targets based on targetType
+    const targets = this._resolveDefenseTargets(char, skill)
+
     // Signal to Phaser: this defense skill is now executing (start cast animation)
     this.emit({
       type: EventType.SKILL_USED, unitId: char.id, skillId: skill.id,
-      skillName: skill.name, category: 'defense', targetId: char.id,
+      skillName: skill.name, category: 'defense', targetId: targets[0]?.id ?? char.id,
     })
 
-    const ctx: EffectContext = {
-      caster: char, target: char,
-      power: skill.power, rawDamage: 0,
-      round: this.battle.round,
-    }
-    const result = this.resolver.resolve(skill.effectType, ctx)
-    this._processResult(char, char, result)
+    for (const target of targets) {
+      if (!target.alive) continue
 
-    // Optional second effect on self (e.g. shield + regen)
-    if (skill.secondaryEffect) {
-      const sec = skill.secondaryEffect
-      const secCtx: EffectContext = { ...ctx, power: sec.power, ticks: sec.ticks }
-      const secResult = this.resolver.resolve(sec.effectType, secCtx)
-      this._processResult(char, char, secResult)
+      const ctx: EffectContext = {
+        caster: char, target,
+        power: skill.power, rawDamage: 0,
+        round: this.battle.round,
+      }
+      const result = this.resolver.resolve(skill.effectType, ctx)
+      this._processResult(char, target, result)
+
+      // Optional second effect (e.g. shield + regen, heal + shield)
+      if (skill.secondaryEffect && target.alive) {
+        const sec = skill.secondaryEffect
+        const secCtx: EffectContext = { ...ctx, power: sec.power, ticks: sec.ticks }
+        const secResult = this.resolver.resolve(sec.effectType, secCtx)
+        this._processResult(char, target, secResult)
+      }
+    }
+  }
+
+  /**
+   * Resolve the targets for a defensive skill based on its targetType.
+   * Defensive area skills are centred on the caster's position and hit allies only.
+   */
+  private _resolveDefenseTargets(char: Character, skill: Skill): Character[] {
+    switch (skill.targetType) {
+      case 'self':
+        return [char]
+
+      case 'lowest_ally': {
+        const ally = this.battle.teamOf(char.side).lowestHpCharacter()
+        return ally ? [ally] : [char]
+      }
+
+      case 'all_allies':
+        return [...this.battle.teamOf(char.side).living] as Character[]
+
+      case 'area': {
+        // Area defense: centred on caster, hits allies within shape
+        const allySide = char.side
+        const allies = this.battle.teamOf(allySide).living as Character[]
+        if (!skill.areaShape) return [char]  // fallback to self if no shape
+        const centerPos = Position.of(char.col, char.row)
+        return allies.filter((a) =>
+          a.alive && this._grid.isInArea(skill.areaShape!, centerPos, Position.of(a.col, a.row)),
+        )
+      }
+
+      default:
+        return [char]
     }
   }
 
@@ -905,6 +1045,11 @@ export class CombatEngine {
     if (result.reflected > 0) {
       this._applyReflectDamage(target, caster, result.reflected)
     }
+
+    // Push request — execute via Grid after all other effects resolve
+    if (result.pushRequest && !result.killed) {
+      this._executePush(result.pushRequest.targetId, result.pushRequest.direction, result.pushRequest.force)
+    }
   }
 
   /** Apply reflect damage from `reflector` back to `caster`. */
@@ -929,6 +1074,41 @@ export class CombatEngine {
     }
   }
 
+  /** Execute a push on the grid and sync the Character's domain position. */
+  private _executePush(targetId: string, direction: Direction, force: number): void {
+    const target = this.battle.getCharacter(targetId)
+    if (!target?.alive) return
+
+    const pushResult = this._grid.applyPush(targetId, direction, force)
+    if (pushResult.distanceMoved > 0) {
+      // Sync domain position
+      target.moveTo(pushResult.to.col, pushResult.to.row)
+
+      this.emit({
+        type:          EventType.UNIT_PUSHED,
+        unitId:        targetId,
+        fromCol:       pushResult.from.col,
+        fromRow:       pushResult.from.row,
+        toCol:         pushResult.to.col,
+        toRow:         pushResult.to.row,
+        force,
+        distanceMoved: pushResult.distanceMoved,
+        blocked:       pushResult.blocked,
+        collidedWith:  pushResult.collidedWith,
+      })
+
+      if (pushResult.collidedWith) {
+        this.emit({
+          type:      EventType.PUSH_COLLISION,
+          pushedId:  targetId,
+          blockerId: pushResult.collidedWith,
+          col:       pushResult.to.col,
+          row:       pushResult.to.row,
+        })
+      }
+    }
+  }
+
   // ── Private — deck rotation ───────────────────────────────────────────────
 
   private _rotateUsedCards(char: Character, sel: ActionSelection): void {
@@ -940,6 +1120,17 @@ export class CombatEngine {
         const result = deck.use(sel.attackSkill.id)
         if (result) {
           this.emit({ type: EventType.CARD_ROTATED, unitId: char.id, cardId: sel.attackSkill.id, category: 'attack', nextCardId: result.newHand[0]?.id ?? sel.attackSkill.id })
+        }
+      }
+    }
+
+    // Rotate second attack skill (used during double_attack turns)
+    if (sel.secondAttackSkill) {
+      const deck = team.attackDeck(char.id)
+      if (deck) {
+        const result = deck.use(sel.secondAttackSkill.id)
+        if (result) {
+          this.emit({ type: EventType.CARD_ROTATED, unitId: char.id, cardId: sel.secondAttackSkill.id, category: 'attack', nextCardId: result.newHand[0]?.id ?? sel.secondAttackSkill.id })
         }
       }
     }
@@ -990,7 +1181,7 @@ export class CombatEngine {
   private _getOrCreateSelection(characterId: string): ActionSelection {
     let sel = this.selections.get(characterId)
     if (!sel) {
-      sel = { attackSkill: null, defenseSkill: null, target: null }
+      sel = { attackSkill: null, defenseSkill: null, target: null, secondAttackSkill: null, secondTarget: null }
       this.selections.set(characterId, sel)
     }
     return sel
@@ -1038,6 +1229,7 @@ function _isStatModType(t: string): boolean {
  */
 function _isDamageCarrying(type: string): boolean {
   return type === 'damage'  || type === 'area'
-      || type === 'bleed'   || type === 'poison'
+      || type === 'bleed'   || type === 'poison'  || type === 'burn'
       || type === 'stun'    || type === 'def_down' || type === 'atk_down'
+      || type === 'snare'   || type === 'push'    || type === 'lifesteal'
 }

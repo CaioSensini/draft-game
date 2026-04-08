@@ -45,6 +45,16 @@ export type SkillEffectType =
   | 'true_damage'   // flat damage — skips ATK scaling and DEF mitigation
   | 'cleanse'       // remove all active debuffs from target (ally/self)
   | 'purge'         // remove all active buffs from target (enemy)
+  // ── New mechanics ──
+  | 'burn'          // damage over time (fire — stacks with bleed/poison)
+  | 'snare'         // prevents movement for N turns (allows skill usage unlike stun)
+  | 'push'          // knockback target in a direction
+  | 'lifesteal'     // deal damage and heal caster for power% of damage dealt
+  | 'mark'          // tag target for bonus damage on next hit; if already marked, deal bonus
+  | 'revive'        // grant target a revive buffer — on fatal blow, restore to low HP
+  // ── Turn-modifier mechanics ──
+  | 'double_attack'     // caster uses 2 attack skills next turn instead of 1 attack + 1 defense
+  | 'silence_defense'   // target cannot use defense skills next turn
 
 // ── Skill ─────────────────────────────────────────────────────────────────────
 
@@ -131,6 +141,8 @@ export class Skill {
       case 'def_up':
       case 'atk_up':
       case 'cleanse':       // cleanse removes debuffs from allies/self
+      case 'revive':        // revive buffer — applied to allies/self
+      case 'double_attack': // self-buff — enables 2 attacks next turn
         return targetSide === casterSide
       case 'damage':
       case 'true_damage':
@@ -142,6 +154,12 @@ export class Skill {
       case 'atk_down':
       case 'mov_down':
       case 'purge':         // purge removes buffs from enemies
+      case 'burn':          // fire DoT — offensive
+      case 'snare':         // movement lock — offensive
+      case 'push':          // knockback — offensive
+      case 'lifesteal':     // damage + self-heal — offensive
+      case 'mark':          // tag for bonus damage — offensive
+      case 'silence_defense': // blocks enemy defense — offensive
         return targetSide !== casterSide
       default:
         return true

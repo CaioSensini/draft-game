@@ -15,10 +15,10 @@ const ROLE_LABELS: Record<UnitRole, string> = {
 }
 
 const ROLE_PASSIVES: Record<UnitRole, string> = {
-  king:       'Passiva: Teleporte livre no próprio lado durante a fase de movimento.',
-  warrior:    'Passiva: Aliados adjacentes recebem −25% de dano.',
-  specialist: 'Passiva: Todo ataque aplica −50% de cura no inimigo atingido por 2 turnos.',
-  executor:   'Passiva: +8 de dano extra quando sem aliados adjacentes (isolado).',
+  king:       'Passiva: Proteção Real — Escudo renovado a cada turno, -15% dano recebido.',
+  warrior:    'Passiva: Protetor — Aliados adjacentes ganham -15% de mitigação de dano.',
+  specialist: 'Passiva: Queimação — Ataques reduzem cura inimiga em 20% por 1 turno.',
+  executor:   'Passiva: Isolado — +15% de dano quando sem ninguém adjacente.',
 }
 
 const GROUPS: CardGroup[] = ['attack1', 'attack2', 'defense1', 'defense2']
@@ -31,24 +31,24 @@ const GROUP_LABELS: Record<CardGroup, string> = {
 }
 
 const GROUP_HEADER_COLOR: Record<CardGroup, number> = {
-  attack1:  0x7c2d12,
-  attack2:  0x78350f,
-  defense1: 0x164e63,
-  defense2: 0x1e3a5f,
+  attack1:  0x3a1a1a,
+  attack2:  0x3a2a10,
+  defense1: 0x0e2a3a,
+  defense2: 0x12203a,
 }
 
 const CARD_SELECTED_FILL: Record<CardGroup, number> = {
-  attack1:  0x3b1515,
-  attack2:  0x3b2a10,
-  defense1: 0x0f2a3a,
-  defense2: 0x0e2040,
+  attack1:  0x2a1212,
+  attack2:  0x2a1f0e,
+  defense1: 0x0c1e2e,
+  defense2: 0x0e1a30,
 }
 
 const CARD_SELECTED_STROKE: Record<CardGroup, number> = {
-  attack1:  0xfca5a5,
-  attack2:  0xfbbf24,
-  defense1: 0x67e8f9,
-  defense2: 0x818cf8,
+  attack1:  0xef5350,
+  attack2:  0xffa726,
+  defense1: 0x4fc3f7,
+  defense2: 0x4fc3f7,
 }
 
 // ─── Layout (1280 × 720) ─────────────────────────────────────────────────────
@@ -83,9 +83,28 @@ const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   hard:   'Difícil',
 }
 
+// ─── Tooltip target-type labels ─────────────────────────────────────────────
+
+const TARGET_LABELS: Record<string, string> = {
+  single:     'Alvo: 1 Inimigo',
+  self:       'Alvo: Proprio',
+  lowest_ally:'Alvo: Aliado com Menos HP',
+  all_allies: 'Alvo: Todos os Aliados',
+  area:       'Alvo: Area 3x3',
+}
+
+const GROUP_TYPE_LABELS: Record<CardGroup, string> = {
+  attack1:  'Ataque - Dano',
+  attack2:  'Ataque - Controle',
+  defense1: 'Defesa - Forte',
+  defense2: 'Defesa - Leve',
+}
+
 export default class DeckBuildScene extends Phaser.Scene {
   private activeRole: UnitRole = 'king'
   private difficulty: Difficulty = 'normal'
+  private pveMode: boolean = false
+  private npcTeam: { name: string; levelMin: number; levelMax: number; goldReward: number; xpReward: number } | null = null
 
   /** Per role → per group → selected card IDs (max 2) */
   private selections = new Map<UnitRole, Map<CardGroup, string[]>>()
@@ -102,12 +121,31 @@ export default class DeckBuildScene extends Phaser.Scene {
   private startBtn!: Phaser.GameObjects.Rectangle
   private startBtnLabel!: Phaser.GameObjects.Text
 
+  /** Skill tooltip container shown on hover */
+  private tooltip: Phaser.GameObjects.Container | null = null
+
+  /** Deck preview text objects */
+  private deckPreviewTexts: Phaser.GameObjects.Text[] = []
+  private deckPowerText!: Phaser.GameObjects.Text
+
   constructor() {
     super('DeckBuildScene')
   }
 
-  create() {
+  create(data?: { pveMode?: boolean; npcTeam?: { name: string; levelMin: number; levelMax: number; goldReward: number; xpReward: number } }) {
     GameStateManager.set(GameState.MENU)
+
+    // Capture PvE data if coming from PvESelectScene
+    this.pveMode = data?.pveMode ?? false
+    this.npcTeam = data?.npcTeam ?? null
+
+    // Auto-set difficulty based on NPC team level
+    if (this.pveMode && this.npcTeam) {
+      if (this.npcTeam.levelMax <= 10) this.difficulty = 'easy'
+      else if (this.npcTeam.levelMax <= 50) this.difficulty = 'normal'
+      else this.difficulty = 'hard'
+    }
+
     // Init empty selections
     ROLES.forEach((role) => {
       const map = new Map<CardGroup, string[]>()
@@ -129,54 +167,98 @@ export default class DeckBuildScene extends Phaser.Scene {
     }
 
     this.showRole('king')
+
+    // ── Keyboard shortcuts ───────────────────────────────────────────────────
+    this.input.keyboard?.on('keydown', (event: KeyboardEvent) => {
+      // Number keys 1-4: quick-select card in each group for current role
+      if (event.key >= '1' && event.key <= '4') {
+        const cardIndex = parseInt(event.key, 10) - 1
+        this.quickSelectCard(cardIndex)
+      }
+
+      // Tab: cycle to next role
+      if (event.key === 'Tab') {
+        event.preventDefault()
+        const currentIdx = ROLES.indexOf(this.activeRole)
+        const nextIdx = (currentIdx + 1) % ROLES.length
+        this.showRole(ROLES[nextIdx])
+      }
+
+      // Enter: start battle if complete
+      if (event.key === 'Enter') {
+        if (this.isAllComplete()) this.startBattle()
+      }
+    })
+  }
+
+  /** Quick-select: toggle the (cardIndex+1)-th card in each group that still needs picks */
+  private quickSelectCard(cardIndex: number) {
+    const role = this.activeRole
+    const container = this.roleContainers.get(role)
+    if (!container) return
+
+    // Find the first group that is not yet full (< 2 selected), or fall back to the first group
+    let targetGroup: CardGroup | null = null
+    for (const group of GROUPS) {
+      const sel = this.selections.get(role)?.get(group) ?? []
+      if (sel.length < 2) { targetGroup = group; break }
+    }
+    if (!targetGroup) targetGroup = GROUPS[0]
+
+    const groupCards = getRoleCardsByGroup(role, targetGroup)
+    if (cardIndex >= groupCards.length) return
+
+    const card = groupCards[cardIndex]
+    const counterTxt = container.getByName(`counter_${role}_${targetGroup}`) as Phaser.GameObjects.Text | null
+    if (counterTxt) this.toggleCard(role, targetGroup, card.id, container, counterTxt)
   }
 
   // ─── Background ────────────────────────────────────────────────────────────
 
   private drawBackground() {
-    this.add.rectangle(W / 2, 360, W, 720, 0x0c1018)
+    this.add.rectangle(W / 2, 360, W, 720, 0x080a12)
     for (let i = 1; i < 4; i++) {
-      this.add.rectangle(i * COL_W, 360, 1, 720, 0x1e293b)
+      this.add.rectangle(i * COL_W, 360, 1, 720, 0x3d2e14, 0.15)
     }
-    this.add.rectangle(W / 2, SECTION_Y_START, W, 1, 0x1e293b)
-    this.add.rectangle(W / 2, SECTION_Y_END,   W, 1, 0x1e293b)
+    this.add.rectangle(W / 2, SECTION_Y_START, W, 1, 0x3d2e14, 0.3)
+    this.add.rectangle(W / 2, SECTION_Y_END,   W, 1, 0x3d2e14, 0.3)
   }
 
   private drawHeader() {
-    this.add.rectangle(W / 2, 28, W, 56, 0x101827)
+    this.add.rectangle(W / 2, 28, W, 56, 0x0e1118)
 
     // Title + subtitle (left-aligned to leave room for controls)
-    this.add.text(200, 18, 'DRAFT — Montagem de Deck', {
-      fontFamily: 'Arial', fontSize: '22px', color: '#f8e7b9', fontStyle: 'bold',
+    this.add.text(200, 18, 'DRAFT \u2014 Montagem de Deck', {
+      fontFamily: 'Arial', fontSize: '22px', color: '#f0c850', fontStyle: 'bold',
     }).setOrigin(0.5)
     this.add.text(200, 41, 'Selecione 2 cartas por grupo para cada unidade.', {
-      fontFamily: 'Arial', fontSize: '11px', color: '#64748b',
+      fontFamily: 'Arial', fontSize: '11px', color: '#7a7062',
     }).setOrigin(0.5)
 
     // ── Difficulty buttons ───────────────────────────────────────────────────
     const diffs: Difficulty[] = ['easy', 'normal', 'hard']
     const dBtnW = 82
     const dStartX = W - 3 * (dBtnW + 6) - 10 + dBtnW / 2
-    const dBtnColors: Record<Difficulty, number> = { easy: 0x166534, normal: 0x1e3a5f, hard: 0x7f1d1d }
-    const dBtnStroke: Record<Difficulty, number> = { easy: 0x4ade80, normal: 0x60a5fa, hard: 0xf87171 }
+    const dBtnColors: Record<Difficulty, number> = { easy: 0x1b3a1e, normal: 0x12203a, hard: 0x3a1515 }
+    const dBtnStroke: Record<Difficulty, number> = { easy: 0x4caf50, normal: 0x4fc3f7, hard: 0xef5350 }
 
     this.add.text(dStartX - dBtnW / 2 - 12, 18, 'DIFICULDADE', {
-      fontFamily: 'Arial', fontSize: '9px', color: '#475569', fontStyle: 'bold',
+      fontFamily: 'Arial', fontSize: '9px', color: '#7a7062', fontStyle: 'bold',
     }).setOrigin(1, 0.5)
 
     diffs.forEach((d, i) => {
       const x = dStartX + i * (dBtnW + 6)
       const isActive = d === this.difficulty
-      const bg = this.add.rectangle(x, 28, dBtnW, 36, isActive ? dBtnColors[d] : 0x1e293b)
-        .setStrokeStyle(2, isActive ? dBtnStroke[d] : 0x334155, isActive ? 1 : 0.5)
+      const bg = this.add.rectangle(x, 28, dBtnW, 36, isActive ? dBtnColors[d] : 0x141a24)
+        .setStrokeStyle(2, isActive ? dBtnStroke[d] : 0x3d2e14, isActive ? 1 : 0.3)
         .setInteractive({ useHandCursor: true })
       const label = this.add.text(x, 28, DIFFICULTY_LABELS[d], {
         fontFamily: 'Arial', fontSize: '13px',
-        color: isActive ? '#f1f5f9' : '#64748b', fontStyle: 'bold',
+        color: isActive ? '#e8e0d0' : '#7a7062', fontStyle: 'bold',
       }).setOrigin(0.5)
 
-      bg.on('pointerover', () => { if (this.difficulty !== d) bg.setFillStyle(0x263548) })
-      bg.on('pointerout',  () => { if (this.difficulty !== d) bg.setFillStyle(0x1e293b) })
+      bg.on('pointerover', () => { if (this.difficulty !== d) bg.setFillStyle(0x1a2230) })
+      bg.on('pointerout',  () => { if (this.difficulty !== d) bg.setFillStyle(0x141a24) })
       bg.on('pointerdown', () => this.setDifficulty(d))
 
       this.diffBtns.set(d, { bg, label })
@@ -184,7 +266,7 @@ export default class DeckBuildScene extends Phaser.Scene {
   }
 
   private drawTabs() {
-    this.add.rectangle(W / 2, 77, W, 42, 0x0d1520)
+    this.add.rectangle(W / 2, 77, W, 42, 0x0a0e16)
 
     const tabW = 294
     const gap  = 6
@@ -193,16 +275,16 @@ export default class DeckBuildScene extends Phaser.Scene {
 
     ROLES.forEach((role) => {
       const bg = this.add
-        .rectangle(x, 77, tabW, 36, 0x1e293b)
-        .setStrokeStyle(1, 0x334155)
+        .rectangle(x, 77, tabW, 36, 0x141a24)
+        .setStrokeStyle(1, 0x3d2e14, 0.3)
         .setInteractive({ useHandCursor: true })
 
       const txt = this.add.text(x, 77, ROLE_LABELS[role], {
-        fontFamily: 'Arial', fontSize: '15px', color: '#94a3b8', fontStyle: 'bold',
+        fontFamily: 'Arial', fontSize: '15px', color: '#7a7062', fontStyle: 'bold',
       }).setOrigin(0.5)
 
-      bg.on('pointerover', () => { if (this.activeRole !== role) bg.setFillStyle(0x263548) })
-      bg.on('pointerout',  () => { if (this.activeRole !== role) bg.setFillStyle(0x1e293b) })
+      bg.on('pointerover', () => { if (this.activeRole !== role) bg.setFillStyle(0x1a2230) })
+      bg.on('pointerout',  () => { if (this.activeRole !== role) bg.setFillStyle(0x141a24) })
       bg.on('pointerdown', () => this.showRole(role))
 
       this.tabBgs.set(role, bg)
@@ -212,9 +294,9 @@ export default class DeckBuildScene extends Phaser.Scene {
   }
 
   private drawPassiveLine() {
-    this.add.rectangle(W / 2, 108, W, 28, 0x111827)
+    this.add.rectangle(W / 2, 108, W, 28, 0x0e1118)
     this.passiveText = this.add.text(W / 2, 108, '', {
-      fontFamily: 'Arial', fontSize: '12px', color: '#7dd3fc',
+      fontFamily: 'Arial', fontSize: '12px', color: '#4fc3f7',
     }).setOrigin(0.5)
   }
 
@@ -244,7 +326,7 @@ export default class DeckBuildScene extends Phaser.Scene {
 
     // Column bg (subtle)
     const colBg = this.add.rectangle(
-      sx + CARD_W / 2, sy + SECTION_H / 2, CARD_W, SECTION_H, 0x0d1520
+      sx + CARD_W / 2, sy + SECTION_H / 2, CARD_W, SECTION_H, 0x0a0e16
     )
     container.add(colBg)
 
@@ -261,7 +343,7 @@ export default class DeckBuildScene extends Phaser.Scene {
 
     // Counter top-right
     const counterTxt = this.add.text(sx + CARD_W - 6, sy + SEC_HEADER_H / 2, '0 / 2', {
-      fontFamily: 'Arial', fontSize: '12px', color: '#fde68a', fontStyle: 'bold',
+      fontFamily: 'Arial', fontSize: '12px', color: '#c9a84c', fontStyle: 'bold',
     }).setOrigin(1, 0.5).setName(`counter_${role}_${group}`)
     container.add(counterTxt)
 
@@ -273,20 +355,20 @@ export default class DeckBuildScene extends Phaser.Scene {
       const isAtk = group.startsWith('attack')
 
       const cardBg = this.add
-        .rectangle(cx, cy, CARD_W, CARD_H, 0x111827)
-        .setStrokeStyle(1, 0x1e293b)
+        .rectangle(cx, cy, CARD_W, CARD_H, 0x12161f)
+        .setStrokeStyle(1, 0x3d2e14, 0.2)
         .setInteractive({ useHandCursor: true })
         .setName(`cardbg_${card.id}`)
       container.add(cardBg)
 
       // Card name
       const nameTxt = this.add.text(sx + 8, cy - CARD_H / 2 + 9, card.name, {
-        fontFamily: 'Arial', fontSize: '12px', color: '#f1f5f9', fontStyle: 'bold',
+        fontFamily: 'Arial', fontSize: '12px', color: '#e8e0d0', fontStyle: 'bold',
       }).setOrigin(0, 0)
       container.add(nameTxt)
 
       // Effect badge top-right
-      const effectColor = isAtk ? '#fca5a5' : '#86efac'
+      const effectColor = isAtk ? '#ef5350' : '#4fc3f7'
       const effectLabel = card.power > 0 ? `${card.effect.toUpperCase()} ${card.power}` : card.effect.toUpperCase()
       const effectTxt = this.add.text(sx + CARD_W - 6, cy - CARD_H / 2 + 9, effectLabel, {
         fontFamily: 'Arial', fontSize: '10px', color: effectColor, fontStyle: 'bold',
@@ -295,20 +377,83 @@ export default class DeckBuildScene extends Phaser.Scene {
 
       // Description — wraps inside the card
       const descTxt = this.add.text(sx + 8, cy - CARD_H / 2 + 26, card.shortDescription, {
-        fontFamily: 'Arial', fontSize: '10px', color: '#94a3b8',
+        fontFamily: 'Arial', fontSize: '10px', color: '#7a7062',
         wordWrap: { width: CARD_W - 16 },
       }).setOrigin(0, 0)
       container.add(descTxt)
 
       // Interactions
       cardBg.on('pointerover', () => {
-        if (!this.isCardSelected(role, group, card.id)) cardBg.setFillStyle(0x1a2535)
+        if (!this.isCardSelected(role, group, card.id)) cardBg.setFillStyle(0x1a2230)
+        this.showTooltip(card, cx, cy - CARD_H / 2)
       })
       cardBg.on('pointerout', () => {
-        if (!this.isCardSelected(role, group, card.id)) cardBg.setFillStyle(0x111827)
+        if (!this.isCardSelected(role, group, card.id)) cardBg.setFillStyle(0x12161f)
+        this.hideTooltip()
       })
       cardBg.on('pointerdown', () => this.toggleCard(role, group, card.id, container, counterTxt))
     })
+  }
+
+  // ─── Tooltip ────────────────────────────────────────────────────────────────
+
+  private showTooltip(card: import('../types').CardData, worldX: number, worldY: number) {
+    this.hideTooltip()
+
+    const TOOLTIP_W = 280
+    const PAD = 10
+    const typeLabel = GROUP_TYPE_LABELS[card.group] ?? card.category
+    const targetLabel = TARGET_LABELS[card.targetType] ?? card.targetType
+
+    const nameText = this.add.text(PAD, PAD, card.name, {
+      fontFamily: 'Arial', fontSize: '15px', color: '#f0c850', fontStyle: 'bold',
+      wordWrap: { width: TOOLTIP_W - PAD * 2 },
+    })
+
+    const typeText = this.add.text(PAD, nameText.y + nameText.height + 4, typeLabel, {
+      fontFamily: 'Arial', fontSize: '11px', color: '#4fc3f7', fontStyle: 'bold',
+    })
+
+    const powerStr = card.power > 0 ? `Poder: ${card.power}` : 'Poder: --'
+    const powerText = this.add.text(TOOLTIP_W - PAD, typeText.y, powerStr, {
+      fontFamily: 'Arial', fontSize: '11px', color: '#c9a84c', fontStyle: 'bold',
+    }).setOrigin(1, 0)
+
+    const dividerY = typeText.y + typeText.height + 6
+    const divider = this.add.rectangle(TOOLTIP_W / 2, dividerY, TOOLTIP_W - PAD * 2, 1, 0x3d2e14, 0.5)
+
+    const descText = this.add.text(PAD, dividerY + 6, card.shortDescription, {
+      fontFamily: 'Arial', fontSize: '11px', color: '#e8e0d0',
+      wordWrap: { width: TOOLTIP_W - PAD * 2 },
+    })
+
+    const targetText = this.add.text(PAD, descText.y + descText.height + 6, targetLabel, {
+      fontFamily: 'Arial', fontSize: '11px', color: '#c9a84c', fontStyle: 'bold',
+    })
+
+    const totalH = targetText.y + targetText.height + PAD
+    const bg = this.add.rectangle(TOOLTIP_W / 2, totalH / 2, TOOLTIP_W, totalH, 0x12161f)
+      .setStrokeStyle(2, 0x3d2e14)
+
+    const container = this.add.container(0, 0, [bg, nameText, typeText, powerText, divider, descText, targetText])
+    container.setDepth(1000)
+
+    // Position: prefer above the card, fall back to below if off-screen
+    let tx = worldX - TOOLTIP_W / 2
+    let ty = worldY - totalH - 8
+    if (tx < 4) tx = 4
+    if (tx + TOOLTIP_W > W - 4) tx = W - TOOLTIP_W - 4
+    if (ty < 4) ty = worldY + CARD_H / 2 + 8
+    container.setPosition(tx, ty)
+
+    this.tooltip = container
+  }
+
+  private hideTooltip() {
+    if (this.tooltip) {
+      this.tooltip.destroy()
+      this.tooltip = null
+    }
   }
 
   // ─── Selection logic ───────────────────────────────────────────────────────
@@ -346,13 +491,13 @@ export default class DeckBuildScene extends Phaser.Scene {
           bg.setFillStyle(CARD_SELECTED_FILL[group])
           bg.setStrokeStyle(2, CARD_SELECTED_STROKE[group], 1)
         } else {
-          bg.setFillStyle(0x111827)
-          bg.setStrokeStyle(1, 0x1e293b, 1)
+          bg.setFillStyle(0x12161f)
+          bg.setStrokeStyle(1, 0x3d2e14, 0.2)
         }
       })
 
     const done = sel.length === 2
-    counterTxt.setText(`${sel.length} / 2`).setColor(done ? '#4ade80' : '#fde68a')
+    counterTxt.setText(`${sel.length} / 2`).setColor(done ? '#4caf50' : '#c9a84c')
     this.updateFooter()
   }
 
@@ -363,10 +508,10 @@ export default class DeckBuildScene extends Phaser.Scene {
 
     this.tabBgs.forEach((bg, r) => {
       const active = r === role
-      bg.setFillStyle(active ? 0x334155 : 0x1e293b)
-      bg.setStrokeStyle(active ? 2 : 1, active ? 0x60a5fa : 0x334155, 1)
+      bg.setFillStyle(active ? 0x1a2230 : 0x141a24)
+      bg.setStrokeStyle(active ? 2 : 1, active ? 0xf0c850 : 0x3d2e14, active ? 0.8 : 0.3)
     })
-    this.tabTexts.forEach((t, r) => t.setColor(r === role ? '#f8fafc' : '#94a3b8'))
+    this.tabTexts.forEach((t, r) => t.setColor(r === role ? '#f0c850' : '#7a7062'))
 
     this.activeRole = role
     this.passiveText.setText(ROLE_PASSIVES[role])
@@ -377,7 +522,7 @@ export default class DeckBuildScene extends Phaser.Scene {
       GROUPS.forEach((group) => {
         const sel = this.selections.get(role)?.get(group) ?? []
         const cTxt = container.getByName(`counter_${role}_${group}`) as Phaser.GameObjects.Text | null
-        if (cTxt) cTxt.setText(`${sel.length} / 2`).setColor(sel.length === 2 ? '#4ade80' : '#fde68a')
+        if (cTxt) cTxt.setText(`${sel.length} / 2`).setColor(sel.length === 2 ? '#4caf50' : '#c9a84c')
 
         getRoleCards(role)
           .filter((c) => c.group === group)
@@ -389,41 +534,90 @@ export default class DeckBuildScene extends Phaser.Scene {
               bg.setFillStyle(CARD_SELECTED_FILL[group])
               bg.setStrokeStyle(2, CARD_SELECTED_STROKE[group], 1)
             } else {
-              bg.setFillStyle(0x111827)
-              bg.setStrokeStyle(1, 0x1e293b, 1)
+              bg.setFillStyle(0x12161f)
+              bg.setStrokeStyle(1, 0x3d2e14, 0.2)
             }
           })
       })
     }
+
+    // Refresh deck preview for the newly active role
+    if (this.deckPreviewTexts.length > 0) this.updateDeckPreview()
   }
 
   // ─── Footer ────────────────────────────────────────────────────────────────
 
   private drawFooter() {
-    this.add.rectangle(W / 2, 690, W, 60, 0x0d1520)
-    this.add.rectangle(W / 2, 660, W, 1, 0x1e293b)
+    // Expand footer area: 660-720 original -> now we use a deck preview row at 660-700, buttons at 700-740
+    // Instead, let's use the existing space more cleverly: deck preview on the left half, buttons on the right
+    this.add.rectangle(W / 2, 690, W, 60, 0x0a0e16)
+    this.add.rectangle(W / 2, 660, W, 1, 0x3d2e14, 0.3)
 
-    // Progress counter (left)
-    this.progressText = this.add.text(16, 690, '', {
-      fontFamily: 'Arial', fontSize: '13px', color: '#94a3b8',
+    // Progress counter (top-left of footer)
+    this.progressText = this.add.text(16, 670, '', {
+      fontFamily: 'Arial', fontSize: '11px', color: '#7a7062',
+    }).setOrigin(0, 0.5)
+
+    // ── Deck preview (below progress text) ───────────────────────────────────
+    const previewY = 686
+    this.add.text(16, previewY, 'Deck Atual:', {
+      fontFamily: 'Arial', fontSize: '10px', color: '#7a7062', fontStyle: 'bold',
+    }).setOrigin(0, 0)
+
+    // Attack slots (4)
+    const atkLabel = this.add.text(90, previewY, 'ATK:', {
+      fontFamily: 'Arial', fontSize: '10px', color: '#ef5350', fontStyle: 'bold',
+    }).setOrigin(0, 0)
+    const atkSlots: Phaser.GameObjects.Text[] = []
+    for (let i = 0; i < 4; i++) {
+      const t = this.add.text(90 + atkLabel.width + 4 + i * 68, previewY, '---', {
+        fontFamily: 'Arial', fontSize: '9px', color: '#7a7062',
+      }).setOrigin(0, 0)
+      atkSlots.push(t)
+    }
+
+    // Defense slots (4)
+    const defStartX = 90 + atkLabel.width + 4 + 4 * 68 + 8
+    const defLabel = this.add.text(defStartX, previewY, 'DEF:', {
+      fontFamily: 'Arial', fontSize: '10px', color: '#4fc3f7', fontStyle: 'bold',
+    }).setOrigin(0, 0)
+    const defSlots: Phaser.GameObjects.Text[] = []
+    for (let i = 0; i < 4; i++) {
+      const t = this.add.text(defStartX + defLabel.width + 4 + i * 68, previewY, '---', {
+        fontFamily: 'Arial', fontSize: '9px', color: '#7a7062',
+      }).setOrigin(0, 0)
+      defSlots.push(t)
+    }
+
+    this.deckPreviewTexts = [...atkSlots, ...defSlots]
+
+    // Total power text (at the end of the row)
+    this.deckPowerText = this.add.text(defStartX + defLabel.width + 4 + 4 * 68 + 12, previewY, 'Poder: 0', {
+      fontFamily: 'Arial', fontSize: '10px', color: '#c9a84c', fontStyle: 'bold',
+    }).setOrigin(0, 0)
+
+    // ── Shortcut hint (very bottom of footer) ────────────────────────────────
+    this.add.text(16, 706, 'Atalhos: 1-4 selecionar, Tab trocar classe, Enter jogar', {
+      fontFamily: 'Arial', fontSize: '9px', color: '#7a7062',
     }).setOrigin(0, 0.5)
 
     // ── Deck utility buttons ─────────────────────────────────────────────────
+    const btnY = 690
     const mkBtn = (x: number, label: string, stroke: number, onClick: () => void) => {
-      const bg = this.add.rectangle(x, 690, 148, 36, 0x111827)
-        .setStrokeStyle(1, stroke, 0.7)
+      const bg = this.add.rectangle(x, btnY, 120, 30, 0x141a24)
+        .setStrokeStyle(1, stroke, 0.5)
         .setInteractive({ useHandCursor: true })
-      const txt = this.add.text(x, 690, label, {
-        fontFamily: 'Arial', fontSize: '13px', color: '#94a3b8', fontStyle: 'bold',
+      const txt = this.add.text(x, btnY, label, {
+        fontFamily: 'Arial', fontSize: '11px', color: '#7a7062', fontStyle: 'bold',
       }).setOrigin(0.5)
-      bg.on('pointerover', () => { bg.setFillStyle(0x1c2b3a); txt.setColor('#f1f5f9') })
-      bg.on('pointerout',  () => { bg.setFillStyle(0x111827); txt.setColor('#94a3b8') })
+      bg.on('pointerover', () => { bg.setFillStyle(0x1a2230); txt.setColor('#e8e0d0') })
+      bg.on('pointerout',  () => { bg.setFillStyle(0x141a24); txt.setColor('#7a7062') })
       bg.on('pointerdown', onClick)
     }
 
-    mkBtn(310, 'Deck Aleatório', 0x7dd3fc, () => this.randomizeDeck())
-    mkBtn(468, 'Deck Padrão',    0xa78bfa, () => this.fillDefaultDeck())
-    mkBtn(626, 'Restaurar Salvo', 0xfbbf24, () => {
+    mkBtn(W - 460, 'Aleatorio', 0x4fc3f7, () => this.randomizeDeck())
+    mkBtn(W - 330, 'Padrao',    0xc9a84c, () => this.fillDefaultDeck())
+    mkBtn(W - 200, 'Restaurar', 0xffa726, () => {
       if (this.loadFromStorage()) {
         ROLES.forEach((role) => this.refreshRoleVisuals(role))
         this.updateFooter()
@@ -433,19 +627,19 @@ export default class DeckBuildScene extends Phaser.Scene {
 
     // ── Start button (right) ─────────────────────────────────────────────────
     this.startBtn = this.add
-      .rectangle(W - 170, 690, 300, 40, 0x111827)
-      .setStrokeStyle(2, 0x334155)
+      .rectangle(W - 70, btnY, 120, 34, 0x141a24)
+      .setStrokeStyle(2, 0x3d2e14, 0.3)
       .setInteractive({ useHandCursor: true })
 
-    this.startBtnLabel = this.add.text(W - 170, 690, 'Iniciar Batalha', {
-      fontFamily: 'Arial', fontSize: '18px', color: '#4b5563', fontStyle: 'bold',
+    this.startBtnLabel = this.add.text(W - 70, btnY, 'Iniciar', {
+      fontFamily: 'Arial', fontSize: '15px', color: '#7a7062', fontStyle: 'bold',
     }).setOrigin(0.5)
 
     this.startBtn.on('pointerover', () => {
-      if (this.isAllComplete()) this.startBtn.setFillStyle(0x1e3a2e)
+      if (this.isAllComplete()) this.startBtn.setFillStyle(0x1b3a1e)
     })
     this.startBtn.on('pointerout', () => {
-      this.startBtn.setFillStyle(this.isAllComplete() ? 0x162d22 : 0x111827)
+      this.startBtn.setFillStyle(this.isAllComplete() ? 0x162d1a : 0x141a24)
     })
     this.startBtn.on('pointerdown', () => {
       if (this.isAllComplete()) this.startBattle()
@@ -462,18 +656,66 @@ export default class DeckBuildScene extends Phaser.Scene {
     this.progressText.setText(`Unidades prontas: ${completedCount} / 4  |  Selecione 2 cartas por coluna para cada unidade`)
 
     const allDone = completedCount === 4
-    this.startBtn.setFillStyle(allDone ? 0x162d22 : 0x111827)
-    this.startBtn.setStrokeStyle(2, allDone ? 0x4ade80 : 0x334155, allDone ? 1 : 0.6)
-    this.startBtnLabel.setColor(allDone ? '#4ade80' : '#4b5563')
+    this.startBtn.setFillStyle(allDone ? 0x162d1a : 0x141a24)
+    this.startBtn.setStrokeStyle(2, allDone ? 0x4caf50 : 0x3d2e14, allDone ? 0.9 : 0.3)
+    this.startBtnLabel.setColor(allDone ? '#4caf50' : '#7a7062')
 
     // Colored checkmarks on tabs
     ROLES.forEach((role) => {
       const done = GROUPS.every((g) => (this.selections.get(role)?.get(g)?.length ?? 0) === 2)
       const tabTxt = this.tabTexts.get(role)
       if (!tabTxt) return
-      tabTxt.setText(done ? `${ROLE_LABELS[role]} ✓` : ROLE_LABELS[role])
-      if (this.activeRole !== role) tabTxt.setColor(done ? '#4ade80' : '#94a3b8')
+      tabTxt.setText(done ? `${ROLE_LABELS[role]} \u2713` : ROLE_LABELS[role])
+      if (this.activeRole !== role) tabTxt.setColor(done ? '#4caf50' : '#7a7062')
     })
+
+    // Update deck preview for active role
+    this.updateDeckPreview()
+  }
+
+  private updateDeckPreview() {
+    const role = this.activeRole
+    const allCards = getRoleCards(role)
+    const atkIds = [...(this.selections.get(role)?.get('attack1') ?? []), ...(this.selections.get(role)?.get('attack2') ?? [])]
+    const defIds = [...(this.selections.get(role)?.get('defense1') ?? []), ...(this.selections.get(role)?.get('defense2') ?? [])]
+
+    let totalPower = 0
+
+    // Update attack slots (indices 0-3)
+    for (let i = 0; i < 4; i++) {
+      const txt = this.deckPreviewTexts[i]
+      if (!txt) continue
+      if (i < atkIds.length) {
+        const card = allCards.find((c) => c.id === atkIds[i])
+        txt.setText(card ? this.truncateName(card.name, 10) : '---')
+        txt.setColor(card ? '#ef5350' : '#7a7062')
+        if (card) totalPower += card.power
+      } else {
+        txt.setText('---').setColor('#7a7062')
+      }
+    }
+
+    // Update defense slots (indices 4-7)
+    for (let i = 0; i < 4; i++) {
+      const txt = this.deckPreviewTexts[4 + i]
+      if (!txt) continue
+      if (i < defIds.length) {
+        const card = allCards.find((c) => c.id === defIds[i])
+        txt.setText(card ? this.truncateName(card.name, 10) : '---')
+        txt.setColor(card ? '#4fc3f7' : '#7a7062')
+        if (card) totalPower += card.power
+      } else {
+        txt.setText('---').setColor('#7a7062')
+      }
+    }
+
+    if (this.deckPowerText) {
+      this.deckPowerText.setText(`Poder: ${totalPower}`)
+    }
+  }
+
+  private truncateName(name: string, maxLen: number): string {
+    return name.length > maxLen ? name.substring(0, maxLen - 1) + '..' : name
   }
 
   // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -487,15 +729,15 @@ export default class DeckBuildScene extends Phaser.Scene {
   private setDifficulty(d: Difficulty) {
     this.difficulty = d
     const colors: Record<Difficulty, { fill: number; stroke: number }> = {
-      easy:   { fill: 0x166534, stroke: 0x4ade80 },
-      normal: { fill: 0x1e3a5f, stroke: 0x60a5fa },
-      hard:   { fill: 0x7f1d1d, stroke: 0xf87171 },
+      easy:   { fill: 0x1b3a1e, stroke: 0x4caf50 },
+      normal: { fill: 0x12203a, stroke: 0x4fc3f7 },
+      hard:   { fill: 0x3a1515, stroke: 0xef5350 },
     }
     this.diffBtns.forEach(({ bg, label }, key) => {
       const active = key === d
-      bg.setFillStyle(active ? colors[key].fill : 0x1e293b)
-      bg.setStrokeStyle(2, active ? colors[key].stroke : 0x334155, active ? 1 : 0.5)
-      label.setColor(active ? '#f1f5f9' : '#64748b')
+      bg.setFillStyle(active ? colors[key].fill : 0x141a24)
+      bg.setStrokeStyle(2, active ? colors[key].stroke : 0x3d2e14, active ? 1 : 0.3)
+      label.setColor(active ? '#e8e0d0' : '#7a7062')
     })
   }
 
@@ -536,13 +778,13 @@ export default class DeckBuildScene extends Phaser.Scene {
     GROUPS.forEach((group) => {
       const sel = this.selections.get(role)?.get(group) ?? []
       const cTxt = container.getByName(`counter_${role}_${group}`) as Phaser.GameObjects.Text | null
-      if (cTxt) cTxt.setText(`${sel.length} / 2`).setColor(sel.length === 2 ? '#4ade80' : '#fde68a')
+      if (cTxt) cTxt.setText(`${sel.length} / 2`).setColor(sel.length === 2 ? '#4caf50' : '#c9a84c')
       getRoleCards(role).filter((c) => c.group === group).forEach((c) => {
         const bg = container.getByName(`cardbg_${c.id}`) as Phaser.GameObjects.Rectangle | null
         if (!bg) return
         const selected = sel.includes(c.id)
-        bg.setFillStyle(selected ? CARD_SELECTED_FILL[group] : 0x111827)
-        bg.setStrokeStyle(selected ? 2 : 1, selected ? CARD_SELECTED_STROKE[group] : 0x1e293b, 1)
+        bg.setFillStyle(selected ? CARD_SELECTED_FILL[group] : 0x12161f)
+        bg.setStrokeStyle(selected ? 2 : 1, selected ? CARD_SELECTED_STROKE[group] : 0x3d2e14, selected ? 1 : 0.2)
       })
     })
   }
@@ -588,7 +830,12 @@ export default class DeckBuildScene extends Phaser.Scene {
       specialist: this.buildUnitDeck('specialist'),
       executor:   this.buildUnitDeck('executor'),
     }
-    this.scene.start('BattleScene', { deckConfig, difficulty: this.difficulty })
+    this.scene.start('BattleScene', {
+      deckConfig,
+      difficulty: this.difficulty,
+      pveMode: this.pveMode,
+      npcTeam: this.npcTeam,
+    })
   }
 
   private buildUnitDeck(role: UnitRole) {

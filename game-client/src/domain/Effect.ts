@@ -20,9 +20,11 @@ export type EffectType =
   // ── DoT / HoT ──
   | 'bleed'
   | 'poison'
+  | 'burn'
   | 'regen'
   // ── Crowd control ──
   | 'stun'
+  | 'snare'
   | 'heal_reduction'
   // ── Damage buffers ──
   | 'shield'
@@ -35,6 +37,9 @@ export type EffectType =
   // ── Stat buffs ──
   | 'def_up'
   | 'atk_up'
+  // ── Special ──
+  | 'mark'
+  | 'revive'
 
 /** Stat targeted by a stat-modifier effect. */
 export type ModifiableStat = 'defense' | 'attack' | 'mobility'
@@ -441,6 +446,118 @@ export class AtkBoostEffect extends StatModEffect {
   }
 }
 
+// ── Concrete effects — new mechanics ─────────────────────────────────────────
+
+/**
+ * Deals `damagePerTick` fire damage to the bearer each round.
+ * Distinct from bleed and poison — all three can coexist simultaneously,
+ * stacking DoT pressure from different damage sources.
+ */
+export class BurnEffect extends Effect {
+  readonly type = 'burn' as const
+  readonly kind = 'debuff' as const
+  private _ticks: number
+
+  constructor(readonly damagePerTick: number, ticks = 3) {
+    super()
+    this._ticks = ticks
+  }
+
+  get isExpired(): boolean    { return this._ticks <= 0 }
+  get ticksRemaining(): number { return this._ticks }
+
+  tick(): TickResult {
+    const value = this._ticks > 0 ? this.damagePerTick : 0
+    this._ticks = Math.max(0, this._ticks - 1)
+    return { effectType: 'burn', value, expired: this.isExpired }
+  }
+}
+
+/**
+ * Prevents the bearer from moving for its duration.
+ * Unlike StunEffect, the bearer can still use skills during the action phase.
+ */
+export class SnareEffect extends Effect {
+  readonly type = 'snare' as const
+  readonly kind = 'debuff' as const
+  private _ticks: number
+
+  constructor(ticks = 2) {
+    super()
+    this._ticks = ticks
+  }
+
+  get isExpired(): boolean   { return this._ticks <= 0 }
+  get isActive(): boolean    { return this._ticks > 0 }
+  get ticksRemaining(): number { return this._ticks }
+
+  tick(): TickResult {
+    this._ticks = Math.max(0, this._ticks - 1)
+    return { effectType: 'snare', value: 0, expired: this.isExpired }
+  }
+}
+
+/**
+ * Tags the bearer for bonus damage.
+ * When a marked target is hit, the mark is consumed and bonus damage is dealt.
+ * Tracks the source (the marker) so bonus damage is properly attributed.
+ */
+export class MarkEffect extends Effect {
+  readonly type = 'mark' as const
+  readonly kind = 'debuff' as const
+  private _consumed = false
+
+  /** ID of the character that applied the mark. */
+  readonly sourceId: string
+  /** Bonus damage dealt when the mark is consumed. */
+  readonly bonusDamage: number
+
+  constructor(sourceId: string, bonusDamage: number) {
+    super()
+    this.sourceId    = sourceId
+    this.bonusDamage = bonusDamage
+  }
+
+  get isExpired(): boolean { return this._consumed }
+
+  /** Consume the mark. Returns the bonus damage. */
+  consume(): number {
+    this._consumed = true
+    return this.bonusDamage
+  }
+
+  tick(): TickResult | null { return null }   // passive — no tick
+}
+
+/**
+ * Grants the bearer a one-time death-prevention buffer.
+ * When the bearer would be killed, HP is restored to `reviveHp` instead.
+ * Consumes itself after triggering.
+ */
+export class ReviveEffect extends Effect {
+  readonly type = 'revive' as const
+  readonly kind = 'buff' as const
+  private _triggered = false
+
+  /** HP to restore the bearer to when revive triggers. */
+  readonly reviveHp: number
+
+  constructor(reviveHp: number) {
+    super()
+    this.reviveHp = reviveHp
+  }
+
+  get isExpired(): boolean { return this._triggered }
+
+  /** Trigger the revive. Returns the HP to restore to. */
+  trigger(): number {
+    this._triggered = true
+    return this.reviveHp
+  }
+
+  tick(): TickResult | null { return null }   // passive — no tick
+}
+
 // ── Factory ───────────────────────────────────────────────────────────────────
 
 /** Convenience factory — avoids calling `new` in places that don't import subclasses. */
@@ -459,5 +576,9 @@ export function createEffect(type: EffectType, value: number, ticks?: number): E
     case 'mov_down':      return new MovReductionEffect(value, ticks)
     case 'def_up':        return new DefBoostEffect(value, ticks)
     case 'atk_up':        return new AtkBoostEffect(value, ticks)
+    case 'burn':          return new BurnEffect(value, ticks)
+    case 'snare':         return new SnareEffect(ticks ?? 2)
+    case 'mark':          return new MarkEffect('', value)    // sourceId must be set externally
+    case 'revive':        return new ReviveEffect(value)
   }
 }

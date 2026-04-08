@@ -1,67 +1,45 @@
 /**
  * data/globalRules.ts — the canonical list of global combat rules.
  *
- * This file is PURE DATA — no imports from the engine, no logic.
- * Each entry is a plain CombatRuleDefinition that can be loaded, serialised,
- * or sent over the network without any transformation.
+ * ── Rules ─────────────────────────────────────────────────────────────────────
  *
- * ── How to add a new rule ─────────────────────────────────────────────────────
- *
- *   CASE A — New rule for an existing type (same logic, different map/value):
- *     1. Append a CombatRuleDefinition entry below.
- *     2. Done — no engine changes needed.
- *
- *   CASE B — New rule with new logic:
- *     1. Add the new string to `CombatRuleType` in domain/CombatRule.ts.
- *     2. Add a handler case in engine/CombatRuleSystem.ts.
- *     3. Append a CombatRuleDefinition entry here.
- *
- * ── Rules in this file ────────────────────────────────────────────────────────
- *
- *   rule_wall_defense      → +5 % mitigation per team member touching the wall
- *   rule_last_stand        → king gains +25 % mitigation as sole survivor
- *   rule_underdog_assault  → +10 % ATK when team is outnumbered
+ *   rule_wall_defense      → +10% mitigação e +10% dano por aliado no muro
+ *   rule_last_stand        → rei ganha +25% mitigação como último sobrevivente
+ *   rule_underdog_assault  → +10% ATK quando em desvantagem numérica
  */
 
 import type { CombatRuleDefinition } from '../domain/CombatRule'
 
 export const GLOBAL_RULES: CombatRuleDefinition[] = [
 
-  // ── Terrain rules ─────────────────────────────────────────────────────────
-
   {
     id:    'rule_wall_defense',
-    name:  'Wall Defense',
+    name:  'Buff do Muro',
     type:  'wall_mit_per_toucher',
-    value: 0.05,
+    value: 0.10,
     description:
-      'Each team member standing on the wall column grants +5 % damage mitigation ' +
-      'to the whole team when under attack. A tightly packed formation resists better.',
+      'Cada personagem encostado no muro central concede +10% de mitigação de dano ' +
+      'e +10% de dano para o time todo. Máximo de 4 aliados = +40%.',
   },
-
-  // ── Survival rules ────────────────────────────────────────────────────────
 
   {
     id:    'rule_last_stand',
-    name:  'Last Stand',
+    name:  'Último em Pé',
     type:  'last_stand_mit_bonus',
     value: 0.25,
     description:
-      "When the king is the last surviving member of their team, they fight with " +
-      "desperate resolve — gaining +25 % personal damage mitigation. " +
-      "A cornered king is twice as dangerous.",
+      'Quando o rei é o último sobrevivente do time, ele luta com determinação — ' +
+      '+25% de mitigação de dano pessoal.',
   },
-
-  // ── Asymmetric rules ──────────────────────────────────────────────────────
 
   {
     id:    'rule_underdog_assault',
-    name:  'Underdog Assault',
+    name:  'Vantagem Numérica',
     type:  'outnumbered_atk_bonus',
     value: 0.10,
     description:
-      'When a team has strictly fewer living members than the enemy, all their ' +
-      'attacks gain +10 % ATK. Outnumbered fighters compensate with aggression.',
+      'Quando um time tem menos membros vivos que o inimigo, todos seus ataques ' +
+      'ganham +10% ATK.',
   },
 
 ]

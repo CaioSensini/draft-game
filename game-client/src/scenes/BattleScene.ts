@@ -40,6 +40,7 @@ import { Battle }             from '../domain/Battle'
 import { GameController }     from '../engine/GameController'
 import { PhaserBridge }       from '../engine/PhaserBridge'
 import { EventType }          from '../engine/types'
+import type { EngineEvent }   from '../engine/types'
 import { AutoPlayer }         from '../engine/AutoPlayer'
 import { BattleDriver }       from '../engine/BattleDriver'
 import { SKILL_CATALOG }      from '../data/skillCatalog'
@@ -47,6 +48,7 @@ import { DECK_ASSIGNMENTS }   from '../data/deckAssignments'
 import { PASSIVE_CATALOG }    from '../data/passiveCatalog'
 import { GLOBAL_RULES }       from '../data/globalRules'
 import { GameState, GameStateManager } from '../core/GameState'
+import { soundManager } from '../utils/SoundManager'
 import type { UnitDeckConfig, UnitRole } from '../types'
 
 // ── Layout constants ──────────────────────────────────────────────────────────
@@ -88,23 +90,23 @@ const BTN_H      = 38
 type UnitSetup = { id: string; name: string; role: UnitRole; col: number; row: number }
 
 const LEFT_UNITS: UnitSetup[] = [
+  { id: 'lwarrior',    name: 'Wren',  role: 'warrior',    col: 1,  row: 1 },
   { id: 'lking',       name: 'Leo',   role: 'king',       col: 1,  row: 2 },
-  { id: 'lwarrior',    name: 'Wren',  role: 'warrior',    col: 2,  row: 4 },
-  { id: 'lspecialist', name: 'Sage',  role: 'specialist', col: 0,  row: 5 },
-  { id: 'lexecutor',   name: 'Edge',  role: 'executor',   col: 3,  row: 1 },
+  { id: 'lspecialist', name: 'Sage',  role: 'specialist', col: 1,  row: 3 },
+  { id: 'lexecutor',   name: 'Edge',  role: 'executor',   col: 1,  row: 4 },
 ]
 const RIGHT_UNITS: UnitSetup[] = [
-  { id: 'rking',       name: 'Rex',   role: 'king',       col: 14, row: 3 },
-  { id: 'rwarrior',    name: 'Reva',  role: 'warrior',    col: 13, row: 1 },
-  { id: 'rspecialist', name: 'Sable', role: 'specialist', col: 15, row: 0 },
-  { id: 'rexecutor',   name: 'Echo',  role: 'executor',   col: 12, row: 4 },
+  { id: 'rwarrior',    name: 'Reva',  role: 'warrior',    col: 14, row: 1 },
+  { id: 'rking',       name: 'Rex',   role: 'king',       col: 14, row: 2 },
+  { id: 'rspecialist', name: 'Sable', role: 'specialist', col: 14, row: 3 },
+  { id: 'rexecutor',   name: 'Echo',  role: 'executor',   col: 14, row: 4 },
 ]
 
 const ROLE_STATS: Record<UnitRole, { maxHp: number; attack: number; defense: number; mobility: number }> = {
-  king:       { maxHp: 112, attack: 18, defense: 10, mobility: 99 },
-  warrior:    { maxHp: 138, attack: 17, defense: 16, mobility: 2  },
-  specialist: { maxHp: 94,  attack: 20, defense: 8,  mobility: 2  },
-  executor:   { maxHp: 90,  attack: 27, defense: 7,  mobility: 3  },
+  king:       { maxHp: 150, attack: 15, defense: 12, mobility: 3 },
+  warrior:    { maxHp: 180, attack: 16, defense: 18, mobility: 2 },
+  specialist: { maxHp: 130, attack: 18, defense: 10, mobility: 2 },
+  executor:   { maxHp: 120, attack: 22, defense: 8,  mobility: 3 },
 }
 
 // ── Colour palette ────────────────────────────────────────────────────────────
@@ -115,7 +117,7 @@ const TEAM_COLOR: Record<CharacterSide, Record<UnitRole, number>> = {
 }
 
 const ROLE_LABEL: Record<UnitRole, string> = {
-  king: 'R', warrior: 'G', specialist: 'E', executor: 'X',
+  king: 'REI', warrior: 'GUE', specialist: 'ESP', executor: 'EXE',
 }
 
 // ── Sprite shape ──────────────────────────────────────────────────────────────
@@ -131,6 +133,8 @@ interface UnitSprite {
   moveRing:   Phaser.GameObjects.Rectangle   // movement-selection highlight (cyan)
   activeRing: Phaser.GameObjects.Rectangle   // turn-active highlight (green, pulsing)
   posText:    Phaser.GameObjects.Text        // grid coords "(col,row)"
+  roleLabel:  Phaser.GameObjects.Text        // role abbreviation above unit
+  statusDots: Phaser.GameObjects.Container   // persistent status icons below HP text
   maxHp:      number
 }
 
@@ -147,8 +151,19 @@ interface TurnEntry {
 
 // ── Incoming scene data ───────────────────────────────────────────────────────
 
+interface NpcTeamData {
+  name: string
+  levelMin: number
+  levelMax: number
+  goldReward: number
+  xpReward: number
+}
+
 interface SceneData {
   deckConfig?: Record<UnitRole, UnitDeckConfig>
+  difficulty?: string
+  pveMode?: boolean
+  npcTeam?: NpcTeamData
 }
 
 // ── BattleScene ───────────────────────────────────────────────────────────────
@@ -176,6 +191,23 @@ export default class BattleScene extends Phaser.Scene {
 
   // ── Actor nameplate (above acting unit) ─────────────────────────────────────
   private _actorLabel:      Phaser.GameObjects.Container | null = null
+
+  // ── Timer display ───────────────────────────────────────────────────────────
+  private _timerText!:  Phaser.GameObjects.Text
+  private _timerEvent:  Phaser.Time.TimerEvent | null = null
+  private _timerSecs    = 0
+
+  // ── HUD team indicator dot ─────────────────────────────────────────────────
+  private _teamDot!: Phaser.GameObjects.Arc
+
+  // ── Persistent status dots per unit ────────────────────────────────────────
+  /** Maps unitId → Set of active status names → used to rebuild dots. */
+  private _unitStatuses: Map<string, Set<string>> = new Map()
+
+  // ── PvE data ────────────────────────────────────────────────────────────────
+  private _pveMode: boolean = false
+  private _npcTeam: NpcTeamData | null = null
+  private _difficulty: string = 'normal'
 
   // ── Player input state ──────────────────────────────────────────────────────
   private readonly _playerSide: CharacterSide  = 'left'
@@ -215,8 +247,13 @@ export default class BattleScene extends Phaser.Scene {
   create(data: SceneData) {
     GameStateManager.set(GameState.PLAYING)
 
+    // Store PvE data for post-battle results
+    this._pveMode   = data.pveMode ?? false
+    this._npcTeam   = data.npcTeam ?? null
+    this._difficulty = data.difficulty ?? 'normal'
+
     // 1. Build engine layer
-    this._ctrl   = _buildController(data.deckConfig)
+    this._ctrl   = _buildController(data.deckConfig, this._difficulty)
     this._driver = new BattleDriver(
       this._ctrl,
       new AutoPlayer(this._ctrl),
@@ -241,6 +278,9 @@ export default class BattleScene extends Phaser.Scene {
     this._buildEndMovementButton()
     this._buildTurnTrackerShell()
 
+    // 3b. Sound system (init requires a prior user gesture — scene create is safe)
+    soundManager.init()
+
     // 4. Event subscriptions — ONLY visual reactions + input forwarding
     this._bridge = new PhaserBridge(this._ctrl)
 
@@ -248,12 +288,15 @@ export default class BattleScene extends Phaser.Scene {
       .onHUD(EventType.ROUND_STARTED, (e) => {
         this._roundText.setText(`Round ${e.round}`)
         this._addLog(`— Round ${e.round} —`)
+        soundManager.playRoundStart()
       })
       .onHUD(EventType.PHASE_STARTED, (e) => {
         const sideLabel  = e.side  === 'left'     ? 'Azul'     : 'Vermelho'
         const phaseLabel = e.phase === 'movement' ? 'Movimento' : 'Ação'
         this._phaseText.setText(`${phaseLabel} — ${sideLabel}`)
+        this._teamDot.setFillStyle(e.side === 'left' ? 0x4a90d9 : 0xd94a4a)
         this._addLog(`Fase de ${phaseLabel} (${sideLabel})`)
+        soundManager.playPhaseChange()
         const isPlayer = e.side === this._playerSide
         this._showPhaseBanner(isPlayer, e.phase)
         // Tracker: reset on action phase, hide on movement
@@ -268,6 +311,41 @@ export default class BattleScene extends Phaser.Scene {
         }
         const isPlayerMovement = e.phase === 'movement' && isPlayer
         this._setMovementPhaseUI(isPlayerMovement)
+
+        // ── Timer countdown ──
+        this._clearTimer()
+        if (e.duration > 0) {
+          this._timerSecs = e.duration          // duration is already in seconds
+          this._updateTimerDisplay()
+          this._timerEvent = this.time.addEvent({
+            delay: 1000,
+            repeat: this._timerSecs - 1,
+            callback: () => {
+              this._timerSecs = Math.max(0, this._timerSecs - 1)
+              this._updateTimerDisplay()
+
+              // ── Enforce timer: auto-skip when time runs out ──
+              if (this._timerSecs <= 0 && !this._ctrl.isBattleOver) {
+                this._clearTimer()
+                if (this._ctrl.phase === 'action') {
+                  const actor = this._ctrl.currentActor
+                  if (actor && actor.side === this._playerSide) {
+                    this._ctrl.skipTurn('timed_out')
+                  }
+                } else if (this._isPlayerMovementPhase) {
+                  this._ctrl.clearMoveSelection()
+                  this._ctrl.advancePhase()
+                }
+              }
+            },
+          })
+        }
+      })
+      .onHUD(EventType.PHASE_ENDED, (_e) => {
+        this._clearTimer()
+      })
+      .onHUD(EventType.ACTIONS_RESOLVED, (_e) => {
+        this._clearTimer()
       })
 
       // ── Turn sequencing indicators ─────────────────────────────────────────
@@ -394,13 +472,21 @@ export default class BattleScene extends Phaser.Scene {
 
       // ── Skill pulse animation ──────────────────────────────────────────────
       .onAnimation(EventType.SKILL_USED, (e) => {
-        const sprite = this._sprite(e.unitId)
-        if (sprite) {
+        const casterSprite = this._sprite(e.unitId)
+        if (casterSprite) {
           this.tweens.add({
-            targets: sprite.rect, scaleX: 1.25, scaleY: 1.25,
+            targets: casterSprite.rect, scaleX: 1.25, scaleY: 1.25,
             yoyo: true, duration: 150, ease: 'Quad.Out',
           })
         }
+
+        // ── Enhanced skill animation: projectiles + glow pulses ──
+        if (e.category === 'attack' && casterSprite) {
+          this._playAttackProjectile(e, casterSprite)
+        } else if (e.category === 'defense' && casterSprite) {
+          this._playDefenseGlow(e, casterSprite)
+        }
+
         const icon = e.category === 'defense' ? `🛡 ${e.skillName}` : `⚔ ${e.skillName}`
         this._addLog(`${this._name(e.unitId)}: ${icon}`)
       })
@@ -411,21 +497,25 @@ export default class BattleScene extends Phaser.Scene {
         this._flashUnit(e.unitId, 0xff2222, 0.70)
         this._floatingText(e.unitId, `-${e.amount}`, '#ff4444')
         this._addLog(`${this._name(e.unitId)} recebe ${e.amount} dano (HP ${e.newHp})`)
+        soundManager.playHit()
       })
       .onHUD(EventType.HEAL_APPLIED, (e) => {
         this._updateHpBar(e.unitId, e.newHp)
         this._flashUnit(e.unitId, 0x22ff88, 0.55)
         this._floatingText(e.unitId, `+${e.amount}`, '#44ff88')
+        soundManager.playHeal()
       })
       .onHUD(EventType.BLEED_TICK, (e) => {
         this._updateHpBar(e.unitId, e.newHp)
         this._flashUnit(e.unitId, 0xcc1133, 0.60)
         this._floatingText(e.unitId, `🩸-${e.damage}`, '#cc2244')
+        soundManager.playBleed()
       })
       .onHUD(EventType.POISON_TICK, (e) => {
         this._updateHpBar(e.unitId, e.newHp)
         this._flashUnit(e.unitId, 0x88cc22, 0.55)
         this._floatingText(e.unitId, `☠-${e.damage}`, '#88cc22')
+        soundManager.playBleed()
       })
       .onHUD(EventType.REGEN_TICK, (e) => {
         this._updateHpBar(e.unitId, e.newHp)
@@ -443,6 +533,17 @@ export default class BattleScene extends Phaser.Scene {
           reflect: '🪞', def_down: '🔻DEF', atk_down: '🔻ATK',
         }
         this._floatingText(e.unitId, icons[e.status] ?? e.status, '#ffdd44')
+        // Persistent status dot
+        this._addStatusDot(e.unitId, e.status)
+      })
+      .onHUD(EventType.STAT_MODIFIER_EXPIRED, (e) => {
+        this._removeStatusDot(e.unitId, e.effectType)
+      })
+      .onHUD(EventType.EFFECTS_CLEANSED, (e) => {
+        for (const status of e.removed) this._removeStatusDot(e.unitId, status)
+      })
+      .onHUD(EventType.EFFECTS_PURGED, (e) => {
+        for (const status of e.removed) this._removeStatusDot(e.unitId, status)
       })
 
       // ── Death animation ────────────────────────────────────────────────────
@@ -452,6 +553,9 @@ export default class BattleScene extends Phaser.Scene {
         this._stopActiveRing(e.unitId)
         sprite.focusRing.setVisible(false)
         sprite.moveRing.setVisible(false)
+        // Clear persistent status dots on death
+        this._unitStatuses.get(e.unitId)?.clear()
+        this._rebuildStatusDots(e.unitId)
         this._flashUnit(e.unitId, 0xffffff, 0.90)
         this.time.delayedCall(180, () => {
           sprite.rect.setFillStyle(0x444444)
@@ -470,6 +574,19 @@ export default class BattleScene extends Phaser.Scene {
           ? `${e.winner === 'left' ? '🔵 Azul' : '🔴 Vermelho'} venceu!`
           : 'Empate!'
         this._showVictoryOverlay(winText, e.reason, e.round)
+
+        // Transition to results screen after a short delay
+        this.time.delayedCall(2000, () => {
+          this.scene.start('BattleResultScene', {
+            winner: e.winner,
+            round: e.round,
+            reason: e.reason,
+            pveMode: this._pveMode,
+            npcTeam: this._npcTeam,
+            difficulty: this._difficulty,
+            playerSide: this._playerSide,
+          })
+        })
       })
 
     // 5. Start engine + driver
@@ -483,6 +600,7 @@ export default class BattleScene extends Phaser.Scene {
     this._destroyCardButtons()
     this._clearTargetOverlays()
     this._clearMoveOverlays()
+    this._clearTimer()
     for (const obj of this._trackerObjs) (obj as Phaser.GameObjects.GameObject).destroy()
     for (const obj of this._bannerObjs)  (obj as Phaser.GameObjects.GameObject).destroy()
     this._actorLabel?.destroy()
@@ -870,6 +988,10 @@ export default class BattleScene extends Phaser.Scene {
       if (result.ok) {
         this._clearTargetOverlays()
         this._awaitingMode = null
+        // Rebuild card panel to ensure defense cards are fresh and clickable
+        if (this._currentActorId) {
+          this._rebuildCardButtons(this._currentActorId)
+        }
       } else {
         this._addLog(`[!] ${result.error}`)
       }
@@ -893,6 +1015,10 @@ export default class BattleScene extends Phaser.Scene {
       if (result.ok) {
         this._clearTargetOverlays()
         this._awaitingMode = null
+        // Rebuild card panel to ensure defense cards are fresh and clickable
+        if (this._currentActorId) {
+          this._rebuildCardButtons(this._currentActorId)
+        }
       } else {
         this._addLog(`[!] ${result.error}`)
       }
@@ -937,6 +1063,13 @@ export default class BattleScene extends Phaser.Scene {
 
   private _drawGrid() {
     const g = this.add.graphics()
+
+    // Wall column (col 8) background shading — marks the dividing barrier
+    const wallCol = 8
+    g.fillStyle(0x1a1028, 0.45)
+    g.fillRect(GRID_X + wallCol * TILE, GRID_Y, TILE, ROWS * TILE)
+
+    // Grid lines
     g.lineStyle(1, 0x1e293b, 1)
     for (let col = 0; col <= COLS; col++) {
       g.lineBetween(GRID_X + col * TILE, GRID_Y, GRID_X + col * TILE, GRID_Y + ROWS * TILE)
@@ -944,6 +1077,16 @@ export default class BattleScene extends Phaser.Scene {
     for (let row = 0; row <= ROWS; row++) {
       g.lineBetween(GRID_X, GRID_Y + row * TILE, GRID_X + COLS * TILE, GRID_Y + row * TILE)
     }
+
+    // Intersection dots — small circles at every grid intersection for spatial reference
+    g.fillStyle(0x334155, 0.7)
+    for (let col = 0; col <= COLS; col++) {
+      for (let row = 0; row <= ROWS; row++) {
+        g.fillCircle(GRID_X + col * TILE, GRID_Y + row * TILE, 1.5)
+      }
+    }
+
+    // Column numbers below grid
     for (let col = 0; col < COLS; col++) {
       this.add.text(
         GRID_X + col * TILE + TILE / 2, GRID_Y + ROWS * TILE + 4,
@@ -954,15 +1097,31 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   private _drawHUD() {
-    this.add.rectangle(W / 2, 28, W, 56, 0x101827)
+    // Dark gradient-style panel behind round/phase info
+    this.add.rectangle(W / 2, 28, W, 56, 0x0a0f1a).setAlpha(0.95)
+    this.add.rectangle(W / 2, 56, W, 1, 0x1e293b)   // subtle bottom border
 
-    this._roundText = this.add.text(W / 2, 20, 'Round 1', {
+    // Decorative inner panel behind round/phase text
+    const panelW = 320
+    this.add.rectangle(W / 2, 28, panelW, 44, 0x151d2e)
+      .setStrokeStyle(1, 0x1e3a5f, 0.6)
+
+    this._roundText = this.add.text(W / 2, 18, 'Round 1', {
       fontFamily: 'Arial', fontSize: '16px', color: '#f8e7b9', fontStyle: 'bold',
     }).setOrigin(0.5, 0)
 
-    this._phaseText = this.add.text(W / 2, 40, '…', {
+    this._phaseText = this.add.text(W / 2 + 8, 38, '…', {
       fontFamily: 'Arial', fontSize: '13px', color: '#94a3b8',
     }).setOrigin(0.5, 0)
+
+    // Team colour dot next to phase text — indicates whose turn it is
+    this._teamDot = this.add.circle(W / 2 - 60, 45, 5, 0x4a90d9)
+      .setStrokeStyle(1, 0xffffff, 0.3)
+
+    // Timer display — positioned right of phase text
+    this._timerText = this.add.text(W / 2 + 160, 42, '', {
+      fontFamily: 'Arial', fontSize: '13px', color: '#ffffff', fontStyle: 'bold',
+    }).setOrigin(0.5, 0).setDepth(2)
 
     this.add.text(GRID_X + 4, 12, '🔵 Azul (você)', {
       fontFamily: 'Arial', fontSize: '13px', color: '#7ab8ff', fontStyle: 'bold',
@@ -1045,15 +1204,27 @@ export default class BattleScene extends Phaser.Scene {
         fontFamily: 'Arial', fontSize: '9px', color: '#4a6a8a',
       }).setOrigin(0.5, 1)
 
+      // Role class label above the unit (team-coloured)
+      const teamHex = u.side === 'left' ? '#7ab8ff' : '#ff8080'
+      const roleLabel = this.add.text(0, -(half + 24), ROLE_LABEL[u.role], {
+        fontFamily: 'Arial', fontSize: '10px', color: teamHex, fontStyle: 'bold',
+        stroke: '#000000', strokeThickness: 2,
+      }).setOrigin(0.5, 1)
+
+      // Persistent status dots — positioned below HP text
+      const statusDots = this.add.container(0, barOffY + 22)
+
       const container = this.add.container(x, y, [
         moveRing, focusRing, activeRing, rect, flashRect, roleText, nameText,
-        hpBarBg, hpBar, hpText, posText,
+        hpBarBg, hpBar, hpText, posText, roleLabel, statusDots,
       ])
 
       this._sprites.set(u.id, {
         container, rect, baseColor: color, flashRect,
-        hpBar, hpText, focusRing, moveRing, activeRing, posText, maxHp: char.maxHp,
+        hpBar, hpText, focusRing, moveRing, activeRing, posText, roleLabel, statusDots,
+        maxHp: char.maxHp,
       })
+      this._unitStatuses.set(u.id, new Set())
     }
   }
 
@@ -1135,6 +1306,154 @@ export default class BattleScene extends Phaser.Scene {
     this.tweens.add({ targets: sprite.flashRect, alpha: 0, duration: 380, ease: 'Quad.In' })
   }
 
+  // ── Enhanced skill animation helpers ────────────────────────────────────────
+
+  private static readonly PROJECTILE_COLORS: Record<string, number> = {
+    damage: 0xff3333, bleed: 0x881122, poison: 0x44cc44, burn: 0xff6600,
+    stun: 0xffdd00, true_damage: 0xff00ff, area: 0xff6633,
+    def_down: 0xff8833, atk_down: 0xff8833, mov_down: 0xff8833,
+    push: 0x88bbff, lifesteal: 0xcc22cc, mark: 0x881122, snare: 0x44ddff,
+    purge: 0xbb44ff, cleanse: 0x44ff88,
+  }
+
+  private static readonly GLOW_COLORS: Record<string, number> = {
+    heal: 0x44ff88, shield: 0x4488ff, evade: 0xffffff, reflect: 0xbb44ff,
+    regen: 0x88ff88, def_up: 0x44aaff, atk_up: 0xffaa44, revive: 0xffcc44,
+  }
+
+  private _playAttackProjectile(
+    e: Extract<EngineEvent, { type: 'SKILL_USED' }>,
+    casterSprite: UnitSprite,
+  ): void {
+    const { x: sx, y: sy } = casterSprite.container
+
+    // Area skill: expanding circle at target position
+    if (e.areaCenter) {
+      const { x: tx, y: ty } = _tileCenter(e.areaCenter.col, e.areaCenter.row)
+      const circle = this.add.circle(tx, ty, 4, 0xff6633, 0.6).setDepth(11)
+      this.tweens.add({
+        targets: circle, radius: TILE * 1.5, alpha: 0,
+        duration: 350, ease: 'Quad.Out',
+        onUpdate: () => circle.setScale(circle.scaleX), // force redraw
+        onComplete: () => circle.destroy(),
+      })
+      // Also fire projectile from caster to area center
+      const proj = this.add.rectangle(sx, sy, 8, 8, 0xff6633).setDepth(11)
+      this.tweens.add({
+        targets: proj, x: tx, y: ty,
+        duration: 200, ease: 'Quad.Out',
+        onComplete: () => proj.destroy(),
+      })
+      return
+    }
+
+    // Single-target projectile
+    if (e.targetId) {
+      const targetSprite = this._sprite(e.targetId)
+      if (!targetSprite) return
+      const { x: tx, y: ty } = targetSprite.container
+      const color = BattleScene.PROJECTILE_COLORS[e.skillName] ??
+                    BattleScene.PROJECTILE_COLORS['damage'] ??
+                    0xff3333
+      // Look up color by the skill's effectType from the registry
+      const skill = this._ctrl.getSkill(e.skillId)
+      const projColor = skill
+        ? (BattleScene.PROJECTILE_COLORS[skill.effectType] ?? color)
+        : color
+      const proj = this.add.rectangle(sx, sy, 8, 8, projColor).setDepth(11)
+      this.tweens.add({
+        targets: proj, x: tx, y: ty,
+        duration: 200, ease: 'Quad.Out',
+        onComplete: () => proj.destroy(),
+      })
+    }
+  }
+
+  private _playDefenseGlow(
+    e: Extract<EngineEvent, { type: 'SKILL_USED' }>,
+    casterSprite: UnitSprite,
+  ): void {
+    // Determine glow color from skill effect type
+    const skill = this._ctrl.getSkill(e.skillId)
+    const effectType = skill?.effectType ?? 'shield'
+    const glowColor = BattleScene.GLOW_COLORS[effectType] ?? 0x4488ff
+
+    // Brief glow pulse on caster
+    const { x, y } = casterSprite.container
+    const glow = this.add.circle(x, y, CHAR_SIZE / 2, glowColor, 0.5).setDepth(11)
+    this.tweens.add({
+      targets: glow,
+      radius: CHAR_SIZE, alpha: 0,
+      duration: 350, ease: 'Quad.Out',
+      onUpdate: () => glow.setScale(glow.scaleX),
+      onComplete: () => glow.destroy(),
+    })
+  }
+
+  // ── Persistent status dot helpers ───────────────────────────────────────────
+
+  private static readonly STATUS_DOT_COLORS: Record<string, number> = {
+    bleed:    0xcc2222, burn:     0xcc2222, poison:   0x44cc44,
+    stun:     0xffdd00, snare:    0x44ddff, shield:   0x4488ff,
+    evade:    0xffffff, reflect:  0xbb44ff, regen:    0x88ff88,
+    def_down: 0xff8833, atk_down: 0xff8833, mov_down: 0xff8833,
+    def_up:   0x44aaff, atk_up:   0x44aaff,
+    mark:     0x881122, heal_reduction: 0x996633, revive: 0xffcc44,
+  }
+
+  private _addStatusDot(unitId: string, status: string): void {
+    const statuses = this._unitStatuses.get(unitId)
+    if (!statuses) return
+    statuses.add(status)
+    this._rebuildStatusDots(unitId)
+  }
+
+  private _removeStatusDot(unitId: string, status: string): void {
+    const statuses = this._unitStatuses.get(unitId)
+    if (!statuses) return
+    statuses.delete(status)
+    this._rebuildStatusDots(unitId)
+  }
+
+  private _rebuildStatusDots(unitId: string): void {
+    const sprite  = this._sprite(unitId)
+    const statuses = this._unitStatuses.get(unitId)
+    if (!sprite || !statuses) return
+
+    // Clear existing dots
+    sprite.statusDots.removeAll(true)
+
+    const DOT_R = 4
+    const GAP   = 2
+    const MAX   = 6
+    const visible = Array.from(statuses).slice(0, MAX)
+    const totalW  = visible.length * (DOT_R * 2 + GAP) - GAP
+    const startX  = -totalW / 2 + DOT_R
+
+    visible.forEach((status, i) => {
+      const color = BattleScene.STATUS_DOT_COLORS[status] ?? 0x888888
+      const dot = this.add.circle(startX + i * (DOT_R * 2 + GAP), 0, DOT_R, color)
+      sprite.statusDots.add(dot)
+    })
+  }
+
+  // ── Timer helpers ──────────────────────────────────────────────────────────
+
+  private _updateTimerDisplay(): void {
+    const s = this._timerSecs
+    const color = s > 5 ? '#ffffff' : s >= 3 ? '#ffdd44' : '#ff4444'
+    this._timerText.setText(`⏱ ${s}s`).setColor(color)
+  }
+
+  private _clearTimer(): void {
+    if (this._timerEvent) {
+      this._timerEvent.destroy()
+      this._timerEvent = null
+    }
+    this._timerSecs = 0
+    this._timerText.setText('')
+  }
+
   private _showVictoryOverlay(winText: string, reason: string, round: number) {
     const REASON_LABELS: Record<string, string> = {
       king_slain:         'Rei abatido',
@@ -1192,7 +1511,23 @@ function _tileCenter(col: number, row: number): { x: number; y: number } {
   return { x: GRID_X + col * TILE + TILE / 2, y: GRID_Y + row * TILE + TILE / 2 }
 }
 
-function _buildController(deckConfig?: Record<UnitRole, UnitDeckConfig>): GameController {
+function _scaleStats(
+  base: typeof ROLE_STATS[UnitRole],
+  difficulty: string,
+): { maxHp: number; attack: number; defense: number; mobility: number } {
+  const mult = difficulty === 'easy' ? 0.7 : difficulty === 'hard' ? 1.4 : 1.0
+  return {
+    maxHp:    Math.round(base.maxHp * mult),
+    attack:   Math.round(base.attack * mult),
+    defense:  Math.round(base.defense * mult),
+    mobility: base.mobility,  // don't scale mobility
+  }
+}
+
+function _buildController(
+  deckConfig?: Record<UnitRole, UnitDeckConfig>,
+  difficulty: string = 'normal',
+): GameController {
   const registry = new SkillRegistry(SKILL_CATALOG)
 
   const fromAssignment = (key: string) => {
@@ -1207,7 +1542,7 @@ function _buildController(deckConfig?: Record<UnitRole, UnitDeckConfig>): GameCo
     new Character(u.id, u.name, u.role, 'left', u.col, u.row, ROLE_STATS[u.role]))
 
   const rightChars = RIGHT_UNITS.map((u) =>
-    new Character(u.id, u.name, u.role, 'right', u.col, u.row, ROLE_STATS[u.role]))
+    new Character(u.id, u.name, u.role, 'right', u.col, u.row, _scaleStats(ROLE_STATS[u.role], difficulty)))
 
   const leftTeam = new Team('left', leftChars, {
     king:       deckConfig?.king       ? fromConfig(deckConfig.king)       : fromAssignment('lking'),

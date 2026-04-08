@@ -17,7 +17,7 @@
  */
 
 import type { Effect, EffectKind, EffectType, TickResult } from './Effect'
-import { EvadeEffect, HealReductionEffect, ReflectEffect, ShieldEffect, StatModEffect } from './Effect'
+import { EvadeEffect, HealReductionEffect, ReflectEffect, ShieldEffect, StatModEffect, MarkEffect, ReviveEffect } from './Effect'
 
 // ── Supporting types ──────────────────────────────────────────────────────────
 
@@ -46,6 +46,10 @@ export interface DamageResult {
   readonly reflected:       number
   /** True if HP reached 0 after this hit. */
   readonly killed:          boolean
+  /** True if a ReviveEffect prevented death. HP was restored instead of dying. */
+  readonly revived:         boolean
+  /** HP the character was restored to by the revive (0 if revive did not trigger). */
+  readonly revivedHp:       number
 }
 
 /** Outcome of a `heal()` call. */
@@ -84,6 +88,12 @@ export class Character {
 
   // ── Status effects ────────────────────────────────────────────────────────
   private _effects: Effect[] = []
+
+  // ── Turn-modifier flags ──────────────────────────────────────────────────
+  /** When true, the character uses 2 attack skills instead of 1 attack + 1 defense next turn. Reset after use. */
+  private _doubleAttackNextTurn = false
+  /** When > 0, the character cannot use defense skills this turn. Decremented each round. */
+  private _silencedDefenseTicks = 0
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
   private _alive = true
@@ -166,7 +176,7 @@ export class Character {
    */
   takeDamage(rawDamage: number): DamageResult {
     if (!this._alive || rawDamage <= 0) {
-      return { evaded: false, shieldAbsorbed: 0, hpDamage: 0, reflected: 0, killed: false }
+      return { evaded: false, shieldAbsorbed: 0, hpDamage: 0, reflected: 0, killed: false, revived: false, revivedHp: 0 }
     }
 
     let remaining  = rawDamage
@@ -202,10 +212,27 @@ export class Character {
     const hpDamage = evaded ? 0 : Math.max(0, remaining)
     this._hp = Math.max(0, this._hp - hpDamage)
 
-    const killed = this._hp === 0
-    if (killed) this._alive = false
+    let killed  = this._hp === 0
+    let revived = false
+    let revivedHp = 0
+    // Revive intercept: if the character would die but has a revive buffer,
+    // restore to the revive HP instead of dying.
+    if (killed) {
+      const revive = this.reviveEffect
+      if (revive) {
+        const restoreHp = revive.trigger()
+        this._hp    = Math.min(restoreHp, this.baseStats.maxHp)
+        this._alive = true
+        killed      = false
+        revived     = true
+        revivedHp   = this._hp
+        this._pruneExpired()   // remove the consumed revive effect
+      } else {
+        this._alive = false
+      }
+    }
 
-    return { evaded, shieldAbsorbed: shieldAbs, hpDamage, reflected, killed }
+    return { evaded, shieldAbsorbed: shieldAbs, hpDamage, reflected, killed, revived, revivedHp }
   }
 
   // ── Healing ───────────────────────────────────────────────────────────────
@@ -300,6 +327,48 @@ export class Character {
     return reflect?.power ?? 0
   }
 
+  /** True if the character cannot move this phase (snared). */
+  get isSnared(): boolean {
+    return this.hasEffect('snare')
+  }
+
+  /** True if the character is marked for bonus damage. */
+  get isMarked(): boolean {
+    return this.hasEffect('mark')
+  }
+
+  /** The active MarkEffect, if any. */
+  get markEffect(): MarkEffect | null {
+    return (this._effects.find((e) => e instanceof MarkEffect && !e.isExpired) as MarkEffect | undefined) ?? null
+  }
+
+  /** True if the character has a revive buffer active. */
+  get hasRevive(): boolean {
+    return this.hasEffect('revive')
+  }
+
+  /** The active ReviveEffect, if any. */
+  get reviveEffect(): ReviveEffect | null {
+    return (this._effects.find((e) => e instanceof ReviveEffect && !e.isExpired) as ReviveEffect | undefined) ?? null
+  }
+
+  // ── Turn-modifier queries ────────────────────────────────────────────────
+
+  /** True if this character will use 2 attack skills next turn (no defense). */
+  get doubleAttackNextTurn(): boolean { return this._doubleAttackNextTurn }
+
+  /** Enable double-attack mode for the next turn. */
+  setDoubleAttackNextTurn(value: boolean): void { this._doubleAttackNextTurn = value }
+
+  /** Remaining turns where this character's defense is silenced. */
+  get silencedDefenseTicks(): number { return this._silencedDefenseTicks }
+
+  /** True if the character is currently unable to use defense skills. */
+  get isDefenseSilenced(): boolean { return this._silencedDefenseTicks > 0 }
+
+  /** Set the number of turns defense is silenced. */
+  setSilencedDefenseTicks(ticks: number): void { this._silencedDefenseTicks = Math.max(0, ticks) }
+
   // ── Round tick ────────────────────────────────────────────────────────────
 
   /**
@@ -319,16 +388,29 @@ export class Character {
       if (result === null) continue   // passive effect, no tick outcome
       ticks.push(result)
 
-      if ((effect.type === 'bleed' || effect.type === 'poison') && result.value > 0) {
+      if ((effect.type === 'bleed' || effect.type === 'poison' || effect.type === 'burn') && result.value > 0) {
         this._hp = Math.max(0, this._hp - result.value)
         if (this._hp === 0) {
-          this._alive = false
+          // Check for revive buffer before dying to DoT
+          const revive = this.reviveEffect
+          if (revive) {
+            const restoreHp = revive.trigger()
+            this._hp    = Math.min(restoreHp, this.baseStats.maxHp)
+            this._alive = true
+          } else {
+            this._alive = false
+          }
         }
       }
 
       if (effect.type === 'regen' && result.value > 0 && this._alive) {
         this._hp = Math.min(this.baseStats.maxHp, this._hp + result.value)
       }
+    }
+
+    // Decrement silence-defense counter each round
+    if (this._silencedDefenseTicks > 0) {
+      this._silencedDefenseTicks--
     }
 
     this._pruneExpired()

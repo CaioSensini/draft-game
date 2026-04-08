@@ -131,38 +131,9 @@ export function getValidMoves(state: BattleState, unitId: string): Position[] {
   return result
 }
 
-/** Special king teleport: can jump anywhere in own territory (ignores mobility). */
-export function getKingValidMoves(state: BattleState, unitId: string): Position[] {
-  const def  = state.defs.get(unitId)
-  const rt   = state.runtime.get(unitId)
-  const turn = state.turns.get(unitId)
-
-  if (!def || !rt?.alive || turn?.movedThisPhase) return []
-
-  const result: Position[] = []
-  for (let col = 0; col < BOARD.COLS; col++) {
-    for (let row = 0; row < BOARD.ROWS; row++) {
-      if (!isInOwnTerritory(def.side, col)) continue
-      if (col === rt.col && row === rt.row) continue
-      // Check not occupied
-      let occupied = false
-      for (const [id, otherRt] of state.runtime) {
-        if (id === unitId) continue
-        if (otherRt.alive && otherRt.col === col && otherRt.row === row) { occupied = true; break }
-      }
-      if (!occupied) result.push({ col, row })
-    }
-  }
-  return result
-}
-
-/** Unified: returns valid moves for any role (king uses teleport rules). */
+/** Unified: returns valid moves for any role (all roles use same movement rules). */
 export function getAllValidMoves(state: BattleState, unitId: string): Position[] {
-  const def = state.defs.get(unitId)
-  if (!def) return []
-  return def.role === 'king'
-    ? getKingValidMoves(state, unitId)
-    : getValidMoves(state, unitId)
+  return getValidMoves(state, unitId)
 }
 
 /** Number of living allies touching the wall for `side`. */

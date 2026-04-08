@@ -1,9 +1,18 @@
 import Phaser from 'phaser'
 import BootScene from '../scenes/BootScene'
+import LoginScene from '../scenes/LoginScene'
 import MenuScene from '../scenes/MenuScene'
+import LobbyScene from '../scenes/LobbyScene'
 import DeckBuildScene from '../scenes/DeckBuildScene'
+import PvESelectScene from '../scenes/PvESelectScene'
+import ShopScene from '../scenes/ShopScene'
+import ProfileScene from '../scenes/ProfileScene'
 import ArenaScene from '../scenes/ArenaScene'
 import BattleScene from '../scenes/BattleScene'
+import BattleResultScene from '../scenes/BattleResultScene'
+import TutorialScene from '../scenes/TutorialScene'
+import SkillUpgradeScene from '../scenes/SkillUpgradeScene'
+import SettingsScene from '../scenes/SettingsScene'
 
 /**
  * Central Phaser game configuration.
@@ -16,9 +25,12 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
   height: 720,
   parent: 'game',
   backgroundColor: '#0f1117',
-  scene: [BootScene, MenuScene, DeckBuildScene, ArenaScene, BattleScene],
+  scene: [BootScene, LoginScene, MenuScene, LobbyScene, DeckBuildScene, PvESelectScene, ShopScene, ProfileScene, ArenaScene, BattleScene, BattleResultScene, TutorialScene, SkillUpgradeScene, SettingsScene],
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
+  },
+  dom: {
+    createContainer: true,
   },
 }

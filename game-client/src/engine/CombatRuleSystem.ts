@@ -75,6 +75,13 @@ export class CombatRuleSystem {
           break
         }
 
+        case 'wall_mit_per_toucher': {
+          // Wall buff also grants +ATK per ally touching the wall
+          const team = battle.teamOf(caster.side)
+          bonus += rule.value * team.wallTouchCount()
+          break
+        }
+
         // Formula-mitigation rules handled in getMitigationBonus — skip here
         default: break
       }

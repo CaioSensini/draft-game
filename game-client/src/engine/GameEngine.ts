@@ -104,7 +104,7 @@ export class GameEngine {
     return livingUnitsBySide(this.state, side)
   }
 
-  /** Valid move tiles for `unitId`. King uses teleport rules. */
+  /** Valid move tiles for `unitId`. All roles use same movement rules. */
   getValidMoves(unitId: string): Position[] {
     return getAllValidMoves(this.state, unitId)
   }

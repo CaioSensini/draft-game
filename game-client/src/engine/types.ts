@@ -163,8 +163,16 @@ export const EventType = {
   STATUS_APPLIED:         'STATUS_APPLIED',
   BLEED_TICK:             'BLEED_TICK',
   POISON_TICK:            'POISON_TICK',
+  BURN_TICK:              'BURN_TICK',
   REGEN_TICK:             'REGEN_TICK',
   STAT_MODIFIER_EXPIRED:  'STAT_MODIFIER_EXPIRED',
+
+  // ── New mechanics
+  MARK_CONSUMED:          'MARK_CONSUMED',
+  REVIVE_TRIGGERED:       'REVIVE_TRIGGERED',
+  LIFESTEAL_HEAL:         'LIFESTEAL_HEAL',
+  DOUBLE_ATTACK_READY:    'DOUBLE_ATTACK_READY',
+  DEFENSE_SILENCED:       'DEFENSE_SILENCED',
 
   // ── Passives
   PASSIVE_TRIGGERED:      'PASSIVE_TRIGGERED',
@@ -239,16 +247,31 @@ export type EngineEvent =
   // ── Status effects ──
   | { type: 'STATUS_APPLIED';
       unitId: string
-      status: 'bleed' | 'poison' | 'stun' | 'regen' | 'reflect' | 'evade'
+      status: 'bleed' | 'poison' | 'burn' | 'stun' | 'snare' | 'regen' | 'reflect' | 'evade'
             | 'def_down' | 'atk_down' | 'mov_down'
             | 'def_up'   | 'atk_up'
             | 'heal_reduction'
+            | 'mark' | 'revive'
+            | 'double_attack' | 'silence_defense'
       value: number }
   | { type: 'BLEED_TICK';           unitId: string; damage: number; newHp: number }
   | { type: 'POISON_TICK';          unitId: string; damage: number; newHp: number }
+  | { type: 'BURN_TICK';            unitId: string; damage: number; newHp: number }
   | { type: 'REGEN_TICK';           unitId: string; heal: number;   newHp: number }
   | { type: 'STAT_MODIFIER_EXPIRED'; unitId: string
       effectType: 'def_down' | 'atk_down' | 'mov_down' | 'def_up' | 'atk_up' }
+
+  // ── New mechanics ──
+  /** A mark was consumed on hit, dealing bonus damage. */
+  | { type: 'MARK_CONSUMED';  unitId: string; bonusDamage: number; sourceId: string }
+  /** A revive buffer triggered, preventing death. */
+  | { type: 'REVIVE_TRIGGERED'; unitId: string; restoredHp: number }
+  /** Lifesteal healed the caster after dealing damage. */
+  | { type: 'LIFESTEAL_HEAL'; unitId: string; amount: number; newHp: number }
+  /** Double-attack mode activated — character will use 2 attack skills next turn. */
+  | { type: 'DOUBLE_ATTACK_READY'; unitId: string }
+  /** A character's defense was silenced — they cannot use defense skills this turn. */
+  | { type: 'DEFENSE_SILENCED'; unitId: string; sourceId: string }
 
   // ── Passives ──
   /**
