@@ -2,6 +2,8 @@ import Phaser from 'phaser'
 import { getDefaultDeckForRole, getRoleCards, getRoleCardsByGroup } from '../data/cardTemplates'
 import type { CardGroup, TeamDeckConfig, UnitRole } from '../types'
 import { GameState, GameStateManager } from '../core/GameState'
+import { UI } from '../utils/UIComponents'
+import { playerData } from '../utils/PlayerDataManager'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -11,7 +13,7 @@ const ROLE_LABELS: Record<UnitRole, string> = {
   king:       '👑 Rei',
   warrior:    '🛡 Guerreiro',
   specialist: '🔮 Especialista',
-  executor:   '⚔️ Executor',
+  executor:   '🗡️ Executor',
 }
 
 const ROLE_PASSIVES: Record<UnitRole, string> = {
@@ -216,7 +218,8 @@ export default class DeckBuildScene extends Phaser.Scene {
   // ─── Background ────────────────────────────────────────────────────────────
 
   private drawBackground() {
-    this.add.rectangle(W / 2, 360, W, 720, 0x080a12)
+    UI.background(this)
+    UI.particles(this, 10)
     for (let i = 1; i < 4; i++) {
       this.add.rectangle(i * COL_W, 360, 1, 720, 0x3d2e14, 0.15)
     }
@@ -832,6 +835,7 @@ export default class DeckBuildScene extends Phaser.Scene {
     }
     this.scene.start('BattleScene', {
       deckConfig,
+      skinConfig: playerData.getSkinConfig(),
       difficulty: this.difficulty,
       pveMode: this.pveMode,
       npcTeam: this.npcTeam,

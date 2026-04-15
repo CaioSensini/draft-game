@@ -1,3 +1,60 @@
+import type { RankedProfile } from '../data/tournaments'
+import { SKILL_CATALOG } from '../data/skillCatalog'
+import type { CharClass } from './AssetPaths'
+import { SKIN_CATALOG, findSkin } from '../data/skinCatalog'
+
+/**
+ * Runtime view of a single mission slot. Internally only `id`, `stageIndex`,
+ * and `progress` are persisted — every other field is derived at read time
+ * from the chain definition in `battlePass.ts`. Keeping the derived fields
+ * on the object lets the UI consume missions exactly like before, and keeps
+ * the migration path simple if we change stage targets between releases.
+ */
+export interface BattlePassMission {
+  /** Stable chain id (matches `MissionChain.id`). Kept as `id` so the
+   *  battle pass UI can keep using `mission.id` as a lookup key. */
+  id: string
+  /** Index of the CURRENTLY active stage (0 = first). When this equals
+   *  `totalStages` the chain is fully cleared. */
+  stageIndex: number
+  /** Raw progress value: cumulative count for `cumulative` chains, peak
+   *  value seen so far for `max` chains. */
+  progress: number
+  /** Total stages in the chain (denormalized from chain definition). */
+  totalStages: number
+  /** True once every stage of the chain has been claimed. */
+  fullyDone: boolean
+  /** Compact category label, e.g. "PVE", "TORNEIO". Drives card styling. */
+  category: string
+  /** Description of the active stage (or the LAST stage if fullyDone). */
+  description: string
+  /** Target threshold for the active stage. */
+  target: number
+  /** XP awarded when the active stage is claimed. */
+  xpReward: number
+  /** True when `progress >= target` for the active stage. */
+  completed: boolean
+  /** True when the chain is fully done (kept for UI compat — old code
+   *  branched on `claimed` to draw the green checkmark). */
+  claimed: boolean
+}
+
+export interface BattlePassData {
+  seasonId: number
+  tier: number              // 0 to PASS_MAX_TIER
+  xp: number                // 0 to PASS_XP_PER_TIER-1
+  isPremium: boolean
+  claimedFree: number[]     // tier numbers with free reward claimed
+  claimedPremium: number[]  // tier numbers with premium reward claimed
+  /**
+   * All season mission chains — one slot per chain. Each slot tracks the
+   * chain's currently active stage; when the player claims a stage the
+   * slot's `stageIndex` advances and the next stage replaces it in the
+   * UI grid. The whole array is regenerated when a new season starts.
+   */
+  seasonMissions: BattlePassMission[]
+}
+
 export interface PlayerData {
   username: string
   level: number
@@ -11,20 +68,36 @@ export interface PlayerData {
   defenseMastery: number
   ownedSkills: OwnedSkill[]
   deckConfig: Record<string, { attackCards: string[]; defenseCards: string[] }>
+  ranked: RankedProfile
+  battlePass: BattlePassData
+  /**
+   * Skins unlocked by the player, keyed by class. The classic 'idle' skin is
+   * granted automatically to every account and never removed from these lists.
+   * Added in data v9 — legacy profiles get this field backfilled on load.
+   */
+  ownedSkins: Record<CharClass, string[]>
+  /**
+   * Currently equipped skin per class. This is player-owned state (not
+   * slot-owned), so it follows the player across character swaps in the
+   * lobby and into the battle — each player brings their own skins.
+   */
+  equippedSkins: Record<CharClass, string>
 }
 
 export interface OwnedSkill {
   skillId: string
-  level: number // 1-5
+  level: number    // 1-5
   unitClass: string
+  progress: number // filled dots (0 to <level> to upgrade; resets on upgrade)
 }
 
+import { getXPForLevel, getStatMultiplier as _getStatMult, getLevelUpGold, getLevelUpDG, MAX_LEVEL } from '../data/progression'
+import { createDefaultRankedProfile } from '../data/tournaments'
+import { CURRENT_SEASON, PASS_XP_PER_TIER, PASS_MAX_TIER, SEASON_MISSION_CHAINS, SEASON_TIERS, findMissionChain } from '../data/battlePass'
+import type { TierReward, MissionTrackKey } from '../data/battlePass'
+
 const STORAGE_KEY = 'draft_player_data'
-const DATA_VERSION = 2  // bump when schema changes to force re-creation
-const XP_PER_LEVEL = [
-  0, 100, 250, 500, 800, 1200, 1700, 2300, 3000, 3800, 4700, 5700, 6800,
-  8000, 9300, 10700, 12200, 13800, 15500, 17300,
-] // 20 levels
+const DATA_VERSION = 11 // v11: evolving mission chains (8 chains × 5 stages)
 
 class PlayerDataManager {
   private data: PlayerData
@@ -38,9 +111,72 @@ class PlayerDataManager {
       const raw = localStorage.getItem(STORAGE_KEY)
       if (raw) {
         const parsed = JSON.parse(raw) as PlayerData & { _version?: number }
-        // If old schema (missing deckConfig or wrong version), reset to defaults
-        if (!parsed.deckConfig || (parsed._version ?? 0) < DATA_VERSION) {
-          return this.createDefault()
+        if (!parsed.deckConfig) return this.createDefault()
+        const ver = parsed._version ?? 0
+        if (ver < 4) return this.createDefault()
+        // v4→v5 migration: merge duplicate skills into single entries with progress
+        if (ver < 5) {
+          parsed.ownedSkills = this.migrateSkillsV5(parsed.ownedSkills)
+          ;(parsed as unknown as Record<string, unknown>)._version = DATA_VERSION
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed))
+        }
+        // Ensure all skills have progress field
+        for (const s of parsed.ownedSkills) {
+          if (s.progress === undefined) s.progress = 0
+        }
+        // Ensure battlePass exists
+        if (!parsed.battlePass) {
+          parsed.battlePass = this.createDefaultBattlePass()
+        }
+        // v8→v9 migration: give every legacy account the default skin state
+        // (owns 'idle' for each class, has 'idle' equipped). This keeps
+        // existing progress intact and unlocks the lobby skin picker
+        // without forcing a reset.
+        if (ver < 9 || !parsed.ownedSkins || !parsed.equippedSkins) {
+          parsed.ownedSkins = this.defaultOwnedSkins()
+          parsed.equippedSkins = this.defaultEquippedSkins()
+          ;(parsed as unknown as Record<string, unknown>)._version = DATA_VERSION
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed))
+        }
+        // v9→v10 migration: battle pass switched from daily/weekly rotation
+        // to a single 90-day season mission pool. Old daily/weekly state is
+        // dropped; tier/xp/claimed are preserved so upgraders don't lose
+        // progress. We also drop the daily/weekly timestamp fields.
+        if (ver < 10) {
+          const legacy = parsed.battlePass as (BattlePassData & {
+            dailyMissions?: BattlePassMission[]
+            weeklyMissions?: BattlePassMission[]
+            lastDailyReset?: number
+            lastWeeklyReset?: number
+          }) | undefined
+          if (legacy) {
+            legacy.seasonMissions = this._generateSeasonMissions()
+            delete legacy.dailyMissions
+            delete legacy.weeklyMissions
+            delete legacy.lastDailyReset
+            delete legacy.lastWeeklyReset
+            parsed.battlePass = legacy
+          } else {
+            parsed.battlePass = this.createDefaultBattlePass()
+          }
+          ;(parsed as unknown as Record<string, unknown>)._version = DATA_VERSION
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed))
+        }
+        // v10→v11 migration: flat mission pool → evolving mission chains.
+        // The old mission shape (id/description/target/progress/xpReward/
+        // completed/claimed) is incompatible with chain stages. We discard
+        // any in-flight mission progress (the chains have all-new ids) and
+        // regenerate a fresh chain set. Tier/xp/claimed-tier state on the
+        // pass itself is preserved so the player keeps any rewards already
+        // earned this season.
+        if (ver < 11) {
+          if (parsed.battlePass) {
+            parsed.battlePass.seasonMissions = this._generateSeasonMissions()
+          } else {
+            parsed.battlePass = this.createDefaultBattlePass()
+          }
+          ;(parsed as unknown as Record<string, unknown>)._version = DATA_VERSION
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed))
         }
         return parsed
       }
@@ -50,53 +186,96 @@ class PlayerDataManager {
     return this.createDefault()
   }
 
+  /**
+   * Default ownedSkins map — every fresh / legacy account gets exactly the
+   * 'idle' classic skin for every class. Alternate skins are purchased in
+   * the shop and appended to these lists.
+   */
+  private defaultOwnedSkins(): Record<CharClass, string[]> {
+    return {
+      king:       ['idle'],
+      warrior:    ['idle'],
+      specialist: ['idle'],
+      executor:   ['idle'],
+    }
+  }
+
+  /**
+   * Default equippedSkins — starts classic for every class. Changes when
+   * the player picks another skin in the lobby picker.
+   */
+  private defaultEquippedSkins(): Record<CharClass, string> {
+    return {
+      king:       'idle',
+      warrior:    'idle',
+      specialist: 'idle',
+      executor:   'idle',
+    }
+  }
+
+  /** Migrate v4 duplicates → v5 unique skills with progress */
+  private migrateSkillsV5(skills: OwnedSkill[]): OwnedSkill[] {
+    const map = new Map<string, OwnedSkill>()
+    for (const s of skills) {
+      const key = `${s.skillId}_${s.level}`
+      const existing = map.get(key)
+      if (existing) {
+        // Duplicate found — add 1 progress to the existing entry
+        existing.progress = Math.min((existing.progress ?? 0) + 1, existing.level)
+      } else {
+        map.set(key, { ...s, progress: s.progress ?? 0 })
+      }
+    }
+    return Array.from(map.values())
+  }
+
   private createDefault(): PlayerData {
     // 8 starter skills per class (4 atk + 4 def) = 32 total
     const ownedSkills: OwnedSkill[] = [
       // King
-      { skillId: 'lk_a1', level: 1, unitClass: 'king' },
-      { skillId: 'lk_a3', level: 1, unitClass: 'king' },
-      { skillId: 'lk_a6', level: 1, unitClass: 'king' },
-      { skillId: 'lk_a7', level: 1, unitClass: 'king' },
-      { skillId: 'lk_d2', level: 1, unitClass: 'king' },
-      { skillId: 'lk_d3', level: 1, unitClass: 'king' },
-      { skillId: 'lk_d5', level: 1, unitClass: 'king' },
-      { skillId: 'lk_d6', level: 1, unitClass: 'king' },
+      { skillId: 'lk_a1', level: 1, unitClass: 'king', progress: 0 },
+      { skillId: 'lk_a3', level: 1, unitClass: 'king', progress: 0 },
+      { skillId: 'lk_a6', level: 1, unitClass: 'king', progress: 0 },
+      { skillId: 'lk_a7', level: 1, unitClass: 'king', progress: 0 },
+      { skillId: 'lk_d2', level: 1, unitClass: 'king', progress: 0 },
+      { skillId: 'lk_d3', level: 1, unitClass: 'king', progress: 0 },
+      { skillId: 'lk_d5', level: 1, unitClass: 'king', progress: 0 },
+      { skillId: 'lk_d6', level: 1, unitClass: 'king', progress: 0 },
       // Warrior
-      { skillId: 'lw_a1', level: 1, unitClass: 'warrior' },
-      { skillId: 'lw_a2', level: 1, unitClass: 'warrior' },
-      { skillId: 'lw_a6', level: 1, unitClass: 'warrior' },
-      { skillId: 'lw_a7', level: 1, unitClass: 'warrior' },
-      { skillId: 'lw_d1', level: 1, unitClass: 'warrior' },
-      { skillId: 'lw_d8', level: 1, unitClass: 'warrior' },
-      { skillId: 'lw_d4', level: 1, unitClass: 'warrior' },
-      { skillId: 'lw_d5', level: 1, unitClass: 'warrior' },
+      { skillId: 'lw_a1', level: 1, unitClass: 'warrior', progress: 0 },
+      { skillId: 'lw_a2', level: 1, unitClass: 'warrior', progress: 0 },
+      { skillId: 'lw_a6', level: 1, unitClass: 'warrior', progress: 0 },
+      { skillId: 'lw_a7', level: 1, unitClass: 'warrior', progress: 0 },
+      { skillId: 'lw_d1', level: 1, unitClass: 'warrior', progress: 0 },
+      { skillId: 'lw_d8', level: 1, unitClass: 'warrior', progress: 0 },
+      { skillId: 'lw_d4', level: 1, unitClass: 'warrior', progress: 0 },
+      { skillId: 'lw_d5', level: 1, unitClass: 'warrior', progress: 0 },
       // Specialist
-      { skillId: 'ls_a1', level: 1, unitClass: 'specialist' },
-      { skillId: 'ls_a2', level: 1, unitClass: 'specialist' },
-      { skillId: 'ls_a5', level: 1, unitClass: 'specialist' },
-      { skillId: 'ls_a6', level: 1, unitClass: 'specialist' },
-      { skillId: 'ls_d1', level: 1, unitClass: 'specialist' },
-      { skillId: 'ls_d4', level: 1, unitClass: 'specialist' },
-      { skillId: 'ls_d5', level: 1, unitClass: 'specialist' },
-      { skillId: 'ls_d7', level: 1, unitClass: 'specialist' },
+      { skillId: 'ls_a1', level: 1, unitClass: 'specialist', progress: 0 },
+      { skillId: 'ls_a2', level: 1, unitClass: 'specialist', progress: 0 },
+      { skillId: 'ls_a5', level: 1, unitClass: 'specialist', progress: 0 },
+      { skillId: 'ls_a6', level: 1, unitClass: 'specialist', progress: 0 },
+      { skillId: 'ls_d1', level: 1, unitClass: 'specialist', progress: 0 },
+      { skillId: 'ls_d4', level: 1, unitClass: 'specialist', progress: 0 },
+      { skillId: 'ls_d5', level: 1, unitClass: 'specialist', progress: 0 },
+      { skillId: 'ls_d7', level: 1, unitClass: 'specialist', progress: 0 },
       // Executor
-      { skillId: 'le_a1', level: 1, unitClass: 'executor' },
-      { skillId: 'le_a2', level: 1, unitClass: 'executor' },
-      { skillId: 'le_a5', level: 1, unitClass: 'executor' },
-      { skillId: 'le_a6', level: 1, unitClass: 'executor' },
-      { skillId: 'le_d1', level: 1, unitClass: 'executor' },
-      { skillId: 'le_d2', level: 1, unitClass: 'executor' },
-      { skillId: 'le_d7', level: 1, unitClass: 'executor' },
-      { skillId: 'le_d8', level: 1, unitClass: 'executor' },
+      { skillId: 'le_a1', level: 1, unitClass: 'executor', progress: 0 },
+      { skillId: 'le_a2', level: 1, unitClass: 'executor', progress: 0 },
+      { skillId: 'le_a5', level: 1, unitClass: 'executor', progress: 0 },
+      { skillId: 'le_a6', level: 1, unitClass: 'executor', progress: 0 },
+      { skillId: 'le_d1', level: 1, unitClass: 'executor', progress: 0 },
+      { skillId: 'le_d2', level: 1, unitClass: 'executor', progress: 0 },
+      { skillId: 'le_d7', level: 1, unitClass: 'executor', progress: 0 },
+      { skillId: 'le_d8', level: 1, unitClass: 'executor', progress: 0 },
     ]
     return {
       _version: DATA_VERSION,
       username: 'Jogador',
       level: 1,
       xp: 0,
-      gold: 500,
-      dg: 0,
+      gold: 10000,
+      dg: 10000,
       wins: 0,
       losses: 0,
       rankPoints: 0,
@@ -121,6 +300,10 @@ class PlayerDataManager {
           defenseCards: ['le_d1', 'le_d2', 'le_d7', 'le_d8'],
         },
       },
+      ranked: createDefaultRankedProfile(),
+      battlePass: this.createDefaultBattlePass(),
+      ownedSkins: this.defaultOwnedSkins(),
+      equippedSkins: this.defaultEquippedSkins(),
     } as PlayerData
   }
 
@@ -140,6 +323,16 @@ class PlayerDataManager {
 
   getDG(): number {
     return this.data.dg
+  }
+
+  getRanked(): import('../data/tournaments').RankedProfile {
+    return this.data.ranked ?? createDefaultRankedProfile()
+  }
+
+  updateRanked(queue: import('../data/tournaments').RankedQueue, info: import('../data/tournaments').RankedInfo): void {
+    if (!this.data.ranked) this.data.ranked = createDefaultRankedProfile()
+    this.data.ranked[queue] = info
+    this.save()
   }
 
   getLevel(): number {
@@ -163,6 +356,110 @@ class PlayerDataManager {
     this.save()
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SKIN ECONOMY — owned / equipped / purchasable
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /** Safe getter that self-heals if a legacy profile is somehow missing the map. */
+  private _ensureSkinMaps(): void {
+    if (!this.data.ownedSkins) this.data.ownedSkins = this.defaultOwnedSkins()
+    if (!this.data.equippedSkins) this.data.equippedSkins = this.defaultEquippedSkins()
+  }
+
+  /** List of skin IDs the player owns for the given class (always includes 'idle'). */
+  getOwnedSkins(classId: CharClass): string[] {
+    this._ensureSkinMaps()
+    return [...(this.data.ownedSkins[classId] ?? ['idle'])]
+  }
+
+  /** True if the player already owns this skin for that class. */
+  ownsSkin(classId: CharClass, skinId: string): boolean {
+    this._ensureSkinMaps()
+    if (skinId === 'idle') return true
+    return (this.data.ownedSkins[classId] ?? []).includes(skinId)
+  }
+
+  /** Currently equipped skin for a class. Falls back to 'idle' if unset. */
+  getEquippedSkin(classId: CharClass): string {
+    this._ensureSkinMaps()
+    return this.data.equippedSkins[classId] ?? 'idle'
+  }
+
+  /**
+   * Returns a snapshot of { class → equipped skin } for all 4 classes. This is
+   * the shape BattleScene consumes when drawing characters — call this from
+   * any lobby right before kicking off the battle.
+   */
+  getSkinConfig(): Record<CharClass, string> {
+    this._ensureSkinMaps()
+    return {
+      king:       this.getEquippedSkin('king'),
+      warrior:    this.getEquippedSkin('warrior'),
+      specialist: this.getEquippedSkin('specialist'),
+      executor:   this.getEquippedSkin('executor'),
+    }
+  }
+
+  /**
+   * Equip a skin for a class. Fails silently (returns false) if the player
+   * doesn't own it — callers should gate the UI on ownsSkin() first so this
+   * guard only fires on bugs.
+   */
+  setEquippedSkin(classId: CharClass, skinId: string): boolean {
+    this._ensureSkinMaps()
+    if (!this.ownsSkin(classId, skinId)) return false
+    // Guard against typos: the skin must be registered in the catalog.
+    if (!SKIN_CATALOG[classId].some((s) => s.id === skinId)) return false
+    this.data.equippedSkins[classId] = skinId
+    this.save()
+    return true
+  }
+
+  /**
+   * Grant a skin for free (battle pass rewards, promos, etc). Idempotent —
+   * calling twice with the same id is a no-op. Returns true if the skin
+   * was actually added, false if the id is unknown or already owned.
+   *
+   * Unlike `purchaseSkin`, this does NOT auto-equip — battle pass claims
+   * are meant to drop into the wardrobe silently so the current loadout
+   * stays untouched.
+   */
+  grantSkin(classId: CharClass, skinId: string): boolean {
+    this._ensureSkinMaps()
+    if (!SKIN_CATALOG[classId].some((s) => s.id === skinId)) return false
+    if (this.ownsSkin(classId, skinId)) return false
+    if (!this.data.ownedSkins[classId]) this.data.ownedSkins[classId] = ['idle']
+    this.data.ownedSkins[classId].push(skinId)
+    this.save()
+    return true
+  }
+
+  /**
+   * Purchase a skin with DG. Returns true on success. Rejects the transaction
+   * if:
+   *   - the skin ID isn't registered in the catalog;
+   *   - the player already owns it;
+   *   - the player can't afford the DG price.
+   *
+   * On success the skin is added to ownedSkins and immediately auto-equipped
+   * — the expected UX after buying something cool.
+   */
+  purchaseSkin(classId: CharClass, skinId: string): boolean {
+    this._ensureSkinMaps()
+    const def = findSkin(classId, skinId)
+    if (!def) return false
+    if (def.rarity === 'default') return false
+    if (this.ownsSkin(classId, skinId)) return false
+    if (this.data.dg < def.dgPrice) return false
+
+    this.data.dg -= def.dgPrice
+    if (!this.data.ownedSkins[classId]) this.data.ownedSkins[classId] = ['idle']
+    this.data.ownedSkins[classId].push(skinId)
+    this.data.equippedSkins[classId] = skinId
+    this.save()
+    return true
+  }
+
   // -- Battle rewards --
 
   addBattleRewards(gold: number, xp: number, won: boolean): void {
@@ -174,10 +471,15 @@ class PlayerDataManager {
     this.save()
   }
 
-  addMastery(type: 'attack' | 'defense', amount: number): void {
+  addMastery(type: 'attack' | 'defense', amount: number): { newTotal: number; earnedPack: boolean } {
     if (type === 'attack') this.data.attackMastery += amount
     else this.data.defenseMastery += amount
+
+    const total = type === 'attack' ? this.data.attackMastery : this.data.defenseMastery
+    const earnedPack = total > 0 && total % 10 === 0  // every 10 mastery = free pack
+
     this.save()
+    return { newTotal: total, earnedPack }
   }
 
   // -- Economy --
@@ -208,67 +510,372 @@ class PlayerDataManager {
 
   // -- Skills --
 
+  /** Add a brand new skill to inventory (first time obtained). */
   addSkill(skillId: string, unitClass: string, level = 1): void {
-    this.data.ownedSkills.push({ skillId, level, unitClass })
+    this.data.ownedSkills.push({ skillId, level, unitClass, progress: 0 })
     this.save()
   }
 
-  removeSkill(skillId: string, level: number): boolean {
-    const idx = this.data.ownedSkills.findIndex(
-      (s) => s.skillId === skillId && s.level === level,
-    )
-    if (idx === -1) return false
-    this.data.ownedSkills.splice(idx, 1)
+  /** Increment progress when a duplicate is found. Syncs shared skills. Returns true if incremented. */
+  addSkillProgress(skillId: string): boolean {
+    const skill = this.data.ownedSkills.find(s => s.skillId === skillId)
+    if (!skill) return false
+    if (skill.level >= 5) return false
+    if (skill.progress >= skill.level) return false
+    skill.progress++
+    this._syncSharedSkills(skillId)
     this.save()
     return true
   }
 
-  fuseSkills(skillId: string, currentLevel: number): boolean {
-    // Need 2 of same skill at same level
-    const matches = this.data.ownedSkills.filter(
-      (s) => s.skillId === skillId && s.level === currentLevel,
-    )
-    if (matches.length < 2) return false
-    if (currentLevel >= 5) return false
+  /** Check if a skill can receive another copy (has empty progress dots). */
+  canReceiveSkill(skillId: string): boolean {
+    const skill = this.data.ownedSkills.find(s => s.skillId === skillId)
+    if (!skill) return true // new skill, can always receive
+    if (skill.level >= 5) return false
+    return skill.progress < skill.level
+  }
 
-    // Fusion cost
+  /** Upgrade a skill to next level. Requires full progress + gold cost. Syncs shared skills. */
+  upgradeSkill(skillId: string): boolean {
+    const skill = this.data.ownedSkills.find(s => s.skillId === skillId)
+    if (!skill) return false
+    if (skill.level >= 5) return false
+    if (skill.progress < skill.level) return false
+
     const costs = [0, 100, 300, 700, 1500]
-    const cost = costs[currentLevel - 1] ?? 1500
+    const cost = costs[skill.level - 1] ?? 1500
     if (this.data.gold < cost) return false
 
-    // Remove 2, add 1 at next level
-    let removed = 0
-    this.data.ownedSkills = this.data.ownedSkills.filter((s) => {
-      if (
-        s.skillId === skillId &&
-        s.level === currentLevel &&
-        removed < 2
-      ) {
-        removed++
-        return false
-      }
-      return true
-    })
-    this.data.ownedSkills.push({
-      skillId,
-      level: currentLevel + 1,
-      unitClass: matches[0].unitClass,
-    })
+    skill.level++
+    skill.progress = 0
     this.data.gold -= cost
+    this._syncSharedSkills(skillId)
     this.checkLevelUp()
     this.save()
     return true
   }
 
+  /** Get upgrade cost for a skill at its current level. */
+  getUpgradeCost(level: number): number {
+    const costs = [0, 100, 300, 700, 1500]
+    return costs[level - 1] ?? 1500
+  }
+
+  /**
+   * Sync shared skills: skills with the same name across classes (e.g., Esquiva, Bloqueio Total)
+   * share the same level and progress. When one is upgraded or progressed, all copies sync.
+   */
+  // ═══════════════════════════════════════════════════════════════════════════
+  // BATTLE PASS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  private createDefaultBattlePass(): BattlePassData {
+    return {
+      seasonId: CURRENT_SEASON.id,
+      tier: 0,
+      xp: 0,
+      isPremium: false,
+      claimedFree: [],
+      claimedPremium: [],
+      seasonMissions: this._generateSeasonMissions(),
+    }
+  }
+
+  /**
+   * Build the mission list for a fresh season. One slot per chain in
+   * `SEASON_MISSION_CHAINS`, each starting at stage 0 with zero progress.
+   * The derived display fields (description, target, etc.) are filled in
+   * by `_hydrateMission` so this only needs to seed the persisted bits.
+   */
+  private _generateSeasonMissions(): BattlePassMission[] {
+    return SEASON_MISSION_CHAINS.map((c) => this._hydrateMission({
+      id: c.id,
+      stageIndex: 0,
+      progress: 0,
+      // Hydrate fills these in:
+      totalStages: 0,
+      fullyDone: false,
+      category: '',
+      description: '',
+      target: 0,
+      xpReward: 0,
+      completed: false,
+      claimed: false,
+    }))
+  }
+
+  /**
+   * Take a stored mission record (id + stageIndex + progress) and fold in
+   * every derived display field from the chain definition. Returns a fresh
+   * object — the caller is free to push it back into state. If the chain
+   * id is unknown (e.g. a chain was deleted between releases) the mission
+   * is marked fullyDone so it shows as a checkmark instead of a broken
+   * card.
+   */
+  private _hydrateMission(m: BattlePassMission): BattlePassMission {
+    const chain = findMissionChain(m.id)
+    if (!chain) {
+      return {
+        ...m,
+        totalStages: 0,
+        fullyDone: true,
+        category: '',
+        description: '(missão removida)',
+        target: 0,
+        xpReward: 0,
+        completed: false,
+        claimed: true,
+      }
+    }
+    const totalStages = chain.stages.length
+    const fullyDone = m.stageIndex >= totalStages
+    // When fully done we still want to render the LAST stage's description
+    // so the card reads "Vença 50 batalhas PvE ✓" instead of being blank.
+    const stageRef = fullyDone
+      ? chain.stages[totalStages - 1]!
+      : chain.stages[m.stageIndex]!
+    const completed = !fullyDone && m.progress >= stageRef.target
+    return {
+      id: m.id,
+      stageIndex: m.stageIndex,
+      progress: m.progress,
+      totalStages,
+      fullyDone,
+      category: chain.category,
+      description: stageRef.description,
+      target: stageRef.target,
+      xpReward: stageRef.xpReward,
+      completed,
+      claimed: fullyDone,
+    }
+  }
+
+  getBattlePass(): BattlePassData {
+    if (!this.data.battlePass) {
+      this.data.battlePass = this.createDefaultBattlePass()
+      this.save()
+    }
+    return {
+      ...this.data.battlePass,
+      // Always re-hydrate from chain definitions so stage targets / XP /
+      // descriptions stay in sync if we tweak `battlePass.ts` between
+      // releases without bumping the data version.
+      seasonMissions: this.data.battlePass.seasonMissions.map((m) => this._hydrateMission(m)),
+    }
+  }
+
+  /** Add XP to battle pass, auto-leveling tiers */
+  addBattlePassXP(amount: number): void {
+    const bp = this.data.battlePass
+    if (!bp || bp.tier >= PASS_MAX_TIER) return
+    bp.xp += amount
+    while (bp.xp >= PASS_XP_PER_TIER && bp.tier < PASS_MAX_TIER) {
+      bp.xp -= PASS_XP_PER_TIER
+      bp.tier++
+    }
+    if (bp.tier >= PASS_MAX_TIER) bp.xp = 0
+    this.save()
+  }
+
+  /**
+   * Claim the active stage of a mission chain. Awards the stage's XP and
+   * advances `stageIndex` so the next stage becomes active. The next stage
+   * may already be completed (e.g. a long win streak rolling over multiple
+   * stage thresholds); the player just claims it again on the next click.
+   *
+   * Returns false if the chain id is unknown, the chain is already fully
+   * done, or the active stage isn't yet completed.
+   */
+  claimMission(missionId: string): boolean {
+    const bp = this.data.battlePass
+    if (!bp) return false
+    const stored = bp.seasonMissions.find((m) => m.id === missionId)
+    if (!stored) return false
+    const chain = findMissionChain(missionId)
+    if (!chain) return false
+    if (stored.stageIndex >= chain.stages.length) return false
+    const stage = chain.stages[stored.stageIndex]!
+    if (stored.progress < stage.target) return false
+
+    // Award XP and advance to the next stage.
+    this.addBattlePassXP(stage.xpReward)
+    stored.stageIndex++
+
+    // For cumulative chains, progress carries over (so a player who
+    // banked 50 wins gets every stage in one rapid claim sequence). For
+    // `max` chains we leave the peak value intact too — same behavior.
+    this.save()
+    return true
+  }
+
+  /**
+   * Apply a bundle of tier rewards to the player's inventory. Handles every
+   * RewardType transparently — skill packs pull a random skill (with class
+   * lookup from the 2-letter id prefix), skins grant via `grantSkin`, and
+   * gold/DG are added straight to the wallet.
+   */
+  private _applyTierRewards(rewards: TierReward[]): void {
+    for (const r of rewards) {
+      if (r.type === 'gold') {
+        this.addGold(r.amount)
+      } else if (r.type === 'dg') {
+        this.addDG(r.amount)
+      } else if (r.type === 'skin') {
+        if (r.skinClass && r.skinId) this.grantSkin(r.skinClass, r.skinId)
+      } else if (r.type === 'skill_pack') {
+        const classMap: Record<string, CharClass> = {
+          lk: 'king', lw: 'warrior', ls: 'specialist', le: 'executor',
+        }
+        for (let i = 0; i < r.amount; i++) {
+          const candidates = SKILL_CATALOG.filter(
+            (s) => s.id.startsWith('l') && this.canReceiveSkill(s.id),
+          )
+          if (candidates.length === 0) break
+          const sk = candidates[Math.floor(Math.random() * candidates.length)]!
+          const cls = classMap[sk.id.substring(0, 2)] ?? 'king'
+          const existing = this.data.ownedSkills.find((s) => s.skillId === sk.id)
+          if (existing) this.addSkillProgress(sk.id)
+          else this.addSkill(sk.id, cls)
+        }
+      }
+    }
+  }
+
+  /** Claim free tier reward — applies every reward bundled into that tier. */
+  claimFreeReward(tier: number): boolean {
+    const bp = this.data.battlePass
+    if (!bp || bp.tier < tier || bp.claimedFree.includes(tier)) return false
+    const tierDef = SEASON_TIERS.find((st) => st.tier === tier)
+    if (!tierDef) return false
+    bp.claimedFree.push(tier)
+    this._applyTierRewards(tierDef.freeReward)
+    this.save()
+    return true
+  }
+
+  /** Claim premium tier reward — applies every reward bundled into that tier. */
+  claimPremiumReward(tier: number): boolean {
+    const bp = this.data.battlePass
+    if (!bp || !bp.isPremium || bp.tier < tier || bp.claimedPremium.includes(tier)) return false
+    const tierDef = SEASON_TIERS.find((st) => st.tier === tier)
+    if (!tierDef) return false
+    bp.claimedPremium.push(tier)
+    this._applyTierRewards(tierDef.premiumReward)
+    this.save()
+    return true
+  }
+
+  /**
+   * Unlock the premium pass. In production this is gated by a real-money
+   * IAP callback (Steam / App Store / Play). For now the client just
+   * flips the flag — the UI should only call this after the payment
+   * provider confirms the transaction.
+   */
+  unlockPremiumPass(): boolean {
+    if (!this.data.battlePass) this.data.battlePass = this.createDefaultBattlePass()
+    if (this.data.battlePass.isPremium) return false
+    this.data.battlePass.isPremium = true
+    this.save()
+    return true
+  }
+
+  /**
+   * Push progress into every chain that subscribes to `trackKey`. The
+   * `amount` argument means different things per progress mode:
+   *   - cumulative: "add this much to the running total" (e.g. wins +1).
+   *   - max: "the new peak value to compare against" (e.g. current win
+   *     streak length, current tournament rank). Use `Math.max` so a
+   *     lower value never demotes a stored peak.
+   *
+   * Note that progress can blow PAST the active stage target — the
+   * chain doesn't auto-advance, the player has to physically click
+   * "claim" so they get the XP-bar animation feedback. Stages with old
+   * progress already above their target will show as immediately
+   * claimable on the next BP screen visit.
+   */
+  progressMissions(trackKey: MissionTrackKey, amount = 1): void {
+    const bp = this.data.battlePass
+    if (!bp) return
+    let changed = false
+    for (const m of bp.seasonMissions) {
+      const chain = findMissionChain(m.id)
+      if (!chain) continue
+      if (chain.trackKey !== trackKey) continue
+      if (m.stageIndex >= chain.stages.length) continue // fully done
+      if (chain.progressMode === 'cumulative') {
+        m.progress += amount
+      } else {
+        // max mode: keep the peak value
+        if (amount > m.progress) m.progress = amount
+      }
+      changed = true
+    }
+    if (changed) this.save()
+  }
+
+  /** Check if there are unclaimed rewards available */
+  hasUnclaimedRewards(): boolean {
+    const bp = this.data.battlePass
+    if (!bp) return false
+    // Unclaimed mission XP counts as a pending reward too — triggers the
+    // red badge on the lobby button even when no tier is ready yet. A
+    // mission is "claimable" when its active stage is completed but not
+    // yet claimed (i.e. progress >= target and stageIndex still in range).
+    for (const m of bp.seasonMissions) {
+      const chain = findMissionChain(m.id)
+      if (!chain) continue
+      if (m.stageIndex >= chain.stages.length) continue // fully done
+      const stage = chain.stages[m.stageIndex]!
+      if (m.progress >= stage.target) return true
+    }
+    for (let t = 1; t <= bp.tier; t++) {
+      if (!bp.claimedFree.includes(t)) return true
+      if (bp.isPremium && !bp.claimedPremium.includes(t)) return true
+    }
+    return false
+  }
+
+  private _syncSharedSkills(skillId: string) {
+    const def = SKILL_CATALOG.find(s => s.id === skillId)
+    if (!def) return
+
+    // Find the updated skill state
+    const source = this.data.ownedSkills.find(s => s.skillId === skillId)
+    if (!source) return
+
+    // Find all other skills with the same name (shared across classes)
+    const sameNameIds = SKILL_CATALOG
+      .filter(s => s.name === def.name && s.id !== skillId)
+      .map(s => s.id)
+
+    // Sync level and progress to all copies the player owns
+    for (const otherId of sameNameIds) {
+      const other = this.data.ownedSkills.find(s => s.skillId === otherId)
+      if (other) {
+        other.level = source.level
+        other.progress = source.progress
+      }
+    }
+  }
+
   // -- Level up --
 
   private checkLevelUp(): void {
-    while (
-      this.data.level < 20 &&
-      this.data.xp >= XP_PER_LEVEL[this.data.level]
-    ) {
+    while (this.data.level < MAX_LEVEL) {
+      const needed = getXPForLevel(this.data.level)
+      if (this.data.xp < needed) break
+      this.data.xp -= needed
       this.data.level++
+      // Level-up rewards
+      this.data.gold += getLevelUpGold(this.data.level)
+      this.data.dg += getLevelUpDG(this.data.level)
     }
+  }
+
+  /** Stat multiplier based on current player level (1.0x at lv1, 2.98x at lv100). */
+  getStatMultiplier(): number {
+    return _getStatMult(this.data.level)
   }
 
   // -- Server sync --

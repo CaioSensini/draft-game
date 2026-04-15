@@ -55,6 +55,9 @@ export type SkillEffectType =
   // ── Turn-modifier mechanics ──
   | 'double_attack'     // caster uses 2 attack skills next turn instead of 1 attack + 1 defense
   | 'silence_defense'   // target cannot use defense skills next turn
+  // ── Ally movement ──
+  | 'advance_allies'    // move all allies 1 tile toward enemy + buff
+  | 'retreat_allies'    // move all allies 1 tile away from enemy + buff
 
 // ── Skill ─────────────────────────────────────────────────────────────────────
 
@@ -143,6 +146,8 @@ export class Skill {
       case 'cleanse':       // cleanse removes debuffs from allies/self
       case 'revive':        // revive buffer — applied to allies/self
       case 'double_attack': // self-buff — enables 2 attacks next turn
+      case 'advance_allies':  // ally movement + buff — targets own side
+      case 'retreat_allies':  // ally movement + buff — targets own side
         return targetSide === casterSide
       case 'damage':
       case 'true_damage':

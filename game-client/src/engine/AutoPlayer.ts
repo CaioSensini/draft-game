@@ -28,6 +28,12 @@ export class AutoPlayer {
     const actor = this.ctrl.currentActor
     if (!actor) return false
 
+    // Training dummies don't act — skip immediately
+    if (actor.isDummy) {
+      this.ctrl.skipTurn('no_selection')
+      return true
+    }
+
     const id   = actor.id
     const hand = this.ctrl.getHand(id)
     if (!hand) return false

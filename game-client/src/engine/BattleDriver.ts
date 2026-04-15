@@ -61,6 +61,8 @@ export interface BattleDriverDelays {
    * Undefined (default) = full auto on both sides.
    */
   playerSide?: TeamSide
+  /** Specific character IDs the player controls (for duo/squad). If set, only these are player-controlled. */
+  playerCharIds?: ReadonlySet<string>
 }
 
 const DEFAULT_DELAYS: BattleDriverDelays = {
@@ -120,17 +122,24 @@ export class BattleDriver {
 
     unsubs.push(this._ctrl.onType(EventType.TURN_STARTED, (_e) => {
       const actor = this._ctrl.currentActor
-      const isPlayerTurn =
-        this._delays.playerSide !== undefined &&
-        actor?.side === this._delays.playerSide
+      if (!actor) return
+
+      // Check if this specific character is player-controlled
+      let isPlayerTurn = false
+      if (this._delays.playerCharIds) {
+        // Specific chars mode (duo/squad): only listed IDs are player-controlled
+        isPlayerTurn = this._delays.playerCharIds.has(actor.id)
+      } else if (this._delays.playerSide !== undefined) {
+        // Side mode (solo): entire side is player-controlled
+        isPlayerTurn = actor.side === this._delays.playerSide
+      }
 
       if (isPlayerTurn) {
-        // Human turn — scene handles input; driver waits for TURN_COMMITTED
-        // which triggers ACTIONS_RESOLVED or the next TURN_STARTED.
+        // Human turn — scene handles input
         return
       }
 
-      // Bot turn — let animation play, then auto-commit.
+      // Bot turn — auto-commit
       this._after(this._delays.turnPlayMs, () => {
         if (!this._ctrl.isBattleOver) this._auto.act()
       })

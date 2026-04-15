@@ -671,6 +671,50 @@ const handleSilenceDefense: EffectHandler = (ctx) => {
   }
 }
 
+// ── Advance allies — move target 1 tile toward enemy side + DEF buff ─────────
+
+const handleAdvanceAllies: EffectHandler = (ctx) => {
+  if (!ctx.target.alive) return EMPTY
+
+  // Apply def_up buff
+  ctx.target.addEffect(new DefBoostEffect(ctx.power, ctx.ticks ?? STAT_MOD_TICKS))
+
+  const events: EngineEvent[] = [
+    { type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'def_up', value: ctx.power },
+  ]
+
+  // Move target 1 tile toward enemy side
+  const direction: Direction = ctx.caster.side === 'left' ? 'east' : 'west'
+
+  return {
+    ...EMPTY,
+    events,
+    pushRequest: { targetId: ctx.target.id, direction, force: 1 },
+  }
+}
+
+// ── Retreat allies — move target 1 tile away from enemy side + DEF buff ──────
+
+const handleRetreatAllies: EffectHandler = (ctx) => {
+  if (!ctx.target.alive) return EMPTY
+
+  // Apply def_up buff
+  ctx.target.addEffect(new DefBoostEffect(ctx.power, ctx.ticks ?? STAT_MOD_TICKS))
+
+  const events: EngineEvent[] = [
+    { type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'def_up', value: ctx.power },
+  ]
+
+  // Move target 1 tile away from enemy side
+  const direction: Direction = ctx.caster.side === 'left' ? 'west' : 'east'
+
+  return {
+    ...EMPTY,
+    events,
+    pushRequest: { targetId: ctx.target.id, direction, force: 1 },
+  }
+}
+
 // ── Factory ───────────────────────────────────────────────────────────────────
 
 /**
@@ -730,6 +774,10 @@ export function createDefaultResolver(): EffectResolver {
   // Turn-modifier mechanics
   r.register('double_attack',    handleDoubleAttack)
   r.register('silence_defense',  handleSilenceDefense)
+
+  // Ally movement mechanics
+  r.register('advance_allies',   handleAdvanceAllies)
+  r.register('retreat_allies',   handleRetreatAllies)
 
   return r
 }

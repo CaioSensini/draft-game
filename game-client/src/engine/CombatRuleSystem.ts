@@ -228,6 +228,48 @@ export class CombatRuleSystem {
 
     return result
   }
+
+  /**
+   * Per-side breakdown of the wall-touch buff currently in effect.
+   *
+   * Returns one entry for each side ('left' and 'right'), describing:
+   *   - `count`     — number of living allies touching the central wall column
+   *   - `atkBonus`  — ATK multiplier increase (e.g. 0.20 = +20% damage dealt)
+   *   - `mitBonus`  — mitigation increase    (e.g. 0.20 = +20% damage reduction)
+   *   - `ruleId`    — the global-rule id the bonus comes from (for HUD lookup)
+   *
+   * If no `wall_mit_per_toucher` rule is registered, the map is empty.
+   * The HUD reads this snapshot to surface the buff on each character's
+   * status card so players can see WHY their team is hitting / tanking harder
+   * — the bonus is a global team rule and is NOT stored on individual
+   * characters, so it would otherwise be invisible in the per-character
+   * stat panel.
+   */
+  getWallBuffSnapshot(
+    battle: Battle,
+  ): Map<TeamSide, { count: number; atkBonus: number; mitBonus: number; ruleId: string }> {
+    const result = new Map<
+      TeamSide,
+      { count: number; atkBonus: number; mitBonus: number; ruleId: string }
+    >()
+
+    // Find the first registered wall rule (catalog usually has only one)
+    const wallRule = this._rules.find((r) => r.type === 'wall_mit_per_toucher')
+    if (!wallRule) return result
+
+    for (const side of ['left', 'right'] as TeamSide[]) {
+      const team  = battle.teamOf(side)
+      const count = team.wallTouchCount()
+      result.set(side, {
+        count,
+        atkBonus: wallRule.value * count,
+        mitBonus: wallRule.value * count,
+        ruleId:   wallRule.id,
+      })
+    }
+
+    return result
+  }
 }
 
 // ── Default factory ───────────────────────────────────────────────────────────

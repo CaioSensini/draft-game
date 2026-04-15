@@ -415,9 +415,8 @@ export function runSimulation(): void {
       continue
     }
 
-    // ── Action phase ──────────────────────────────────────────────────────
+    // ── Action phase (interleaved: both sides resolve together) ────────
     const round = battle.round
-    const side  = battle.currentSide
 
     if (round !== lastRound) {
       // New round banner + global rule evaluation
@@ -428,23 +427,22 @@ export function runSimulation(): void {
       lastRound = round
     }
 
-    const sideColour = side === 'left' ? C.blue : C.red
-    const sideName   = side === 'left' ? 'Blue (left)' : 'Red  (right)'
-    console.log(`\n${sideColour}${C.bold}  ▶ ${sideName} — Action Phase${C.reset}`)
+    console.log(`\n${C.bold}  ▶ Interleaved Action Phase${C.reset}`)
 
-    // Print who acts this phase and their hand
-    for (const char of battle.currentTeam.living) {
+    // Print who acts this phase and their hand (all living characters)
+    for (const char of [...leftTeam.living, ...rightTeam.living]) {
       const deck = battle.teamOf(char.side).deck(char.id)
       if (!deck) continue
       const atkHand = deck.attack.hand.map((s) => s.name).join(', ')
       const defHand = deck.defense.hand.map((s) => s.name).join(', ')
       const stunTag = char.isStunned ? ` ${C.yellow}[STUNNED]${C.reset}` : ''
+      const sideC   = char.side === 'left' ? C.blue : C.red
       console.log(
-        `${C.gray}    ${char.name}${stunTag} — ATK:[${atkHand}]  DEF:[${defHand}]${C.reset}`,
+        `${C.gray}    ${sideC}${char.name}${C.reset}${stunTag} — ATK:[${atkHand}]  DEF:[${defHand}]${C.reset}`,
       )
     }
 
-    // Run actors one-by-one in role order (king → warrior → executor → specialist)
+    // Run actors one-by-one in interleaved order (both sides mixed)
     engine.beginActionPhase()
     while (!engine.isPhaseComplete && !battle.isOver) {
       const actor = engine.getCurrentActor()
@@ -462,13 +460,11 @@ export function runSimulation(): void {
       console.log(`  ${sideC}${c.name.padEnd(8)}${C.reset}  ${bar}`)
     }
 
-    // Remember if right side just finished — round will increment after advance.
-    const rightSideJustFinished = side === 'right'
+    // Action phase ends → round boundary (advance increments the round counter)
     battle.advancePhase()
 
-    // ── End of full round (both sides done) ──────────────────────────────
-    // After right side's action phase advances, the round counter has incremented.
-    if (rightSideJustFinished && !battle.isOver) {
+    // ── End of round: tick status effects ────────────────────────────────
+    if (!battle.isOver) {
       console.log(`\n${C.gray}  ── Ticking status effects... ────────────────────────${C.reset}`)
       engine.tickStatusEffects()
     }

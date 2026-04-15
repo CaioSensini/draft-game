@@ -1,29 +1,168 @@
 import Phaser from 'phaser'
+import { getAllCharacterAssets, getAllSkillAssets } from '../utils/AssetPaths'
 
 export default class BootScene extends Phaser.Scene {
   constructor() {
     super('BootScene')
   }
 
-  async create() {
-    const token = localStorage.getItem('draft_token')
-    if (!token) {
-      this.scene.start('LoginScene')
-      return
+  /**
+   * Preloads all static game assets (character sprites, skill icons, etc.)
+   * Phaser runs preload() before create(), so every texture below is ready
+   * by the time any scene tries to use it.
+   */
+  preload() {
+    // Character sprites — /assets/characters/{class}/{skin}.png
+    for (const { key, path } of getAllCharacterAssets()) {
+      this.load.image(key, path)
     }
 
-    // Token exists — validate it by calling the API
-    try {
-      const { authService } = await import('../services')
-      const user = await authService.getProfile()
-      // Token is valid — sync data and go to lobby
-      const { playerData } = await import('../utils/PlayerDataManager')
-      playerData.syncFromServer(user)
-      this.scene.start('LobbyScene')
-    } catch {
-      // Token expired or invalid — clear it and go to login
-      localStorage.removeItem('draft_token')
-      this.scene.start('LoginScene')
+    // Skill icons — /assets/skills/{skillId}.png
+    for (const { key, path } of getAllSkillAssets()) {
+      this.load.image(key, path)
     }
+  }
+
+  create() {
+    const { width, height } = this.scale
+
+    // === LAYER 1: Solid dark base ===
+    this.add.rectangle(width / 2, height / 2, width, height, 0x04070d)
+
+    // === LAYER 2: Subtle radial vignette (darker edges) ===
+    const vignette = this.add.graphics()
+    vignette.fillStyle(0x000000, 0.35)
+    vignette.fillRect(0, 0, width * 0.15, height)
+    vignette.fillRect(width * 0.85, 0, width * 0.15, height)
+    vignette.fillStyle(0x000000, 0.25)
+    vignette.fillRect(0, 0, width, height * 0.12)
+    vignette.fillRect(0, height * 0.88, width, height * 0.12)
+
+    // === LAYER 3: Floating gold particles ===
+    for (let i = 0; i < 15; i++) {
+      const px = Math.random() * width
+      const py = Math.random() * height
+      const size = 0.8 + Math.random() * 1.5
+      const particle = this.add.circle(px, py, size, 0xc9a84c, 0.06 + Math.random() * 0.1)
+      this.tweens.add({
+        targets: particle,
+        y: py - 30 - Math.random() * 50,
+        alpha: 0,
+        duration: 3000 + Math.random() * 3000,
+        repeat: -1,
+        delay: Math.random() * 2000,
+        onRepeat: () => {
+          particle.setPosition(Math.random() * width, height + 10)
+          particle.setAlpha(0.06 + Math.random() * 0.1)
+        },
+      })
+    }
+
+    // === DECORATIVE: Thin gold horizontal lines (ambient) ===
+    const lineTop = this.add.rectangle(width / 2, height / 2 - 50, 180, 1, 0xc9a84c, 0).setAlpha(0)
+    const lineBot = this.add.rectangle(width / 2, height / 2 + 50, 180, 1, 0xc9a84c, 0).setAlpha(0)
+
+    // === STUDIO LOGO ===
+    const logo = this.add
+      .text(width / 2, height / 2 - 14, 'CODEFORJE VIO', {
+        fontFamily: 'Arial Black, Arial',
+        fontSize: '28px',
+        color: '#c9a84c',
+        fontStyle: 'bold',
+        shadow: {
+          offsetX: 0,
+          offsetY: 2,
+          color: '#5a3a00',
+          blur: 6,
+          fill: true,
+        },
+      })
+      .setOrigin(0.5)
+      .setAlpha(0)
+
+    const sub = this.add
+      .text(width / 2, height / 2 + 22, 'presents', {
+        fontFamily: 'Arial',
+        fontSize: '14px',
+        color: '#5a4a30',
+        shadow: {
+          offsetX: 0,
+          offsetY: 1,
+          color: '#000000',
+          blur: 2,
+          fill: true,
+        },
+      })
+      .setOrigin(0.5)
+      .setAlpha(0)
+
+    // === ENTRANCE ANIMATIONS ===
+    // Fade in decorative lines
+    this.tweens.add({
+      targets: lineTop,
+      alpha: 0.3,
+      scaleX: 1,
+      duration: 500,
+      delay: 100,
+      ease: 'Quad.Out',
+    })
+    this.tweens.add({
+      targets: lineBot,
+      alpha: 0.3,
+      scaleX: 1,
+      duration: 500,
+      delay: 100,
+      ease: 'Quad.Out',
+    })
+
+    // Fade in logo with slight upward drift
+    logo.setY(height / 2 - 6)
+    this.tweens.add({
+      targets: logo,
+      alpha: 1,
+      y: height / 2 - 14,
+      duration: 600,
+      delay: 200,
+      ease: 'Quad.Out',
+    })
+
+    // Fade in subtitle
+    this.tweens.add({
+      targets: sub,
+      alpha: 1,
+      duration: 600,
+      delay: 500,
+      ease: 'Quad.Out',
+    })
+
+    // === AFTER 1.5s: Fade to black and navigate ===
+    this.time.delayedCall(1500, () => {
+      const overlay = this.add
+        .rectangle(width / 2, height / 2, width, height, 0x000000, 0)
+        .setDepth(999)
+
+      this.tweens.add({
+        targets: overlay,
+        alpha: 1,
+        duration: 400,
+        onComplete: async () => {
+          const token = localStorage.getItem('draft_token')
+          if (token) {
+            try {
+              const { authService } = await import('../services')
+              const user = await authService.getProfile()
+              const { playerData } = await import('../utils/PlayerDataManager')
+              playerData.syncFromServer(user)
+              this.scene.start('LobbyScene')
+            } catch {
+              localStorage.removeItem('draft_token')
+              this.scene.start('LoginScene')
+            }
+          } else {
+            this.scene.start('LoginScene')
+          }
+        },
+      })
+    })
   }
 }

@@ -45,6 +45,7 @@ class SoundManager {
   playEvade(): void     { if (this.enabled) this.audio.playEvade() }
   playReflect(): void   { if (this.enabled) this.audio.playReflect() }
   playBleed(): void     { if (this.enabled) this.audio.playBleed() }
+  playPoison(): void    { if (this.enabled) this.audio.playPoison() }
   playBurn(): void      { if (this.enabled) this.audio.playBurn() }
   playStun(): void      { if (this.enabled) this.audio.playStun() }
   playSnare(): void     { if (this.enabled) this.audio.playSnare() }

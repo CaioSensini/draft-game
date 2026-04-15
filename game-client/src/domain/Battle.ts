@@ -119,30 +119,33 @@ export class Battle {
   get currentSide(): CharacterSide { return this._sideIndex === 0 ? 'left' : 'right' }
 
   /**
-   * Advance to the next phase following the turn structure:
+   * Advance to the next phase following the interleaved turn structure:
    *
-   *   movement (left)  → action (left)
-   *   action   (left)  → movement (right)
-   *   movement (right) → action (right)
-   *   action   (right) → movement (left) + round++
+   *   movement (left)  → movement (right)
+   *   movement (right) → action (left — interleaved resolution for both sides)
+   *   action   (left)  → movement (left) + round++
+   *
+   * The action phase is always entered from the left side. Both teams' characters
+   * resolve in interleaved order within that single action phase, so there is no
+   * separate "action (right)" phase.
    */
   advancePhase(): void {
     if (this._phase === 'movement') {
-      this._phase = 'action'
+      if (this._sideIndex === 0) {
+        // Left movement done → right side's movement
+        this._sideIndex = 1
+        return
+      }
+      // Right movement done → interleaved action phase (always entered as left)
+      this._sideIndex = 0
+      this._phase     = 'action'
       return
     }
 
-    // End of action phase
-    if (this._sideIndex === 0) {
-      // Left side done → right side starts movement
-      this._sideIndex = 1
-      this._phase     = 'movement'
-    } else {
-      // Right side done → new round, back to left
-      this._sideIndex = 0
-      this._phase     = 'movement'
-      this._round++
-    }
+    // End of action phase → new round, back to left movement
+    this._sideIndex = 0
+    this._phase     = 'movement'
+    this._round++
   }
 
   // ── Win condition ─────────────────────────────────────────────────────────

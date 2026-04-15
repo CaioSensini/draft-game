@@ -21,8 +21,8 @@ export const BOARD = {
 } as const
 
 export const PHASE_DURATION = {
-  movement: 20,
-  action:   15,
+  movement: 12,    // 3 seconds × 4 characters for solo movement phase
+  action:   15,    // 15 seconds per character during action selection (timer per turn)
 } as const
 
 // ── State ─────────────────────────────────────────────────────────────────────

@@ -147,6 +147,12 @@ export class AudioManager {
     this.playTone(150, 'sawtooth', 0.06, 0.12)
   }
 
+  /** Toxic bubble — poison tick. */
+  playPoison(): void {
+    this.playTone(200, 'sine', 0.15, 0.12)
+    this.playTone(160, 'sine', 0.2, 0.1, 0.08)
+  }
+
   /** Crackling fire — burn tick (noise burst). */
   playBurn(): void {
     this.playNoise(0.12, 0.2)

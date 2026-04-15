@@ -69,9 +69,45 @@ export interface BattleStat {
   kills:          number
 }
 
-// ── Role execution order ──────────────────────────────────────────────────────
+// ── Interleaved role execution order ──────────────────────────────────────────
 
-const ROLE_ORDER: CharacterRole[] = ['king', 'warrior', 'executor', 'specialist']
+/**
+ * Generate interleaved resolution order for one action phase.
+ *
+ * Even rounds (2, 4, ...): left starts first.
+ * Odd rounds  (1, 3, ...): right starts first.
+ *
+ * The zigzag pattern alternates which team leads each role bracket:
+ *   T1 King, T2 King, T2 Warrior, T1 Warrior,
+ *   T1 Executor, T2 Executor, T2 Specialist, T1 Specialist
+ *
+ * Dead characters are omitted from the order.
+ */
+function getInterleavedOrder(
+  round: number,
+  leftChars: ReadonlyArray<Character>,
+  rightChars: ReadonlyArray<Character>,
+): Character[] {
+  const findByRole = (chars: ReadonlyArray<Character>, role: CharacterRole) =>
+    chars.find(c => c.role === role && c.alive)
+
+  // Odd rounds: left starts (T1=left, T2=right). Even rounds: right starts.
+  const t1 = round % 2 === 1 ? leftChars : rightChars
+  const t2 = round % 2 === 1 ? rightChars : leftChars
+
+  const order: (Character | undefined)[] = [
+    findByRole(t1, 'king'),
+    findByRole(t2, 'king'),
+    findByRole(t2, 'warrior'),
+    findByRole(t1, 'warrior'),
+    findByRole(t1, 'executor'),
+    findByRole(t2, 'executor'),
+    findByRole(t2, 'specialist'),
+    findByRole(t1, 'specialist'),
+  ]
+
+  return order.filter((c): c is Character => c !== undefined)
+}
 
 // ── CombatEngine ─────────────────────────────────────────────────────────────
 
@@ -192,7 +228,8 @@ export class CombatEngine {
     if (char.isStunned) return Err(`${char.name} is stunned`)
     if (this.battle.phase !== 'action')
       return Err('Skill selection requires the action phase')
-    if (char.side !== this.battle.currentSide)
+    // Interleaved turns: allow any character registered in the turn queue
+    if (!this._turn.isRegistered(characterId) && char.side !== this.battle.currentSide)
       return Err(`Not ${char.side} side's turn`)
 
     if (skill.category !== 'attack') return Err(`'${skill.name}' is not an attack skill`)
@@ -244,7 +281,8 @@ export class CombatEngine {
     if (!char.alive) return Err(`${char.name} is dead`)
     if (this.battle.phase !== 'action')
       return Err('Skill selection requires the action phase')
-    if (char.side !== this.battle.currentSide)
+    // Interleaved turns: allow any character registered in the turn queue
+    if (!this._turn.isRegistered(characterId) && char.side !== this.battle.currentSide)
       return Err(`Not ${char.side} side's turn`)
 
     if (skill.category !== 'defense') return Err(`'${skill.name}' is not a defense skill`)
@@ -320,11 +358,11 @@ export class CombatEngine {
   }
 
   /**
-   * True if every living character on the current side has a full selection.
-   * The engine can auto-advance when this becomes true.
+   * True if every living character registered in the current turn queue has
+   * a full selection. In interleaved mode this covers both sides.
    */
   allCurrentSideReady(): boolean {
-    return this.battle.currentTeam.living.every((c) => this.hasFullSelection(c.id))
+    return this.battle.livingCharacters.every((c) => this.hasFullSelection(c.id))
   }
 
   // ── Movement phase ────────────────────────────────────────────────────────
@@ -426,7 +464,8 @@ export class CombatEngine {
     const char = this.battle.getCharacter(characterId)
     if (!char)       return Err(`Character '${characterId}' not found`)
     if (!char.alive) return Err(`${char.name} is dead`)
-    if (char.side !== this.battle.currentSide)
+    // Interleaved turns: allow any character registered in the turn queue
+    if (!this._turn.isRegistered(characterId) && char.side !== this.battle.currentSide)
       return Err(`Not ${char.side} side's turn`)
     return Ok(undefined)
   }
@@ -439,8 +478,9 @@ export class CombatEngine {
    * Emits `turn_started` for the first actor.
    */
   beginActionPhase(): void {
-    const side    = this.battle.currentSide
-    const ordered = this._orderedCharacters(side)
+    const leftChars  = this.battle.teamOf('left').all
+    const rightChars = this.battle.teamOf('right').all
+    const ordered    = getInterleavedOrder(this.battle.round, leftChars, rightChars)
     this._turn.beginPhase(ordered.map((c) => c.id))
     this._emitNextTurnStarted()
   }
@@ -471,9 +511,12 @@ export class CombatEngine {
     const snap = this._turn.currentSnapshot
     if (!snap) return
     const { characterId } = snap
-    const side = this.battle.currentSide
 
     const char = this.battle.getCharacter(characterId)
+    // Use the character's own side — in interleaved mode actors from both sides
+    // take turns within the same action phase.
+    const side = char?.side ?? this.battle.currentSide
+
     if (!char || !char.alive) {
       this._turn.skip('dead')
       this.emit({ type: EventType.TURN_SKIPPED, unitId: characterId, reason: 'dead' })
@@ -497,43 +540,12 @@ export class CombatEngine {
       return
     }
 
-    // ── Double Attack: use 2 attacks, skip defense ──
-    if (char.doubleAttackNextTurn) {
-      char.setDoubleAttackNextTurn(false)
-      // First attack
-      if (!this.battle.isOver) {
-        this._applyAttackSkill(char, sel.attackSkill, sel.target, char.side)
-      }
-      // Second attack (stored in secondAttackSkill, or falls back to defenseSkill slot
-      // which the UI may have repurposed as a second attack when double_attack is active)
-      if (!this.battle.isOver) {
-        const secondSkill  = sel.secondAttackSkill ?? sel.defenseSkill
-        const secondTarget = sel.secondTarget      ?? sel.target
-        if (secondSkill && secondSkill.category === 'attack') {
-          this._applyAttackSkill(char, secondSkill, secondTarget, char.side)
-        }
-      }
-    } else {
-      // ── Normal flow: 1 defense + 1 attack ──
-      // Silence Defense: skip the defense skill when silenced
-      if (char.isDefenseSilenced) {
-        this.emit({ type: EventType.DEFENSE_SILENCED, unitId: char.id, sourceId: '' })
-      } else {
-        this._applyDefenseSkill(char, sel.defenseSkill)
-      }
-      if (!this.battle.isOver) {
-        this._applyAttackSkill(char, sel.attackSkill, sel.target, char.side)
-      }
-    }
-    if (!this.battle.isOver) {
-      this._rotateUsedCards(char, sel)
-    }
-    this.selections.delete(char.id)
+    // ── DEFERRED: store selection, do NOT execute skills yet ──
+    // Selection remains in this.selections map for batch resolution
+    // after ALL characters have committed/skipped.
 
     this._turn.commit()
     this.emit({ type: EventType.TURN_COMMITTED, unitId: characterId, timeUsedMs: snap.timeUsedMs })
-
-    if (this.battle.isOver) return   // king died mid-turn — stop sequencing
     this._emitPhaseAdvance(side)
   }
 
@@ -542,9 +554,12 @@ export class CombatEngine {
    * Emits `turn_skipped` and then `turn_started` / `actions_resolved`.
    */
   skipCurrentTurn(reason: SkipReason = 'no_selection'): void {
-    const id   = this._turn.currentActorId
-    const side = this.battle.currentSide
+    const id = this._turn.currentActorId
     if (!id) return
+    // Use the character's own side — in interleaved mode the current battle side
+    // may not match the character being skipped.
+    const char = this.battle.getCharacter(id)
+    const side = char?.side ?? this.battle.currentSide
     this._turn.skip(reason)
     this.emit({ type: EventType.TURN_SKIPPED, unitId: id, reason })
     this._emitPhaseAdvance(side)
@@ -608,12 +623,14 @@ export class CombatEngine {
    * Clears selections after resolution.
    */
   resolveActions(): void {
-    const side = this.battle.currentSide
-    const orderedChars = this._orderedCharacters(side)
+    // Use interleaved order: both sides' characters resolve together
+    const leftChars  = this.battle.teamOf('left').all
+    const rightChars = this.battle.teamOf('right').all
+    const orderedChars = getInterleavedOrder(this.battle.round, leftChars, rightChars)
 
     for (const char of orderedChars) {
       // Halt the entire resolution the moment a king falls —
-      // remaining characters on this side do not get to act.
+      // remaining characters do not get to act.
       if (this.battle.isOver) break
 
       if (!char.alive) continue
@@ -627,15 +644,18 @@ export class CombatEngine {
       const sel = this.selections.get(char.id)
       if (!sel) continue
 
+      // Use the character's own side for attack resolution
+      const charSide = char.side
+
       // ── Double Attack: use 2 attacks, skip defense ──
       if (char.doubleAttackNextTurn) {
         char.setDoubleAttackNextTurn(false)
-        this._applyAttackSkill(char, sel.attackSkill, sel.target, side)
+        this._applyAttackSkill(char, sel.attackSkill, sel.target, charSide)
         if (this.battle.isOver) break
         const secondSkill  = sel.secondAttackSkill ?? sel.defenseSkill
         const secondTarget = sel.secondTarget      ?? sel.target
         if (secondSkill && secondSkill.category === 'attack') {
-          this._applyAttackSkill(char, secondSkill, secondTarget, side)
+          this._applyAttackSkill(char, secondSkill, secondTarget, charSide)
         }
         if (this.battle.isOver) break
       } else {
@@ -647,7 +667,7 @@ export class CombatEngine {
         }
         if (this.battle.isOver) break
 
-        this._applyAttackSkill(char, sel.attackSkill, sel.target, side)
+        this._applyAttackSkill(char, sel.attackSkill, sel.target, charSide)
         if (this.battle.isOver) break
       }
 
@@ -655,7 +675,128 @@ export class CombatEngine {
     }
 
     this.selections.clear()
-    this.emit({ type: EventType.ACTIONS_RESOLVED, side: side as TeamSide })
+    this.emit({ type: EventType.ACTIONS_RESOLVED, side: this.battle.currentSide as TeamSide })
+  }
+
+  // ── Deferred batch resolution ──────────────────────────────────────────────
+
+  /**
+   * Prepare batch resolution: emit RESOLUTION_STARTED and build the queue.
+   * The scene calls `resolveNextDeferred()` with delays between each character.
+   */
+  private _resolutionQueue: Character[] = []
+  private _resolutionSide: CharacterSide = 'left'
+
+  private _resolveAllDeferred(side: CharacterSide): void {
+    this._resolutionSide = side
+    this.emit({ type: EventType.RESOLUTION_STARTED, side: side as TeamSide })
+
+    const leftChars  = this.battle.teamOf('left').all
+    const rightChars = this.battle.teamOf('right').all
+    this._resolutionQueue = getInterleavedOrder(this.battle.round, leftChars, rightChars)
+  }
+
+  /** Tracks whether we're mid-character (attack done, defense pending). */
+  private _resolvePendingDefense: { char: Character; sel: ActionSelection } | null = null
+
+  /**
+   * Resolve the next step in the deferred queue.
+   * Returns: 'attack' = attack just resolved (call again for defense),
+   *          'defense' = defense just resolved (character done),
+   *          'done' = no more characters, ACTIONS_RESOLVED emitted.
+   * The scene calls this with delays between each step to stagger animations.
+   */
+  resolveNextDeferred(): 'attack' | 'defense' | 'done' {
+    // If there's a pending defense from the previous call, resolve it now
+    if (this._resolvePendingDefense) {
+      const { char, sel } = this._resolvePendingDefense
+      this._resolvePendingDefense = null
+
+      if (char.alive && !this.battle.isOver) {
+        if (char.isDefenseSilenced) {
+          this.emit({ type: EventType.DEFENSE_SILENCED, unitId: char.id, sourceId: '' })
+        } else {
+          this._applyDefenseSkill(char, sel.defenseSkill)
+        }
+      }
+      if (!this.battle.isOver) {
+        this._rotateUsedCards(char, sel)
+      }
+
+      // Check if more characters remain
+      if (this._resolutionQueue.length > 0 && !this.battle.isOver) {
+        return 'defense'
+      }
+      // Finalize
+      this.selections.clear()
+      this._resolutionQueue = []
+      if (!this.battle.isOver) {
+        this.emit({ type: EventType.ACTIONS_RESOLVED, side: this._resolutionSide as TeamSide })
+      }
+      return 'done'
+    }
+
+    // Process next character in the queue
+    while (this._resolutionQueue.length > 0) {
+      if (this.battle.isOver) break
+
+      const char = this._resolutionQueue.shift()!
+      if (!char.alive) continue
+
+      if (char.isStunned) {
+        char.tickEffects()
+        continue
+      }
+
+      const sel = this.selections.get(char.id)
+      if (!sel) continue
+
+      const charSide = char.side
+
+      if (char.doubleAttackNextTurn) {
+        // Double attack: both attacks resolve together, no defense
+        char.setDoubleAttackNextTurn(false)
+        this._applyAttackSkill(char, sel.attackSkill, sel.target, charSide)
+        if (!this.battle.isOver) {
+          const secondSkill  = sel.secondAttackSkill ?? sel.defenseSkill
+          const secondTarget = sel.secondTarget      ?? sel.target
+          if (secondSkill && secondSkill.category === 'attack') {
+            this._applyAttackSkill(char, secondSkill, secondTarget, charSide)
+          }
+        }
+        if (!this.battle.isOver) this._rotateUsedCards(char, sel)
+        return this._resolutionQueue.length > 0 && !this.battle.isOver ? 'attack' : 'done'
+      }
+
+      // Normal flow: resolve attack now, save defense for next call
+      this._applyAttackSkill(char, sel.attackSkill, sel.target, charSide)
+
+      if (!this.battle.isOver && sel.defenseSkill) {
+        // Store defense for next call
+        this._resolvePendingDefense = { char, sel }
+        return 'attack'
+      }
+
+      // No defense skill — character done
+      if (!this.battle.isOver) this._rotateUsedCards(char, sel)
+      if (this._resolutionQueue.length > 0 && !this.battle.isOver) return 'attack'
+
+      // Last character, no defense
+      this.selections.clear()
+      this._resolutionQueue = []
+      if (!this.battle.isOver) {
+        this.emit({ type: EventType.ACTIONS_RESOLVED, side: this._resolutionSide as TeamSide })
+      }
+      return 'done'
+    }
+
+    // Queue exhausted or battle over — finalize
+    this.selections.clear()
+    this._resolutionQueue = []
+    if (!this.battle.isOver) {
+      this.emit({ type: EventType.ACTIONS_RESOLVED, side: this._resolutionSide as TeamSide })
+    }
+    return 'done'
   }
 
   // ── Status effect ticks ───────────────────────────────────────────────────
@@ -1148,10 +1289,10 @@ export class CombatEngine {
 
   // ── Private — utilities ───────────────────────────────────────────────────
 
-  /** Emit turn_started for the current slot, or actions_resolved if done. */
+  /** Emit turn_started for the current slot, or trigger batch resolution if done. */
   private _emitPhaseAdvance(side: CharacterSide): void {
     if (this._turn.isPhaseComplete) {
-      this.emit({ type: EventType.ACTIONS_RESOLVED, side: side as TeamSide })
+      this._resolveAllDeferred(side)
     } else {
       this._emitNextTurnStarted()
     }
@@ -1169,13 +1310,6 @@ export class CombatEngine {
         timeBudgetMs: snap.timeBudgetMs,
       })
     }
-  }
-
-  private _orderedCharacters(side: CharacterSide): Character[] {
-    const team = this.battle.teamOf(side)
-    return ROLE_ORDER
-      .map((role) => team.getByRole(role))
-      .filter((c): c is Character => c !== null && c.alive)
   }
 
   private _getOrCreateSelection(characterId: string): ActionSelection {

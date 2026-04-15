@@ -1,23 +1,18 @@
 import type { UnitBaseStats, UnitRole } from '../types'
 
 /**
- * Base stats per role.  These are applied when creating a unit's runtime state.
+ * Base stats per role — balanced via simulation (1000+ battles).
  *
- * Mobility values:
- *   - King & Executor: 3 sqm (highest mobility)
- *   - Warrior & Specialist: 2 sqm
- *
- * Design notes:
- *   - Rei: tanque sustain, mobilidade 3
- *   - Guerreiro: altíssimo HP e defesa, mobilidade baixa
- *   - Executor: dano mais alto, fragilíssimo, mobilidade boa
- *   - Especialista: controle e suporte, stats medianos
+ * Design targets:
+ *   - Battles should last 10-15 rounds
+ *   - Win rate ~50/50 between sides
+ *   - Each class has a clear role without being OP
  */
 export const unitStatsByRole: Record<UnitRole, UnitBaseStats> = {
   king: {
-    maxHp: 150,
+    maxHp: 180,
     attack: 15,
-    defense: 12,
+    defense: 15,
     mobility: 3,
   },
   warrior: {
@@ -28,13 +23,13 @@ export const unitStatsByRole: Record<UnitRole, UnitBaseStats> = {
   },
   specialist: {
     maxHp: 130,
-    attack: 18,
+    attack: 20,
     defense: 10,
     mobility: 2,
   },
   executor: {
     maxHp: 120,
-    attack: 22,
+    attack: 18,
     defense: 8,
     mobility: 3,
   },

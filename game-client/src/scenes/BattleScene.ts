@@ -37,6 +37,8 @@ import type { Skill }         from '../domain/Skill'
 import { SkillRegistry }      from '../domain/SkillRegistry'
 import { Team }               from '../domain/Team'
 import { Battle }             from '../domain/Battle'
+import { areaOffsets }         from '../domain/Grid'
+import { transitionTo }       from '../utils/SceneTransition'
 import { GameController }     from '../engine/GameController'
 import { PhaserBridge }       from '../engine/PhaserBridge'
 import { EventType }          from '../engine/types'
@@ -49,41 +51,48 @@ import { PASSIVE_CATALOG }    from '../data/passiveCatalog'
 import { GLOBAL_RULES }       from '../data/globalRules'
 import { GameState, GameStateManager } from '../core/GameState'
 import { soundManager } from '../utils/SoundManager'
+import { UI } from '../utils/UIComponents'
+import { VFXManager } from '../utils/VFXManager'
+import { drawCharacterSprite } from '../utils/SpriteFactory'
+import type { SpriteRole, SpriteSide } from '../utils/SpriteFactory'
+import { CharacterAnimator } from '../utils/CharacterAnimator'
 import type { UnitDeckConfig, UnitRole } from '../types'
 
 // ── Layout constants ──────────────────────────────────────────────────────────
 
 const W         = 1280
 const H         = 720
-const TILE      = 64
 const COLS      = 16
 const ROWS      = 6
-const GRID_X    = (W - COLS * TILE) / 2   // 128
-const GRID_Y    = 72
-const CHAR_SIZE = 48
+const SKILL_COL_W = 220
+const TOP_BAR_H2 = 44
+// Calculate tile to fill exactly from skill column to right edge
+const AVAILABLE_W = W - SKILL_COL_W - 4     // total arena width available
+const TILE      = Math.floor(AVAILABLE_W / COLS)
+const GRID_W    = TILE * COLS               // actual grid pixel width
+const GRID_X    = SKILL_COL_W + 2 + Math.floor((AVAILABLE_W - GRID_W) / 2) // center any remainder
+const GRID_Y    = TOP_BAR_H2 + 2
+const CHAR_SIZE = Math.floor(TILE * 0.72)
 
-// ── Turn tracker sidebar (right 128px margin) ─────────────────────────────────
+// ── Status area (below arena, full arena width) ───────────────────────────────
 
-const TRK_X  = GRID_X + COLS * TILE + 6   // 1158  left edge of tracker
-const TRK_CX = TRK_X + 57                 // 1215  centre x
-const TRK_W  = W - TRK_X - 8             // 114   width
-const TRK_Y  = GRID_Y + 4                 // 76    top edge
+const ARENA_RIGHT = GRID_X + COLS * TILE; void ARENA_RIGHT
+const STATUS_X = GRID_X
+const STATUS_W = W - STATUS_X - 4; void STATUS_W
+const TRK_X  = -200; const TRK_CX = -200; const TRK_W = 1; const TRK_Y = -200
 
-// ── Player panel layout ───────────────────────────────────────────────────────
+// ── Player panel layout (left column — standard cards stacked) ────────────────
 
-const PANEL_Y    = 594   // top edge of skill panel strip
-const PANEL_H    = 126   // height (594–720)
-const CARD_W     = 136   // card button width
-const CARD_H     = 48    // card button height
-const CARD_GAP   = 8     // gap between sibling cards
-const ATK_ROW_Y  = PANEL_Y + 28   // y-center of attack card row
-const DEF_ROW_Y  = PANEL_Y + 86   // y-center of defense card row
-const CARDS_X    = GRID_X + 6     // left edge of first card
-const BTN_X      = W - 96         // x-center of confirm/cancel buttons
-const CONFIRM_Y  = PANEL_Y + 30   // y-center of Confirm button
-const CANCEL_Y   = PANEL_Y + 80   // y-center of Cancel button
-const BTN_W      = 108
-const BTN_H      = 38
+const CARD_W     = SKILL_COL_W - 10
+const CARD_H     = 105
+const CARD_GAP   = 4
+const PANEL_Y    = 2                          // cards start from very top
+const PANEL_H    = H - 4; void PANEL_H
+const BTN_BAR_H  = 36                        // button bar BELOW cards
+const ATK_ROW_Y  = PANEL_Y + CARD_H / 2
+const DEF_ROW_Y  = ATK_ROW_Y + CARD_H + CARD_GAP; void DEF_ROW_Y
+const CARDS_X    = CARD_W / 2 + 6
+const BTN_W      = SKILL_COL_W - 20
 
 // ── Unit setup ────────────────────────────────────────────────────────────────
 
@@ -103,31 +112,44 @@ const RIGHT_UNITS: UnitSetup[] = [
 ]
 
 const ROLE_STATS: Record<UnitRole, { maxHp: number; attack: number; defense: number; mobility: number }> = {
-  king:       { maxHp: 150, attack: 15, defense: 12, mobility: 3 },
+  king:       { maxHp: 180, attack: 15, defense: 15, mobility: 3 },
   warrior:    { maxHp: 180, attack: 16, defense: 18, mobility: 2 },
-  specialist: { maxHp: 130, attack: 18, defense: 10, mobility: 2 },
-  executor:   { maxHp: 120, attack: 22, defense: 8,  mobility: 3 },
+  specialist: { maxHp: 130, attack: 20, defense: 10, mobility: 2 },
+  executor:   { maxHp: 120, attack: 18, defense: 8,  mobility: 3 },
 }
 
 // ── Colour palette ────────────────────────────────────────────────────────────
 
 const TEAM_COLOR: Record<CharacterSide, Record<UnitRole, number>> = {
-  left:  { king: 0x4a90d9, warrior: 0x2255aa, specialist: 0x44aacc, executor: 0x7744cc },
-  right: { king: 0xd94a4a, warrior: 0xaa2222, specialist: 0xcc6644, executor: 0xcc4488 },
+  left:  { king: 0x00ccaa, warrior: 0x00bb99, specialist: 0x22ddbb, executor: 0x009988 },
+  right: { king: 0x8844cc, warrior: 0x7733bb, specialist: 0x9955dd, executor: 0x6622aa },
 }
 
 const ROLE_LABEL: Record<UnitRole, string> = {
   king: 'REI', warrior: 'GUE', specialist: 'ESP', executor: 'EXE',
-}
+}; void ROLE_LABEL
 
 // ── Sprite shape ──────────────────────────────────────────────────────────────
 
 interface UnitSprite {
-  container:  Phaser.GameObjects.Container
+  container:    Phaser.GameObjects.Container
+  /**
+   * Inner sprite subcontainer returned by drawCharacterSprite/_drawDummySprite.
+   * Target of all local animation (squash/stretch, rotation, hop arc) while the
+   * outer container keeps world position so HP bars and rings stay steady.
+   */
+  charGraphics: Phaser.GameObjects.Container
+  /**
+   * AAA procedural animator driving idle/hop/attack/defend/hurt/death for the
+   * inner charGraphics container. Null for dummies (they stay still).
+   */
+  animator:     CharacterAnimator | null
   rect:       Phaser.GameObjects.Rectangle
   baseColor:  number                          // original fill colour (restored after flash)
   flashRect:  Phaser.GameObjects.Rectangle   // damage / heal flash overlay
   hpBar:      Phaser.GameObjects.Rectangle
+  hpBarBg:    Phaser.GameObjects.Rectangle   // HP bar background (for border)
+  shieldBar:  Phaser.GameObjects.Rectangle   // blue shield overlay on HP bar
   hpText:     Phaser.GameObjects.Text
   focusRing:  Phaser.GameObjects.Rectangle   // action-selection highlight (white)
   moveRing:   Phaser.GameObjects.Rectangle   // movement-selection highlight (cyan)
@@ -161,9 +183,42 @@ interface NpcTeamData {
 
 interface SceneData {
   deckConfig?: Record<UnitRole, UnitDeckConfig>
+  /**
+   * Per-class equipped skin map, e.g. `{ king: 'crimson_idle', warrior: 'idle', ... }`.
+   * Lobbies pull this from `playerData.getSkinConfig()` right before launching the
+   * battle so that any skin swap done in the lobby (or after a shop purchase) is
+   * picked up immediately. When omitted, every character defaults to 'idle'.
+   *
+   * Skins are PLAYER-owned, not slot-owned: when slots are reassigned in the
+   * lobby, each player's own skin map travels with them — no per-slot state to
+   * track here.
+   */
+  skinConfig?: Record<UnitRole, string>
   difficulty?: string
-  pveMode?: boolean
+  pveMode?: boolean | string
   npcTeam?: NpcTeamData
+  /** Average level of all players in the room (rounded up). Used for PvP stat scaling. */
+  battleLevel?: number
+  /** If true, return to BracketScene after battle instead of BattleResultScene */
+  tournamentReturn?: boolean
+  bracketData?: object
+  /**
+   * Training mode: reuses the SAME BattleScene with these differences:
+   *  - Dummies on right side (isDummy=true, can't die, HP min 1)
+   *  - No timer (phaseDurations 0/0, per-turn timer skipped)
+   *  - Dummies auto-skip turns (no AI actions)
+   *  - Dummies reset HP/position/effects each round
+   *  - Back button instead of surrender
+   * All other arena features (grid, VFX, skills, status panels, etc.)
+   * are shared and stay in sync automatically.
+   */
+  trainingMode?: boolean
+  /** Players per side: 1=solo, 2=duo, 4=squad. Affects surrender threshold. */
+  playersPerSide?: number
+  /** Which side the player controls: 'left' (default) or 'right'. */
+  playerSide?: 'left' | 'right'
+  /** Specific character IDs the player controls (for duo/squad). If omitted, controls all on playerSide. */
+  playerCharIds?: string[]
 }
 
 // ── BattleScene ───────────────────────────────────────────────────────────────
@@ -173,13 +228,37 @@ export default class BattleScene extends Phaser.Scene {
   private _ctrl!:   GameController
   private _bridge!: PhaserBridge
   private _driver!: BattleDriver
+  private _vfx!:    VFXManager
 
   // ── Static visual objects ───────────────────────────────────────────────────
   private _sprites:    Map<string, UnitSprite>   = new Map()
   private _roundText!: Phaser.GameObjects.Text
   private _phaseText!: Phaser.GameObjects.Text
   private _logLines:   Phaser.GameObjects.Text[] = []
-  private _logMsgs:    string[]                  = []
+  private _logMsgs:    Array<{ msg: string; type: string }> = []
+  /** Mini log entries: compact actor + skill icons for current action phase */
+  private _miniLogEntries: Array<{ unitId: string; name: string; side: string; atkIcon: boolean; defIcon: boolean; atkSkip: boolean; defSkip: boolean; done: boolean }> = []
+  private _miniLogObjs: Phaser.GameObjects.GameObject[] = []
+  private _miniLogContainer: Phaser.GameObjects.Container | null = null
+  private _miniLogRoundText: Phaser.GameObjects.Text | null = null
+  private _miniLogY = 0
+  private _miniLogW = 0
+  private _miniLogRound = 0
+  /** Structured action history for popup — organized by round */
+  private _actionHistory: Array<{
+    round: number
+    actor: string
+    actorName: string
+    actorSide: string
+    atkSkill?: string
+    atkGroup?: string    // 'attack1' | 'attack2'
+    atkTargets?: string
+    defSkill?: string
+    defGroup?: string    // 'defense1' | 'defense2'
+    defTarget?: string
+  }> = []
+  private _currentRound = 1
+  private _pendingAction: { actor: string; actorName: string; actorSide: string; atkSkill?: string; atkGroup?: string; atkTargets?: string; defSkill?: string; defGroup?: string; defTarget?: string } | null = null
 
   // ── Turn tracker (right sidebar) ────────────────────────────────────────────
   private _turnEntries:     TurnEntry[]                     = []
@@ -192,34 +271,84 @@ export default class BattleScene extends Phaser.Scene {
   // ── Actor nameplate (above acting unit) ─────────────────────────────────────
   private _actorLabel:      Phaser.GameObjects.Container | null = null
 
+  // ── Status panel dynamic elements ──────────────────────────────────────────
+  private _statusStatTexts: Map<string, { atk: Phaser.GameObjects.Text; def: Phaser.GameObjects.Text; mov: Phaser.GameObjects.Text }> = new Map()
+  private _statusCardBgs: Map<string, Phaser.GameObjects.Graphics> = new Map()
+  private _statusCardBounds: Map<string, { x: number; y: number; w: number; h: number }> = new Map()
+  private _statusEffectContainers: Map<string, { container: Phaser.GameObjects.Container; lx: number; rx: number; startY: number }> = new Map()
+  /**
+   * Per-card "MURO +X%" line — surfaces the team-wide wall-touch buff that
+   * is otherwise invisible in the per-character stat deltas (the bonus is a
+   * global rule in CombatRuleSystem, not stored on the entity).
+   * Hidden whenever the team has zero allies on the wall column.
+   */
+  private _statusWallTexts: Map<string, Phaser.GameObjects.Text> = new Map()
+
   // ── Timer display ───────────────────────────────────────────────────────────
   private _timerText!:  Phaser.GameObjects.Text
+  private _timerBar!:   Phaser.GameObjects.Rectangle
+  private _timerTotal   = 15
   private _timerEvent:  Phaser.Time.TimerEvent | null = null
   private _timerSecs    = 0
 
   // ── HUD team indicator dot ─────────────────────────────────────────────────
-  private _teamDot!: Phaser.GameObjects.Arc
+  /** Team phase dot (hidden in new layout) */
+  public _teamDot!: Phaser.GameObjects.Arc
+
+  /** Check if a character is controlled by the local player. */
+  private _isPlayerChar(unitId: string): boolean {
+    if (this._playerCharIds) return this._playerCharIds.has(unitId)
+    const char = this._ctrl.getCharacter(unitId)
+    return char?.side === this._playerSide
+  }
+
+  // ── Surrender voting ───────────────────────────────────────────────────────
+  private _surrenderVotes = 0
+  private _surrenderRequired = 1  // solo=1, duo=2, squad=3
+  private _surrenderCountText: Phaser.GameObjects.Text | null = null
 
   // ── Persistent status dots per unit ────────────────────────────────────────
   /** Maps unitId → Set of active status names → used to rebuild dots. */
   private _unitStatuses: Map<string, Set<string>> = new Map()
 
   // ── PvE data ────────────────────────────────────────────────────────────────
-  private _pveMode: boolean = false
+  private _pveMode: boolean | string = false
   private _npcTeam: NpcTeamData | null = null
   private _difficulty: string = 'normal'
+  private _tournamentReturn: boolean = false
+  private _bracketData: object | null = null
+  private _isTrainingMode: boolean = false
+  /**
+   * Per-class equipped skin map passed in from the lobby. When null we fall
+   * back to 'idle' for every character. See SceneData.skinConfig for details.
+   */
+  private _skinConfig: Record<UnitRole, string> | null = null
+  private _playerCharIds: Set<string> | null = null  // null = all on playerSide
+
+  // ── PvP battle level (average of all players, rounded up) ──────────────────
+  private _battleLevel: number = 0
+  /** Average level of all players in the room. 0 = not set (PvE). */
+  get battleLevel(): number { return this._battleLevel }
 
   // ── Player input state ──────────────────────────────────────────────────────
-  private readonly _playerSide: CharacterSide  = 'left'
+  private _playerSide: CharacterSide  = 'left'
   private _currentActorId: string | null        = null
   private _awaitingMode: 'unit' | 'tile' | null = null
+  private _awaitingSkillId: string | null       = null
   private _selReady     = false
+
+  // ── Animation timing (stagger damage after projectile) ─────────────────────
+  private _lastSkillAnimMs: number = 0
+  private _lastSkillTime:   number = 0
 
   // ── Movement phase state ─────────────────────────────────────────────────────
   private _isPlayerMovementPhase = false
   private _moveSelectedId: string | null        = null
+  private _movedThisPhase: Set<string> = new Set()
   private _moveOverlays: Phaser.GameObjects.Rectangle[] = []
   private _endMovementBtn!: Phaser.GameObjects.Container
+  private _movePhaseLabel: Phaser.GameObjects.Container | null = null
+  private _teamTurnOverlay: Phaser.GameObjects.Container | null = null
 
   // ── Player panel — persistent shell ────────────────────────────────────────
   private _panelBg!:    Phaser.GameObjects.Rectangle
@@ -229,14 +358,24 @@ export default class BattleScene extends Phaser.Scene {
   // ── Player panel — recreated each turn ─────────────────────────────────────
   /** All dynamically-created card button containers (destroyed on each turn end). */
   private _cardBtns:  Phaser.GameObjects.Container[] = []
-  /** Maps skillId → { bg, defaultStroke } for visual highlight updates. */
-  private _cardBgMap: Map<string, { bg: Phaser.GameObjects.Rectangle; stroke: number }> = new Map()
+  /** Maps skillId → card graphics info for visual highlight updates. */
+  private _cardBgMap: Map<string, {
+    gfx: Phaser.GameObjects.Graphics
+    hitArea: Phaser.GameObjects.Rectangle
+    redraw: (selected: boolean, hovered: boolean) => void
+  }> = new Map()
   /** The last card ID selected (for highlight). */
   private _selectedCardId: string | null = null
+
+  /** Skill tooltip container (shown on card hover). */
+  private _skillTooltip: Phaser.GameObjects.Container | null = null
 
   // ── Target overlays — recreated on AWAITING_TARGET ─────────────────────────
   /** Interactive overlays shown when player must pick a target or tile. */
   private _targetOverlays: Phaser.GameObjects.GameObject[] = []
+
+  /** Tile rectangles showing area-of-effect preview on hover. */
+  private _areaPreviewRects: Phaser.GameObjects.Rectangle[] = []
 
   constructor() {
     super('BattleScene')
@@ -247,24 +386,68 @@ export default class BattleScene extends Phaser.Scene {
   create(data: SceneData) {
     GameStateManager.set(GameState.PLAYING)
 
+    // ── Reset all collections from previous battle (scene instance reused) ──
+    this._sprites.clear()
+    this._logLines = []
+    this._logMsgs = []; this._actionHistory = []; this._pendingAction = null; this._currentRound = 1
+    this._miniLogObjs = []; this._miniLogEntries = []; this._miniLogContainer = null; this._miniLogRoundText = null; this._miniLogRound = 0
+    this._turnEntries = []
+    this._trackerObjs = []
+    this._bannerObjs = []
+    this._unitStatuses.clear()
+    this._statusStatTexts.clear(); this._statusCardBgs.clear(); this._statusCardBounds.clear()
+    this._statusEffectContainers.clear()
+    this._statusWallTexts.clear()
+    this._highlightedStatusId = null
+    this._cardBtns = []
+    this._moveOverlays = []
+    this._targetOverlays = []
+    this._areaPreviewRects = []
+    this._currentActorId = null
+    this._awaitingMode = null
+    this._awaitingSkillId = null
+    this._selReady = false
+    this._moveSelectedId = null
+    this._isPlayerMovementPhase = false
+    this._selectedCardId = null
+    this._skillTooltip = null
+    this._timerSecs = 0
+    this._timerTotal = 15
+
     // Store PvE data for post-battle results
     this._pveMode   = data.pveMode ?? false
     this._npcTeam   = data.npcTeam ?? null
     this._difficulty = data.difficulty ?? 'normal'
+    this._battleLevel = data.battleLevel ?? 0
+    this._tournamentReturn = data.tournamentReturn ?? false
+    this._bracketData = data.bracketData ?? null
+    this._isTrainingMode = data.trainingMode ?? false
+    this._skinConfig = data.skinConfig ?? null
+    this._playerSide = data.playerSide ?? 'left'
+    this._playerCharIds = data.playerCharIds ? new Set(data.playerCharIds) : null
+    // Surrender threshold: majority of HUMAN players on the team (bots don't count)
+    // playersPerSide = number of human players (1=solo, 2=duo, up to 4=squad)
+    const humanPlayers = data.playersPerSide ?? 1
+    this._surrenderRequired = Math.max(1, Math.ceil(humanPlayers / 2))
+    this._surrenderVotes = 0
 
     // 1. Build engine layer
-    this._ctrl   = _buildController(data.deckConfig, this._difficulty)
+    this._ctrl   = _buildController(data.deckConfig, this._difficulty, this._isTrainingMode, this._playerSide)
     this._driver = new BattleDriver(
       this._ctrl,
       new AutoPlayer(this._ctrl),
       {
-        movementSkipMs: 400,
-        actionBeginMs:  300,
-        turnPlayMs:     700,
-        phaseAdvanceMs: 500,
+        movementSkipMs: 300,
+        actionBeginMs:  200,
+        turnPlayMs:     200,
+        phaseAdvanceMs: 400,
         playerSide:     this._playerSide,
+        playerCharIds:  this._playerCharIds ?? undefined,
       },
     )
+
+    // 1b. Visual effects manager
+    this._vfx = new VFXManager(this)
 
     // 2. Static visuals
     this._drawBackground()
@@ -274,6 +457,10 @@ export default class BattleScene extends Phaser.Scene {
 
     // 3. Player panel (persistent shell, hidden by default)
     this._buildPanelShell()
+    this._drawStatusPanels()
+    // Initial wall-buff sync — covers the case where a starting position
+    // already has units on the wall column (no CHARACTER_MOVED has fired yet).
+    this._refreshStatusPanels()
     this._buildActionButtons()
     this._buildEndMovementButton()
     this._buildTurnTrackerShell()
@@ -287,35 +474,54 @@ export default class BattleScene extends Phaser.Scene {
       // ── Phase / round labels ──────────────────────────────────────────────
       .onHUD(EventType.ROUND_STARTED, (e) => {
         this._roundText.setText(`Round ${e.round}`)
-        this._addLog(`— Round ${e.round} —`)
+        this._currentRound = e.round
+        this._addLog(`— Round ${e.round} —`, 'phase')
         soundManager.playRoundStart()
+
+        // Training mode: reset dummies after each round
+        if (this._isTrainingMode) this._resetTrainingDummies()
       })
       .onHUD(EventType.PHASE_STARTED, (e) => {
-        const sideLabel  = e.side  === 'left'     ? 'Azul'     : 'Vermelho'
+        const sideLabel  = e.side  === 'left'     ? 'Azul'     : 'Roxo'
         const phaseLabel = e.phase === 'movement' ? 'Movimento' : 'Ação'
         this._phaseText.setText(`${phaseLabel} — ${sideLabel}`)
-        this._teamDot.setFillStyle(e.side === 'left' ? 0x4a90d9 : 0xd94a4a)
-        this._addLog(`Fase de ${phaseLabel} (${sideLabel})`)
+        // Mini log: populate full turn order on action phase (stays during next movement)
+        if (e.phase === 'action') {
+          this._miniLogRound = this._currentRound
+          this._miniLogEntries = this._buildMiniLogOrder()
+          this._renderMiniLog()
+        }
+        this._refreshStatusPanels()
+        this._highlightStatusCard(null) // clear selection on phase change
         soundManager.playPhaseChange()
         const isPlayer = e.side === this._playerSide
         this._showPhaseBanner(isPlayer, e.phase)
+        // Show team turn indicator in top bar
+        this._showTeamTurnOverlay(e.side as 'left' | 'right', e.phase)
         // Tracker: reset on action phase, hide on movement
         if (e.phase === 'action') {
           this._turnEntries = []
-          this._trackerHeader.setText(`${sideLabel} — Ação`)
+          // Interleaved: both teams act in the same phase
+          this._trackerHeader.setText(`Ação — Ambos`)
           this._renderTurnTracker()
         } else {
           this._trackerHeader.setText(`${sideLabel} — Movimento`)
           this._turnEntries = []
           this._renderTurnTracker()
+          this._movedThisPhase.clear()
         }
         const isPlayerMovement = e.phase === 'movement' && isPlayer
         this._setMovementPhaseUI(isPlayerMovement)
 
-        // ── Timer countdown ──
+        // ── Timer countdown (movement phase only, player's side only) ──
+        // Duration = 3 seconds per character the player controls
+        // Training mode: no timer (player takes as long as they want)
         this._clearTimer()
-        if (e.duration > 0) {
-          this._timerSecs = e.duration          // duration is already in seconds
+        const charsControlled = this._playerCharIds ? this._playerCharIds.size : 4
+        const moveDuration = charsControlled * 3  // 3s per character
+        if (e.phase === 'movement' && isPlayer && !this._isTrainingMode) {
+          this._timerSecs = moveDuration
+          this._timerTotal = moveDuration
           this._updateTimerDisplay()
           this._timerEvent = this.time.addEvent({
             delay: 1000,
@@ -323,16 +529,9 @@ export default class BattleScene extends Phaser.Scene {
             callback: () => {
               this._timerSecs = Math.max(0, this._timerSecs - 1)
               this._updateTimerDisplay()
-
-              // ── Enforce timer: auto-skip when time runs out ──
               if (this._timerSecs <= 0 && !this._ctrl.isBattleOver) {
                 this._clearTimer()
-                if (this._ctrl.phase === 'action') {
-                  const actor = this._ctrl.currentActor
-                  if (actor && actor.side === this._playerSide) {
-                    this._ctrl.skipTurn('timed_out')
-                  }
-                } else if (this._isPlayerMovementPhase) {
+                if (this._isPlayerMovementPhase) {
                   this._ctrl.clearMoveSelection()
                   this._ctrl.advancePhase()
                 }
@@ -346,6 +545,14 @@ export default class BattleScene extends Phaser.Scene {
       })
       .onHUD(EventType.ACTIONS_RESOLVED, (_e) => {
         this._clearTimer()
+        this._refreshStatusPanels()
+        this._highlightStatusCard(null)
+      })
+      .onHUD(EventType.RESOLUTION_STARTED, (_e) => {
+        // Stagger resolution: resolve one character at a time with delay
+        this._clearTimer()
+        // Small delay before starting resolution to let UI settle
+        this.time.delayedCall(400, () => this._resolveNextWithDelay())
       })
 
       // ── Turn sequencing indicators ─────────────────────────────────────────
@@ -360,7 +567,6 @@ export default class BattleScene extends Phaser.Scene {
             duration: 550, ease: 'Sine.InOut',
           })
         }
-        this._addLog(`Turno: ${this._name(e.unitId)}`)
         // Tracker
         const char = this._ctrl.getCharacter(e.unitId)
         const existing = this._turnEntries.find(t => t.unitId === e.unitId)
@@ -377,22 +583,60 @@ export default class BattleScene extends Phaser.Scene {
           })
         }
         this._renderTurnTracker()
-        // Actor nameplate
+        // Update top bar with current role (for 1x1 solo)
         this._showActorLabel(e.unitId, char?.side === this._playerSide)
-        // Player turn: auto-focus actor and open skill panel
-        if (char?.side === this._playerSide) {
+        if (char) {
+          this._showTeamTurnOverlay(char.side as 'left' | 'right', 'action', char.role)
+        }
+        // Player turn: auto-focus actor and open skill panel + flash banner
+        if (char && this._isPlayerChar(e.unitId)) {
           this._currentActorId = e.unitId
           this._selReady       = false
           this._selectedCardId = null
           this._ctrl.selectCharacter(e.unitId)
+          this._showTurnFlash(char.name)
+          // Reset timer per character turn (15 sec for action, skip in training)
+          if (this._ctrl.phase === 'action' && !this._isTrainingMode) {
+            this._clearTimer()
+            const turnDuration = 15
+            this._timerSecs = turnDuration
+            this._timerTotal = turnDuration
+            this._updateTimerDisplay()
+            this._timerEvent = this.time.addEvent({
+              delay: 1000,
+              repeat: turnDuration - 1,
+              callback: () => {
+                this._timerSecs = Math.max(0, this._timerSecs - 1)
+                this._updateTimerDisplay()
+                if (this._timerSecs <= 0 && !this._ctrl.isBattleOver) {
+                  this._clearTimer()
+                  const a = this._ctrl.currentActor
+                  if (a && a.side === this._playerSide) {
+                    const s = this._ctrl.getSelection(a.id)
+                    const has = s && (s.attackSkill !== null || s.defenseSkill !== null)
+                    if (has) this._ctrl.commitTurn()
+                    else this._ctrl.skipTurn('timed_out')
+                  }
+                }
+              },
+            })
+          }
         }
       })
       .on(EventType.TURN_COMMITTED, (e) => {
         this._stopActiveRing(e.unitId)
         this._clearFocusRings()
         this._hideActorLabel()
+        this._closeConfirmPopup()
+        // Flush any pending action that wasn't completed
+        if (this._pendingAction && this._pendingAction.actor === e.unitId) {
+          this._actionHistory.push({ round: this._currentRound, ...this._pendingAction })
+          this._pendingAction = null
+        }
         const entry = this._turnEntries.find(t => t.unitId === e.unitId)
         if (entry) { entry.status = 'done'; this._renderTurnTracker() }
+        // Mini log: do NOT mark skips here — deferred resolution hasn't happened yet.
+        // Skips are marked after each character resolves in _resolveNextWithDelay.
         if (e.unitId === this._currentActorId) {
           this._hidePanel()
           this._currentActorId = null
@@ -402,9 +646,27 @@ export default class BattleScene extends Phaser.Scene {
         this._stopActiveRing(e.unitId)
         this._clearFocusRings()
         this._hideActorLabel()
+        this._closeConfirmPopup()
         const entry = this._turnEntries.find(t => t.unitId === e.unitId)
         if (entry) { entry.status = 'skipped'; this._renderTurnTracker() }
-        this._addLog(`${this._name(e.unitId)} pulou (${e.reason})`)
+        // Mini log: mark as skipped internally (shown during resolution phase)
+        const mlSkip = this._miniLogEntries.find(m => m.unitId === e.unitId)
+        if (mlSkip) {
+          mlSkip.done = true
+          mlSkip.atkSkip = true
+          mlSkip.defSkip = true
+          // Don't render yet — will be revealed during staggered resolution
+        }
+        // Add skip to action history
+        const skipChar = this._ctrl.getCharacter(e.unitId)
+        this._actionHistory.push({
+          round: this._currentRound,
+          actor: e.unitId,
+          actorName: this._name(e.unitId),
+          actorSide: skipChar?.side ?? 'left',
+          atkSkill: 'Pulou',
+          atkTargets: e.reason === 'stunned' ? 'Atordoado' : e.reason === 'dead' ? 'Morto' : '',
+        })
         if (e.unitId === this._currentActorId) {
           this._hidePanel()
           this._currentActorId = null
@@ -414,17 +676,19 @@ export default class BattleScene extends Phaser.Scene {
       // ── Player action state ────────────────────────────────────────────────
       .on(EventType.CHARACTER_FOCUSED, (e) => {
         this._showFocusRing(e.unitId)
+        this._highlightStatusCard(e.unitId)
         if (e.unitId !== this._currentActorId) return
         this._rebuildCardButtons(e.unitId)
       })
       .on(EventType.MOVE_CHARACTER_SELECTED, (e) => {
         this._moveSelectedId = e.unitId
         this._showMoveRing(e.unitId)
+        this._highlightStatusCard(e.unitId)
         this._clearMoveOverlays()
         for (const pos of this._ctrl.getValidMoves(e.unitId)) {
           this._addMoveOverlay(pos.col, pos.row)
         }
-        this._addLog(`${this._name(e.unitId)}: selecione destino`)
+        // movement phase — no mini log entry
       })
       .on(EventType.MOVE_SELECTION_CLEARED, (_e) => {
         this._moveSelectedId = null
@@ -432,27 +696,35 @@ export default class BattleScene extends Phaser.Scene {
         this._clearMoveRings()
       })
       .on(EventType.AWAITING_TARGET, (e) => {
-        this._awaitingMode = e.targetMode
+        this._awaitingMode    = e.targetMode
+        this._awaitingSkillId = e.skillId
         this._buildTargetOverlays(e.unitId, e.skillId, e.targetMode)
+        // Ensure cancel button is visible while in targeting mode
+        if (this._cancelBtn) this._cancelBtn.setVisible(true)
       })
       .on(EventType.CARD_SELECTED, (e) => {
         // Track last selected card of each category; keep latest attack highlight
         this._selectedCardId = e.cardId
         this._refreshCardHighlights()
+        // Enable confirm after any skill is selected (1 skill = other is skipped)
+        this._selReady = true
+        this._confirmBtn.setAlpha(1)
       })
       .on(EventType.SELECTION_READY, (_e) => {
         this._selReady = true
-        this._confirmBtn.setVisible(true)
+        this._confirmBtn.setAlpha(1)
       })
       .on(EventType.SELECTION_CANCELLED, (_e) => {
         // Panel stays open. Clear target mode and overlays.
         // The Cancel button handler will re-call selectCharacter immediately
         // after cancelAction(), triggering CHARACTER_FOCUSED → panel rebuild.
         this._clearTargetOverlays()
-        this._awaitingMode   = null
-        this._selReady       = false
-        this._selectedCardId = null
-        this._confirmBtn.setVisible(false)
+        this._clearAreaPreview()
+        this._awaitingMode    = null
+        this._awaitingSkillId = null
+        this._selReady        = false
+        this._selectedCardId  = null
+        this._confirmBtn.setAlpha(0.3)
       })
 
       // ── Movement animation + position label ────────────────────────────────
@@ -460,25 +732,75 @@ export default class BattleScene extends Phaser.Scene {
         const sprite = this._sprite(e.unitId)
         if (!sprite) return
         const { x, y } = _tileCenter(e.toCol, e.toRow)
-        this.tweens.add({ targets: sprite.container, x, y, duration: 300, ease: 'Quad.Out' })
+        // Outer container moves linearly — inner sprite layers a hop arc
+        // (squash/stretch + local Y bob) on top for the "jumping" feel.
+        const hopMs = 320
+        this.tweens.add({ targets: sprite.container, x, y, duration: hopMs, ease: 'Quad.Out' })
+        sprite.animator?.playHop(hopMs)
         sprite.posText.setText(`(${e.toCol},${e.toRow})`)
+        // Wall-touch buff is position-dependent: refresh status cards when
+        // any unit moves, so MURO +X% appears/disappears immediately.
+        this._refreshStatusPanels()
         // Clear move overlays — controller already cleared _selectedForMove via auto-reset
         if (e.unitId === this._moveSelectedId) {
           this._moveSelectedId = null
           this._clearMoveOverlays()
           this._clearMoveRings()
         }
+        // Auto-advance when all player-controlled characters have moved
+        if (this._isPlayerMovementPhase) {
+          if (this._isPlayerChar(e.unitId)) {
+            this._movedThisPhase.add(e.unitId)
+            const playerUnits = this._playerSide === 'left' ? LEFT_UNITS : RIGHT_UNITS
+            const aliveCount = playerUnits.filter(u => this._isPlayerChar(u.id) && this._ctrl.getCharacter(u.id)?.alive).length
+            if (this._movedThisPhase.size >= aliveCount) {
+              this.time.delayedCall(400, () => {
+                if (this._isPlayerMovementPhase && !this._ctrl.isBattleOver) {
+                  this._ctrl.clearMoveSelection()
+                  this._ctrl.advancePhase()
+                }
+              })
+            }
+          }
+        }
       })
 
       // ── Skill pulse animation ──────────────────────────────────────────────
       .onAnimation(EventType.SKILL_USED, (e) => {
         const casterSprite = this._sprite(e.unitId)
+        if (casterSprite?.animator) {
+          // AAA procedural animation on the inner sprite: lunge for attacks,
+          // brace for defence. Direction = sign of caster.side (left-side
+          // faces right → +1, right-side faces left → -1).
+          const casterChar = this._ctrl.getCharacter(e.unitId)
+          const dir = casterChar?.side === 'right' ? -1 : +1
+          if (e.category === 'attack') {
+            casterSprite.animator.playAttack(dir)
+          } else if (e.category === 'defense') {
+            casterSprite.animator.playDefend()
+          } else {
+            // Utility / neutral skills get a cast burst
+            casterSprite.animator.playCast()
+          }
+        }
+
+        // Highlight the acting character in arena + status panel
+        this._showFocusRing(e.unitId)
+        this._highlightStatusCard(e.unitId)
+        // Show active ring with brief pulse
         if (casterSprite) {
+          casterSprite.activeRing.setVisible(true).setScale(1)
           this.tweens.add({
-            targets: casterSprite.rect, scaleX: 1.25, scaleY: 1.25,
-            yoyo: true, duration: 150, ease: 'Quad.Out',
+            targets: casterSprite.activeRing,
+            scaleX: 1.15, scaleY: 1.15,
+            yoyo: true, duration: 300, ease: 'Sine.InOut',
+            onComplete: () => casterSprite.activeRing.setVisible(false).setScale(1),
           })
         }
+
+        // Record timing so subsequent DAMAGE/HEAL events can delay until projectile lands
+        this._lastSkillAnimMs = 300  // projectile travel time
+        this._lastSkillTime   = Date.now()
 
         // ── Enhanced skill animation: projectiles + glow pulses ──
         if (e.category === 'attack' && casterSprite) {
@@ -487,63 +809,185 @@ export default class BattleScene extends Phaser.Scene {
           this._playDefenseGlow(e, casterSprite)
         }
 
-        const icon = e.category === 'defense' ? `🛡 ${e.skillName}` : `⚔ ${e.skillName}`
-        this._addLog(`${this._name(e.unitId)}: ${icon}`)
+        // Mini log — mark skill icon on the actor's entry
+        const mlEntry = this._miniLogEntries.find(m => m.unitId === e.unitId)
+        if (mlEntry) {
+          if (e.category === 'attack') mlEntry.atkIcon = true
+          if (e.category === 'defense') mlEntry.defIcon = true
+          this._renderMiniLog()
+        }
+
+        // Structured history capture (defense fires first, then attack)
+        const actorChar = this._ctrl.getCharacter(e.unitId)
+        const targetName = e.targetId ? this._name(e.targetId) : ''
+        const skill2 = this._ctrl.getSkill(e.skillId)
+        const skillGroup = skill2?.group ?? ''
+        if (e.category === 'defense') {
+          this._pendingAction = {
+            actor: e.unitId,
+            actorName: this._name(e.unitId),
+            actorSide: actorChar?.side ?? 'left',
+            defSkill: e.skillName,
+            defGroup: skillGroup,
+            defTarget: targetName || this._name(e.unitId),
+          }
+        } else if (e.category === 'attack') {
+          if (this._pendingAction && this._pendingAction.actor === e.unitId) {
+            this._pendingAction.atkSkill = e.skillName
+            this._pendingAction.atkGroup = skillGroup
+            this._pendingAction.atkTargets = targetName
+            this._actionHistory.push({ round: this._currentRound, ...this._pendingAction })
+            this._pendingAction = null
+          } else {
+            this._actionHistory.push({
+              round: this._currentRound,
+              actor: e.unitId,
+              actorName: this._name(e.unitId),
+              actorSide: actorChar?.side ?? 'left',
+              atkSkill: e.skillName,
+              atkGroup: skillGroup,
+              atkTargets: targetName,
+            })
+          }
+        }
       })
 
       // ── HP bar + floating damage ───────────────────────────────────────────
       .onHUD(EventType.DAMAGE_APPLIED, (e) => {
-        this._updateHpBar(e.unitId, e.newHp)
-        this._flashUnit(e.unitId, 0xff2222, 0.70)
-        this._floatingText(e.unitId, `-${e.amount}`, '#ff4444')
-        this._addLog(`${this._name(e.unitId)} recebe ${e.amount} dano (HP ${e.newHp})`)
-        soundManager.playHit()
+        const elapsed = Date.now() - this._lastSkillTime
+        const delay = Math.max(0, this._lastSkillAnimMs - elapsed)
+        this.time.delayedCall(delay, () => {
+          this._updateHpBar(e.unitId, e.newHp)
+          this._flashUnit(e.unitId, 0xff2222, 0.70)
+          this._floatingText(e.unitId, `-${e.amount}`, '#ff4444', 24, e.amount >= 40)
+          soundManager.playHit()
+          // AAA hurt animation: knockback + rotation shake + red tint on the
+          // *inner* sprite, leaving the outer container (HP bars, rings) rock
+          // steady. Direction inferred from target side — right-side targets
+          // are usually struck from the left, and vice versa.
+          const flinchS = this._sprite(e.unitId)
+          if (flinchS && e.amount > 0) {
+            const targetChar = this._ctrl.getCharacter(e.unitId)
+            const fromLeft = targetChar?.side !== 'left'   // hit from left → knock right
+            flinchS.animator?.playHurt(fromLeft)
+          }
+          // Camera effects on big damage
+          if (e.amount >= 50) {
+            this.cameras.main.shake(200, 0.01)
+            this.cameras.main.flash(100, 255, 255, 255, false, undefined, 0.15)
+          } else if (e.amount >= 30) {
+            this.cameras.main.shake(150, 0.006)
+          }
+          // Update shield bar after damage (shield may have absorbed some)
+          const dmgSprite = this._sprite(e.unitId)
+          if (dmgSprite) {
+            const dmgChar = this._ctrl.getCharacter(e.unitId)
+            const remainShield = dmgChar?.shieldAmount ?? 0
+            const shRatio = Math.min(1, remainShield / dmgSprite.maxHp)
+            const shBarW = CHAR_SIZE + 4
+            this.tweens.add({
+              targets: dmgSprite.shieldBar,
+              displayWidth: shRatio * shBarW,
+              duration: 300,
+              ease: 'Quad.Out',
+            })
+          }
+        })
+        this._addLog(`${this._name(e.unitId)} recebe ${e.amount} dano (HP ${e.newHp})`, 'damage')
+        // Append area targets to the last action's atkTargets
+        if (this._actionHistory.length > 0) {
+          const lastAct = this._actionHistory[this._actionHistory.length - 1]
+          const dmgName = this._name(e.unitId)
+          if (lastAct.atkTargets && !lastAct.atkTargets.includes(dmgName)) {
+            lastAct.atkTargets += ` / ${dmgName}`
+          } else if (!lastAct.atkTargets) {
+            lastAct.atkTargets = dmgName
+          }
+        }
       })
       .onHUD(EventType.HEAL_APPLIED, (e) => {
-        this._updateHpBar(e.unitId, e.newHp)
-        this._flashUnit(e.unitId, 0x22ff88, 0.55)
-        this._floatingText(e.unitId, `+${e.amount}`, '#44ff88')
-        soundManager.playHeal()
+        const elapsed = Date.now() - this._lastSkillTime
+        const delay = Math.max(0, this._lastSkillAnimMs - elapsed)
+        this.time.delayedCall(delay, () => {
+          this._updateHpBar(e.unitId, e.newHp)
+          this._flashUnit(e.unitId, 0x22ff88, 0.55)
+          this._floatingText(e.unitId, `+${e.amount}`, '#44ff88', 22)
+          soundManager.playHeal()
+        })
+        this._addLog(`${this._name(e.unitId)} cura ${e.amount} HP`, 'heal')
       })
       .onHUD(EventType.BLEED_TICK, (e) => {
         this._updateHpBar(e.unitId, e.newHp)
         this._flashUnit(e.unitId, 0xcc1133, 0.60)
-        this._floatingText(e.unitId, `🩸-${e.damage}`, '#cc2244')
+        this._floatingText(e.unitId, `🩸-${e.damage}`, '#8844cc', 18)
         soundManager.playBleed()
+        const bs = this._sprite(e.unitId)
+        if (bs) this._vfx.bleedEffect(bs.container.x, bs.container.y)
       })
       .onHUD(EventType.POISON_TICK, (e) => {
         this._updateHpBar(e.unitId, e.newHp)
         this._flashUnit(e.unitId, 0x88cc22, 0.55)
-        this._floatingText(e.unitId, `☠-${e.damage}`, '#88cc22')
-        soundManager.playBleed()
+        this._floatingText(e.unitId, `☠-${e.damage}`, '#88cc22', 18)
+        soundManager.playPoison()
+        const ps = this._sprite(e.unitId)
+        if (ps) this._vfx.poisonCloud(ps.container.x, ps.container.y, 20)
       })
       .onHUD(EventType.REGEN_TICK, (e) => {
         this._updateHpBar(e.unitId, e.newHp)
         this._flashUnit(e.unitId, 0x22dd66, 0.50)
-        this._floatingText(e.unitId, `🌿+${e.heal}`, '#44ff88')
+        this._floatingText(e.unitId, `🌿+${e.heal}`, '#44ff88', 18)
       })
       .onHUD(EventType.SHIELD_APPLIED, (e) => {
-        this._floatingText(e.unitId, `🛡+${e.amount}`, '#88aaff')
+        const elapsed = Date.now() - this._lastSkillTime
+        const delay = Math.max(0, this._lastSkillAnimMs - elapsed)
+        this.time.delayedCall(delay, () => {
+          this._floatingText(e.unitId, `🛡+${e.amount}`, '#88aaff', 20)
+          // Animate shield bar overlay
+          const shSprite = this._sprite(e.unitId)
+          if (shSprite) {
+            const shChar = this._ctrl.getCharacter(e.unitId)
+            const shieldTotal = shChar?.shieldAmount ?? e.amount
+            const shieldRatio = Math.min(1, shieldTotal / shSprite.maxHp)
+            const shBarW = CHAR_SIZE + 4
+            this.tweens.add({
+              targets: shSprite.shieldBar,
+              displayWidth: shieldRatio * shBarW,
+              duration: 350,
+              ease: 'Quad.Out',
+            })
+          }
+        })
       })
 
       // ── Status effect icons ────────────────────────────────────────────────
       .onHUD(EventType.STATUS_APPLIED, (e) => {
-        const icons: Record<string, string> = {
-          bleed: '🩸', stun: '⚡', regen: '🌿', evade: '💨',
-          reflect: '🪞', def_down: '🔻DEF', atk_down: '🔻ATK',
-        }
-        this._floatingText(e.unitId, icons[e.status] ?? e.status, '#ffdd44')
-        // Persistent status dot
-        this._addStatusDot(e.unitId, e.status)
+        const elapsed = Date.now() - this._lastSkillTime
+        const delay = Math.max(0, this._lastSkillAnimMs - elapsed)
+        this.time.delayedCall(delay, () => {
+          const icons: Record<string, string> = {
+            bleed: '🩸', stun: '⚡', regen: '🌿', evade: '💨',
+            reflect: '🪞', def_down: '🔻DEF', atk_down: '🔻ATK',
+          }
+          this._floatingText(e.unitId, icons[e.status] ?? e.status, '#ffdd44')
+          this._addStatusDot(e.unitId, e.status)
+          this._refreshStatusPanels()
+          this._rebuildStatusPanel(e.unitId)
+        })
       })
       .onHUD(EventType.STAT_MODIFIER_EXPIRED, (e) => {
         this._removeStatusDot(e.unitId, e.effectType)
+        this._refreshStatusPanels()
+        this._rebuildStatusPanel(e.unitId)
       })
       .onHUD(EventType.EFFECTS_CLEANSED, (e) => {
         for (const status of e.removed) this._removeStatusDot(e.unitId, status)
+        this._refreshStatusPanels()
+        this._rebuildStatusPanel(e.unitId)
       })
       .onHUD(EventType.EFFECTS_PURGED, (e) => {
         for (const status of e.removed) this._removeStatusDot(e.unitId, status)
+        this._refreshStatusPanels()
+        this._rebuildStatusPanel(e.unitId)
       })
 
       // ── Death animation ────────────────────────────────────────────────────
@@ -557,11 +1001,17 @@ export default class BattleScene extends Phaser.Scene {
         this._unitStatuses.get(e.unitId)?.clear()
         this._rebuildStatusDots(e.unitId)
         this._flashUnit(e.unitId, 0xffffff, 0.90)
+        this._vfx.deathEffect(sprite.container.x, sprite.container.y)
+        this.cameras.main.shake(250, 0.012)
+        soundManager.playDeath()
+        // AAA death collapse on the inner sprite (rotate + fall + red tint).
+        // Marks the animator as dead internally so no further anim overrides it.
+        sprite.animator?.playDeath()
         this.time.delayedCall(180, () => {
           sprite.rect.setFillStyle(0x444444)
           this.tweens.add({ targets: sprite.container, alpha: 0.22, duration: 600, ease: 'Quad.Out' })
         })
-        this._addLog(`💀 ${this._name(e.unitId)} morreu (Round ${e.round})`)
+        this._addLog(`💀 ${this._name(e.unitId)} morreu (Round ${e.round})`, 'death')
       })
 
       // ── Victory overlay ────────────────────────────────────────────────────
@@ -570,71 +1020,299 @@ export default class BattleScene extends Phaser.Scene {
         this._hideActorLabel()
         for (const obj of this._bannerObjs) (obj as Phaser.GameObjects.GameObject).destroy()
         this._bannerObjs = []
-        const winText = e.winner
-          ? `${e.winner === 'left' ? '🔵 Azul' : '🔴 Vermelho'} venceu!`
-          : 'Empate!'
+
+        // Training mode: bounce straight back to lobby — no results screen
+        if (this._isTrainingMode) {
+          this.time.delayedCall(400, () => transitionTo(this, 'LobbyScene'))
+          return
+        }
+
+        const playerWon = e.winner === this._playerSide
+        const isForfeit = e.reason === 'forfeit'
+        let winText: string
+        if (isForfeit) {
+          winText = playerWon ? 'Adversario desistiu!' : 'Voce desistiu!'
+        } else {
+          winText = e.winner
+            ? (playerWon ? 'Vitoria!' : 'Derrota!')
+            : 'Empate!'
+        }
         this._showVictoryOverlay(winText, e.reason, e.round)
 
-        // Transition to results screen after a short delay
+        // Transition after a short delay
         this.time.delayedCall(2000, () => {
-          this.scene.start('BattleResultScene', {
-            winner: e.winner,
-            round: e.round,
-            reason: e.reason,
-            pveMode: this._pveMode,
-            npcTeam: this._npcTeam,
-            difficulty: this._difficulty,
-            playerSide: this._playerSide,
-          })
+          if (this._tournamentReturn) {
+            // Return to BracketScene with the result
+            const playerWon = e.winner === this._playerSide
+            this.scene.start('BracketScene', {
+              ...(this._bracketData ?? {}),
+              returning: true,
+              playerWon,
+            })
+          } else {
+            this.scene.start('BattleResultScene', {
+              winner: e.winner,
+              round: e.round,
+              reason: e.reason,
+              pveMode: this._pveMode,
+              npcTeam: this._npcTeam,
+              difficulty: this._difficulty,
+              playerSide: this._playerSide,
+            })
+          }
         })
       })
 
-    // 5. Start engine + driver
-    this._ctrl.startBattle()
+    // 5. ESC key cancels targeting mode
+    this.input.keyboard?.on('keydown-ESC', () => {
+      if (this._awaitingMode) {
+        this._clearTargetOverlays()
+        this._clearAreaPreview()
+        this._awaitingMode    = null
+        this._awaitingSkillId = null
+        this._ctrl.cancelAction()
+        if (this._currentActorId) {
+          this._ctrl.selectCharacter(this._currentActorId)
+          this._rebuildCardButtons(this._currentActorId)
+        }
+      }
+    })
+
+    // 6. Start driver first (so it hears PHASE_STARTED from startBattle), then start battle
     this._driver.start()
+    this._ctrl.startBattle()
+
+    // 7. Pre-populate mini log with round 1 turn order (visible during first movement phase)
+    this._miniLogRound = 1
+    this._miniLogEntries = this._buildMiniLogOrder()
+    this._renderMiniLog()
   }
 
   shutdown() {
-    this._bridge.destroy()
-    this._driver.destroy()
+    // Kill all animations and input
+    this.tweens.killAll()
+    this.time.removeAllEvents()
+    this.input.keyboard?.removeAllListeners()
+
+    // Destroy engine layer
+    this._bridge?.destroy()
+    this._driver?.destroy()
+
+    // Destroy all UI elements
     this._destroyCardButtons()
     this._clearTargetOverlays()
     this._clearMoveOverlays()
+    this._clearAreaPreview()
     this._clearTimer()
-    for (const obj of this._trackerObjs) (obj as Phaser.GameObjects.GameObject).destroy()
-    for (const obj of this._bannerObjs)  (obj as Phaser.GameObjects.GameObject).destroy()
+    this._hideSkillTooltip()
+
+    // Destroy tracker and banner objects
+    for (const obj of this._trackerObjs) (obj as Phaser.GameObjects.GameObject).destroy?.()
+    for (const obj of this._bannerObjs)  (obj as Phaser.GameObjects.GameObject).destroy?.()
     this._actorLabel?.destroy()
+    this._movePhaseLabel?.destroy(true)
+    this._teamTurnOverlay?.destroy(true)
+
+    // Destroy all log text objects
+    for (const line of this._logLines) line.destroy?.()
+    for (const obj of this._miniLogObjs) obj.destroy()
+    this._miniLogContainer?.destroy(true)
+    this._miniLogRoundText?.destroy()
+
+    // Destroy all sprite containers
+    for (const [, sprite] of this._sprites) sprite.container?.destroy(true)
+
+    // Clear all references
+    this._sprites.clear()
+    this._unitStatuses.clear()
+    this._logLines = []
+    this._logMsgs = []; this._actionHistory = []; this._pendingAction = null; this._currentRound = 1
+    this._miniLogObjs = []; this._miniLogEntries = []; this._miniLogContainer = null; this._miniLogRoundText = null; this._miniLogRound = 0
+    this._turnEntries = []
+    this._trackerObjs = []
+    this._bannerObjs = []
+    this._cardBtns = []
+    this._moveOverlays = []
+    this._targetOverlays = []
+    this._areaPreviewRects = []
   }
 
   // ── Player panel — shell (built once) ────────────────────────────────────────
 
   private _buildPanelShell(): void {
+    // Skill panel is the left column — already drawn by _drawBackground
     this._panelBg = this.add
-      .rectangle(W / 2, PANEL_Y + PANEL_H / 2, W, PANEL_H, 0x060d16)
-      .setStrokeStyle(1, 0x1e3a5f)
+      .rectangle(SKILL_COL_W / 2, H / 2, SKILL_COL_W, H, 0x000000, 0.001)
       .setVisible(false)
       .setDepth(5)
   }
 
+  private _drawStatusPanels(): void {
+    const leftIds  = ['lking', 'lwarrior', 'lexecutor', 'lspecialist']
+    const rightIds = ['rking', 'rwarrior', 'rexecutor', 'rspecialist']
+
+    const gridH = ROWS * TILE
+    const gridW = COLS * TILE
+    const statusAreaY = GRID_Y + gridH + 4
+    const statusAreaH = H - statusAreaY - 2
+    const halfW = gridW / 2
+    const cardW = (halfW - 12) / 4
+    const cardH = statusAreaH - 4
+
+    // Left half = blue team
+    leftIds.forEach((id, i) => {
+      const cx = GRID_X + 4 + i * (cardW + 2) + cardW / 2
+      this._drawMiniStatusCard(cx, statusAreaY + 2, cardW, cardH, id, 'left')
+    })
+
+    // Right half = red team
+    rightIds.forEach((id, i) => {
+      const cx = GRID_X + halfW + 4 + i * (cardW + 2) + cardW / 2
+      this._drawMiniStatusCard(cx, statusAreaY + 2, cardW, cardH, id, 'right')
+    })
+  }
+
+  private _drawMiniStatusCard(
+    x: number, y: number, w: number, h: number,
+    unitId: string, side: string,
+  ): void {
+    const char = this._ctrl.getCharacter(unitId)
+    if (!char) return
+
+    const teamColor = side === 'left' ? 0x00ccaa : 0x8844cc
+    const teamHex = side === 'left' ? '#00ccaa' : '#8844cc'
+    const ROLE_NAMES: Record<string, string> = { king: 'REI', warrior: 'GUERREIRO', executor: 'EXECUTOR', specialist: 'ESPECIALISTA' }
+    const roleName = ROLE_NAMES[char.role] ?? char.role
+
+    const g = this.add.graphics()
+    g.fillStyle(0x0a0e18, 0.95)
+    g.fillRoundedRect(x - w / 2, y, w, h, 4)
+    g.fillStyle(teamColor, 0.5)
+    g.fillRoundedRect(x - w / 2, y, w, 2, { tl: 4, tr: 4, bl: 0, br: 0 })
+    g.lineStyle(1, teamColor, 0.12)
+    g.strokeRoundedRect(x - w / 2, y, w, h, 4)
+    this._statusCardBgs.set(unitId, g)
+    this._statusCardBounds.set(unitId, { x: x - w / 2, y, w, h })
+
+    // Click on status card → select character in arena
+    const cardHit = this.add.rectangle(x, y + h / 2, w, h, 0x000000, 0.001)
+      .setInteractive({ useHandCursor: true }).setDepth(7)
+    cardHit.on('pointerdown', () => {
+      if (this._ctrl.phase === 'action' && side === this._playerSide) {
+        const actor = this._ctrl.currentActor
+        if (actor && actor.id === unitId) {
+          this._ctrl.selectCharacter(unitId)
+        }
+      } else if (this._ctrl.phase === 'movement' && this._isPlayerChar(unitId)) {
+        const result = this._ctrl.selectForMove(unitId)
+        if (!result.ok) this._addLog(`[!] ${result.error}`)
+      }
+    })
+
+    let cy = y + 2
+    const lx = x - w / 2 + 4
+    const rx = x + w / 2 - 4
+    const fs = '14px'
+    const fsSmall = '13px'
+    const stk = { stroke: '#000000', strokeThickness: 3 }
+
+    // Role name
+    this.add.text(x, cy + 8, roleName, {
+      fontFamily: 'Arial Black', fontSize: fs, color: teamHex, fontStyle: 'bold', ...stk,
+    }).setOrigin(0.5).setDepth(6)
+    cy += 20
+
+    // Separator: name → HP
+    const sep1 = this.add.graphics().setDepth(6)
+    sep1.fillStyle(teamColor, 0.15)
+    sep1.fillRect(lx, cy, w - 8, 1)
+
+    // HP
+    const hpRatio = char.hp / char.maxHp
+    const hpColor = hpRatio > 0.5 ? '#88cc88' : hpRatio > 0.25 ? '#ccaa44' : '#cc4444'
+    this.add.text(x, cy + 5, `${char.hp}/${char.maxHp}`, {
+      fontFamily: 'Arial', fontSize: fsSmall, color: hpColor, fontStyle: 'bold', ...stk,
+    }).setOrigin(0.5).setDepth(6)
+    // HP bar
+    const barW2 = w - 8; const barH2 = 5
+    const bg2 = this.add.graphics()
+    bg2.fillStyle(0x331111, 1); bg2.fillRoundedRect(lx, cy + 18, barW2, barH2, 2)
+    bg2.fillStyle(hpRatio > 0.5 ? 0x44dd44 : hpRatio > 0.25 ? 0xddaa22 : 0xdd3322, 0.8)
+    bg2.fillRoundedRect(lx, cy + 18, Math.max(2, barW2 * hpRatio), barH2, 2)
+    cy += 26
+
+    // Separator: HP → stats
+    const sep2 = this.add.graphics().setDepth(6)
+    sep2.fillStyle(teamColor, 0.15)
+    sep2.fillRect(lx, cy + 2, w - 8, 1)
+    cy += 2
+
+    // Stat modifiers (real delta: current - base)
+    const atkDelta = char.attack - char.baseStats.attack
+    const defDelta = char.defense - char.baseStats.defense
+    const movDelta = char.mobility - char.baseStats.mobility
+
+    const makeStat = (label: string, val: number): Phaser.GameObjects.Text => {
+      const color = val > 0 ? '#44dd44' : val < 0 ? '#dd4444' : '#555555'
+      const txt = val > 0 ? `+${val}` : val < 0 ? `${val}` : '0'
+      this.add.text(lx, cy + 4, label, { fontFamily: 'Arial', fontSize: fsSmall, color: '#888888', fontStyle: 'bold', ...stk }).setDepth(6)
+      const valText = this.add.text(rx, cy + 4, txt, { fontFamily: 'Arial Black', fontSize: fsSmall, color, fontStyle: 'bold', ...stk }).setOrigin(1, 0).setDepth(6)
+      cy += 16
+      return valText
+    }
+
+    const atkText = makeStat('ATK', atkDelta)
+    const defText = makeStat('DEF', defDelta)
+    const movText = makeStat('MOV', movDelta)
+    this._statusStatTexts.set(unitId, { atk: atkText, def: defText, mov: movText })
+
+    // Wall-touch buff line — shows team-wide bonus from CombatRuleSystem.
+    // Hidden by default; _refreshStatusPanels populates and shows it when
+    // the team has at least one ally on the wall column.
+    const wallText = this.add.text(x, cy + 3, '', {
+      fontFamily: 'Arial Black',
+      fontSize: '11px',
+      color: '#f0c850',          // gold — terrain bonus accent
+      fontStyle: 'bold',
+      ...stk,
+    }).setOrigin(0.5, 0).setDepth(6).setVisible(false)
+    this._statusWallTexts.set(unitId, wallText)
+    cy += 14
+
+    // Separator: stats → status effects
+    const sep3 = this.add.graphics().setDepth(6)
+    sep3.fillStyle(teamColor, 0.15)
+    sep3.fillRect(lx, cy + 6, w - 8, 1)
+    cy += 8
+
+    // Dynamic status effects container (rebuilt on every status change)
+    const statusContainer = this.add.container(0, 0).setDepth(6)
+    this._statusEffectContainers.set(unitId, { container: statusContainer, lx, rx, startY: cy })
+    this._rebuildStatusPanel(unitId)
+  }
+
   private _buildActionButtons(): void {
+    // Button bar BELOW the 4 skill cards (with small gap)
+    const barCenterY = PANEL_Y + 4 * (CARD_H + CARD_GAP) + BTN_BAR_H / 2 + 6
+    const halfW = (SKILL_COL_W - 20) / 2
+
+    // Confirmar — always visible when panel is open, but dimmed until ready
     this._confirmBtn = this._makeActionBtn(
-      BTN_X, CONFIRM_Y, BTN_W, BTN_H,
+      6 + halfW / 2, barCenterY, halfW, 28,
       'Confirmar', 0x0d2211, 0x22cc44, '#44ff88',
       () => {
         if (!this._selReady) return
-        this._ctrl.commitTurn()
+        this._showCommitConfirm()
       },
     ).setVisible(false).setDepth(8)
 
+    // Pular — skip this character's turn (with confirmation)
     this._cancelBtn = this._makeActionBtn(
-      BTN_X, CANCEL_Y, BTN_W, BTN_H,
-      'Cancelar', 0x1a0808, 0xcc2222, '#ff6666',
+      6 + halfW + 8 + halfW / 2, barCenterY, halfW, 28,
+      'Pular', 0x1a1008, 0xcc8822, '#ffaa44',
       () => {
-        this._ctrl.cancelAction()
-        // cancelAction clears _focusedCharacterId in the controller.
-        // Re-focus immediately so the panel stays open and rebuilds.
         if (this._currentActorId) {
-          this._ctrl.selectCharacter(this._currentActorId)
+          this._showSkipConfirm()
         }
       },
     ).setVisible(false).setDepth(8)
@@ -652,7 +1330,7 @@ export default class BattleScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
 
     const txt = this.add.text(0, 0, label, {
-      fontFamily: 'Arial', fontSize: '13px', color: textColor, fontStyle: 'bold',
+      fontFamily: 'Arial', fontSize: '15px', color: textColor, fontStyle: 'bold',
     }).setOrigin(0.5)
 
     bg.on('pointerover', () => bg.setFillStyle(fill | 0x0a0a0a))
@@ -663,9 +1341,10 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   private _buildEndMovementButton(): void {
+    const barCenterY = PANEL_Y + 4 * (CARD_H + CARD_GAP) + BTN_BAR_H / 2 + 6
     this._endMovementBtn = this._makeActionBtn(
-      BTN_X, PANEL_Y + PANEL_H / 2, BTN_W, BTN_H,
-      'Fim Mov.', 0x0a1a0a, 0x22aa44, '#44ff88',
+      SKILL_COL_W / 2, barCenterY, BTN_W, 28,
+      'Fim Movimento', 0x0a1a0a, 0x22aa44, '#44ff88',
       () => {
         this._ctrl.clearMoveSelection()
         this._ctrl.advancePhase()
@@ -680,9 +1359,58 @@ export default class BattleScene extends Phaser.Scene {
     this._clearMoveOverlays()
     this._moveSelectedId = null
     this._clearFocusRings()
+
+    // Destroy previous movement label
+    this._movePhaseLabel?.destroy(true)
+    this._movePhaseLabel = null
+
     if (active) {
       this._panelBg.setVisible(true)
       this._endMovementBtn.setVisible(true)
+
+      // Show "TURNO DE MOVIMENTO" in the skill column
+      const labelCx = SKILL_COL_W / 2
+      const titleY = H / 2 - 60  // centered vertically in the column
+
+      const movTitle = this.add.text(labelCx, titleY, 'TURNO DE', {
+        fontFamily: 'Arial Black', fontSize: '18px', color: '#00ccaa',
+        fontStyle: 'bold', align: 'center',
+        shadow: { offsetX: 0, offsetY: 2, color: '#0a2a3a', blur: 6, fill: true },
+      }).setOrigin(0.5)
+
+      const movTitle2 = this.add.text(labelCx, titleY + 26, 'MOVIMENTO', {
+        fontFamily: 'Arial Black', fontSize: '18px', color: '#00ccaa',
+        fontStyle: 'bold', align: 'center',
+        shadow: { offsetX: 0, offsetY: 2, color: '#0a2a3a', blur: 6, fill: true },
+      }).setOrigin(0.5)
+
+      const movSub = this.add.text(labelCx, titleY + 62, 'Mova seus\npersonagens', {
+        fontFamily: 'Arial', fontSize: '15px', color: '#3388aa',
+        align: 'center',
+        shadow: { offsetX: 1, offsetY: 1, color: '#000', blur: 2, fill: true },
+      }).setOrigin(0.5)
+
+      // Subtle arrow icon below subtitle
+      const movIcon = this.add.graphics()
+      movIcon.lineStyle(2, 0x00ccaa, 0.3)
+      const arrowY2 = titleY + 95
+      movIcon.beginPath()
+      movIcon.moveTo(labelCx - 10, arrowY2 - 5)
+      movIcon.lineTo(labelCx, arrowY2 + 5)
+      movIcon.lineTo(labelCx + 10, arrowY2 - 5)
+      movIcon.strokePath()
+
+      this._movePhaseLabel = this.add.container(0, 0, [movTitle, movTitle2, movSub, movIcon]).setDepth(6)
+
+      // Pulse animation
+      this.tweens.add({
+        targets: this._movePhaseLabel,
+        alpha: { from: 0.7, to: 1 },
+        duration: 1200,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.InOut',
+      })
     } else {
       this._endMovementBtn.setVisible(false)
       if (!this._currentActorId) this._panelBg.setVisible(false)
@@ -692,13 +1420,13 @@ export default class BattleScene extends Phaser.Scene {
   private _addMoveOverlay(col: number, row: number): void {
     const { x, y } = _tileCenter(col, row)
     const tile = this.add.rectangle(x, y, TILE - 4, TILE - 4)
-      .setStrokeStyle(2, 0x44ddff, 1)
-      .setFillStyle(0x44ddff, 0.14)
+      .setStrokeStyle(2, 0x00ccaa, 1)
+      .setFillStyle(0x00ccaa, 0.14)
       .setInteractive({ useHandCursor: true })
       .setDepth(4)
 
-    tile.on('pointerover', () => tile.setFillStyle(0x44ddff, 0.30))
-    tile.on('pointerout',  () => tile.setFillStyle(0x44ddff, 0.14))
+    tile.on('pointerover', () => tile.setFillStyle(0x00ccaa, 0.30))
+    tile.on('pointerout',  () => tile.setFillStyle(0x00ccaa, 0.14))
     tile.on('pointerdown', () => {
       if (!this._moveSelectedId) return
       const result = this._ctrl.moveCharacter(this._moveSelectedId, col, row)
@@ -721,7 +1449,7 @@ export default class BattleScene extends Phaser.Scene {
       .setStrokeStyle(1, 0x1e3a5f).setDepth(3)
 
     this._trackerHeader = this.add.text(TRK_CX, TRK_Y + 8, '…', {
-      fontFamily: 'Arial', fontSize: '10px', color: '#64748b', fontStyle: 'bold',
+      fontFamily: 'Arial', fontSize: '14px', color: '#64748b', fontStyle: 'bold',
     }).setOrigin(0.5, 0).setDepth(4)
   }
 
@@ -750,18 +1478,18 @@ export default class BattleScene extends Phaser.Scene {
       const color = isActive ? '#e2e8f0' : isDone ? '#44dd88' : '#475569'
 
       const iconTxt = this.add.text(TRK_X + 6, y + 4, icon, {
-        fontFamily: 'Arial', fontSize: '10px', color,
+        fontFamily: 'Arial', fontSize: '14px', color,
       }).setDepth(4)
 
       const nameTxt = this.add.text(TRK_X + 18, y + 4, entry.name, {
-        fontFamily: 'Arial', fontSize: '10px', color,
+        fontFamily: 'Arial', fontSize: '14px', color,
         fontStyle: isActive ? 'bold' : 'normal',
       }).setDepth(4)
 
-      const progressColor = isActive ? '#7ab8ff' : '#334155'
+      const progressColor = isActive ? '#00ccaa' : '#334155'
       const progressTxt = this.add.text(TRK_CX + TRK_W / 2 - 6, y + 4,
         `${entry.order}/${entry.total}`, {
-          fontFamily: 'Arial', fontSize: '9px', color: progressColor,
+          fontFamily: 'Arial', fontSize: '15px', color: progressColor,
         }).setOrigin(1, 0).setDepth(4)
 
       this._trackerObjs.push(iconTxt, nameTxt, progressTxt)
@@ -770,16 +1498,66 @@ export default class BattleScene extends Phaser.Scene {
 
   // ── Phase banner ─────────────────────────────────────────────────────────────
 
-  private _showPhaseBanner(isPlayer: boolean, phase: 'movement' | 'action'): void {
+  /** Show turn indicator on both halves of the top bar (blue left, purple right).
+   *  Movement = "Turno de movimento" on both halves
+   *  Action = "Turno do REI" etc on both halves (1x1 solo) */
+  private _showTeamTurnOverlay(_side: 'left' | 'right', phase?: string, actorRole?: string): void {
+    this._teamTurnOverlay?.destroy(true)
+    this._teamTurnOverlay = null
+
+    const barX = GRID_X
+    const barW = W - GRID_X
+    const halfBarW = barW / 2
+    const barCy = TOP_BAR_H2 / 2
+    const stk = { stroke: '#000000', strokeThickness: 2 }
+
+    const elements: Phaser.GameObjects.GameObject[] = []
+    const blueX = barX + halfBarW / 2
+    const redX = barX + halfBarW + halfBarW / 2
+
+    let label: string
+    if (phase === 'movement') {
+      label = 'Turno de movimento'
+    } else if (actorRole) {
+      const ROLE_NAMES: Record<string, string> = { king: 'REI', warrior: 'GUE', executor: 'EXE', specialist: 'ESP' }
+      label = `Turno do ${ROLE_NAMES[actorRole] ?? actorRole}`
+    } else {
+      label = 'Turno de ação'
+    }
+
+    // Blue side (left half)
+    elements.push(this.add.rectangle(blueX, barCy, halfBarW, TOP_BAR_H2, 0x00ccaa, 0.08))
+    elements.push(this.add.text(blueX, barCy - 4, label, {
+      fontFamily: 'Arial Black', fontSize: '14px', color: '#00ccaa', fontStyle: 'bold', ...stk,
+    }).setOrigin(0.5))
+    const ag1 = this.add.graphics()
+    ag1.lineStyle(2, 0x00ccaa, 0.5)
+    ag1.beginPath(); ag1.moveTo(blueX - 5, barCy + 8); ag1.lineTo(blueX, barCy + 13); ag1.lineTo(blueX + 5, barCy + 8); ag1.strokePath()
+    elements.push(ag1)
+
+    // Purple side (right half)
+    elements.push(this.add.rectangle(redX, barCy, halfBarW, TOP_BAR_H2, 0x8844cc, 0.08))
+    elements.push(this.add.text(redX, barCy - 4, label, {
+      fontFamily: 'Arial Black', fontSize: '14px', color: '#8844cc', fontStyle: 'bold', ...stk,
+    }).setOrigin(0.5))
+    const ag2 = this.add.graphics()
+    ag2.lineStyle(2, 0x8844cc, 0.5)
+    ag2.beginPath(); ag2.moveTo(redX - 5, barCy + 8); ag2.lineTo(redX, barCy + 13); ag2.lineTo(redX + 5, barCy + 8); ag2.strokePath()
+    elements.push(ag2)
+
+    this._teamTurnOverlay = this.add.container(0, 0, elements).setDepth(2)
+  }
+
+  private _showPhaseBanner(_isPlayer: boolean, phase: 'movement' | 'action'): void {
     // Kill previous banner immediately
     for (const obj of this._bannerObjs) (obj as Phaser.GameObjects.GameObject).destroy()
     this._bannerObjs = []
 
-    const title    = isPlayer ? 'SUA VEZ' : 'INIMIGO'
-    const sub      = phase === 'movement' ? 'Fase de Movimento' : 'Fase de Ação'
-    const bgColor  = isPlayer ? 0x071428 : 0x1a0707
-    const stroke   = isPlayer ? 0x2255cc : 0xcc2222
-    const titleCol = isPlayer ? '#88bbff' : '#ff8888'
+    const title    = phase === 'movement' ? 'MOVIMENTO' : 'AÇÃO'
+    const sub      = phase === 'movement' ? 'Mova seus personagens' : 'Escolha suas habilidades'
+    const bgColor  = 0x0a1020
+    const stroke   = 0xc9a84c
+    const titleCol = '#c9a84c'
 
     const bannerY = GRID_Y + ROWS * TILE / 2 - 14   // vertical centre of grid
 
@@ -789,7 +1567,7 @@ export default class BattleScene extends Phaser.Scene {
       fontFamily: 'Arial Black', fontSize: '26px', color: titleCol, fontStyle: 'bold',
     }).setOrigin(0.5).setAlpha(0).setDepth(15)
     const subTxt = this.add.text(W / 2, bannerY + 14, sub, {
-      fontFamily: 'Arial', fontSize: '13px', color: '#94a3b8',
+      fontFamily: 'Arial', fontSize: '15px', color: '#94a3b8',
     }).setOrigin(0.5).setAlpha(0).setDepth(15)
 
     this._bannerObjs = [bg, titleTxt, subTxt]
@@ -812,33 +1590,38 @@ export default class BattleScene extends Phaser.Scene {
 
   // ── Actor nameplate ──────────────────────────────────────────────────────────
 
-  private _showActorLabel(unitId: string, isPlayer: boolean): void {
-    this._actorLabel?.destroy()
-    this._actorLabel = null
-
-    const sprite = this._sprite(unitId)
-    if (!sprite) return
-
-    const label    = isPlayer ? '▶ SUA VEZ' : '▶ INIMIGO'
-    const bgColor  = isPlayer ? 0x071428 : 0x1a0707
-    const stroke   = isPlayer ? 0x2255cc : 0xcc2222
-    const txtColor = isPlayer ? '#88bbff' : '#ff8888'
-
-    const bg  = this.add.rectangle(0, 0, 82, 17, bgColor).setStrokeStyle(1, stroke)
-    const txt = this.add.text(0, 0, label, {
-      fontFamily: 'Arial', fontSize: '9px', color: txtColor, fontStyle: 'bold',
-    }).setOrigin(0.5)
-
-    this._actorLabel = this.add.container(
-      sprite.container.x,
-      sprite.container.y - CHAR_SIZE - 22,
-      [bg, txt],
-    ).setDepth(9)
-  }
-
+  // Actor label removed — top bar shows turn info instead
+  private _showActorLabel(_unitId: string, _isPlayer: boolean): void { /* no-op */ }
   private _hideActorLabel(): void {
     this._actorLabel?.destroy()
     this._actorLabel = null
+  }
+
+  // ── Turn flash banner (brief overlay when player's character acts) ────────
+
+  private _showTurnFlash(name: string): void {
+    const cx = W / 2
+    const cy = GRID_Y + ROWS * TILE / 2
+    const bg = this.add.rectangle(cx, cy, 300, 50, 0x000000, 0.7).setDepth(900)
+    const txt = this.add.text(cx, cy, `\u2694 ${name}`, {
+      fontFamily: 'Arial', fontSize: '24px', color: '#f0c850', fontStyle: 'bold',
+      stroke: '#000000', strokeThickness: 3,
+    }).setOrigin(0.5).setDepth(901)
+
+    // Scale in
+    bg.setScale(0.5, 0)
+    txt.setAlpha(0)
+
+    this.tweens.add({ targets: bg, scaleX: 1, scaleY: 1, duration: 200, ease: 'Back.Out' })
+    this.tweens.add({ targets: txt, alpha: 1, duration: 200 })
+
+    // Fade out after 800ms
+    this.time.delayedCall(800, () => {
+      this.tweens.add({
+        targets: [bg, txt], alpha: 0, duration: 300,
+        onComplete: () => { bg.destroy(); txt.destroy() },
+      })
+    })
   }
 
   // ── Player panel — card buttons (rebuilt each turn) ───────────────────────
@@ -852,29 +1635,21 @@ export default class BattleScene extends Phaser.Scene {
     // Show the panel shell and persistent buttons
     this._panelBg.setVisible(true)
     this._cancelBtn.setVisible(true)
-    this._confirmBtn.setVisible(this._selReady)
+    this._confirmBtn.setVisible(true).setAlpha(this._selReady ? 1 : 0.3)
 
-    // Section labels
-    this._addSectionLabel(CARDS_X - 4, ATK_ROW_Y - CARD_H / 2 - 4, 'ATAQUE', '#cc6633')
-    this._addSectionLabel(CARDS_X - 4, DEF_ROW_Y - CARD_H / 2 - 4, 'DEFESA', '#3366cc')
-
-    // Attack cards
-    hand.attack.forEach((skill, i) => {
-      const cx = CARDS_X + i * (CARD_W + CARD_GAP) + CARD_W / 2
-      this._makeCardBtn(cx, ATK_ROW_Y, skill, actorId)
-    })
-
-    // Defense cards
-    hand.defense.forEach((skill, i) => {
-      const cx = CARDS_X + i * (CARD_W + CARD_GAP) + CARD_W / 2
-      this._makeCardBtn(cx, DEF_ROW_Y, skill, actorId)
+    // Stack all 4 cards vertically in the left column: ATK1, ATK2, DEF1, DEF2
+    const allCards = [...hand.attack, ...hand.defense]
+    allCards.forEach((skill, i) => {
+      const cy = PANEL_Y + 10 + i * (CARD_H + CARD_GAP) + CARD_H / 2
+      this._makeCardBtn(CARDS_X, cy, skill, actorId)
     })
   }
 
   /** Create a small section label ("ATAQUE" / "DEFESA") and track for cleanup. */
-  private _addSectionLabel(x: number, y: number, text: string, color: string): void {
+  /** Section label for card groups — kept for potential future use */
+  public _addSectionLabel(x: number, y: number, text: string, color: string): void {
     const label = this.add.text(x, y, text, {
-      fontFamily: 'Arial', fontSize: '9px', color, fontStyle: 'bold',
+      fontFamily: 'Arial', fontSize: '15px', color, fontStyle: 'bold',
     }).setOrigin(0, 1).setDepth(7)
     // Wrap in a minimal container so it goes through the same cleanup path
     const c = this.add.container(0, 0, [label]).setDepth(7)
@@ -882,65 +1657,112 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   /** Build one skill card button and register it for cleanup. */
-  private _makeCardBtn(x: number, y: number, skill: Skill, _actorId: string): void {
-    const isAtk      = skill.category === 'attack'
-    const baseFill   = isAtk ? 0x141020 : 0x081428
-    const baseStroke = isAtk ? 0x663322 : 0x223366
+  private _makeCardBtn(x: number, y: number, skill: Skill, actorId: string): void {
+    // Get the actual role of the acting character
+    const actorChar = this._ctrl.getCharacter(actorId)
+    const actorRole = actorChar?.role ?? 'king'
 
-    const bg = this.add.rectangle(0, 0, CARD_W, CARD_H, baseFill)
-      .setStrokeStyle(2, baseStroke)
-      .setInteractive({ useHandCursor: true })
-
-    const nameTxt = this.add.text(0, -9, skill.name, {
-      fontFamily: 'Arial', fontSize: '11px', color: '#e2e8f0', fontStyle: 'bold',
-    }).setOrigin(0.5)
-
-    const subTxt = this.add.text(0, 9,
-      skill.power > 0 ? `${skill.effectType}  ${skill.power}` : skill.effectType, {
-        fontFamily: 'Arial', fontSize: '9px', color: '#64748b',
-      }).setOrigin(0.5)
-
-    bg.on('pointerover', () => {
-      if (this._awaitingMode) return
-      bg.setStrokeStyle(3, isAtk ? 0xffaa44 : 0x44aaff)
+    // Use standardized UI.skillCard
+    const card = UI.skillCard(this, x, y, {
+      skillId: skill.id,
+      name: skill.name, effectType: skill.effectType, power: skill.power,
+      group: skill.group, unitClass: actorRole, level: 1,
+      description: skill.description,
+    }, {
+      width: CARD_W, height: CARD_H,
+      showTooltip: false, // we handle tooltip ourselves
     })
-    bg.on('pointerout', () => this._applyCardHighlight(skill.id, bg, baseStroke))
-    bg.on('pointerdown', () => {
+    card.setDepth(7)
+
+    // Selection glow overlay (drawn on top)
+    const gfx = this.add.graphics()
+    card.add(gfx)
+
+    const borderColor = skill.category === 'attack' ? 0xef5350 : 0x4fc3f7
+    const drawHighlight = (selected: boolean, hovered: boolean) => {
+      gfx.clear()
+      if (selected) {
+        gfx.lineStyle(2.5, 0xffffff, 1)
+        gfx.strokeRoundedRect(-CARD_W / 2 - 2, -CARD_H / 2 - 2, CARD_W + 4, CARD_H + 4, 9)
+      } else if (hovered) {
+        gfx.lineStyle(2, borderColor, 0.8)
+        gfx.strokeRoundedRect(-CARD_W / 2 - 1, -CARD_H / 2 - 1, CARD_W + 2, CARD_H + 2, 8)
+      }
+    }
+
+    // Hit area on top of card
+    const hitArea = this.add.rectangle(0, 0, CARD_W, CARD_H, 0, 0.001)
+      .setInteractive({ useHandCursor: true })
+    card.add(hitArea)
+
+    const cx = x, cy = y
+    hitArea.on('pointerover', () => {
+      if (this._awaitingMode) return
+      const sel = skill.id === this._selectedCardId
+      drawHighlight(sel, true)
+      card.setScale(1.03)
+      this._showSkillTooltip(skill, cx + CARD_W / 2 + 5, cy)
+    })
+    hitArea.on('pointerout', () => {
+      const sel = skill.id === this._selectedCardId
+      drawHighlight(sel, false)
+      card.setScale(1)
+      this._hideSkillTooltip()
+    })
+    hitArea.on('pointerdown', () => {
       if (this._awaitingMode) {
-        // Re-selecting attack while in targeting mode: just re-issue useSkill.
-        // This will overwrite _awaitingTarget in the controller and emit
-        // AWAITING_TARGET again (or CARD_SELECTED if self-targeting).
         this._clearTargetOverlays()
-        this._awaitingMode = null
+        this._awaitingMode    = null
+        this._awaitingSkillId = null
       }
       const result = this._ctrl.useSkill(skill.id)
       if (!result.ok) this._addLog(`[!] ${result.error}`)
     })
 
-    const container = this.add.container(x, y, [bg, nameTxt, subTxt]).setDepth(7)
-    this._cardBtns.push(container)
-    this._cardBgMap.set(skill.id, { bg, stroke: baseStroke })
+    this._cardBtns.push(card)
+    this._cardBgMap.set(skill.id, {
+      gfx,
+      hitArea,
+      redraw: (selected, hovered) => drawHighlight(selected, hovered),
+    })
   }
 
   private _refreshCardHighlights(): void {
-    for (const [skillId, { bg, stroke }] of this._cardBgMap) {
-      this._applyCardHighlight(skillId, bg, stroke)
+    for (const [skillId, entry] of this._cardBgMap) {
+      const selected = skillId === this._selectedCardId
+      entry.redraw(selected, false)
     }
   }
 
-  private _applyCardHighlight(
-    skillId: string,
-    bg:      Phaser.GameObjects.Rectangle,
-    defaultStroke: number,
-  ): void {
-    if (skillId === this._selectedCardId) {
-      bg.setStrokeStyle(3, 0xffffff)
-    } else {
-      bg.setStrokeStyle(2, defaultStroke)
+  // ── Skill tooltip (shown on card hover) ─────────────────────────────────────
+
+  private _showSkillTooltip(skill: Skill, x: number, y: number): void {
+    this._hideSkillTooltip()
+
+    // Position next to the card, clamped to screen
+    const ttX = Math.min(x + CARD_W / 2 + 150, W - 150)
+    const ttY = Phaser.Math.Clamp(y, 185, H - 185)
+
+    const ttActor = this._currentActorId ? this._ctrl.getCharacter(this._currentActorId) : null
+    this._skillTooltip = UI.skillDetailCard(this, ttX, ttY, {
+      skillId: skill.id,
+      name: skill.name, effectType: skill.effectType, power: skill.power,
+      group: skill.group, unitClass: ttActor?.role ?? 'king', level: 1,
+      description: skill.description,
+      targetType: skill.targetType, range: skill.range,
+      secondaryEffect: skill.secondaryEffect ?? null,
+    })
+  }
+
+  private _hideSkillTooltip(): void {
+    if (this._skillTooltip) {
+      this._skillTooltip.destroy(true)
+      this._skillTooltip = null
     }
   }
 
   private _destroyCardButtons(): void {
+    this._hideSkillTooltip()
     for (const btn of this._cardBtns) btn.destroy()
     this._cardBtns  = []
     this._cardBgMap.clear()
@@ -957,11 +1779,31 @@ export default class BattleScene extends Phaser.Scene {
 
     if (targetMode === 'unit') {
       const targets = this._ctrl.getValidTargets(actorId, skillId)
+      if (!targets || targets.length === 0) {
+        this._awaitingMode    = null
+        this._awaitingSkillId = null
+        this._ctrl.cancelAction()
+        this._addLog('\u26a0 Sem alvos ao alcance!')
+        if (this._currentActorId) {
+          this._ctrl.selectCharacter(this._currentActorId)
+        }
+        return
+      }
       for (const target of targets) {
         this._addUnitTargetRing(target)
       }
     } else {
       const positions = this._ctrl.getValidAreaPositions(actorId, skillId)
+      if (!positions || positions.length === 0) {
+        this._awaitingMode    = null
+        this._awaitingSkillId = null
+        this._ctrl.cancelAction()
+        this._addLog('\u26a0 Sem alvos ao alcance!')
+        if (this._currentActorId) {
+          this._ctrl.selectCharacter(this._currentActorId)
+        }
+        return
+      }
       for (const pos of positions) {
         this._addTileOverlay(pos.col, pos.row)
       }
@@ -987,7 +1829,8 @@ export default class BattleScene extends Phaser.Scene {
       const result = this._ctrl.chooseTarget({ kind: 'character', characterId: target.id })
       if (result.ok) {
         this._clearTargetOverlays()
-        this._awaitingMode = null
+        this._awaitingMode    = null
+        this._awaitingSkillId = null
         // Rebuild card panel to ensure defense cards are fresh and clickable
         if (this._currentActorId) {
           this._rebuildCardButtons(this._currentActorId)
@@ -1008,13 +1851,20 @@ export default class BattleScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
       .setDepth(6)
 
-    tile.on('pointerover', () => tile.setFillStyle(0xffee00, 0.28))
-    tile.on('pointerout',  () => tile.setFillStyle(0xffee00, 0.14))
+    tile.on('pointerover', () => {
+      tile.setFillStyle(0xffee00, 0.28)
+      if (this._awaitingSkillId) this._showAreaPreview(col, row, this._awaitingSkillId)
+    })
+    tile.on('pointerout',  () => {
+      tile.setFillStyle(0xffee00, 0.14)
+      this._clearAreaPreview()
+    })
     tile.on('pointerdown', () => {
       const result = this._ctrl.chooseTarget({ kind: 'area', col, row })
       if (result.ok) {
         this._clearTargetOverlays()
-        this._awaitingMode = null
+        this._awaitingMode    = null
+        this._awaitingSkillId = null
         // Rebuild card panel to ensure defense cards are fresh and clickable
         if (this._currentActorId) {
           this._rebuildCardButtons(this._currentActorId)
@@ -1032,6 +1882,33 @@ export default class BattleScene extends Phaser.Scene {
       (obj as Phaser.GameObjects.Rectangle).destroy()
     }
     this._targetOverlays = []
+    this._clearAreaPreview()
+  }
+
+  // ── Area hover preview ──────────────────────────────────────────────────────
+
+  private _showAreaPreview(centerCol: number, centerRow: number, skillId: string): void {
+    this._clearAreaPreview()
+    const skill = this._ctrl.getSkill(skillId)
+    if (!skill?.areaShape) return
+
+    const offsets = areaOffsets(skill.areaShape)
+    for (const [dc, dr] of offsets) {
+      const c = centerCol + dc
+      const r = centerRow + dr
+      if (c < 0 || c >= COLS || r < 0 || r >= ROWS) continue
+      const px = GRID_X + c * TILE + TILE / 2
+      const py = GRID_Y + r * TILE + TILE / 2
+      const rect = this.add.rectangle(px, py, TILE - 2, TILE - 2, 0xff6633, 0.25)
+        .setStrokeStyle(1, 0xff6633, 0.5)
+        .setDepth(50)
+      this._areaPreviewRects.push(rect)
+    }
+  }
+
+  private _clearAreaPreview(): void {
+    for (const r of this._areaPreviewRects) r.destroy()
+    this._areaPreviewRects = []
   }
 
   // ── Panel lifecycle ────────────────────────────────────────────────────────────
@@ -1043,34 +1920,105 @@ export default class BattleScene extends Phaser.Scene {
     this._panelBg.setVisible(false)
     this._confirmBtn.setVisible(false)
     this._cancelBtn.setVisible(false)
-    this._selReady       = false
-    this._awaitingMode   = null
-    this._selectedCardId = null
+    this._selReady        = false
+    this._awaitingMode    = null
+    this._awaitingSkillId = null
+    this._selectedCardId  = null
   }
 
   // ── Static drawing (called once) ──────────────────────────────────────────────
 
   private _drawBackground() {
-    this.add.rectangle(W / 2, H / 2, W, H, 0x0c1018)
+    // Deep dark base
+    this.add.rectangle(W / 2, H / 2, W, H, 0x050810)
 
+    const gridH = ROWS * TILE
+    const gridW = COLS * TILE
     const halfW = 8 * TILE
-    this.add.rectangle(GRID_X + halfW / 2,         GRID_Y + ROWS * TILE / 2, halfW, ROWS * TILE, 0x0d1a2e)
-    this.add.rectangle(GRID_X + halfW + halfW / 2,  GRID_Y + ROWS * TILE / 2, halfW, ROWS * TILE, 0x2e0d0d)
 
-    // Wall at column 8
-    this.add.rectangle(GRID_X + 8 * TILE, GRID_Y + ROWS * TILE / 2, 2, ROWS * TILE, 0x556677)
+    // Arena zones with subtle gradient feel
+    const arenaG = this.add.graphics()
+    // Blue side
+    arenaG.fillStyle(0x0d1a2e, 1)
+    arenaG.fillRect(GRID_X, GRID_Y, halfW, gridH)
+    // Lighter center strip on blue side
+    arenaG.fillStyle(0x112844, 0.3)
+    arenaG.fillRect(GRID_X + halfW - TILE * 2, GRID_Y, TILE * 2, gridH)
+    // Red side
+    arenaG.fillStyle(0x2e0d0d, 1)
+    arenaG.fillRect(GRID_X + halfW, GRID_Y, halfW, gridH)
+    // Lighter center strip on red side
+    arenaG.fillStyle(0x441128, 0.3)
+    arenaG.fillRect(GRID_X + halfW, GRID_Y, TILE * 2, gridH)
+
+    // Arena border glow
+    arenaG.lineStyle(1.5, 0x2a3a5a, 0.4)
+    arenaG.strokeRect(GRID_X, GRID_Y, gridW, gridH)
+
+    // Wall at column 8 (more dramatic)
+    arenaG.fillStyle(0x3a3050, 0.6)
+    arenaG.fillRect(GRID_X + 8 * TILE - 1, GRID_Y, 3, gridH)
+    // Wall glow lines
+    arenaG.fillStyle(0x6644aa, 0.15)
+    arenaG.fillRect(GRID_X + 8 * TILE - 4, GRID_Y, 9, gridH)
+
+    // Left skill column background (full height)
+    const skillBg = this.add.graphics()
+    skillBg.fillStyle(0x060a10, 0.95)
+    skillBg.fillRoundedRect(0, 0, SKILL_COL_W, H, 0)
+    // Right edge accent line
+    skillBg.fillStyle(0x1a2a3a, 0.3)
+    skillBg.fillRect(SKILL_COL_W - 1, 0, 1, H)
+
+    // Button + log bar below skill cards
+    const bbY = PANEL_Y + 4 * (CARD_H + CARD_GAP) + 4
+    const bbG = this.add.graphics()
+    bbG.fillStyle(0x0a0e16, 1)
+    bbG.fillRect(0, bbY, SKILL_COL_W - 1, H - bbY)
+    // Top separator line
+    bbG.fillStyle(0x1a2a3a, 0.4)
+    bbG.fillRect(6, bbY, SKILL_COL_W - 13, 1)
+
+    // Status area background (below arena, full width)
+    const statusAreaY = GRID_Y + gridH + 6
+    const statusAreaH = H - statusAreaY - 2
+    const statusBg = this.add.graphics()
+    statusBg.fillStyle(0x060a10, 0.9)
+    statusBg.fillRoundedRect(GRID_X - 2, statusAreaY, gridW + 4, statusAreaH, 8)
+    statusBg.fillStyle(0xffffff, 0.01)
+    statusBg.fillRoundedRect(GRID_X, statusAreaY + 2, gridW, 12, { tl: 6, tr: 6, bl: 0, br: 0 })
+    statusBg.lineStyle(1, 0x1a2a3a, 0.15)
+    statusBg.strokeRoundedRect(GRID_X - 2, statusAreaY, gridW + 4, statusAreaH, 8)
   }
 
   private _drawGrid() {
     const g = this.add.graphics()
 
-    // Wall column (col 8) background shading — marks the dividing barrier
-    const wallCol = 8
-    g.fillStyle(0x1a1028, 0.45)
-    g.fillRect(GRID_X + wallCol * TILE, GRID_Y, TILE, ROWS * TILE)
+    // ── Checkerboard tile pattern (alternating dark/light for visibility) ──
+    for (let col = 0; col < COLS; col++) {
+      for (let row = 0; row < ROWS; row++) {
+        const isLeft = col < 8
+        const isEven = (col + row) % 2 === 0
+        const baseColor = isLeft ? (isEven ? 0x0e1e30 : 0x0b1828) : (isEven ? 0x1a1030 : 0x150c28)
+        g.fillStyle(baseColor, 1)
+        g.fillRect(GRID_X + col * TILE, GRID_Y + row * TILE, TILE, TILE)
+      }
+    }
 
-    // Grid lines
-    g.lineStyle(1, 0x1e293b, 1)
+    // ── Wall column (col 8) — strong divider ──
+    const wallCol = 8
+    // Glow on both sides of wall
+    g.fillStyle(0x4422aa, 0.15)
+    g.fillRect(GRID_X + (wallCol - 1) * TILE, GRID_Y, TILE * 2, ROWS * TILE)
+    // Wall line (thick, bright)
+    g.fillStyle(0x6644cc, 0.6)
+    g.fillRect(GRID_X + wallCol * TILE - 2, GRID_Y, 4, ROWS * TILE)
+    // Inner wall highlight
+    g.fillStyle(0x8866dd, 0.3)
+    g.fillRect(GRID_X + wallCol * TILE - 1, GRID_Y, 2, ROWS * TILE)
+
+    // ── Grid lines (subtle but visible) ──
+    g.lineStyle(1, 0x2a3a50, 0.6)
     for (let col = 0; col <= COLS; col++) {
       g.lineBetween(GRID_X + col * TILE, GRID_Y, GRID_X + col * TILE, GRID_Y + ROWS * TILE)
     }
@@ -1078,67 +2026,352 @@ export default class BattleScene extends Phaser.Scene {
       g.lineBetween(GRID_X, GRID_Y + row * TILE, GRID_X + COLS * TILE, GRID_Y + row * TILE)
     }
 
-    // Intersection dots — small circles at every grid intersection for spatial reference
-    g.fillStyle(0x334155, 0.7)
+    // ── Intersection dots ──
+    g.fillStyle(0x445566, 0.6)
     for (let col = 0; col <= COLS; col++) {
       for (let row = 0; row <= ROWS; row++) {
-        g.fillCircle(GRID_X + col * TILE, GRID_Y + row * TILE, 1.5)
+        g.fillCircle(GRID_X + col * TILE, GRID_Y + row * TILE, 2)
       }
     }
 
-    // Column numbers below grid
+    // ── Arena outer border (thick, team-colored halves) ──
+    g.lineStyle(2, 0x00ccaa, 0.4)
+    g.lineBetween(GRID_X, GRID_Y, GRID_X + 8 * TILE, GRID_Y)
+    g.lineBetween(GRID_X, GRID_Y, GRID_X, GRID_Y + ROWS * TILE)
+    g.lineBetween(GRID_X, GRID_Y + ROWS * TILE, GRID_X + 8 * TILE, GRID_Y + ROWS * TILE)
+
+    g.lineStyle(2, 0x8844cc, 0.4)
+    g.lineBetween(GRID_X + 8 * TILE, GRID_Y, GRID_X + COLS * TILE, GRID_Y)
+    g.lineBetween(GRID_X + COLS * TILE, GRID_Y, GRID_X + COLS * TILE, GRID_Y + ROWS * TILE)
+    g.lineBetween(GRID_X + 8 * TILE, GRID_Y + ROWS * TILE, GRID_X + COLS * TILE, GRID_Y + ROWS * TILE)
+
+    // ── Chess-style coordinates inside tiles ──
+    const coordStyle = { fontFamily: 'Arial Black', fontSize: '12px', color: '#8090a0', stroke: '#000000', strokeThickness: 3 }
+    // Letters (A-P) in last row, bottom-left corner of each tile
+    const lastRow = ROWS - 1
     for (let col = 0; col < COLS; col++) {
       this.add.text(
-        GRID_X + col * TILE + TILE / 2, GRID_Y + ROWS * TILE + 4,
-        `${col}`,
-        { fontFamily: 'Arial', fontSize: '9px', color: '#334155' },
-      ).setOrigin(0.5, 0)
+        GRID_X + col * TILE + 4, GRID_Y + lastRow * TILE + TILE - 4,
+        String.fromCharCode(65 + col),  // A, B, C...P
+        coordStyle,
+      ).setOrigin(0, 1).setAlpha(0.8)
+    }
+    // Numbers (1-6) in first column, top-left corner of each tile
+    for (let row = 0; row < ROWS; row++) {
+      this.add.text(
+        GRID_X + 4, GRID_Y + row * TILE + 4,
+        `${row + 1}`,
+        coordStyle,
+      ).setOrigin(0, 0).setAlpha(0.8)
+    }
+
+    // Ambient battle particles (subtle gold dust floating over the arena)
+    for (let i = 0; i < 12; i++) {
+      const px = GRID_X + Math.random() * (COLS * TILE)
+      const py = GRID_Y + Math.random() * (ROWS * TILE)
+      const size = 0.5 + Math.random() * 1
+      const p = this.add.circle(px, py, size, 0xc9a84c, 0.04 + Math.random() * 0.04).setDepth(1)
+      this.tweens.add({
+        targets: p,
+        y: py - 20 - Math.random() * 30,
+        x: px + (Math.random() - 0.5) * 20,
+        alpha: 0,
+        duration: 3000 + Math.random() * 3000,
+        repeat: -1,
+        delay: Math.random() * 3000,
+        onRepeat: () => {
+          p.setPosition(GRID_X + Math.random() * (COLS * TILE), GRID_Y + Math.random() * (ROWS * TILE))
+          p.setAlpha(0.04 + Math.random() * 0.04)
+        },
+      })
     }
   }
 
   private _drawHUD() {
-    // Dark gradient-style panel behind round/phase info
-    this.add.rectangle(W / 2, 28, W, 56, 0x0a0f1a).setAlpha(0.95)
-    this.add.rectangle(W / 2, 56, W, 1, 0x1e293b)   // subtle bottom border
+    // ── TOP BAR — only above the arena (GRID_X to W) ──
+    const barX = GRID_X
+    const barW = W - GRID_X
+    const barCx = barX + barW / 2  // center of top bar
 
-    // Decorative inner panel behind round/phase text
-    const panelW = 320
-    this.add.rectangle(W / 2, 28, panelW, 44, 0x151d2e)
-      .setStrokeStyle(1, 0x1e3a5f, 0.6)
-
-    this._roundText = this.add.text(W / 2, 18, 'Round 1', {
-      fontFamily: 'Arial', fontSize: '16px', color: '#f8e7b9', fontStyle: 'bold',
-    }).setOrigin(0.5, 0)
-
-    this._phaseText = this.add.text(W / 2 + 8, 38, '…', {
-      fontFamily: 'Arial', fontSize: '13px', color: '#94a3b8',
-    }).setOrigin(0.5, 0)
-
-    // Team colour dot next to phase text — indicates whose turn it is
-    this._teamDot = this.add.circle(W / 2 - 60, 45, 5, 0x4a90d9)
-      .setStrokeStyle(1, 0xffffff, 0.3)
-
-    // Timer display — positioned right of phase text
-    this._timerText = this.add.text(W / 2 + 160, 42, '', {
-      fontFamily: 'Arial', fontSize: '13px', color: '#ffffff', fontStyle: 'bold',
-    }).setOrigin(0.5, 0).setDepth(2)
-
-    this.add.text(GRID_X + 4, 12, '🔵 Azul (você)', {
-      fontFamily: 'Arial', fontSize: '13px', color: '#7ab8ff', fontStyle: 'bold',
-    }).setOrigin(0, 0)
-
-    this.add.text(GRID_X + COLS * TILE - 4, 12, '🔴 Vermelho', {
-      fontFamily: 'Arial', fontSize: '13px', color: '#ff8080', fontStyle: 'bold',
-    }).setOrigin(1, 0)
-
-    const logY = GRID_Y + ROWS * TILE + 22
-    for (let i = 0; i < 6; i++) {
-      this._logLines.push(
-        this.add.text(W / 2, logY + i * 18, '', {
-          fontFamily: 'Arial', fontSize: '12px', color: '#64748b',
-        }).setOrigin(0.5, 0),
-      )
+    const topBar = this.add.graphics()
+    topBar.fillStyle(0x060a12, 0.98)
+    topBar.fillRoundedRect(barX, 0, barW, TOP_BAR_H2, { tl: 0, tr: 0, bl: 8, br: 8 })
+    // Gradient bottom border (blue-gold-red)
+    for (let i = 0; i < barW; i++) {
+      const t = i / barW
+      const isBlue = t < 0.35
+      const isRed = t > 0.65
+      const color = isBlue ? 0x00ccaa : isRed ? 0x8844cc : 0xc9a84c
+      const alpha = isBlue || isRed ? 0.15 : 0.25 * (1 - Math.abs(t - 0.5) * 4)
+      topBar.fillStyle(color, Math.max(0, alpha))
+      topBar.fillRect(barX + i, TOP_BAR_H2 - 2, 1, 2)
     }
+
+    // Team indicators
+    const teamG = this.add.graphics()
+    teamG.fillStyle(0x00ccaa, 0.9)
+    teamG.fillRoundedRect(barX + 8, 8, 4, 26, 2)
+    this.add.text(barX + 18, 10, 'AZUL', {
+      fontFamily: 'Arial Black', fontSize: '15px', color: '#00ccaa', fontStyle: 'bold',
+      shadow: { offsetX: 1, offsetY: 1, color: '#000', blur: 3, fill: true },
+    })
+    this.add.text(barX + 18, 26, 'Voce', { fontFamily: 'Arial', fontSize: '15px', color: '#506888' })
+
+    teamG.fillStyle(0x8844cc, 0.9)
+    teamG.fillRoundedRect(W - 12, 8, 4, 26, 2)
+    this.add.text(W - 20, 10, 'ROXO', {
+      fontFamily: 'Arial Black', fontSize: '15px', color: '#8844cc', fontStyle: 'bold',
+      shadow: { offsetX: 1, offsetY: 1, color: '#000', blur: 3, fill: true },
+    }).setOrigin(1, 0)
+    this.add.text(W - 20, 26, 'Inimigo', { fontFamily: 'Arial', fontSize: '15px', color: '#886050' }).setOrigin(1, 0)
+
+    // Round + Timer badge — two-section pill centered in top bar
+    const badgeCy = TOP_BAR_H2 / 2
+    const timerW = 52; const roundW = 80; const badgeH = 28; const badgeR = 6
+    const totalW = timerW + roundW + 2
+    const badgeX = barCx - totalW / 2
+    const badgeG = this.add.graphics()
+
+    // Timer section (left, darker)
+    badgeG.fillStyle(0x080c14, 1)
+    badgeG.fillRoundedRect(badgeX, badgeCy - badgeH / 2, timerW, badgeH,
+      { tl: badgeR, bl: badgeR, tr: 0, br: 0 })
+    // Round section (right, slightly lighter)
+    badgeG.fillStyle(0x10161f, 1)
+    badgeG.fillRoundedRect(badgeX + timerW + 2, badgeCy - badgeH / 2, roundW, badgeH,
+      { tl: 0, bl: 0, tr: badgeR, br: badgeR })
+    // Outer border (gold)
+    badgeG.lineStyle(1.5, 0xc9a84c, 0.35)
+    badgeG.strokeRoundedRect(badgeX, badgeCy - badgeH / 2, totalW, badgeH, badgeR)
+    // Divider line between timer and round
+    badgeG.fillStyle(0xc9a84c, 0.2)
+    badgeG.fillRect(badgeX + timerW, badgeCy - badgeH / 2 + 4, 2, badgeH - 8)
+
+    // Timer text (left section, centered)
+    this._timerText = this.add.text(badgeX + timerW / 2, badgeCy, '', {
+      fontFamily: 'Arial Black', fontSize: '13px', color: '#ffffff', fontStyle: 'bold',
+      stroke: '#000000', strokeThickness: 2,
+    }).setOrigin(0.5).setDepth(10)
+
+    // Round text (right section, centered)
+    this._roundText = this.add.text(badgeX + timerW + 2 + roundW / 2, badgeCy, 'Round 1', {
+      fontFamily: 'Arial Black', fontSize: '13px', color: '#f0c850', fontStyle: 'bold',
+      stroke: '#000000', strokeThickness: 2,
+    }).setOrigin(0.5)
+
+    // Phase text (hidden — replaced by map overlay banners)
+    this._phaseText = this.add.text(-999, -999, '', {
+      fontFamily: 'Arial', fontSize: '1px', color: '#8a9ab4',
+    }).setVisible(false)
+
+    // Team dot (hidden)
+    this._teamDot = this.add.circle(-999, -999, 1, 0x00ccaa).setVisible(false)
+
+    // Timer bar below top bar
+    this._timerBar = this.add.rectangle(barX, TOP_BAR_H2, barW, 3, 0x44dd44)
+      .setOrigin(0, 0).setDepth(10).setAlpha(0)
+
+    // ── MINI LOG PANEL + HISTORICO BUTTON — below action buttons ──
+    const miniLogY = PANEL_Y + 4 * (CARD_H + CARD_GAP) + BTN_BAR_H + 10
+    const miniLogH = H - miniLogY - 4
+    const miniLogW = SKILL_COL_W - 8
+    this._miniLogY = miniLogY
+    this._miniLogW = miniLogW
+
+    // ── Surrender button — bottom-right corner of the arena area ──
+    if (this._isTrainingMode) {
+      this._buildTrainingBackButton()
+    } else {
+      this._buildSurrenderButton()
+    }
+
+    // Mini log panel background
+    const mlG = this.add.graphics()
+    mlG.fillStyle(0x080c14, 0.9)
+    mlG.fillRoundedRect(4, miniLogY, miniLogW, miniLogH, 6)
+    mlG.lineStyle(1, 0x1a2a3a, 0.2)
+    mlG.strokeRoundedRect(4, miniLogY, miniLogW, miniLogH, 6)
+
+    // Mini log title + round on same line
+    this.add.text(SKILL_COL_W / 2, miniLogY + 10, 'ORDEM DE ACAO', {
+      fontFamily: 'Arial Black', fontSize: '11px', color: '#c9a84c', fontStyle: 'bold',
+      stroke: '#000000', strokeThickness: 3,
+    }).setOrigin(0.5).setDepth(5)
+
+    // Round number (updated dynamically)
+    this._miniLogRoundText = this.add.text(SKILL_COL_W / 2, miniLogY + 24, '', {
+      fontFamily: 'Arial Black', fontSize: '11px', color: '#4fc3f7', fontStyle: 'bold',
+      stroke: '#000000', strokeThickness: 2,
+    }).setOrigin(0.5).setDepth(5)
+
+    // Container for dynamic mini log entries (rendered by _renderMiniLog)
+    this._miniLogContainer = this.add.container(0, 0).setDepth(5)
+
+    // HISTORICO button at the bottom of the mini log panel
+    const hBtnY = miniLogY + miniLogH - 16
+    const hBtnG = this.add.graphics()
+    hBtnG.fillStyle(0x0e1420, 0.9)
+    hBtnG.fillRoundedRect(10, hBtnY - 12, miniLogW - 12, 24, 6)
+    hBtnG.lineStyle(1, 0xc9a84c, 0.3)
+    hBtnG.strokeRoundedRect(10, hBtnY - 12, miniLogW - 12, 24, 6)
+
+    this.add.text(SKILL_COL_W / 2, hBtnY, 'VER HISTORICO', {
+      fontFamily: 'Arial Black', fontSize: '14px', color: '#c9a84c', fontStyle: 'bold',
+      stroke: '#000000', strokeThickness: 2,
+    }).setOrigin(0.5).setDepth(5)
+
+    const hBtnHit = this.add.rectangle(SKILL_COL_W / 2, hBtnY, miniLogW - 12, 24, 0, 0.001)
+      .setInteractive({ useHandCursor: true }).setDepth(6)
+    hBtnHit.on('pointerdown', () => this._showLogPopup())
+  }
+
+  /** Show full action history popup organized by round — click anywhere to close */
+  private _showLogPopup(): void {
+    const overlay = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.88)
+      .setInteractive().setDepth(3000)
+
+    const popW = 800; const popH = 620
+    const popX = W / 2 - popW / 2; const popY2 = H / 2 - popH / 2
+    const popG = this.add.graphics().setDepth(3001)
+    popG.fillStyle(0x0a0e16, 1)
+    popG.fillRoundedRect(popX, popY2, popW, popH, 14)
+    popG.lineStyle(1.5, 0xc9a84c, 0.3)
+    popG.strokeRoundedRect(popX, popY2, popW, popH, 14)
+
+    const stk = { stroke: '#000000', strokeThickness: 3 }
+    const logEls: Phaser.GameObjects.GameObject[] = [overlay, popG]
+
+    // Panel hit area — blocks clicks inside the panel from closing
+    const panelHit = this.add.rectangle(W / 2, H / 2, popW, popH, 0, 0.001)
+      .setInteractive().setDepth(3001)
+    logEls.push(panelHit)
+
+    logEls.push(this.add.text(W / 2, popY2 + 28, 'HISTORICO DE ACOES', {
+      fontFamily: 'Arial Black', fontSize: '22px', color: '#f0c850', fontStyle: 'bold', ...stk,
+    }).setOrigin(0.5).setDepth(3002))
+
+    logEls.push(this.add.text(W / 2, popY2 + popH - 18, 'Clique fora para fechar', {
+      fontFamily: 'Arial', fontSize: '15px', color: '#555555', ...stk,
+    }).setOrigin(0.5).setDepth(3002))
+
+    // Scrollable content area
+    const cX = popX + 16; const cW = popW - 32
+    const cStartY = popY2 + 54; const cMaxY = popY2 + popH - 36
+    const contentContainer = this.add.container(0, 0).setDepth(3002)
+    logEls.push(contentContainer)
+
+    // Mask for scrolling
+    const maskG = this.add.graphics().setVisible(false)
+    maskG.fillStyle(0xffffff); maskG.fillRect(cX, cStartY, cW, cMaxY - cStartY)
+    contentContainer.setMask(maskG.createGeometryMask())
+    logEls.push(maskG)
+
+    let cy2 = cStartY
+    const blueHex = '#00ccaa'; const redHex = '#8844cc'
+
+    // Group actions by round
+    let lastRound = 0
+    for (const act of this._actionHistory) {
+      if (act.round !== lastRound) {
+        lastRound = act.round
+        cy2 += 8
+        const rg = this.add.graphics()
+        rg.fillStyle(0xc9a84c, 0.25); rg.fillRect(cX, cy2, cW, 1)
+        contentContainer.add(rg)
+        cy2 += 6
+        contentContainer.add(this.add.text(cX, cy2, `ROUND ${act.round}`, {
+          fontFamily: 'Arial Black', fontSize: '22px', color: '#f0c850', fontStyle: 'bold', ...stk,
+        }))
+        cy2 += 30
+      }
+
+      // Actor header
+      const sideHex = act.actorSide === 'left' ? blueHex : redHex
+      const sideLabel = act.actorSide === 'left' ? 'AZUL' : 'ROXO'
+      contentContainer.add(this.add.text(cX, cy2, `${act.actorName}`, {
+        fontFamily: 'Arial Black', fontSize: '18px', color: sideHex, fontStyle: 'bold', ...stk,
+      }))
+      contentContainer.add(this.add.text(cX + cW, cy2 + 2, sideLabel, {
+        fontFamily: 'Arial Black', fontSize: '16px', color: sideHex, fontStyle: 'bold', ...stk,
+      }).setOrigin(1, 0))
+      cy2 += 26
+
+      // Attack skill line
+      const atkGroupColors: Record<string, string> = { attack1: '#dd4433', attack2: '#dd7733' }
+      if (act.atkSkill) {
+        const atkColor = atkGroupColors[act.atkGroup ?? ''] ?? '#dd4433'
+        contentContainer.add(this.add.text(cX + 16, cy2, `⚔ ${act.atkSkill}`, {
+          fontFamily: 'Arial Black', fontSize: '17px', color: atkColor, fontStyle: 'bold', ...stk,
+        }))
+        contentContainer.add(this.add.text(cX + cW, cy2 + 2, act.atkTargets ?? '', {
+          fontFamily: 'Arial', fontSize: '16px', color: sideHex === blueHex ? redHex : blueHex, fontStyle: 'bold', ...stk,
+        }).setOrigin(1, 0))
+        cy2 += 24
+      }
+
+      // Defense skill line
+      const defGroupColors: Record<string, string> = { defense1: '#3366cc', defense2: '#33aa88' }
+      if (act.defSkill) {
+        const defColor = defGroupColors[act.defGroup ?? ''] ?? '#3366cc'
+        contentContainer.add(this.add.text(cX + 16, cy2, `🛡 ${act.defSkill}`, {
+          fontFamily: 'Arial Black', fontSize: '17px', color: defColor, fontStyle: 'bold', ...stk,
+        }))
+        contentContainer.add(this.add.text(cX + cW, cy2 + 2, act.defTarget ?? '', {
+          fontFamily: 'Arial', fontSize: '16px', color: sideHex, fontStyle: 'bold', ...stk,
+        }).setOrigin(1, 0))
+        cy2 += 24
+      }
+
+      // Thin divider between actors
+      const divG = this.add.graphics()
+      divG.fillStyle(0x333344, 0.3)
+      divG.fillRect(cX + 10, cy2, cW - 20, 1)
+      contentContainer.add(divG)
+      cy2 += 6
+    }
+
+    // Scroll support — start scrolled to the BOTTOM (latest actions)
+    const totalH = cy2 - cStartY
+    const visH = cMaxY - cStartY
+    const maxScroll2 = Math.max(0, totalH - visH)
+    let scrollOff = maxScroll2  // start at bottom
+
+    const applyScroll = () => { contentContainer.y = -scrollOff }
+    applyScroll()
+
+    // Wheel scroll (works on both overlay and panel)
+    const onWheel = (_p: Phaser.Input.Pointer, _go: Phaser.GameObjects.GameObject[], _dx: number, dy: number) => {
+      scrollOff = Phaser.Math.Clamp(scrollOff + dy * 0.6, 0, maxScroll2)
+      applyScroll()
+    }
+    overlay.on('wheel', onWheel)
+    panelHit.on('wheel', onWheel)
+
+    // Scene-level wheel (catches all wheel events while popup is open)
+    const sceneWheel = (_p: Phaser.Input.Pointer, _go: Phaser.GameObjects.GameObject[], _dx: number, dy: number) => {
+      scrollOff = Phaser.Math.Clamp(scrollOff + dy * 0.6, 0, maxScroll2)
+      applyScroll()
+    }
+    this.input.on('wheel', sceneWheel)
+
+    // Drag-to-scroll (touch/mobile friendly)
+    let dragging2 = false; let dragStartY2 = 0; let dragScrollStart2 = 0
+    panelHit.on('pointerdown', (p: Phaser.Input.Pointer) => {
+      dragging2 = true; dragStartY2 = p.y; dragScrollStart2 = scrollOff
+    })
+    this.input.on('pointermove', (p: Phaser.Input.Pointer) => {
+      if (!dragging2) return
+      scrollOff = Phaser.Math.Clamp(dragScrollStart2 + (dragStartY2 - p.y), 0, maxScroll2)
+      applyScroll()
+    })
+    this.input.on('pointerup', () => { dragging2 = false })
+
+    // Only close when clicking OUTSIDE the panel (overlay area)
+    overlay.on('pointerdown', () => {
+      this.input.off('wheel', sceneWheel)
+      dragging2 = false
+      logEls.forEach(el => el.destroy())
+    })
   }
 
   private _drawCharacters() {
@@ -1154,12 +2387,12 @@ export default class BattleScene extends Phaser.Scene {
       const { x, y } = _tileCenter(u.col, u.row)
       const color     = TEAM_COLOR[u.side][u.role]
       const half      = CHAR_SIZE / 2
-      const barW      = CHAR_SIZE - 4
-      const barOffY   = half + 8
+      const barW      = CHAR_SIZE + 4
+      const barH      = 8
 
       // Movement-selection ring (cyan) — shown on MOVE_CHARACTER_SELECTED
       const moveRing = this.add.rectangle(0, 0, CHAR_SIZE + 14, CHAR_SIZE + 14)
-        .setStrokeStyle(2, 0x44ddff, 1).setFillStyle(0x44ddff, 0.06).setVisible(false)
+        .setStrokeStyle(2, 0x00ccaa, 1).setFillStyle(0x00ccaa, 0.06).setVisible(false)
 
       // Action-selection ring (white) — shown on CHARACTER_FOCUSED
       const focusRing = this.add.rectangle(0, 0, CHAR_SIZE + 14, CHAR_SIZE + 14)
@@ -1169,12 +2402,25 @@ export default class BattleScene extends Phaser.Scene {
       const activeRing = this.add.rectangle(0, 0, CHAR_SIZE + 8, CHAR_SIZE + 8)
         .setStrokeStyle(3, 0x00ff88).setFillStyle(0x00ff88, 0.04).setVisible(false)
 
-      const rect = this.add.rectangle(0, 0, CHAR_SIZE, CHAR_SIZE, color)
-        .setStrokeStyle(1, 0x000000, 0.6)
+      // Sprite: normal character or training dummy.
+      // The player's side reads its skin from the per-class skinConfig (set by
+      // the lobby); enemy NPCs always use the default 'idle' skin since their
+      // appearance is owned by the bot team, not the human player.
+      const isDummy = this._ctrl.getCharacter(u.id)?.isDummy ?? false
+      const isPlayerSide = u.side === this._playerSide
+      const skinId = isPlayerSide && this._skinConfig
+        ? (this._skinConfig[u.role as UnitRole] ?? 'idle')
+        : 'idle'
+      const charGraphics = isDummy
+        ? this._drawDummySprite(CHAR_SIZE)
+        : drawCharacterSprite(this, u.role as SpriteRole, u.side as SpriteSide, CHAR_SIZE, skinId)
+
+      // Invisible hit-detection rect — keeps flash/highlight logic working unchanged
+      const rect = this.add.rectangle(0, 0, CHAR_SIZE, CHAR_SIZE, color, 0.001)
         .setInteractive({ useHandCursor: true })
 
       rect.on('pointerdown', () => {
-        if (this._isPlayerMovementPhase && u.side === this._playerSide) {
+        if (this._isPlayerMovementPhase && this._isPlayerChar(u.id)) {
           const result = this._ctrl.selectForMove(u.id)
           if (!result.ok) this._addLog(`[!] ${result.error}`)
         }
@@ -1183,48 +2429,66 @@ export default class BattleScene extends Phaser.Scene {
       // Flash overlay — colour-filled rectangle tweened to alpha=0 on damage/heal
       const flashRect = this.add.rectangle(0, 0, CHAR_SIZE, CHAR_SIZE, 0xff2222).setAlpha(0)
 
-      const roleText = this.add.text(0, -4, ROLE_LABEL[u.role], {
-        fontFamily: 'Arial Black', fontSize: '18px', color: '#ffffff', fontStyle: 'bold',
-      }).setOrigin(0.5)
+      // HP bar only (no numbers) — compact below the sprite
+      const hpBarBg = this.add.rectangle(0, half + 4, barW, barH, 0x331111)
+        .setStrokeStyle(1, 0x111111, 0.9)
+      const hpBar   = this.add.rectangle(-barW / 2, half + 4, barW, barH, 0x44dd44).setOrigin(0, 0.5)
+      const shieldBar = this.add.rectangle(-barW / 2, half + 4, 0, barH, 0x4488ff, 0.7).setOrigin(0, 0.5)
 
-      const nameText = this.add.text(0, half + 2, u.name, {
-        fontFamily: 'Arial', fontSize: '9px', color: '#aaaaaa',
-      }).setOrigin(0.5, 0)
+      // Hidden hpText — kept for interface compatibility
+      const hpText = this.add.text(0, -999, '', { fontSize: '1px' }).setVisible(false)
 
-      const hpBarBg = this.add.rectangle(0, barOffY, barW, 5, 0x331111)
-      const hpBar   = this.add.rectangle(-barW / 2, barOffY, barW, 5, 0x44dd44).setOrigin(0, 0.5)
+      // Hidden posText — kept for compatibility
+      const posText = this.add.text(0, -999, `(${u.col},${u.row})`, { fontSize: '1px' }).setVisible(false)
 
-      // HP number text below the bar
-      const hpText = this.add.text(0, barOffY + 10, `${char.maxHp}/${char.maxHp}`, {
-        fontFamily: 'Arial', fontSize: '9px', color: '#88cc88',
-      }).setOrigin(0.5, 0)
-
-      // Grid coordinates above the unit
-      const posText = this.add.text(0, -(half + 14), `(${u.col},${u.row})`, {
-        fontFamily: 'Arial', fontSize: '9px', color: '#4a6a8a',
+      // Role abbreviation above the unit (team-coloured)
+      const ROLE_ABBR: Record<string, string> = { king: 'REI', warrior: 'GUE', executor: 'EXE', specialist: 'ESP' }
+      const teamHex = u.side === 'left' ? '#00ccaa' : '#8844cc'
+      const roleLabel = this.add.text(0, half - 2, ROLE_ABBR[u.role] ?? u.role, {
+        fontFamily: 'Arial Black', fontSize: '11px', color: teamHex, fontStyle: 'bold',
+        stroke: '#000000', strokeThickness: 3,
       }).setOrigin(0.5, 1)
 
-      // Role class label above the unit (team-coloured)
-      const teamHex = u.side === 'left' ? '#7ab8ff' : '#ff8080'
-      const roleLabel = this.add.text(0, -(half + 24), ROLE_LABEL[u.role], {
-        fontFamily: 'Arial', fontSize: '10px', color: teamHex, fontStyle: 'bold',
-        stroke: '#000000', strokeThickness: 2,
-      }).setOrigin(0.5, 1)
-
-      // Persistent status dots — positioned below HP text
-      const statusDots = this.add.container(0, barOffY + 22)
+      // Persistent status dots — positioned at top of the tile
+      const statusDots = this.add.container(0, -(half + 2))
 
       const container = this.add.container(x, y, [
-        moveRing, focusRing, activeRing, rect, flashRect, roleText, nameText,
-        hpBarBg, hpBar, hpText, posText, roleLabel, statusDots,
+        moveRing, focusRing, activeRing,
+        charGraphics,   // sprite placeholder (will be replaced with real sprites later)
+        rect,           // invisible hit area (keeps flash/interaction working)
+        flashRect,
+        hpBarBg, hpBar, shieldBar, hpText, posText, roleLabel, statusDots,
       ])
 
+      // AAA animator — drives procedural idle/hop/attack/hurt/death on the
+      // *inner* charGraphics container. Dummies are left still so players get
+      // a clean target for reference practice.
+      const animator = isDummy ? null : new CharacterAnimator(this, charGraphics)
+
       this._sprites.set(u.id, {
-        container, rect, baseColor: color, flashRect,
-        hpBar, hpText, focusRing, moveRing, activeRing, posText, roleLabel, statusDots,
+        container,
+        charGraphics,
+        animator,
+        rect, baseColor: color, flashRect,
+        hpBar, hpBarBg, shieldBar, hpText, focusRing, moveRing, activeRing, posText, roleLabel, statusDots,
         maxHp: char.maxHp,
       })
       this._unitStatuses.set(u.id, new Set())
+
+      // Kick off the looping idle animation (breathing + float + glow pulse)
+      if (animator) {
+        animator.playIdle()
+      } else {
+        // Dummies still get a very subtle idle so they don't feel totally dead
+        this.tweens.add({
+          targets: charGraphics,
+          scaleX: 1.02, scaleY: 1.02,
+          duration: 1600 + Math.random() * 400,
+          yoyo: true, repeat: -1,
+          ease: 'Sine.InOut',
+          delay: Math.random() * 800,
+        })
+      }
     }
   }
 
@@ -1235,32 +2499,72 @@ export default class BattleScene extends Phaser.Scene {
     if (!sprite) return
     const hp    = Math.max(0, newHp)
     const ratio = hp / sprite.maxHp
-    sprite.hpBar.setDisplaySize((CHAR_SIZE - 4) * ratio, 5)
+    const barW  = CHAR_SIZE + 4
+    // Animate HP bar width change (smooth tween instead of instant)
+    this.tweens.add({
+      targets: sprite.hpBar,
+      displayWidth: ratio * barW,
+      duration: 400,
+      ease: 'Quad.Out',
+    })
     sprite.hpBar.setFillStyle(ratio > 0.5 ? 0x44dd44 : ratio > 0.25 ? 0xddaa22 : 0xdd3322)
-    // HP number: colour mirrors the bar
-    const textColor = ratio > 0.5 ? '#88cc88' : ratio > 0.25 ? '#ccaa44' : '#cc4444'
-    sprite.hpText.setText(`${hp}/${sprite.maxHp}`).setColor(textColor)
-    // Critical HP: red border on the unit square
-    if (ratio <= 0.25) {
-      sprite.rect.setStrokeStyle(2, 0xff3311, 1)
-    } else {
-      sprite.rect.setStrokeStyle(1, 0x000000, 0.6)
-    }
   }
 
-  private _floatingText(unitId: string, text: string, color: string) {
+  private _floatingText(
+    unitId: string,
+    text: string,
+    color: string,
+    size: number = 22,
+    isCrit: boolean = false,
+  ) {
     const sprite = this._sprite(unitId)
     if (!sprite) return
     const { x, y } = sprite.container
-    const t = this.add.text(x, y - CHAR_SIZE / 2, text, {
-      fontFamily: 'Arial Black', fontSize: '14px', color,
-      stroke: '#000000', strokeThickness: 3,
-    }).setOrigin(0.5, 1).setDepth(10)
+    const finalSize = isCrit ? size + 10 : size
+    const offsetX = (Math.random() - 0.5) * 30  // random horizontal spread
+
+    const t = this.add.text(x + offsetX, y - 10, text, {
+      fontFamily: 'Arial Black',
+      fontSize: `${finalSize}px`,
+      color,
+      fontStyle: 'bold',
+      stroke: '#000000',
+      strokeThickness: isCrit ? 6 : 4,
+      shadow: { offsetX: 0, offsetY: 3, color: '#000000', blur: 8, fill: true },
+    }).setOrigin(0.5).setDepth(1000).setAlpha(0)
+
+    // Phase 1: Pop in with elastic scale (0 → overshoot → settle)
+    const startScale = isCrit ? 2.0 : 1.5
+    t.setScale(0)
+
     this.tweens.add({
-      targets: t, y: y - CHAR_SIZE / 2 - 32, alpha: 0,
-      duration: 900, ease: 'Quad.Out',
-      onComplete: () => t.destroy(),
+      targets: t,
+      scaleX: startScale, scaleY: startScale, alpha: 1,
+      duration: 150, ease: 'Back.Out',
+      onComplete: () => {
+        // Phase 2: Settle scale down
+        this.tweens.add({
+          targets: t,
+          scaleX: 1, scaleY: 1,
+          duration: 200, ease: 'Quad.Out',
+        })
+        // Phase 3: Float up and fade out
+        this.tweens.add({
+          targets: t,
+          y: y - 70 - (isCrit ? 20 : 0),
+          alpha: 0,
+          duration: 900,
+          delay: 300,
+          ease: 'Quad.In',
+          onComplete: () => t.destroy(),
+        })
+      },
     })
+
+    // Crit: camera shake + brief white flash
+    if (isCrit) {
+      this.cameras.main.shake(120, 0.008)
+    }
   }
 
   private _showFocusRing(unitId: string): void {
@@ -1302,8 +2606,16 @@ export default class BattleScene extends Phaser.Scene {
     const sprite = this._sprite(unitId)
     if (!sprite) return
     this.tweens.killTweensOf(sprite.flashRect)
-    sprite.flashRect.setFillStyle(color).setAlpha(intensity)
-    this.tweens.add({ targets: sprite.flashRect, alpha: 0, duration: 380, ease: 'Quad.In' })
+    // Double flash (more impactful — blinks twice)
+    sprite.flashRect.setFillStyle(color, intensity).setVisible(true)
+    this.tweens.add({
+      targets: sprite.flashRect,
+      alpha: { from: intensity, to: 0 },
+      duration: 120,
+      yoyo: true,
+      repeat: 1,
+      onComplete: () => sprite.flashRect.setVisible(false).setAlpha(1),
+    })
   }
 
   // ── Enhanced skill animation helpers ────────────────────────────────────────
@@ -1312,7 +2624,7 @@ export default class BattleScene extends Phaser.Scene {
     damage: 0xff3333, bleed: 0x881122, poison: 0x44cc44, burn: 0xff6600,
     stun: 0xffdd00, true_damage: 0xff00ff, area: 0xff6633,
     def_down: 0xff8833, atk_down: 0xff8833, mov_down: 0xff8833,
-    push: 0x88bbff, lifesteal: 0xcc22cc, mark: 0x881122, snare: 0x44ddff,
+    push: 0x88bbff, lifesteal: 0xcc22cc, mark: 0x881122, snare: 0x00ccaa,
     purge: 0xbb44ff, cleanse: 0x44ff88,
   }
 
@@ -1326,23 +2638,71 @@ export default class BattleScene extends Phaser.Scene {
     casterSprite: UnitSprite,
   ): void {
     const { x: sx, y: sy } = casterSprite.container
+    const skill = this._ctrl.getSkill(e.skillId)
+    const effectType = skill?.effectType ?? 'damage'
 
     // Area skill: expanding circle at target position
     if (e.areaCenter) {
       const { x: tx, y: ty } = _tileCenter(e.areaCenter.col, e.areaCenter.row)
+
+      // Bigger expanding circle with ring pulse
       const circle = this.add.circle(tx, ty, 4, 0xff6633, 0.6).setDepth(11)
       this.tweens.add({
-        targets: circle, radius: TILE * 1.5, alpha: 0,
-        duration: 350, ease: 'Quad.Out',
-        onUpdate: () => circle.setScale(circle.scaleX), // force redraw
+        targets: circle, radius: TILE * 2, alpha: 0,
+        duration: 400, ease: 'Quad.Out',
+        onUpdate: () => circle.setScale(circle.scaleX),
         onComplete: () => circle.destroy(),
       })
-      // Also fire projectile from caster to area center
-      const proj = this.add.rectangle(sx, sy, 8, 8, 0xff6633).setDepth(11)
+      // Ring pulse effect
+      const ring = this.add.circle(tx, ty, 8, 0xff6633, 0).setDepth(11)
+        .setStrokeStyle(3, 0xff6633, 0.8)
+      this.tweens.add({
+        targets: ring, radius: TILE * 2.5, alpha: 0,
+        duration: 500, ease: 'Quad.Out',
+        onUpdate: () => ring.setScale(ring.scaleX),
+        onComplete: () => ring.destroy(),
+      })
+
+      // Fire projectile from caster to area center (bigger, with trail)
+      const proj = this.add.rectangle(sx, sy, 12, 12, 0xff6633).setDepth(11)
+      const trail1 = this.add.rectangle(sx, sy, 8, 8, 0xff6633, 0.5).setDepth(998)
+      const trail2 = this.add.rectangle(sx, sy, 6, 6, 0xff6633, 0.3).setDepth(997)
       this.tweens.add({
         targets: proj, x: tx, y: ty,
-        duration: 200, ease: 'Quad.Out',
+        duration: 300, ease: 'Quad.Out',
         onComplete: () => proj.destroy(),
+      })
+      this.tweens.add({
+        targets: trail1, x: tx, y: ty, alpha: 0,
+        duration: 350, ease: 'Quad.Out', delay: 40,
+        onComplete: () => trail1.destroy(),
+      })
+      this.tweens.add({
+        targets: trail2, x: tx, y: ty, alpha: 0,
+        duration: 400, ease: 'Quad.Out', delay: 80,
+        onComplete: () => trail2.destroy(),
+      })
+
+      // VFX on impact (delayed to match projectile travel)
+      this.time.delayedCall(280, () => {
+        switch (effectType) {
+          case 'burn':
+            this._vfx.fireBurst(tx, ty, 60); break
+          case 'bleed':
+            this._vfx.bleedEffect(tx, ty); break
+          case 'stun': case 'snare':
+            this._vfx.lightningEffect(tx, ty); break
+          case 'poison':
+            this._vfx.poisonCloud(tx, ty, 50); break
+          case 'mark':
+            this._vfx.lightningEffect(tx, ty); break
+          case 'push':
+            this._vfx.explosion(tx, ty, 0x4488ff, 50); break
+          case 'lifesteal':
+            this._vfx.explosion(tx, ty, 0xcc22cc, 60); break
+          default:
+            this._vfx.explosion(tx, ty, 0xff6633, 70); break
+        }
       })
       return
     }
@@ -1356,15 +2716,49 @@ export default class BattleScene extends Phaser.Scene {
                     BattleScene.PROJECTILE_COLORS['damage'] ??
                     0xff3333
       // Look up color by the skill's effectType from the registry
-      const skill = this._ctrl.getSkill(e.skillId)
       const projColor = skill
         ? (BattleScene.PROJECTILE_COLORS[skill.effectType] ?? color)
         : color
-      const proj = this.add.rectangle(sx, sy, 8, 8, projColor).setDepth(11)
+
+      // Bigger main projectile (12x12) with trailing glow
+      const proj = this.add.rectangle(sx, sy, 12, 12, projColor).setDepth(11)
+      const trail1 = this.add.rectangle(sx, sy, 8, 8, projColor, 0.5).setDepth(998)
+      const trail2 = this.add.rectangle(sx, sy, 6, 6, projColor, 0.3).setDepth(997)
+
       this.tweens.add({
         targets: proj, x: tx, y: ty,
-        duration: 200, ease: 'Quad.Out',
+        duration: 300, ease: 'Quad.Out',
         onComplete: () => proj.destroy(),
+      })
+      this.tweens.add({
+        targets: trail1, x: tx, y: ty, alpha: 0,
+        duration: 350, ease: 'Quad.Out', delay: 40,
+        onComplete: () => trail1.destroy(),
+      })
+      this.tweens.add({
+        targets: trail2, x: tx, y: ty, alpha: 0,
+        duration: 400, ease: 'Quad.Out', delay: 80,
+        onComplete: () => trail2.destroy(),
+      })
+
+      // VFX on impact (delayed to match projectile travel)
+      this.time.delayedCall(280, () => {
+        switch (effectType) {
+          case 'damage': case 'true_damage':
+            this._vfx.slashEffect(tx, ty, 0xff4444); break
+          case 'bleed':
+            this._vfx.bleedEffect(tx, ty); break
+          case 'stun': case 'snare':
+            this._vfx.lightningEffect(tx, ty); break
+          case 'burn':
+            this._vfx.fireBurst(tx, ty, 40); break
+          case 'poison':
+            this._vfx.poisonCloud(tx, ty, 30); break
+          case 'mark':
+            this._vfx.lightningEffect(tx, ty); break
+          default:
+            this._vfx.slashEffect(tx, ty, projColor); break
+        }
       })
     }
   }
@@ -1388,17 +2782,49 @@ export default class BattleScene extends Phaser.Scene {
       onUpdate: () => glow.setScale(glow.scaleX),
       onComplete: () => glow.destroy(),
     })
+
+    // VFX on caster based on defense effect type
+    switch (effectType) {
+      case 'shield':
+        this._vfx.shieldEffect(x, y); break
+      case 'heal':
+        this._vfx.healEffect(x, y); break
+      case 'regen':
+        this._vfx.healEffect(x, y, 25); break
+      case 'evade':
+        this._vfx.evadeEffect(x, y); break
+      case 'reflect':
+        this._vfx.reflectEffect(x, y); break
+      case 'atk_up': case 'double_attack':
+        this._vfx.buffEffect(x, y, 0xf0c850); break
+      case 'def_up':
+        this._vfx.buffEffect(x, y, 0x44aaff); break
+      case 'cleanse':
+        this._vfx.healEffect(x, y, 20); break
+      case 'revive':
+        this._vfx.buffEffect(x, y, 0x44ff88); break
+      default:
+        this._vfx.shieldEffect(x, y); break
+    }
   }
 
   // ── Persistent status dot helpers ───────────────────────────────────────────
 
   private static readonly STATUS_DOT_COLORS: Record<string, number> = {
     bleed:    0xcc2222, burn:     0xcc2222, poison:   0x44cc44,
-    stun:     0xffdd00, snare:    0x44ddff, shield:   0x4488ff,
+    stun:     0xffdd00, snare:    0x00ccaa, shield:   0x4488ff,
     evade:    0xffffff, reflect:  0xbb44ff, regen:    0x88ff88,
     def_down: 0xff8833, atk_down: 0xff8833, mov_down: 0xff8833,
     def_up:   0x44aaff, atk_up:   0x44aaff,
     mark:     0x881122, heal_reduction: 0x996633, revive: 0xffcc44,
+  }
+
+  private static readonly STATUS_ICONS: Record<string, string> = {
+    bleed: '\u{1fa78}', burn: '\u{1f525}', poison: '\u2620', stun: '\u26a1', snare: '\u{1f517}',
+    shield: '\u{1f6e1}', evade: '\u{1f4a8}', reflect: '\u{1fa9e}', regen: '\u{1f49a}',
+    def_down: '\u2b07', atk_down: '\u2b07', mov_down: '\u{1f40c}', def_up: '\u2b06', atk_up: '\u2b06',
+    mark: '\u{1f3af}', heal_reduction: '\u{1f494}', revive: '\u2728', double_attack: '\u2694\u2694',
+    silence_defense: '\u{1f910}',
   }
 
   private _addStatusDot(unitId: string, status: string): void {
@@ -1420,20 +2846,38 @@ export default class BattleScene extends Phaser.Scene {
     const statuses = this._unitStatuses.get(unitId)
     if (!sprite || !statuses) return
 
-    // Clear existing dots
+    // Clear existing
     sprite.statusDots.removeAll(true)
 
-    const DOT_R = 4
-    const GAP   = 2
-    const MAX   = 6
-    const visible = Array.from(statuses).slice(0, MAX)
-    const totalW  = visible.length * (DOT_R * 2 + GAP) - GAP
-    const startX  = -totalW / 2 + DOT_R
+    const statusArray = Array.from(statuses)
+    const maxShow = 6
+    const perRow = 3
+    const badgeW = 16; const badgeH = 11; const gap = 2
+    const rowH = badgeH + gap
 
-    visible.forEach((status, i) => {
+    statusArray.slice(0, maxShow).forEach((status, i) => {
+      const icon  = BattleScene.STATUS_ICONS[status] ?? '?'
       const color = BattleScene.STATUS_DOT_COLORS[status] ?? 0x888888
-      const dot = this.add.circle(startX + i * (DOT_R * 2 + GAP), 0, DOT_R, color)
-      sprite.statusDots.add(dot)
+
+      const col = i % perRow
+      const row = Math.floor(i / perRow)
+      const rowCount = Math.min(perRow, statusArray.length - row * perRow)
+      const rowWidth = rowCount * (badgeW + gap) - gap
+      const ox = col * (badgeW + gap) - rowWidth / 2 + badgeW / 2
+      const oy = row * rowH  // rows go downward, staying inside the tile
+
+      const badge = this.add.graphics()
+      badge.fillStyle(color, 0.35)
+      badge.fillRoundedRect(ox - badgeW / 2, oy - badgeH / 2, badgeW, badgeH, 3)
+      badge.lineStyle(1, color, 0.6)
+      badge.strokeRoundedRect(ox - badgeW / 2, oy - badgeH / 2, badgeW, badgeH, 3)
+
+      const iconText = this.add.text(ox, oy, icon, {
+        fontFamily: 'Arial', fontSize: '11px', color: '#ffffff',
+      }).setOrigin(0.5)
+
+      sprite.statusDots.add(badge)
+      sprite.statusDots.add(iconText)
     })
   }
 
@@ -1443,6 +2887,12 @@ export default class BattleScene extends Phaser.Scene {
     const s = this._timerSecs
     const color = s > 5 ? '#ffffff' : s >= 3 ? '#ffdd44' : '#ff4444'
     this._timerText.setText(`⏱ ${s}s`).setColor(color)
+    // Update timer bar
+    if (this._timerBar && this._timerTotal > 0) {
+      const ratio = s / this._timerTotal
+      this._timerBar.setDisplaySize(W * ratio, 3).setAlpha(1)
+      this._timerBar.setFillStyle(ratio > 0.5 ? 0x44dd44 : ratio > 0.2 ? 0xddaa22 : 0xdd3322)
+    }
   }
 
   private _clearTimer(): void {
@@ -1461,15 +2911,24 @@ export default class BattleScene extends Phaser.Scene {
       timeout:            'Tempo esgotado',
       forfeit:            'Desistência',
     }
+    const isForfeit = reason === 'forfeit'
+    const stk = { stroke: '#000000', strokeThickness: 3 }
+
     this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.7).setDepth(20)
     this.add.rectangle(W / 2, H / 2, 560, 260, 0x101827).setDepth(21).setStrokeStyle(2, 0x334155)
 
     this.add.text(W / 2, H / 2 - 64, winText, {
-      fontFamily: 'Arial Black', fontSize: '36px', color: '#f8e7b9', fontStyle: 'bold',
+      fontFamily: 'Arial Black', fontSize: '36px', color: '#f8e7b9', fontStyle: 'bold', ...stk,
     }).setOrigin(0.5).setDepth(22)
 
-    this.add.text(W / 2, H / 2 - 10, `${REASON_LABELS[reason] ?? reason} — Round ${round}`, {
-      fontFamily: 'Arial', fontSize: '18px', color: '#94a3b8',
+    // Show forfeit detail if applicable
+    const reasonText = REASON_LABELS[reason] ?? reason
+    const detailText = isForfeit
+      ? `${reasonText} — O adversario desistiu da partida`
+      : `${reasonText} — Round ${round}`
+
+    this.add.text(W / 2, H / 2 - 10, detailText, {
+      fontFamily: 'Arial', fontSize: '16px', color: isForfeit ? '#ffaa44' : '#94a3b8', ...stk,
     }).setOrigin(0.5).setDepth(22)
 
     const btn = this.add.rectangle(W / 2, H / 2 + 64, 240, 48, 0x1e293b)
@@ -1480,18 +2939,612 @@ export default class BattleScene extends Phaser.Scene {
 
     btn.on('pointerover', () => { btn.setFillStyle(0x263548); label.setColor('#f1f5f9') })
     btn.on('pointerout',  () => { btn.setFillStyle(0x1e293b); label.setColor('#94a3b8') })
-    btn.on('pointerdown', () => this.scene.start('MenuScene'))
+    // Back to the real main hub — Lobby. The old MenuScene "JOGAR" splash is
+    // no longer part of the flow (Boot → Login → Lobby directly).
+    btn.on('pointerdown', () => transitionTo(this, 'LobbyScene'))
+  }
+
+  // ── Training dummy sprite ─────────────────────────────────────────────────────
+
+  private _drawDummySprite(size: number): Phaser.GameObjects.Container {
+    const half = size / 2
+    const g = this.add.graphics()
+
+    // Wooden target dummy body (rounded rectangle)
+    g.fillStyle(0x8B6914, 0.9)
+    g.fillRoundedRect(-half + 4, -half + 4, size - 8, size - 8, 6)
+    // Darker wood border
+    g.lineStyle(2, 0x5a4510, 0.8)
+    g.strokeRoundedRect(-half + 4, -half + 4, size - 8, size - 8, 6)
+
+    // Cross-hair target pattern
+    g.lineStyle(2, 0xcc3333, 0.6)
+    // Outer circle
+    g.strokeCircle(0, -2, half * 0.55)
+    // Inner circle
+    g.strokeCircle(0, -2, half * 0.3)
+    // Center dot
+    g.fillStyle(0xcc3333, 0.7)
+    g.fillCircle(0, -2, 3)
+
+    // Horizontal + vertical crosshairs
+    g.lineStyle(1.5, 0xcc3333, 0.4)
+    g.lineBetween(-half * 0.55, -2, half * 0.55, -2)
+    g.lineBetween(0, -2 - half * 0.55, 0, -2 + half * 0.55)
+
+    // Wood grain lines (subtle)
+    g.lineStyle(1, 0x6a5510, 0.3)
+    g.lineBetween(-half + 8, half - 10, half - 8, half - 10)
+    g.lineBetween(-half + 10, half - 14, half - 10, half - 14)
+
+    return this.add.container(0, 0, [g])
+  }
+
+  // ── Training mode: dummy reset ────────────────────────────────────────────────
+
+  private _resetTrainingDummies(): void {
+    for (const u of RIGHT_UNITS) {
+      const char = this._ctrl.getCharacter(u.id)
+      if (!char) continue
+
+      // Heal to full
+      char.heal(char.maxHp)
+      // Clear all effects
+      char.removeEffectsByKind('debuff')
+      char.removeEffectsByKind('buff')
+      char.resetStats()
+      // Reset position to original (dummies start 2 tiles closer)
+      char.moveTo(u.col - 2, u.row)
+
+      // Update visuals
+      const sprite = this._sprite(u.id)
+      if (sprite) {
+        // Reset HP bar
+        const barW = CHAR_SIZE + 4
+        sprite.hpBar.setDisplaySize(barW, 8).setFillStyle(0x44dd44)
+        // Reset shield bar
+        sprite.shieldBar.setDisplaySize(0, 8)
+        // Move sprite back to original position (dummies are 2 tiles closer)
+        const { x, y } = _tileCenter(u.col - 2, u.row)
+        sprite.container.setPosition(x, y).setAlpha(1)
+        // Clear status dots
+        sprite.statusDots.removeAll(true)
+      }
+      // Clear status tracking
+      const statuses = this._unitStatuses.get(u.id)
+      if (statuses) statuses.clear()
+      this._rebuildStatusPanel(u.id)
+    }
+    this._refreshStatusPanels()
+  }
+
+  // ── Surrender button ─────────────────────────────────────────────────────────
+
+  private _buildTrainingBackButton(): void {
+    const btnW = 70; const btnH = 20
+    const btnX = GRID_X + 108
+    const btnY = TOP_BAR_H2 / 2
+
+    const bg = this.add.graphics().setDepth(8)
+    const drawBg = (hover: boolean) => {
+      bg.clear()
+      bg.fillStyle(hover ? 0x2a1010 : 0x140808, hover ? 0.95 : 0.7)
+      bg.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 3)
+      if (hover) { bg.lineStyle(1, 0xcc4444, 0.5); bg.strokeRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 3) }
+    }
+    drawBg(false)
+
+    // Arrow icon (←)
+    const fx = btnX - btnW / 2 + 14; const fy = btnY
+    const arrowG = this.add.graphics().setDepth(9)
+    arrowG.lineStyle(1.5, 0xcc6666, 0.8)
+    arrowG.beginPath()
+    arrowG.moveTo(fx + 3, fy - 4)
+    arrowG.lineTo(fx - 3, fy)
+    arrowG.lineTo(fx + 3, fy + 4)
+    arrowG.strokePath()
+    arrowG.lineBetween(fx - 3, fy, fx + 6, fy)
+
+    // Label
+    const label = this.add.text(fx + 14, fy, 'Voltar', {
+      fontFamily: 'Arial', fontSize: '11px', color: '#aa6666', fontStyle: 'bold',
+      stroke: '#000000', strokeThickness: 2,
+    }).setOrigin(0, 0.5).setDepth(9).setAlpha(0.8)
+
+    const hit = this.add.rectangle(btnX, btnY, btnW, btnH, 0, 0.001)
+      .setInteractive({ useHandCursor: true }).setDepth(10)
+
+    hit.on('pointerover', () => { drawBg(true); arrowG.setAlpha(1); label.setAlpha(1).setColor('#dd6666') })
+    hit.on('pointerout',  () => { drawBg(false); arrowG.setAlpha(0.8); label.setAlpha(0.8).setColor('#aa6666') })
+
+    hit.on('pointerdown', () => {
+      transitionTo(this, 'LobbyScene')
+    })
+  }
+
+  private _buildSurrenderButton(): void {
+    const isSolo = this._surrenderRequired === 1
+    const btnW = isSolo ? 24 : 50; const btnH = 20
+    const btnX = GRID_X + (isSolo ? 94 : 106)
+    const btnY = TOP_BAR_H2 / 2
+    const stk = { stroke: '#000000', strokeThickness: 2 }
+
+    const bg = this.add.graphics().setDepth(8)
+    const drawBg = (hover: boolean) => {
+      bg.clear()
+      bg.fillStyle(hover ? 0x2a1010 : 0x140808, hover ? 0.95 : 0.7)
+      bg.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 3)
+      if (hover) { bg.lineStyle(1, 0xcc4444, 0.5); bg.strokeRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 3) }
+    }
+    drawBg(false)
+
+    // Flag icon
+    const flagG = this.add.graphics().setDepth(9)
+    const fx = isSolo ? btnX : btnX - btnW / 2 + 14; const fy = btnY
+    flagG.lineStyle(1.5, 0x777777, 0.8)
+    flagG.lineBetween(fx - 4, fy - 6, fx - 4, fy + 6)
+    flagG.fillStyle(0xcccccc, 0.6)
+    flagG.beginPath(); flagG.moveTo(fx - 4, fy - 6); flagG.lineTo(fx + 6, fy - 4)
+    flagG.lineTo(fx + 5, fy - 1); flagG.lineTo(fx - 4, fy); flagG.closePath(); flagG.fillPath()
+    flagG.setAlpha(0.7)
+
+    // Vote counter (duo/squad only)
+    if (!isSolo) {
+      this._surrenderCountText = this.add.text(btnX + btnW / 2 - 8, btnY, `${this._surrenderVotes}/${this._surrenderRequired}`, {
+        fontFamily: 'Arial', fontSize: '10px', color: '#aa6666', fontStyle: 'bold', ...stk,
+      }).setOrigin(1, 0.5).setDepth(9)
+    }
+
+    const hit = this.add.rectangle(btnX, btnY, btnW, btnH, 0, 0.001)
+      .setInteractive({ useHandCursor: true }).setDepth(10)
+    hit.on('pointerover', () => { drawBg(true); flagG.setAlpha(1) })
+    hit.on('pointerout',  () => { drawBg(false); flagG.setAlpha(0.7) })
+
+    hit.on('pointerdown', () => {
+      if (isSolo) {
+        // Solo: direct forfeit with confirmation
+        this._showConfirmPopup('Desistir da partida?', '#dd6666', 0xcc4444, () => {
+          this._ctrl.forfeit(this._playerSide as 'left' | 'right')
+        })
+      } else {
+        // Duo/Squad: cast vote
+        this._showConfirmPopup('Votar para desistir?', '#dd6666', 0xcc4444, () => {
+          this._surrenderVotes++
+          if (this._surrenderCountText) {
+            this._surrenderCountText.setText(`${this._surrenderVotes}/${this._surrenderRequired}`)
+            this._surrenderCountText.setColor(this._surrenderVotes >= this._surrenderRequired ? '#ff4444' : '#aa6666')
+          }
+          if (this._surrenderVotes >= this._surrenderRequired) {
+            this._ctrl.forfeit(this._playerSide as 'left' | 'right')
+          }
+        })
+      }
+    })
+  }
+
+  // ── Confirmation popup (reusable for Pular and Confirmar) ────────────────────
+
+  private _confirmPopupEls: Phaser.GameObjects.GameObject[] = []
+
+  private _showConfirmPopup(
+    title: string,
+    titleColor: string,
+    borderColor: number,
+    onConfirm: () => void,
+  ): void {
+    if (this._confirmPopupEls.length > 0) return
+
+    const stk = { stroke: '#000000', strokeThickness: 3 }
+    const popW = 180; const popH = 70
+    const popX = SKILL_COL_W / 2
+    const popY = PANEL_Y + 4 * (CARD_H + CARD_GAP) + BTN_BAR_H + 6 - popH - 8
+
+    // Fullscreen overlay to block all clicks outside the popup
+    const overlay = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.3)
+      .setInteractive().setDepth(19)
+    overlay.on('pointerdown', () => this._closeConfirmPopup())
+
+    // Background
+    const bg = this.add.graphics().setDepth(20)
+    bg.fillStyle(0x0e1420, 0.98)
+    bg.fillRoundedRect(popX - popW / 2, popY, popW, popH, 8)
+    bg.lineStyle(1.5, borderColor, 0.5)
+    bg.strokeRoundedRect(popX - popW / 2, popY, popW, popH, 8)
+
+    // Text
+    const msg = this.add.text(popX, popY + 14, title, {
+      fontFamily: 'Arial Black', fontSize: '14px', color: titleColor, fontStyle: 'bold', ...stk,
+    }).setOrigin(0.5).setDepth(21)
+
+    // Sim button
+    const btnW = 60; const btnH = 24; const btnY = popY + popH - 20
+    const simBg = this.add.graphics().setDepth(21)
+    simBg.fillStyle(0x1a3a1a, 1)
+    simBg.fillRoundedRect(popX - btnW - 6, btnY - btnH / 2, btnW, btnH, 4)
+    simBg.lineStyle(1, 0x44dd44, 0.5)
+    simBg.strokeRoundedRect(popX - btnW - 6, btnY - btnH / 2, btnW, btnH, 4)
+    const simLabel = this.add.text(popX - btnW / 2 - 6, btnY, 'SIM', {
+      fontFamily: 'Arial Black', fontSize: '13px', color: '#44dd44', fontStyle: 'bold', ...stk,
+    }).setOrigin(0.5).setDepth(22)
+    const simHit = this.add.rectangle(popX - btnW / 2 - 6, btnY, btnW, btnH, 0, 0.001)
+      .setInteractive({ useHandCursor: true }).setDepth(23)
+    simHit.on('pointerdown', () => {
+      this._closeConfirmPopup()
+      onConfirm()
+    })
+
+    // Não button
+    const naoBg = this.add.graphics().setDepth(21)
+    naoBg.fillStyle(0x3a1515, 1)
+    naoBg.fillRoundedRect(popX + 6, btnY - btnH / 2, btnW, btnH, 4)
+    naoBg.lineStyle(1, 0xdd4444, 0.5)
+    naoBg.strokeRoundedRect(popX + 6, btnY - btnH / 2, btnW, btnH, 4)
+    const naoLabel = this.add.text(popX + btnW / 2 + 6, btnY, 'NAO', {
+      fontFamily: 'Arial Black', fontSize: '13px', color: '#dd4444', fontStyle: 'bold', ...stk,
+    }).setOrigin(0.5).setDepth(22)
+    const naoHit = this.add.rectangle(popX + btnW / 2 + 6, btnY, btnW, btnH, 0, 0.001)
+      .setInteractive({ useHandCursor: true }).setDepth(23)
+    naoHit.on('pointerdown', () => this._closeConfirmPopup())
+
+    this._confirmPopupEls = [overlay, bg, msg, simBg, simLabel, simHit, naoBg, naoLabel, naoHit]
+  }
+
+  private _closeConfirmPopup(): void {
+    for (const el of this._confirmPopupEls) el.destroy()
+    this._confirmPopupEls = []
+  }
+
+  private _showSkipConfirm(): void {
+    this._showConfirmPopup('Pular turno?', '#ffaa44', 0xcc8822, () => {
+      if (this._currentActorId) {
+        // Clear any selected skills before skipping
+        this._ctrl.clearSelection(this._currentActorId)
+        this._ctrl.skipTurn('no_selection')
+      }
+    })
+  }
+
+  private _showCommitConfirm(): void {
+    this._showConfirmPopup('Confirmar acao?', '#44ff88', 0x22cc44, () => {
+      if (this._selReady) {
+        this._ctrl.commitTurn()
+      }
+    })
+  }
+
+  // ── Status panel updates ─────────────────────────────────────────────────────
+
+  /**
+   * Refresh ATK/DEF/MOV stat texts and the wall-touch buff line in every
+   * character's status panel. Reads live values from the controller.
+   *
+   * Called whenever:
+   *   - A phase starts (PHASE_STARTED)
+   *   - Actions resolve   (ACTIONS_RESOLVED)
+   *   - A unit moves      (CHARACTER_MOVED) — wall buff is position-dependent
+   *   - A status effect changes (effect added / removed / cleared)
+   */
+  private _refreshStatusPanels(): void {
+    // ── ATK / DEF / MOV deltas (per-character entity stats) ─────────────────
+    for (const [unitId, texts] of this._statusStatTexts) {
+      const char = this._ctrl.getCharacter(unitId)
+      if (!char) continue
+      const updateStat = (t: Phaser.GameObjects.Text, current: number, base: number) => {
+        const delta = current - base
+        const color = delta > 0 ? '#44dd44' : delta < 0 ? '#dd4444' : '#555555'
+        const txt = delta > 0 ? `+${delta}` : delta < 0 ? `${delta}` : '0'
+        t.setText(txt).setColor(color)
+      }
+      updateStat(texts.atk, char.attack, char.baseStats.attack)
+      updateStat(texts.def, char.defense, char.baseStats.defense)
+      updateStat(texts.mov, char.mobility, char.baseStats.mobility)
+    }
+
+    // ── Wall-touch buff line (team-wide global rule) ────────────────────────
+    // Polls CombatRuleSystem via the controller. The bonus is computed
+    // on-the-fly during damage resolution and never written back to
+    // char.attack/defense, so we have to surface it as its own line.
+    const wallSnap = this._ctrl.getWallBuffSnapshot()
+    for (const [unitId, text] of this._statusWallTexts) {
+      const char = this._ctrl.getCharacter(unitId)
+      if (!char) { text.setVisible(false); continue }
+      const buff = wallSnap.get(char.side)
+      if (!buff || buff.count <= 0) {
+        text.setVisible(false)
+        continue
+      }
+      const pct = Math.round(buff.atkBonus * 100)
+      text.setText(`MURO +${pct}%`).setVisible(true)
+    }
+  }
+
+  private _highlightedStatusId: string | null = null
+
+  /** Highlight a character's status card and arena sprite. */
+  private _highlightStatusCard(unitId: string | null): void {
+    // Clear previous highlight
+    if (this._highlightedStatusId) {
+      const prevBg = this._statusCardBgs.get(this._highlightedStatusId)
+      const prevB = this._statusCardBounds.get(this._highlightedStatusId)
+      if (prevBg && prevB) {
+        const prevChar = this._ctrl.getCharacter(this._highlightedStatusId)
+        const prevColor = prevChar?.side === 'left' ? 0x00ccaa : 0x8844cc
+        prevBg.clear()
+        prevBg.fillStyle(0x0a0e18, 0.95)
+        prevBg.fillRoundedRect(prevB.x, prevB.y, prevB.w, prevB.h, 4)
+        prevBg.fillStyle(prevColor, 0.5)
+        prevBg.fillRoundedRect(prevB.x, prevB.y, prevB.w, 2, { tl: 4, tr: 4, bl: 0, br: 0 })
+        prevBg.lineStyle(1, prevColor, 0.12)
+        prevBg.strokeRoundedRect(prevB.x, prevB.y, prevB.w, prevB.h, 4)
+      }
+    }
+    this._highlightedStatusId = unitId
+    if (!unitId) return
+
+    // Draw highlight on new card
+    const bg = this._statusCardBgs.get(unitId)
+    const b = this._statusCardBounds.get(unitId)
+    if (bg && b) {
+      const char = this._ctrl.getCharacter(unitId)
+      const color = char?.side === 'left' ? 0x00ccaa : 0x8844cc
+      bg.clear()
+      bg.fillStyle(0x0a0e18, 0.95)
+      bg.fillRoundedRect(b.x, b.y, b.w, b.h, 4)
+      bg.fillStyle(color, 0.15)
+      bg.fillRoundedRect(b.x, b.y, b.w, b.h, 4)
+      bg.fillStyle(color, 0.8)
+      bg.fillRoundedRect(b.x, b.y, b.w, 2, { tl: 4, tr: 4, bl: 0, br: 0 })
+      bg.lineStyle(2, color, 0.7)
+      bg.strokeRoundedRect(b.x, b.y, b.w, b.h, 4)
+    }
+  }
+
+  /** Rebuild the status effects list in a unit's bottom status panel. */
+  private _rebuildStatusPanel(unitId: string): void {
+    const info = this._statusEffectContainers.get(unitId)
+    if (!info) return
+    const { container, lx, rx, startY } = info
+    container.removeAll(true)
+
+    const statuses = this._unitStatuses.get(unitId) ?? new Set<string>()
+    const stk = { stroke: '#000000', strokeThickness: 3 }
+    let cy = startY
+
+    const STATUS_LIST: Array<{ key: string; label: string; detail?: string }> = [
+      { key: 'stun', label: 'STUN', detail: '!' },
+      { key: 'snare', label: 'SNARE', detail: '!' },
+      { key: 'heal_reduction', label: 'CURA -', detail: '50%' },
+      { key: 'poison', label: 'VENENO' },
+      { key: 'bleed', label: 'SANGR.' },
+      { key: 'burn', label: 'QUEIMA' },
+      { key: 'silence_defense', label: 'DEF BLOQ' },
+      { key: 'atk_up', label: 'ATK ↑' },
+      { key: 'atk_down', label: 'ATK ↓' },
+      { key: 'def_up', label: 'DEF ↑' },
+      { key: 'def_down', label: 'DEF ↓' },
+      { key: 'regen', label: 'REGEN' },
+      { key: 'reflect', label: 'REFLET' },
+      { key: 'evade', label: 'ESQUIVA' },
+      { key: 'shield', label: 'ESCUDO' },
+    ]
+
+    const STATUS_COLORS: Record<string, string> = {
+      stun: '#ffdd00', snare: '#00ccaa', poison: '#44cc44', bleed: '#cc6666',
+      burn: '#ff8844', heal_reduction: '#cc4444', silence_defense: '#ff6666',
+      atk_up: '#44dd44', atk_down: '#dd4444', def_up: '#44dd44', def_down: '#dd4444',
+      regen: '#44cc88', reflect: '#aa88ff', evade: '#88ccff', shield: '#4488ff',
+    }
+
+    for (const s of STATUS_LIST) {
+      if (!statuses.has(s.key)) continue
+      const col = STATUS_COLORS[s.key] ?? '#cccccc'
+      container.add(this.add.text(lx, cy + 3, s.label, {
+        fontFamily: 'Arial Black', fontSize: '13px', color: col, fontStyle: 'bold', ...stk,
+      }).setDepth(6))
+      if (s.detail) {
+        container.add(this.add.text(rx, cy + 3, s.detail, {
+          fontFamily: 'Arial Black', fontSize: '13px', color: col, fontStyle: 'bold', ...stk,
+        }).setOrigin(1, 0).setDepth(6))
+      }
+      cy += 14
+    }
+  }
+
+  // ── Staggered resolution ─────────────────────────────────────────────────────
+
+  /** Resolve one step at a time with delays between attack → defense → next character. */
+  private _resolveNextWithDelay(): void {
+    const ATK_DELAY = 800   // ms after attack before defense
+    const CHAR_DELAY = 600  // ms after defense before next character
+
+    const result = this._ctrl.resolveNextDeferred()
+
+    // Update mini log: mark any entry that got icons as done
+    for (const ml of this._miniLogEntries) {
+      if (ml.done) continue
+      if (ml.atkIcon || ml.defIcon) {
+        // Only mark fully done after defense resolves (or if no defense)
+        if (result === 'defense' || result === 'done') {
+          ml.done = true
+          if (!ml.atkIcon) ml.atkSkip = true
+          if (!ml.defIcon) ml.defSkip = true
+        }
+        break
+      }
+    }
+    this._renderMiniLog()
+
+    if (result === 'attack') {
+      // Attack just resolved — wait, then resolve defense
+      this.time.delayedCall(ATK_DELAY, () => this._resolveNextWithDelay())
+    } else if (result === 'defense') {
+      // Defense just resolved — wait, then next character
+      this.time.delayedCall(CHAR_DELAY, () => this._resolveNextWithDelay())
+    } else {
+      // Done — finalize remaining mini log entries
+      for (const ml of this._miniLogEntries) {
+        if (!ml.done) {
+          ml.done = true
+          if (!ml.atkIcon) ml.atkSkip = true
+          if (!ml.defIcon) ml.defSkip = true
+        }
+      }
+      this._renderMiniLog()
+    }
   }
 
   // ── Log ─────────────────────────────────────────────────────────────────────
 
-  private _addLog(msg: string) {
-    this._logMsgs.push(msg)
+  private _addLog(msg: string, type: 'system' | 'damage' | 'heal' | 'death' | 'skill' | 'phase' = 'system') {
+    const LOG_COLORS: Record<string, string> = {
+      system: '#64748b',
+      damage: '#ef5350',
+      heal:   '#4caf50',
+      death:  '#ff8888',
+      skill:  '#c9a84c',
+      phase:  '#4fc3f7',
+    }
+    this._logMsgs.push({ msg, type })
     if (this._logMsgs.length > this._logLines.length) this._logMsgs.shift()
     const last = this._logLines.length - 1
     this._logLines.forEach((line, i) => {
-      line.setText(this._logMsgs[i] ?? '').setAlpha(last > 0 ? 0.4 + (i / last) * 0.6 : 1)
+      const entry = this._logMsgs[i]
+      if (entry) {
+        line.setText(entry.msg)
+          .setColor(LOG_COLORS[entry.type] ?? '#64748b')
+          .setAlpha(last > 0 ? 0.4 + (i / last) * 0.6 : 1)
+      } else {
+        line.setText('').setAlpha(0)
+      }
     })
+  }
+
+  // ── Mini Log (compact turn order + skill icons) ─────────────────────────────
+
+  /** Build the full turn order for the current round (mirrors CombatEngine logic). */
+  private _buildMiniLogOrder(): Array<{ unitId: string; name: string; side: string; atkIcon: boolean; defIcon: boolean; atkSkip: boolean; defSkip: boolean; done: boolean }> {
+    const round = this._currentRound
+    const findAlive = (units: UnitSetup[], role: string) => {
+      const u = units.find(x => x.role === role)
+      if (!u) return null
+      const ch = this._ctrl.getCharacter(u.id)
+      return ch?.alive ? u : null
+    }
+    // Odd rounds: left first. Even rounds: right first.
+    const t1 = round % 2 === 1 ? LEFT_UNITS : RIGHT_UNITS
+    const t2 = round % 2 === 1 ? RIGHT_UNITS : LEFT_UNITS
+    const s1 = round % 2 === 1 ? 'left' : 'right'
+    const s2 = round % 2 === 1 ? 'right' : 'left'
+
+    const ordered: Array<{ u: UnitSetup; side: string } | null> = [
+      findAlive(t1, 'king')       ? { u: findAlive(t1, 'king')!,       side: s1 } : null,
+      findAlive(t2, 'king')       ? { u: findAlive(t2, 'king')!,       side: s2 } : null,
+      findAlive(t2, 'warrior')    ? { u: findAlive(t2, 'warrior')!,    side: s2 } : null,
+      findAlive(t1, 'warrior')    ? { u: findAlive(t1, 'warrior')!,    side: s1 } : null,
+      findAlive(t1, 'executor')   ? { u: findAlive(t1, 'executor')!,   side: s1 } : null,
+      findAlive(t2, 'executor')   ? { u: findAlive(t2, 'executor')!,   side: s2 } : null,
+      findAlive(t2, 'specialist') ? { u: findAlive(t2, 'specialist')!, side: s2 } : null,
+      findAlive(t1, 'specialist') ? { u: findAlive(t1, 'specialist')!, side: s1 } : null,
+    ]
+
+    const ROLE_ABBR: Record<string, string> = { king: 'REI', warrior: 'GUE', executor: 'EXE', specialist: 'ESP' }
+    return ordered
+      .filter((x): x is { u: UnitSetup; side: string } => x !== null)
+      .map(({ u, side }) => {
+        const ch = this._ctrl.getCharacter(u.id)
+        const abbr = ROLE_ABBR[u.role] ?? u.role
+        const playerName = ch?.name ?? u.name
+        return {
+          unitId: u.id,
+          name: `${abbr} (${playerName})`,
+          side,
+          atkIcon: false,
+          defIcon: false,
+          atkSkip: false,
+          defSkip: false,
+          done: false,
+        }
+      })
+  }
+
+  private _renderMiniLog() {
+    // Destroy previous entries
+    for (const obj of this._miniLogObjs) obj.destroy()
+    this._miniLogObjs = []
+    if (!this._miniLogContainer) return
+
+    // Update round text
+    if (this._miniLogRoundText) {
+      this._miniLogRoundText.setText(this._miniLogRound > 0 ? `ROUND ${this._miniLogRound}` : '')
+    }
+
+    const stk = { stroke: '#000000', strokeThickness: 2 }
+    const startY = this._miniLogY + 38
+    // Available height: from startY to HISTORICO button (28px from bottom)
+    const availH = (H - 4) - startY - 30
+    const entries = this._miniLogEntries
+    const lineH = Math.min(20, Math.floor(availH / Math.max(entries.length, 1)))
+
+    for (let i = 0; i < entries.length; i++) {
+      const e = entries[i]
+      const y = startY + i * lineH
+      const sideColor = e.side === 'left' ? '#00ccaa' : '#8844cc'
+
+      // Separator line between entries
+      if (i > 0) {
+        const sepG = this.add.graphics().setDepth(5)
+        sepG.fillStyle(0x334455, 0.2)
+        sepG.fillRect(10, y - 1, this._miniLogW - 12, 1)
+        this._miniLogObjs.push(sepG)
+        this._miniLogContainer.add(sepG)
+      }
+
+      // Order number
+      const numText = this.add.text(10, y, `${i + 1}.`, {
+        fontFamily: 'Arial Black', fontSize: '13px', color: '#5a6a7a', ...stk,
+      }).setDepth(5)
+      this._miniLogObjs.push(numText)
+      this._miniLogContainer.add(numText)
+
+      // Name
+      const nameText = this.add.text(28, y, e.name, {
+        fontFamily: 'Arial', fontSize: '13px', color: sideColor, fontStyle: 'bold', ...stk,
+      }).setDepth(5)
+      this._miniLogObjs.push(nameText)
+      this._miniLogContainer.add(nameText)
+
+      // Skill icons (right-aligned): ⚔/🛡 for used, X for skipped, · · · for waiting
+      let rx = this._miniLogW - 2
+      if (e.done || e.atkIcon || e.atkSkip || e.defIcon || e.defSkip) {
+        // Attack icon
+        const atkStr = e.atkIcon ? '⚔' : e.atkSkip ? '✕' : ''
+        const atkCol = e.atkIcon ? '#c9a84c' : '#cc3333'
+        if (atkStr) {
+          const atkT = this.add.text(rx, y, atkStr, {
+            fontFamily: 'Arial Black', fontSize: '14px', color: atkCol, ...stk,
+          }).setOrigin(1, 0).setDepth(5)
+          this._miniLogObjs.push(atkT)
+          this._miniLogContainer.add(atkT)
+          rx -= atkT.width + 4
+        }
+        // Defense icon
+        const defStr = e.defIcon ? '🛡' : e.defSkip ? '✕' : ''
+        const defCol = e.defIcon ? '#c9a84c' : '#cc3333'
+        if (defStr) {
+          const defT = this.add.text(rx, y, defStr, {
+            fontFamily: 'Arial Black', fontSize: '14px', color: defCol, ...stk,
+          }).setOrigin(1, 0).setDepth(5)
+          this._miniLogObjs.push(defT)
+          this._miniLogContainer.add(defT)
+        }
+      } else {
+        const waitText = this.add.text(rx, y, '· · ·', {
+          fontFamily: 'Arial', fontSize: '13px', color: '#2a3a4a', ...stk,
+        }).setOrigin(1, 0).setDepth(5)
+        this._miniLogObjs.push(waitText)
+        this._miniLogContainer.add(waitText)
+      }
+    }
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -1501,11 +3554,32 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   private _name(id: string): string {
-    return this._ctrl.getCharacter(id)?.name ?? id
+    const char = this._ctrl.getCharacter(id)
+    if (!char) return id
+    const ROLE_FULL: Record<string, string> = { king: 'REI', warrior: 'GUERREIRO', executor: 'EXECUTOR', specialist: 'ESPECIALISTA' }
+    const roleName = ROLE_FULL[char.role] ?? char.role
+    return `${roleName} (${char.name})`
   }
 }
 
 // ── Module helpers (no Phaser, no engine — pure data conversion) ──────────────
+
+/** Human-readable label for a skill effect type, used on card buttons. */
+/** @internal kept for potential future use */
+export function _effectLabel(effectType: string): string {
+  const labels: Record<string, string> = {
+    damage: 'Dano', area: 'Area', heal: 'Cura', shield: 'Escudo',
+    stun: 'Stun', snare: 'Snare', bleed: 'Sangramento',
+    burn: 'Queimacao', poison: 'Veneno', evade: 'Esquiva',
+    reflect: 'Refletir', regen: 'Regen', mark: 'Marca',
+    revive: 'Revive', lifesteal: 'Roubo', true_damage: 'Dano Puro',
+    cleanse: 'Purificar', purge: 'Purgar', def_up: '+DEF',
+    atk_up: '+ATK', def_down: '-DEF', atk_down: '-ATK',
+    double_attack: 'Duplo', silence_defense: 'Silencio', push: 'Empurrao',
+    mov_down: '-MOV',
+  }
+  return labels[effectType] ?? effectType
+}
 
 function _tileCenter(col: number, row: number): { x: number; y: number } {
   return { x: GRID_X + col * TILE + TILE / 2, y: GRID_Y + row * TILE + TILE / 2 }
@@ -1527,6 +3601,8 @@ function _scaleStats(
 function _buildController(
   deckConfig?: Record<UnitRole, UnitDeckConfig>,
   difficulty: string = 'normal',
+  trainingMode: boolean = false,
+  playerSide: 'left' | 'right' = 'left',
 ): GameController {
   const registry = new SkillRegistry(SKILL_CATALOG)
 
@@ -1541,21 +3617,36 @@ function _buildController(
   const leftChars = LEFT_UNITS.map((u) =>
     new Character(u.id, u.name, u.role, 'left', u.col, u.row, ROLE_STATS[u.role]))
 
-  const rightChars = RIGHT_UNITS.map((u) =>
-    new Character(u.id, u.name, u.role, 'right', u.col, u.row, _scaleStats(ROLE_STATS[u.role], difficulty)))
+  // Training mode: dummies use same stats as left side (matched by role)
+  const rightStats = trainingMode ? ROLE_STATS : undefined
+  const DUMMY_NAMES: Record<string, string> = { king: 'Dummy REI', warrior: 'Dummy GUE', executor: 'Dummy EXE', specialist: 'Dummy ESP' }
+  const rightChars = RIGHT_UNITS.map((u) => {
+    const stats = rightStats ? rightStats[u.role] : _scaleStats(ROLE_STATS[u.role], difficulty)
+    const col = trainingMode ? u.col - 2 : u.col  // dummies 2 tiles closer
+    const ch = new Character(u.id, trainingMode ? (DUMMY_NAMES[u.role] ?? 'Dummy') : u.name, u.role, 'right', col, u.row, stats)
+    if (trainingMode) ch.setDummy(true)
+    return ch
+  })
+
+  // Apply player's deck to the correct side
+  const playerDeck = (role: UnitRole, side: 'left' | 'right') => {
+    const prefix = side === 'left' ? 'l' : 'r'
+    if (playerSide === side && deckConfig?.[role]) return fromConfig(deckConfig[role])
+    return fromAssignment(`${prefix}${role === 'king' ? 'king' : role === 'warrior' ? 'warrior' : role === 'specialist' ? 'specialist' : 'executor'}`)
+  }
 
   const leftTeam = new Team('left', leftChars, {
-    king:       deckConfig?.king       ? fromConfig(deckConfig.king)       : fromAssignment('lking'),
-    warrior:    deckConfig?.warrior    ? fromConfig(deckConfig.warrior)    : fromAssignment('lwarrior'),
-    specialist: deckConfig?.specialist ? fromConfig(deckConfig.specialist) : fromAssignment('lspecialist'),
-    executor:   deckConfig?.executor   ? fromConfig(deckConfig.executor)   : fromAssignment('lexecutor'),
+    king:       playerDeck('king', 'left'),
+    warrior:    playerDeck('warrior', 'left'),
+    specialist: playerDeck('specialist', 'left'),
+    executor:   playerDeck('executor', 'left'),
   })
 
   const rightTeam = new Team('right', rightChars, {
-    king:       fromAssignment('rking'),
-    warrior:    fromAssignment('rwarrior'),
-    specialist: fromAssignment('rspecialist'),
-    executor:   fromAssignment('rexecutor'),
+    king:       playerDeck('king', 'right'),
+    warrior:    playerDeck('warrior', 'right'),
+    specialist: playerDeck('specialist', 'right'),
+    executor:   playerDeck('executor', 'right'),
   })
 
   return GameController.create({
@@ -1563,5 +3654,6 @@ function _buildController(
     registry,
     passives:    PASSIVE_CATALOG,
     globalRules: GLOBAL_RULES,
+    phaseDurations: trainingMode ? { movement: 0, action: 0 } : undefined,
   })
 }

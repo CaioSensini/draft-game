@@ -2,26 +2,19 @@ import Phaser from 'phaser'
 import { GameState, GameStateManager } from '../core/GameState'
 import { playerData } from '../utils/PlayerDataManager'
 import type { PlayerData } from '../utils/PlayerDataManager'
+import { UI } from '../utils/UIComponents'
+import { C, F, S, SHADOW, SCREEN } from '../utils/DesignTokens'
+import { transitionTo } from '../utils/SceneTransition'
 
-// ---- Dark Fantasy Premium palette (1280 x 720) --------------------------------
+// ---- Layout (from DesignTokens) -----------------------------------------------
 
-const W = 1280
-const H = 720
+const W = SCREEN.W
 
-const BG_COLOR       = 0x080a12
-const PANEL_BG       = 0x12161f
-const PANEL_BORDER   = 0x3d2e14
-const GOLD_ACCENT    = '#f0c850'
-const GOLD_HEX       = 0xf0c850
-const GOLD_DIM       = '#c9a84c'
-const ICE_BLUE       = '#4fc3f7'
-const TEXT_BODY      = '#e8e0d0'
-const TEXT_MUTED     = '#7a7062'
+// Aliases kept for values not in C.* (semantic colors specific to this scene)
 const GREEN_VAL      = '#86efac'
+const GREEN_HEX      = 0x86efac
 const RED_VAL        = '#f87171'
-
-const BTN_FILL       = 0x141a24
-const BTN_FILL_HOVER = 0x1c2333
+const RED_HEX        = 0xf87171
 
 // ---- Scene ------------------------------------------------------------------
 
@@ -37,31 +30,89 @@ export default class ProfileScene extends Phaser.Scene {
     this.profile = playerData.get()
 
     this.drawBackground()
+    this.drawParticles()
     this.drawTitle()
+    this.drawAvatarCircle()
     this.drawMainPanel()
     this.drawMasteryPanel()
     this.drawBackButton()
+
+    // Fade in from black
+    UI.fadeIn(this)
   }
 
   // ---- Drawing helpers ------------------------------------------------------
 
   private drawBackground() {
-    this.add.rectangle(W / 2, H / 2, W, H, BG_COLOR)
+    UI.background(this)
+  }
+
+  private drawParticles() {
+    UI.particles(this, 16)
   }
 
   private drawTitle() {
-    this.add.text(W / 2, 50, 'PERFIL', {
-      fontFamily: 'Arial',
-      fontSize: '40px',
-      color: GOLD_ACCENT,
-      fontStyle: 'bold',
-      shadow: {
-        offsetX: 0, offsetY: 2, color: '#000000', blur: 8, fill: true,
-      },
-    }).setOrigin(0.5)
+    UI.goldText(this, W / 2, 38, 'PERFIL', '40px')
 
     // Gold decorative line
-    this.add.rectangle(W / 2, 78, 180, 2, GOLD_HEX, 0.35)
+    this.add.rectangle(W / 2, 66, 180, 2, C.gold, 0.35)
+  }
+
+  private drawAvatarCircle() {
+    const p = this.profile
+    const cx = W / 2
+    const cy = 112
+    const outerR = 30
+    const innerR = 26
+
+    // Outer gold ring with glow
+    const glow = this.add.graphics()
+    glow.fillStyle(C.gold, 0.08)
+    glow.fillCircle(cx, cy, outerR + 8)
+
+    const ring = this.add.graphics()
+    ring.lineStyle(3, C.gold, 0.9)
+    ring.strokeCircle(cx, cy, outerR)
+    ring.fillStyle(0x0e1219, 1)
+    ring.fillCircle(cx, cy, innerR)
+
+    // Username first letter
+    const initial = p.username ? p.username.charAt(0).toUpperCase() : 'P'
+    this.add.text(cx, cy, initial, {
+      fontFamily: F.title,
+      fontSize: '26px',
+      color: C.goldHex,
+      fontStyle: 'bold',
+      shadow: SHADOW.goldGlow,
+    }).setOrigin(0.5)
+
+    // Username text below
+    this.add.text(cx, cy + outerR + 14, p.username, {
+      fontFamily: F.title,
+      fontSize: '20px',
+      color: C.goldHex,
+      fontStyle: 'bold',
+      shadow: SHADOW.strong,
+    }).setOrigin(0.5)
+
+    // Level badge (circular indicator)
+    const badgeX = cx + outerR + 4
+    const badgeY = cy + outerR - 4
+    const badgeR = 13
+
+    const badgeBg = this.add.graphics()
+    badgeBg.fillStyle(C.info, 0.2)
+    badgeBg.fillCircle(badgeX, badgeY, badgeR)
+    badgeBg.lineStyle(1.5, C.info, 0.8)
+    badgeBg.strokeCircle(badgeX, badgeY, badgeR)
+
+    this.add.text(badgeX, badgeY, `${p.level}`, {
+      fontFamily: F.body,
+      fontSize: S.small,
+      color: C.infoHex,
+      fontStyle: 'bold',
+      shadow: SHADOW.text,
+    }).setOrigin(0.5)
   }
 
   private drawMainPanel() {
@@ -73,160 +124,312 @@ export default class ProfileScene extends Phaser.Scene {
     const xpForNext = Math.max(1, p.level * 100)
     const xpPercent = Math.min(1, p.xp / xpForNext)
 
-    const panelW = 680
-    const panelH = 380
+    const panelW = 700
+    const panelH = 340
     const panelX = W / 2
-    const panelY = 100 + panelH / 2 + 10
+    const panelY = 180 + panelH / 2
 
-    // Central panel
-    this.add.rectangle(panelX, panelY, panelW, panelH, PANEL_BG, 0.96)
-      .setStrokeStyle(1, PANEL_BORDER, 0.8)
+    // Central panel (using UI.panel for multi-layer depth)
+    UI.panel(this, panelX, panelY, panelW, panelH, { radius: 10 })
 
-    // Username as large gold title
-    this.add.text(panelX, panelY - panelH / 2 + 32, p.username, {
-      fontFamily: 'Arial',
-      fontSize: '28px',
-      color: GOLD_ACCENT,
-      fontStyle: 'bold',
-    }).setOrigin(0.5)
+    // Gold divider at top of panel
+    this.add.rectangle(panelX, panelY - panelH / 2 + 2, panelW - 20, 2, C.gold, 0.15)
 
-    // Gold divider below username
-    this.add.rectangle(panelX, panelY - panelH / 2 + 56, panelW - 80, 2, GOLD_HEX, 0.2)
+    // ===== XP Progress Bar (top of panel, full width) =====
+    const xpBarX = panelX - panelW / 2 + 30
+    const xpBarY = panelY - panelH / 2 + 30
+    const xpBarW = panelW - 60
+    const xpBarH = 22
 
-    // ----- 2-column stat grid -----
-    const colLeftX  = panelX - panelW / 2 + 50
-    const colRightX = panelX + 30
-    const colValOffset = 180
-    let leftY  = panelY - panelH / 2 + 84
-    let rightY = panelY - panelH / 2 + 84
-    const rowH = 36
-
-    // --- Left column: Level, XP bar, Gold, DG ---
-
-    // Level
-    this.drawStatRow(colLeftX, leftY, 'Nivel', `${p.level}`, ICE_BLUE, colValOffset)
-    leftY += rowH
-
-    // XP progress bar
-    const barX = colLeftX
-    const barW = 260
-    const barH = 16
-    this.add.rectangle(barX + barW / 2, leftY, barW, barH, 0x0d0f16)
-      .setStrokeStyle(1, PANEL_BORDER, 0.4)
-      .setOrigin(0.5)
+    // Bar track
+    const xpTrack = this.add.graphics()
+    xpTrack.fillStyle(0x0a0d14, 1)
+    xpTrack.fillRoundedRect(xpBarX, xpBarY - xpBarH / 2, xpBarW, xpBarH, 5)
+    xpTrack.lineStyle(1, C.panelBorder, 0.4)
+    xpTrack.strokeRoundedRect(xpBarX, xpBarY - xpBarH / 2, xpBarW, xpBarH, 5)
 
     if (xpPercent > 0) {
-      const fillW = barW * xpPercent
-      this.add.rectangle(barX + fillW / 2, leftY, fillW, barH - 2, GOLD_HEX, 0.85)
-        .setOrigin(0.5)
+      const fillW = Math.max(10, xpBarW * xpPercent)
+
+      // XP fill with glow effect
+      const xpFill = this.add.graphics()
+      xpFill.fillStyle(C.gold, 0.85)
+      xpFill.fillRoundedRect(xpBarX, xpBarY - xpBarH / 2 + 1, fillW, xpBarH - 2, 4)
+
+      // Highlight on top of fill (gloss)
+      const xpHighlight = this.add.graphics()
+      xpHighlight.fillStyle(0xffffff, 0.12)
+      xpHighlight.fillRoundedRect(xpBarX + 2, xpBarY - xpBarH / 2 + 2, fillW - 4, (xpBarH - 4) / 2, 3)
+
+      // Sparkle particle at the edge of the fill
+      const sparkleX = xpBarX + fillW - 2
+      const sparkleY = xpBarY
+
+      for (let s = 0; s < 3; s++) {
+        const sparkle = this.add.circle(
+          sparkleX,
+          sparkleY + Phaser.Math.Between(-6, 6),
+          Phaser.Math.FloatBetween(1, 2.5),
+          0xffffff,
+          0.8,
+        )
+
+        this.tweens.add({
+          targets: sparkle,
+          alpha: 0,
+          y: sparkleY + Phaser.Math.Between(-20, -10),
+          x: sparkleX + Phaser.Math.Between(-8, 8),
+          scale: 0,
+          duration: Phaser.Math.Between(600, 1200),
+          repeat: -1,
+          delay: Phaser.Math.Between(0, 800),
+          onRepeat: () => {
+            sparkle.setPosition(sparkleX + Phaser.Math.Between(-4, 4), sparkleY + Phaser.Math.Between(-4, 4))
+            sparkle.setAlpha(0.8)
+            sparkle.setScale(1)
+          },
+        })
+      }
     }
 
-    this.add.text(barX + barW / 2, leftY, `${p.xp} / ${xpForNext} XP`, {
-      fontFamily: 'Arial',
-      fontSize: '10px',
-      color: TEXT_BODY,
+    // XP text overlay
+    this.add.text(xpBarX + xpBarW / 2, xpBarY, `${p.xp} / ${xpForNext} XP`, {
+      fontFamily: F.body,
+      fontSize: S.small,
+      color: C.bodyHex,
       fontStyle: 'bold',
+      shadow: SHADOW.text,
     }).setOrigin(0.5)
-    leftY += rowH
 
-    // Gold
-    this.drawStatRow(colLeftX, leftY, '\u269c Gold', `${p.gold}`, GOLD_ACCENT, colValOffset)
-    leftY += rowH
+    // ===== Stat cards grid (2 rows x 2 cols) =====
+    const cardW = 300
+    const cardH = 72
+    const cardGapX = 20
+    const cardGapY = 12
+    const gridStartX = panelX - (cardW + cardGapX / 2)
+    const gridStartY = xpBarY + 36
 
-    // DG
-    this.drawStatRow(colLeftX, leftY, '\uD83D\uDC8E DG', `${p.dg}`, ICE_BLUE, colValOffset)
+    const stats: Array<{ icon: string; label: string; value: string; color: string }> = [
+      { icon: '\u269C', label: 'Gold', value: `${p.gold}`, color: C.goldHex },
+      { icon: '\uD83D\uDC8E', label: 'DG', value: `${p.dg}`, color: C.infoHex },
+      { icon: '\u2694', label: 'Rank', value: `${p.rankPoints}`, color: C.infoHex },
+      { icon: '\uD83C\uDFAF', label: 'Win Rate', value: `${winRate}%`, color: C.bodyHex },
+    ]
 
-    // --- Right column: Wins, Losses, Win Rate, Rank ---
+    stats.forEach((stat, i) => {
+      const col = i % 2
+      const row = Math.floor(i / 2)
+      const cx = gridStartX + col * (cardW + cardGapX) + cardW / 2
+      const cy = gridStartY + row * (cardH + cardGapY) + cardH / 2
 
-    this.drawStatRow(colRightX, rightY, 'Vitorias', `${p.wins}`, GREEN_VAL, colValOffset)
-    rightY += rowH
+      // Card shadow
+      this.add.graphics()
+        .fillStyle(0x000000, 0.25)
+        .fillRoundedRect(cx - cardW / 2 + 2, cy - cardH / 2 + 2, cardW, cardH, 6)
 
-    this.drawStatRow(colRightX, rightY, 'Derrotas', `${p.losses}`, RED_VAL, colValOffset)
-    rightY += rowH
+      // Card background
+      const cardGfx = this.add.graphics()
+      cardGfx.fillStyle(C.panelBgAlt, 0.9)
+      cardGfx.fillRoundedRect(cx - cardW / 2, cy - cardH / 2, cardW, cardH, 6)
+      cardGfx.lineStyle(1, C.panelBorder, 0.3)
+      cardGfx.strokeRoundedRect(cx - cardW / 2, cy - cardH / 2, cardW, cardH, 6)
 
-    this.drawStatRow(colRightX, rightY, 'Win Rate', `${winRate}%`, TEXT_BODY, colValOffset)
-    rightY += rowH
+      // Icon
+      this.add.text(cx - cardW / 2 + 16, cy, stat.icon, {
+        fontFamily: F.body,
+        fontSize: '22px',
+        color: stat.color,
+        shadow: SHADOW.strong,
+      }).setOrigin(0, 0.5)
 
-    this.drawStatRow(colRightX, rightY, 'Rank', `${p.rankPoints}`, ICE_BLUE, colValOffset)
+      // Label
+      this.add.text(cx - cardW / 2 + 48, cy - 10, stat.label, {
+        fontFamily: F.body,
+        fontSize: S.small,
+        color: C.mutedHex,
+        shadow: SHADOW.text,
+      }).setOrigin(0, 0.5)
+
+      // Value
+      this.add.text(cx - cardW / 2 + 48, cy + 10, stat.value, {
+        fontFamily: F.title,
+        fontSize: S.titleSmall,
+        color: stat.color,
+        fontStyle: 'bold',
+        shadow: SHADOW.strong,
+      }).setOrigin(0, 0.5)
+    })
+
+    // ===== Win/Loss visual ratio bar =====
+    const ratioY = gridStartY + 2 * (cardH + cardGapY) + 16
+    const ratioW = panelW - 60
+    const ratioH = 20
+    const ratioX = panelX - ratioW / 2
+
+    // Label
+    this.add.text(panelX, ratioY - 16, 'VITORIAS vs DERROTAS', {
+      fontFamily: F.body,
+      fontSize: S.small,
+      color: C.mutedHex,
+      fontStyle: 'bold',
+      shadow: SHADOW.text,
+    }).setOrigin(0.5)
+
+    // Track
+    const ratioTrack = this.add.graphics()
+    ratioTrack.fillStyle(0x0a0d14, 1)
+    ratioTrack.fillRoundedRect(ratioX, ratioY, ratioW, ratioH, 4)
+    ratioTrack.lineStyle(1, C.panelBorder, 0.3)
+    ratioTrack.strokeRoundedRect(ratioX, ratioY, ratioW, ratioH, 4)
+
+    if (totalGames > 0) {
+      const winFrac = p.wins / totalGames
+      const winW = Math.max(4, ratioW * winFrac)
+      const lossW = ratioW - winW
+
+      // Green (wins) side
+      if (winW > 0) {
+        const winBar = this.add.graphics()
+        winBar.fillStyle(GREEN_HEX, 0.7)
+        winBar.fillRoundedRect(ratioX, ratioY + 1, winW, ratioH - 2,
+          { tl: 3, bl: 3, tr: 0, br: 0 })
+      }
+
+      // Red (losses) side
+      if (lossW > 0) {
+        const lossBar = this.add.graphics()
+        lossBar.fillStyle(RED_HEX, 0.5)
+        lossBar.fillRoundedRect(ratioX + winW, ratioY + 1, lossW, ratioH - 2,
+          { tl: 0, bl: 0, tr: 3, br: 3 })
+      }
+
+      // Win count on left
+      this.add.text(ratioX + 8, ratioY + ratioH / 2, `${p.wins}W`, {
+        fontFamily: F.body,
+        fontSize: '10px',
+        color: GREEN_VAL,
+        fontStyle: 'bold',
+        shadow: SHADOW.text,
+      }).setOrigin(0, 0.5)
+
+      // Loss count on right
+      this.add.text(ratioX + ratioW - 8, ratioY + ratioH / 2, `${p.losses}L`, {
+        fontFamily: F.body,
+        fontSize: '10px',
+        color: RED_VAL,
+        fontStyle: 'bold',
+        shadow: SHADOW.text,
+      }).setOrigin(1, 0.5)
+    } else {
+      this.add.text(panelX, ratioY + ratioH / 2, 'Sem partidas', {
+        fontFamily: F.body,
+        fontSize: '10px',
+        color: C.mutedHex,
+        shadow: SHADOW.text,
+      }).setOrigin(0.5)
+    }
   }
 
   private drawMasteryPanel() {
     const p = this.profile
 
-    const panelW = 680
-    const panelH = 100
+    const panelW = 700
+    const panelH = 120
     const panelX = W / 2
-    const panelY = 520
+    const panelY = 565
 
-    this.add.rectangle(panelX, panelY, panelW, panelH, PANEL_BG, 0.96)
-      .setStrokeStyle(1, PANEL_BORDER, 0.8)
+    // Mastery panel (using UI.panel for consistent depth)
+    UI.panel(this, panelX, panelY, panelW, panelH, { radius: 10 })
 
     // Section title
     this.add.text(panelX, panelY - panelH / 2 + 20, 'MAESTRIA', {
-      fontFamily: 'Arial',
-      fontSize: '14px',
-      color: GOLD_DIM,
+      fontFamily: F.title,
+      fontSize: S.titleSmall,
+      color: C.goldDimHex,
       fontStyle: 'bold',
+      shadow: SHADOW.text,
     }).setOrigin(0.5)
 
     // Gold divider
-    this.add.rectangle(panelX, panelY - panelH / 2 + 36, panelW - 80, 2, GOLD_HEX, 0.15)
+    this.add.rectangle(panelX, panelY - panelH / 2 + 36, panelW - 80, 1, C.gold, 0.15)
 
-    const rowY = panelY + 12
-    const leftX  = panelX - panelW / 2 + 50
-    const rightX = panelX + 30
+    // Mastery progress bars
+    const barW = 260
+    const barH = 16
+    const maxMastery = 100
 
-    this.drawStatRow(leftX, rowY, 'Maestria de Ataque', `${p.attackMastery}`, GOLD_ACCENT, 220)
-    this.drawStatRow(rightX, rowY, 'Maestria de Defesa', `${p.defenseMastery}`, ICE_BLUE, 220)
+    // Attack mastery bar (left)
+    const atkX = panelX - panelW / 2 + 50
+    const barY = panelY + 12
+
+    this.drawMasteryBar(
+      atkX, barY, barW, barH,
+      '\u2694 Ataque', p.attackMastery, maxMastery,
+      C.gold, C.goldHex,
+    )
+
+    // Defense mastery bar (right)
+    const defX = panelX + 30
+    this.drawMasteryBar(
+      defX, barY, barW, barH,
+      '\uD83D\uDEE1 Defesa', p.defenseMastery, maxMastery,
+      C.info, C.infoHex,
+    )
   }
 
-  private drawStatRow(
-    x: number, y: number, label: string, value: string,
-    valueColor: string, valOffset: number,
+  private drawMasteryBar(
+    x: number, y: number, w: number, h: number,
+    label: string, current: number, max: number,
+    fillColor: number, textColor: string,
   ) {
-    this.add.text(x, y, label, {
-      fontFamily: 'Arial',
-      fontSize: '14px',
-      color: TEXT_MUTED,
+    const pct = Math.min(1, current / max)
+
+    // Label above bar
+    this.add.text(x, y - 14, label, {
+      fontFamily: F.body,
+      fontSize: S.small,
+      color: C.mutedHex,
+      fontStyle: 'bold',
+      shadow: SHADOW.text,
     }).setOrigin(0, 0.5)
 
-    this.add.text(x + valOffset, y, value, {
-      fontFamily: 'Arial',
-      fontSize: '14px',
-      color: valueColor,
+    // Value on the right of label
+    this.add.text(x + w, y - 14, `${current}/${max}`, {
+      fontFamily: F.body,
+      fontSize: S.small,
+      color: textColor,
       fontStyle: 'bold',
+      shadow: SHADOW.text,
     }).setOrigin(1, 0.5)
+
+    // Track
+    const track = this.add.graphics()
+    track.fillStyle(0x0a0d14, 1)
+    track.fillRoundedRect(x, y - h / 2, w, h, 4)
+    track.lineStyle(1, C.panelBorder, 0.3)
+    track.strokeRoundedRect(x, y - h / 2, w, h, 4)
+
+    // Fill
+    if (pct > 0) {
+      const fillW = Math.max(6, w * pct)
+      const fill = this.add.graphics()
+      fill.fillStyle(fillColor, 0.75)
+      fill.fillRoundedRect(x, y - h / 2 + 1, fillW, h - 2, 3)
+
+      // Gloss highlight
+      const gloss = this.add.graphics()
+      gloss.fillStyle(0xffffff, 0.08)
+      gloss.fillRoundedRect(x + 2, y - h / 2 + 2, fillW - 4, (h - 4) / 2, 2)
+    }
   }
 
   // ---- Back button ----------------------------------------------------------
 
   private drawBackButton() {
-    const y = H - 50
+    UI.backArrow(this, () => transitionTo(this, 'LobbyScene'))
+  }
 
-    const bg = this.add.rectangle(W / 2, y, 180, 40, BTN_FILL, 1)
-      .setStrokeStyle(1, PANEL_BORDER, 0.5)
-      .setInteractive({ useHandCursor: true })
-
-    // Colored left accent (matching lobby style)
-    this.add.rectangle(W / 2 - 90 + 2, y, 4, 40, 0x78909c, 1)
-
-    const label = this.add.text(W / 2, y, 'Voltar', {
-      fontFamily: 'Arial',
-      fontSize: '16px',
-      color: TEXT_BODY,
-      fontStyle: 'bold',
-    }).setOrigin(0.5)
-
-    bg.on('pointerover', () => {
-      bg.setFillStyle(BTN_FILL_HOVER, 1)
-      bg.setStrokeStyle(1, PANEL_BORDER, 0.9)
-      label.setColor('#ffffff')
-    })
-    bg.on('pointerout', () => {
-      bg.setFillStyle(BTN_FILL, 1)
-      bg.setStrokeStyle(1, PANEL_BORDER, 0.5)
-      label.setColor(TEXT_BODY)
-    })
-    bg.on('pointerdown', () => this.scene.start('LobbyScene'))
+  shutdown() {
+    this.tweens.killAll()
   }
 }

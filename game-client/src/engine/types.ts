@@ -212,6 +212,7 @@ export const EventType = {
   // ── Phase / round lifecycle
   PHASE_STARTED:          'PHASE_STARTED',
   PHASE_ENDED:            'PHASE_ENDED',
+  RESOLUTION_STARTED:     'RESOLUTION_STARTED',
   ACTIONS_RESOLVED:       'ACTIONS_RESOLVED',
   ROUND_STARTED:          'ROUND_STARTED',
   BATTLE_STARTED:         'BATTLE_STARTED',
@@ -428,6 +429,7 @@ export type EngineEvent =
   // ── Phase / round lifecycle ──
   | { type: 'PHASE_STARTED';     phase: PhaseType; side: TeamSide; duration: number }
   | { type: 'PHASE_ENDED';       phase: PhaseType; side: TeamSide }
+  | { type: 'RESOLUTION_STARTED'; side: TeamSide }
   | { type: 'ACTIONS_RESOLVED';  side: TeamSide }
   | { type: 'ROUND_STARTED';     round: number }
   | { type: 'BATTLE_STARTED' }

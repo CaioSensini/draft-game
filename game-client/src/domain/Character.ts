@@ -86,6 +86,11 @@ export class Character {
   private _defense:  number
   private _mobility: number
 
+  // ── Training dummy flag ──────────────────────────────────────────────────
+  private _isDummy = false
+  get isDummy(): boolean { return this._isDummy }
+  setDummy(v: boolean): void { this._isDummy = v }
+
   // ── Status effects ────────────────────────────────────────────────────────
   private _effects: Effect[] = []
 
@@ -210,7 +215,7 @@ export class Character {
     this._pruneExpired()
 
     const hpDamage = evaded ? 0 : Math.max(0, remaining)
-    this._hp = Math.max(0, this._hp - hpDamage)
+    this._hp = Math.max(this._isDummy ? 1 : 0, this._hp - hpDamage)
 
     let killed  = this._hp === 0
     let revived = false
@@ -233,6 +238,21 @@ export class Character {
     }
 
     return { evaded, shieldAbsorbed: shieldAbs, hpDamage, reflected, killed, revived, revivedHp }
+  }
+
+  /**
+   * Apply damage directly to HP, bypassing shield, evade, reflect, and revive.
+   * Used for overtime/environmental damage that cannot be blocked.
+   * Returns true if the character died.
+   */
+  applyPureDamage(amount: number): boolean {
+    if (!this._alive || amount <= 0) return false
+    this._hp = Math.max(this._isDummy ? 1 : 0, this._hp - amount)
+    if (this._hp === 0) {
+      this._alive = false
+      return true
+    }
+    return false
   }
 
   // ── Healing ───────────────────────────────────────────────────────────────

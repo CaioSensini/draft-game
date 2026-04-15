@@ -37,3 +37,6 @@ capacitor.config.ts
 # Temporary files
 *.tmp
 *.temp
+
+# Claude Code local config
+game-client/.claude/

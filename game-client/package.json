@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "sim": "tsx src/simulation/BattleSim.ts"
+    "sim": "tsx src/simulation/BattleSim.ts",
+    "sim:balance": "tsx src/simulation/BalanceSimulator.ts"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.0",

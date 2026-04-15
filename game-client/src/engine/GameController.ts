@@ -73,7 +73,7 @@ export interface GameSetupConfig {
 
 // ── Default phase durations ───────────────────────────────────────────────────
 
-const DEFAULT_DURATIONS = { movement: 20, action: 15 }
+const DEFAULT_DURATIONS = { movement: 12, action: 15 }
 
 // ── GameController ────────────────────────────────────────────────────────────
 
@@ -347,6 +347,15 @@ export class GameController {
   }
 
   /**
+   * Resolve the next step in the deferred resolution queue.
+   * Returns 'attack' (attack resolved, defense pending), 'defense' (defense resolved),
+   * or 'done' (all characters resolved, ACTIONS_RESOLVED emitted).
+   */
+  resolveNextDeferred(): 'attack' | 'defense' | 'done' {
+    return this._engine.resolveNextDeferred()
+  }
+
+  /**
    * Explicitly skip the current actor's turn (e.g. player timer ran out).
    * Emits `turn_skipped` with the provided reason.
    */
@@ -359,11 +368,10 @@ export class GameController {
   /**
    * Advance to the next phase in the turn sequence.
    *
-   * Sequence:
-   *   movement (left)  → action (left)
-   *   action   (left)  → movement (right)
-   *   movement (right) → action (right)
-   *   action   (right) → movement (left) + new round
+   * Sequence (interleaved):
+   *   movement (left)  → movement (right)
+   *   movement (right) → action (left — interleaved, both sides resolve)
+   *   action   (left)  → movement (left) + new round
    *
    * Side effects at round boundary:
    *   - tickStatusEffects() — advances DoT/HoT/stun on all living characters
@@ -384,18 +392,49 @@ export class GameController {
     this._bus.emit({ type: EventType.PHASE_ENDED, phase: endedPhase, side: endedSide })
 
     const wasActionPhase = endedPhase === 'action'
-    const wasRightSide   = endedSide  === 'right'
 
     this._battle.advancePhase()
 
     if (this._battle.isOver) return
 
-    // Round boundary: both sides' action phases have resolved
-    if (wasActionPhase && wasRightSide) {
+    // Round boundary: the interleaved action phase has resolved (both sides
+    // act within a single action phase now, so the boundary is simply after
+    // any action phase ends — no need to check which side it was).
+    if (wasActionPhase) {
       this._engine.tickStatusEffects()
       if (!this._battle.isOver) {
         this._bus.emit({ type: EventType.ROUND_STARTED, round: this._battle.round })
         this._engine.applyRoundStartRules()
+
+        // ── Overtime: % max HP damage to ALL characters from round 12 ──
+        // Bypasses shield, evade, immunity — pure HP burn
+        // Scales: R12=5%, R13=8%, R14=11%, R15=14%... (+3% per round)
+        // Uses % of maxHp so no class has advantage (tank vs squishy fair)
+        const round = this._battle.round
+        if (round >= 12 && !this._battle.isOver) {
+          const pct = (5 + (round - 12) * 3) / 100
+          for (const char of [...this._battle.livingCharacters]) {
+            if (this._battle.isOver) break
+            const dmg = Math.max(1, Math.round(char.maxHp * pct))
+            const killed = char.applyPureDamage(dmg)
+            this._bus.emit({
+              type: EventType.DAMAGE_APPLIED,
+              unitId: char.id,
+              amount: dmg,
+              newHp: char.hp,
+              sourceId: null,
+            })
+            if (killed) {
+              this._bus.emit({
+                type: EventType.CHARACTER_DIED,
+                unitId: char.id,
+                killedBy: null,
+                wasKing: char.role === 'king',
+                round,
+              })
+            }
+          }
+        }
       }
     }
 
@@ -528,6 +567,29 @@ export class GameController {
    */
   getRuleSnapshot(): Map<string, { atkBonus: number; mitBonus: number }> {
     return this._engine.rules.snapshot(this._battle)
+  }
+
+  /**
+   * Per-side breakdown of the wall-touch buff currently in effect.
+   *
+   * Each entry contains:
+   *   - `count`    — living allies touching the central wall column
+   *   - `atkBonus` — extra outgoing ATK multiplier (e.g. 0.20 = +20%)
+   *   - `mitBonus` — extra incoming mitigation     (e.g. 0.20 = +20%)
+   *   - `ruleId`   — id of the rule that produced the bonus
+   *
+   * Empty map if no `wall_mit_per_toucher` rule is registered.
+   * The BattleScene status panels poll this snapshot whenever stats refresh
+   * so players can see the team-wide buff that would otherwise be invisible
+   * (it's not stored on individual characters).
+   */
+  getWallBuffSnapshot(): Map<TeamSide, {
+    count:    number
+    atkBonus: number
+    mitBonus: number
+    ruleId:   string
+  }> {
+    return this._engine.rules.getWallBuffSnapshot(this._battle)
   }
 
   // ── High-level action flow (select → use → target) ──────────────────────────

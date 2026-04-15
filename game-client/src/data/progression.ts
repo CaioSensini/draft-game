@@ -1,41 +1,150 @@
-import type { UnitLevelData } from '../types'
+/**
+ * data/progression.ts — Level 1-100 progression, economy, and reward formulas.
+ *
+ * All game economy flows through these functions:
+ *   - XP/leveling: formula-based, exponential curve to level 100
+ *   - Battle rewards: scaled by level difference, mode, group size
+ *   - Tax system: prevents gold inflation
+ *   - Stat scaling: level multiplier applied to base stats
+ */
 
-// XP required for each level (cumulative)
-export const levelProgression: UnitLevelData[] = [
-  { level: 1, experienceRequired: 0, statMultiplier: 1.0, goldReward: 0, dgReward: 0 },
-  { level: 2, experienceRequired: 100, statMultiplier: 1.1, goldReward: 50, dgReward: 0 },
-  { level: 3, experienceRequired: 250, statMultiplier: 1.2, goldReward: 75, dgReward: 0 },
-  { level: 4, experienceRequired: 450, statMultiplier: 1.3, goldReward: 100, dgReward: 1 },
-  { level: 5, experienceRequired: 700, statMultiplier: 1.4, goldReward: 125, dgReward: 1 },
-  { level: 6, experienceRequired: 1000, statMultiplier: 1.5, goldReward: 150, dgReward: 2 },
-  { level: 7, experienceRequired: 1350, statMultiplier: 1.6, goldReward: 175, dgReward: 2 },
-  { level: 8, experienceRequired: 1750, statMultiplier: 1.7, goldReward: 200, dgReward: 3 },
-  { level: 9, experienceRequired: 2200, statMultiplier: 1.8, goldReward: 225, dgReward: 3 },
-  { level: 10, experienceRequired: 2700, statMultiplier: 1.9, goldReward: 250, dgReward: 5 },
-  { level: 11, experienceRequired: 3250, statMultiplier: 2.0, goldReward: 275, dgReward: 5 },
-  { level: 12, experienceRequired: 3850, statMultiplier: 2.1, goldReward: 300, dgReward: 7 },
-  { level: 13, experienceRequired: 4500, statMultiplier: 2.2, goldReward: 325, dgReward: 7 },
-  { level: 14, experienceRequired: 5200, statMultiplier: 2.3, goldReward: 350, dgReward: 10 },
-  { level: 15, experienceRequired: 5950, statMultiplier: 2.4, goldReward: 375, dgReward: 10 },
-  { level: 16, experienceRequired: 6750, statMultiplier: 2.5, goldReward: 400, dgReward: 12 },
-  { level: 17, experienceRequired: 7600, statMultiplier: 2.6, goldReward: 425, dgReward: 12 },
-  { level: 18, experienceRequired: 8500, statMultiplier: 2.7, goldReward: 450, dgReward: 15 },
-  { level: 19, experienceRequired: 9450, statMultiplier: 2.8, goldReward: 475, dgReward: 15 },
-  { level: 20, experienceRequired: 10450, statMultiplier: 2.9, goldReward: 500, dgReward: 20 },
-]
+// ── Constants ────────────────────────────────────────────────────────────────
 
-// XP rewards for different actions
+export const MAX_LEVEL = 100
+
+export const TAX_RATES = {
+  pvpGold:       0.10,  // 10% on PvP gold rewards
+  pveGold:       0.00,  // No tax on PvE
+  offlineAttack: 0.15,  // 15% on gold stolen from offline attacks
+}
+
+export const GROUP_BONUS = {
+  duo:   0.10,  // +10% XP and gold for 2v2
+  squad: 0.20,  // +20% XP and gold for 4v4
+}
+
+// ── XP / Level formulas ──────────────────────────────────────────────────────
+
+/** XP needed to advance FROM this level to the next. */
+export function getXPForLevel(level: number): number {
+  if (level >= MAX_LEVEL) return Infinity
+  return Math.round(50 * Math.pow(level + 1, 1.8))
+}
+
+/** Cumulative XP from level 1 to reach `targetLevel`. */
+export function getTotalXPForLevel(targetLevel: number): number {
+  let total = 0
+  for (let i = 1; i < targetLevel; i++) total += getXPForLevel(i)
+  return total
+}
+
+/**
+ * Stat multiplier for a given player level.
+ * Level 1 = 1.00x, Level 50 = 1.98x, Level 100 = 2.98x.
+ * Applied to base HP, ATK, DEF (NOT mobility).
+ */
+export function getStatMultiplier(level: number): number {
+  return 1.0 + (Math.min(level, MAX_LEVEL) - 1) * 0.02
+}
+
+/** Gold reward for leveling up. */
+export function getLevelUpGold(level: number): number {
+  return 50 + level * 10
+}
+
+/** DG reward for leveling up (milestone-based). */
+export function getLevelUpDG(level: number): number {
+  if (level % 25 === 0) return 20
+  if (level % 10 === 0) return 5
+  return 0
+}
+
+// ── Battle reward calculation ────────────────────────────────────────────────
+
+export interface BattleRewardParams {
+  playerLevel:  number
+  enemyLevel:   number
+  won:          boolean
+  mode:         'pve' | 'pvp' | 'offline'
+  groupSize:    1 | 2 | 4
+  roundsPlayed: number
+  kills:        number
+  damageDealt:  number
+  healingDone:  number
+}
+
+export interface BattleRewards {
+  xp:              number
+  gold:            number
+  dg:              number
+  taxPaid:         number
+  skillDropChance: number  // 0-1 probability
+}
+
+export function calculateBattleRewards(p: BattleRewardParams): BattleRewards {
+  // Losers get minimal participation XP
+  if (!p.won) {
+    return {
+      xp: Math.round(p.roundsPlayed * 3 + p.damageDealt * 0.01),
+      gold: 0, dg: 0, taxPaid: 0, skillDropChance: 0,
+    }
+  }
+
+  // ── Base rewards ──
+  let baseXP   = 50 + p.kills * 20 + Math.round(p.damageDealt * 0.05) + Math.round(p.healingDone * 0.03)
+  let baseGold = 30 + p.kills * 15 + p.roundsPlayed * 5
+
+  // ── Level difference scaling ──
+  const diff = p.enemyLevel - p.playerLevel
+  let scale = 1.0
+  if      (diff < -10) scale = 0.1    // way too easy
+  else if (diff < -5)  scale = 0.3    // too easy
+  else if (diff < 0)   scale = 0.7    // slightly easier
+  else if (diff <= 5)  scale = 1.0    // fair fight
+  else if (diff <= 10) scale = 1.3    // harder
+  else if (diff <= 20) scale = 1.6    // much harder
+  else                 scale = 2.0    // way harder = big reward
+
+  baseXP   = Math.round(baseXP * scale)
+  baseGold = Math.round(baseGold * scale)
+
+  // ── Group bonus ──
+  const groupMult = p.groupSize === 4 ? (1 + GROUP_BONUS.squad)
+                  : p.groupSize === 2 ? (1 + GROUP_BONUS.duo)
+                  : 1.0
+  baseXP   = Math.round(baseXP * groupMult)
+  baseGold = Math.round(baseGold * groupMult)
+
+  // ── Tax ──
+  const taxRate = p.mode === 'pvp'     ? TAX_RATES.pvpGold
+                : p.mode === 'offline' ? TAX_RATES.offlineAttack
+                : TAX_RATES.pveGold
+  const taxPaid   = Math.round(baseGold * taxRate)
+  const finalGold = baseGold - taxPaid
+
+  // ── DG (small chance on PvP wins) ──
+  const dg = p.mode === 'pvp' && Math.random() < 0.1 ? 1 : 0
+
+  // ── Skill drop chance (PvE only, scales with difficulty) ──
+  const skillDropChance = p.mode === 'pve'
+    ? Math.min(0.50, 0.15 + Math.max(0, diff) * 0.02)
+    : 0
+
+  return { xp: baseXP, gold: finalGold, dg, taxPaid, skillDropChance }
+}
+
+// ── Legacy compatibility (used by old imports) ────────────────────────────────
+
 export const xpRewards = {
   killUnit: 50,
-  damageDealt: 0.1, // XP per damage point
-  healAlly: 0.05,   // XP per heal point
+  damageDealt: 0.05,
+  healAlly: 0.03,
   winRound: 25,
   winGame: 100,
-  useCard: 2,       // XP per card used
+  useCard: 2,
   surviveRound: 10,
 }
 
-// Gold rewards for different actions
 export const goldRewards = {
   killUnit: 25,
   winRound: 50,
@@ -43,7 +152,6 @@ export const goldRewards = {
   surviveRound: 10,
 }
 
-// DG rewards for different actions
 export const dgRewards = {
   winGame: 5,
   levelUp: 1,
