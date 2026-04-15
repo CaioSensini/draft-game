@@ -11,7 +11,6 @@ import BattleScene from '../scenes/BattleScene'
 import BattleResultScene from '../scenes/BattleResultScene'
 import SkillUpgradeScene from '../scenes/SkillUpgradeScene'
 import SettingsScene from '../scenes/SettingsScene'
-import TrainingScene from '../scenes/TrainingScene'
 import TournamentScene from '../scenes/TournamentScene'
 import RankedScene from '../scenes/RankedScene'
 import RankingScene from '../scenes/RankingScene'
@@ -32,7 +31,7 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
   height: 720,
   parent: 'game',
   backgroundColor: '#0f1117',
-  scene: [BootScene, LoginScene, MenuScene, LobbyScene, DeckBuildScene, PvESelectScene, ShopScene, ProfileScene, BattleScene, BattleResultScene, SkillUpgradeScene, SettingsScene, TrainingScene, TournamentScene, RankedScene, RankingScene, PvPLobbyScene, PvELobbyScene, CustomLobbyScene, BracketScene, BattlePassScene],
+  scene: [BootScene, LoginScene, MenuScene, LobbyScene, DeckBuildScene, PvESelectScene, ShopScene, ProfileScene, BattleScene, BattleResultScene, SkillUpgradeScene, SettingsScene, TournamentScene, RankedScene, RankingScene, PvPLobbyScene, PvELobbyScene, CustomLobbyScene, BracketScene, BattlePassScene],
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
