@@ -4,6 +4,34 @@
 
 ---
 
+## 2026-04-20 — Sprint 0.5: PARADA §3 — tabelas Supabase incompletas
+
+**Contexto:** Sprint 0 subtarefa 0.5 pediu migracao do PlayerDataManager (hoje 100% localStorage) para Supabase com fallback offline. Auditoria do schema backend revelou gaps significativos.
+
+**PlayerData do cliente (`PlayerData` interface em src/utils/PlayerDataManager.ts) contem:**
+- username, level, xp, gold, dg, wins, losses, rankPoints — **COBERTO** por `User` entity
+- attackMastery, defenseMastery, offlineAttacks/Defenses — **COBERTO** por `PlayerProfile` entity
+- ownedSkills: OwnedSkill[] com { skillId, level, unitClass, progress } — **PARCIALMENTE COBERTO** por `SkillInventory` (falta o campo `progress`, que rastreia "pontos" acumulados para upgrade)
+- deckConfig: Record<unitClass, { attackCards, defenseCards }> — **COBERTO** por `DeckConfig` entity
+- ranked: RankedProfile (tier, divisao, matchHistory, seasonStats, etc.) — **SEM TABELA**
+- battlePass: BattlePassData (seasonId, tier, xp, isPremium, claimedFree[], claimedPremium[], seasonMissions[] com progresso de cadeia evolutiva de 5 estagios) — **SEM TABELA**
+- ownedSkins: Record<CharClass, string[]> — **SEM TABELA**
+- equippedSkins: Record<CharClass, string> — **SEM TABELA**
+
+**Decisao:** Acionar regra de parada §3 ("Se tabelas Supabase nao existirem pra dados do player: pare aqui e reporte. Usuario vai criar tabelas"). Confirmado pelo usuario: "Pare no gap de schema, reporte, e continue pra 0.6 e 0.7 em paralelo. Nao invente tabela nem mexa em TypeORM migration."
+
+**Proximos passos (sprint futuro ou task isolada do usuario):**
+1. Adicionar campo `progress: number` em `SkillInventory` entity
+2. Criar entity `RankedProfile` com campos compatíveis com `src/data/tournaments.ts#RankedProfile`
+3. Criar entity `BattlePassProgress` (seasonId, tier, xp, isPremium, simple-json claimed e seasonMissions)
+4. Criar entity `PlayerCosmetics` (ownedSkins e equippedSkins como simple-json)
+5. Gerar migration TypeORM
+6. Entao pode executar 0.5: criar interface `IPlayerDataStore`, implementar `SupabasePlayerDataStore` (via endpoints REST existentes no backend) e `LocalPlayerDataStore` como fallback offline.
+
+**Status:** Subtarefa 0.5 marcada como **BLOQUEADA por backend**. Continuando 0.6 e 0.7.
+
+---
+
 ## 2026-04-20 — Sprint 0.4: PARADA AUTOMATICA §4 — refactor de BattleScene adiado
 
 **Contexto:** Sprint 0 subtarefa 0.4 pediu extracao de 3 managers (Targeting, Animation, UI) do BattleScene.ts (3659 LOC) com meta de BattleScene final abaixo de 1500 LOC. A inspecao detalhada revelou:
