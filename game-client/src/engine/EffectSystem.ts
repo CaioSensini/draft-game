@@ -1,9 +1,14 @@
 /**
- * engine/EffectSystem.ts — pure effect application for the Arena game.
+ * engine/EffectSystem.ts — pure effect application for the legacy battle pipeline.
  *
  * All methods mutate the provided RuntimeState maps and return structured
- * result objects that ArenaScene uses for animations.
+ * result objects that scene renderers use for animations.
  * No Phaser, no side effects outside the state maps.
+ *
+ * NOTE: This file belongs to the legacy entity-based combat system that predates
+ * the domain/engine split. The active BattleScene uses domain/Character and
+ * engine/CombatEngine instead. Kept for now because systems/BotSystem.ts still
+ * depends on it.
  */
 
 import type { UnitData, TeamSide } from '../types'

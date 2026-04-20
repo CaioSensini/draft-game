@@ -15,7 +15,7 @@
  *
  * ── Recommended Phaser scene pattern ────────────────────────────────────────
  *
- *   class ArenaScene extends Phaser.Scene {
+ *   class BattleScene extends Phaser.Scene {
  *     private _bridge!: PhaserBridge
  *
  *     create() {
