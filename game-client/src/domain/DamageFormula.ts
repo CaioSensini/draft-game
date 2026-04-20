@@ -90,9 +90,17 @@ export interface DamageInputs {
    * Sum of the target's mitigation bonuses, expressed as a fraction
    * (0.20 = 20% reduction). Includes passive (Proteção Real, Protetor)
    * + rule (wall, last stand) + stat (def_up beyond base).
-   * Total clamped to MAX_MITIGATION internally.
+   * Total clamped to [0, MAX_MITIGATION] internally.
    */
   readonly mitBonus: number
+  /**
+   * Extra damage the target INCURS on top of everything else (v3 §4.3 Isolado
+   * trade-off — Executor takes +10% damage when isolated). Expressed as a
+   * fraction (0.10 = +10% damage received). Clamped to [0, 2.0] to guard
+   * against runaway stacking.
+   * @default 0
+   */
+  readonly targetIncomingDamageBonus?: number
   /** Current combat round (1-based). Used for overtime scaling. */
   readonly round: number
   /** True damage skips DEF mitigation but keeps every other modifier. */
@@ -106,20 +114,21 @@ export interface DamageInputs {
  * Lets callers log/inspect/visualize damage sources (e.g. "execute +25%").
  */
 export interface DamageBreakdown {
-  readonly basePower:    number
-  readonly defFactor:    number
-  readonly atkBonus:     number
-  readonly mitBonus:     number      // clamped
-  readonly mitFactor:    number
-  readonly modifiers:    number      // (1 + atkBonus) × mitFactor
-  readonly execMult:     number
-  readonly overtimeMult: number
-  readonly floor:        number
-  readonly preFloor:     number
-  readonly final:        number      // integer, post-rounding, post-floor
-  readonly executed:     boolean
-  readonly overtimed:    boolean
-  readonly trueDamage:   boolean
+  readonly basePower:                 number
+  readonly defFactor:                 number
+  readonly atkBonus:                  number
+  readonly mitBonus:                  number      // clamped
+  readonly mitFactor:                 number
+  readonly targetIncomingDamageBonus: number      // clamped
+  readonly modifiers:                 number      // (1 + atkBonus) × (1 + incoming) × mitFactor
+  readonly execMult:                  number
+  readonly overtimeMult:              number
+  readonly floor:                     number
+  readonly preFloor:                  number
+  readonly final:                     number      // integer, post-rounding, post-floor
+  readonly executed:                  boolean
+  readonly overtimed:                 boolean
+  readonly trueDamage:                boolean
 }
 
 // ── Core function ─────────────────────────────────────────────────────────────
@@ -152,6 +161,7 @@ export function computeDamageBreakdown(inputs: DamageInputs): DamageBreakdown {
     targetHpRatio,
     atkBonus,
     mitBonus,
+    targetIncomingDamageBonus = 0,
     round,
     isTrueDamage = false,
   } = inputs
@@ -165,9 +175,14 @@ export function computeDamageBreakdown(inputs: DamageInputs): DamageBreakdown {
   const clampedMit = Math.max(0, Math.min(MAX_MITIGATION, mitBonus))
   const mitFactor  = Math.max(MIN_DAMAGE_FLOOR_RATIO, 1 - clampedMit)
 
+  // Target's incoming-damage surcharge (e.g. Executor trade-off). Clamped
+  // to [0, 2.0] — 200% extra damage is already an extreme upper bound.
+  const clampedIncoming = Math.max(0, Math.min(2, targetIncomingDamageBonus))
+
   // Attacker ATK buffs multiply damage. Negative values (debuffs) are allowed —
-  // the caller can pass -0.10 for a 10% ATK-down. Final modifier is (1 + atkBonus).
-  const modifiers = (1 + atkBonus) * mitFactor
+  // the caller can pass -0.10 for a 10% ATK-down. Final modifier is
+  // (1 + atkBonus) × (1 + targetIncomingDamageBonus) × mitFactor.
+  const modifiers = (1 + atkBonus) * (1 + clampedIncoming) * mitFactor
 
   // Execute: +25% damage if target is at or below 30% HP at calculation time.
   const executed = targetHpRatio <= EXECUTE_HP_THRESHOLD
@@ -193,8 +208,9 @@ export function computeDamageBreakdown(inputs: DamageInputs): DamageBreakdown {
     basePower,
     defFactor,
     atkBonus,
-    mitBonus: clampedMit,
+    mitBonus:                 clampedMit,
     mitFactor,
+    targetIncomingDamageBonus: clampedIncoming,
     modifiers,
     execMult,
     overtimeMult,
@@ -203,6 +219,6 @@ export function computeDamageBreakdown(inputs: DamageInputs): DamageBreakdown {
     final,
     executed,
     overtimed,
-    trueDamage: isTrueDamage,
+    trueDamage:               isTrueDamage,
   }
 }

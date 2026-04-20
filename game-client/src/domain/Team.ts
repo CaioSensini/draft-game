@@ -93,36 +93,38 @@ export class Team {
   // ── Spatial queries ───────────────────────────────────────────────────────
 
   /**
-   * All living allies at Manhattan distance exactly 1 from `character`.
-   * Used for warrior guard checks and executor isolation.
+   * All living allies in the 8 surrounding cells of `character` (Chebyshev
+   * distance 1 — includes diagonals). Per v3 §4.2/§4.3: Protetor and Isolado
+   * both consider "8 células ao redor" / "adjacentes (incluindo diagonais)".
    */
   adjacentTo(character: Character): Character[] {
-    return this.living.filter(
-      (other) =>
-        other.id !== character.id &&
-        Math.abs(other.col - character.col) + Math.abs(other.row - character.row) === 1,
-    )
+    return this.living.filter((other) => {
+      if (other.id === character.id) return false
+      const dx = Math.abs(other.col - character.col)
+      const dy = Math.abs(other.row - character.row)
+      return dx <= 1 && dy <= 1 && (dx + dy > 0)
+    })
   }
 
   /**
-   * True if `character` has no living allies adjacent to it.
-   * Executor isolation bonus triggers when this is true.
+   * True if `character` has no living allies in the 8 surrounding cells.
+   * Trigger condition for Executor's "Isolado" passive (v3 §4.3).
    */
   isIsolated(character: Character): boolean {
     return this.adjacentTo(character).length === 0
   }
 
   /**
-   * True if any living warrior on this team is adjacent to `character`.
-   * Reduces incoming damage for `character`.
+   * True if any living warrior on this team is in one of the 8 cells around
+   * `character`. Trigger for "Protetor" passive (v3 §4.2).
    */
   hasWarriorGuard(character: Character): boolean {
-    return this.living.some(
-      (ally) =>
-        ally.role === 'warrior' &&
-        ally.id !== character.id &&
-        Math.abs(ally.col - character.col) + Math.abs(ally.row - character.row) === 1,
-    )
+    return this.living.some((ally) => {
+      if (ally.role !== 'warrior' || ally.id === character.id) return false
+      const dx = Math.abs(ally.col - character.col)
+      const dy = Math.abs(ally.row - character.row)
+      return dx <= 1 && dy <= 1 && (dx + dy > 0)
+    })
   }
 
   /**

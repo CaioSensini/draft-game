@@ -894,16 +894,19 @@ export class CombatEngine {
                    + this.rules.getAtkBonus(caster, this.battle)
     const mitBonus = this.passive.getMitigationBonus(target, this.battle)
                    + this.rules.getMitigationBonus(target, this.battle)
+    // Executor Isolado trade-off: +10% damage received when isolated (v3 §4.3)
+    const targetIncomingDamageBonus = this.passive.getIncomingDamageBonus(target, this.battle)
     const hpRatio = target.hp / Math.max(1, target.maxHp)
 
     return computeDamage({
-      basePower:     skill.power,
-      targetDef:     target.defense,
-      targetHpRatio: hpRatio,
+      basePower:                 skill.power,
+      targetDef:                 target.defense,
+      targetHpRatio:             hpRatio,
       atkBonus,
       mitBonus,
-      round:         this.battle.round,
-      isTrueDamage:  skill.effectType === 'true_damage',
+      targetIncomingDamageBonus,
+      round:                     this.battle.round,
+      isTrueDamage:              skill.effectType === 'true_damage',
     })
   }
 

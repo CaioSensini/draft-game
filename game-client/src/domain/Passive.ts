@@ -58,10 +58,11 @@ import type { CharacterRole } from './Character'
  *   Example: value = 0.50, ticks = 2 → heals on target reduced by 50 % for 2 rounds.
  */
 export type PassiveType =
-  | 'atk_bonus_when_isolated'   // caster: +value% ATK when isolated
-  | 'guardian_mit_bonus'        // protector: adjacent allies get +value mitigation
-  | 'incoming_damage_reduction' // self: personal +value mitigation, always active
-  | 'heal_reduction_on_hit'     // attacker: after dealing damage, debuff target's heals
+  | 'atk_bonus_when_isolated'       // caster: +value% ATK when isolated
+  | 'incoming_damage_bonus_when_isolated' // self: +value% damage RECEIVED when isolated (v3 trade-off)
+  | 'guardian_mit_bonus'            // protector: adjacent allies get +value mitigation
+  | 'incoming_damage_reduction'     // self: personal +value mitigation, always active
+  | 'heal_reduction_on_hit'         // attacker: after dealing damage, debuff target's heals
 
 // ── PassiveDefinition ─────────────────────────────────────────────────────────
 

@@ -39,6 +39,10 @@ export const PASSIVE_CATALOG: PassiveDefinition[] = [
   },
 
   // ── Executor ─────────────────────────────────────────────────────────────────
+  // v3 §4.3 — Isolado is a dual passive: +20% damage dealt AND +10% damage
+  // received when no ally occupies any of the 8 surrounding cells. We register
+  // two entries so each injection point (ATK outgoing, damage incoming) can
+  // evaluate its own condition independently.
   {
     id:          'passive_executor_isolado',
     name:        'Isolado',
@@ -47,6 +51,15 @@ export const PASSIVE_CATALOG: PassiveDefinition[] = [
     value:       0.20,
     description:
       'Sem aliados nas 8 células ao redor: +20% dano causado, +10% dano recebido (trade-off).',
+  },
+  {
+    id:          'passive_executor_isolado_trade_off',
+    name:        'Isolado (trade-off)',
+    forRole:     'executor',
+    type:        'incoming_damage_bonus_when_isolated',
+    value:       0.10,
+    description:
+      'Sem aliados nas 8 células ao redor: +10% dano recebido (custo do bônus ofensivo).',
   },
 
   // ── Specialist ───────────────────────────────────────────────────────────────

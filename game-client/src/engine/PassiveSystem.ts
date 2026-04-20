@@ -106,12 +106,13 @@ export class PassiveSystem {
             break
 
           case 'guardian_mit_bonus':
-            // Protector passive: applies when the protector is adjacent to the target
+            // Protector passive (v3 §4.2): applies to every ally in one of
+            // the 8 cells around this warrior. Chebyshev distance == 1,
+            // i.e. max(|dx|, |dy|) === 1.
             if (member.id !== target.id) {
-              const dist =
-                Math.abs(member.col - target.col) +
-                Math.abs(member.row - target.row)
-              if (dist === 1) {
+              const dx = Math.abs(member.col - target.col)
+              const dy = Math.abs(member.row - target.row)
+              if (dx <= 1 && dy <= 1 && dx + dy > 0) {
                 bonus += def.value
               }
             }
@@ -120,6 +121,30 @@ export class PassiveSystem {
       }
     }
 
+    return bonus
+  }
+
+  // ── Injection point 2b: target-side incoming damage surcharge ─────────────
+
+  /**
+   * Returns the fractional bonus damage INCURRED by the target — not a
+   * mitigation, but the opposite: extra damage taken.
+   *
+   * CombatEngine usage:
+   *   damageInputs.targetIncomingDamageBonus = passiveSystem.getIncomingDamageBonus(target, battle)
+   *
+   * Currently handles:
+   *   `incoming_damage_bonus_when_isolated` — Executor trade-off (v3 §4.3)
+   */
+  getIncomingDamageBonus(target: Character, battle: Battle): number {
+    let bonus = 0
+    for (const def of this.forRole(target.role)) {
+      if (def.type === 'incoming_damage_bonus_when_isolated') {
+        if (battle.teamOf(target.side).isIsolated(target)) {
+          bonus += def.value
+        }
+      }
+    }
     return bonus
   }
 
