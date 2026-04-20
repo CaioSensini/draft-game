@@ -393,15 +393,88 @@ describe('King — Defense 1 (self-sustain)', () => {
       expect(s.power).toBe(10)
     })
 
-    it('shield primary applies on King (always, ignores the HP conditional for now)', () => {
-      const king = mkChar('k', 'king', 'left')
-      resolver.resolve('shield', ctx(king, king, 10, 0, 1))
-      expect(king.totalShield).toBe(10)
+    // v3 §6.5 — implementation lives in CombatEngine._applyEspiritoSobrevivencia
+    // (skill-id intercept before the generic resolver). Tests invoke
+    // _applyDefenseSkill directly via reflection cast.
+    function applyEspirito(king: Character): void {
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [king]),
+        rightTeam: new Team('right', [mkChar('enemy', 'warrior', 'right', 15, 3)]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(kingSkill('lk_d4'))
+      const applyFn = (engine as unknown as {
+        _applyDefenseSkill: (c: Character, s: Skill) => void
+      })._applyDefenseSkill.bind(engine)
+      applyFn(king, skill)
+    }
+
+    it('HP ≤ 50%: +15% max HP AND shield = 10% max HP, both 1-turn', () => {
+      const king = mkChar('k', 'king', 'left', 2, 2)   // base HP 180
+      king.applyPureDamage(100)                           // 80 / 180 = 0.44 → crítico
+      expect(king.hp / king.maxHp).toBeLessThanOrEqual(0.50)
+
+      applyEspirito(king)
+
+      // +15% of 180 = 27 max HP bonus
+      expect(king.maxHpBonus).toBe(27)
+      expect(king.maxHp).toBe(180 + 27)
+      // Shield = 10% of 180 = 18
+      expect(king.totalShield).toBe(18)
+      // 1 turn remaining
+      expect(king.maxHpBonusTicks).toBe(1)
     })
 
-    // The "+15% HP max if HP ≤ 50% / +10% HP max if HP > 50%" conditional is
-    // a skill-level custom mechanic, not a core effect. Documented stub.
-    it.skip('[STUB] +15% max HP when HP ≤ 50%', () => {})
+    it('HP > 50%: +10% max HP only, NO shield', () => {
+      const king = mkChar('k', 'king', 'left', 2, 2)   // base HP 180
+      king.applyPureDamage(50)                            // 130 / 180 = 0.72 → saudável
+      expect(king.hp / king.maxHp).toBeGreaterThan(0.50)
+
+      applyEspirito(king)
+
+      // +10% of 180 = 18 max HP bonus
+      expect(king.maxHpBonus).toBe(18)
+      expect(king.maxHp).toBe(180 + 18)
+      // No shield in this branch
+      expect(king.totalShield).toBe(0)
+      expect(king.maxHpBonusTicks).toBe(1)
+    })
+
+    it('max-HP bonus expires after one tick and clamps current HP down', () => {
+      const king = mkChar('k', 'king', 'left', 2, 2)
+      king.applyPureDamage(100)                           // HP 80 → critical branch
+      applyEspirito(king)
+      expect(king.maxHp).toBe(207)
+
+      // Heal up beyond base max (180) but within bonus max (207).
+      king.heal(100, { ignoreKingImmunity: true })        // 80 + 100 = 180 (cap at 180+27=207)
+      // Actually heal caps at maxHp (207) minus hp (80) = 127 requested, 100 delivered.
+      // So HP is now 180.
+      expect(king.hp).toBe(180)
+
+      // Tick the effect — bonus expires, HP should clamp to base max (180).
+      king.tickEffects()
+      expect(king.maxHpBonus).toBe(0)
+      expect(king.maxHp).toBe(180)
+      // HP was at 180 which equals base max — no clamp needed.
+      expect(king.hp).toBe(180)
+    })
+
+    it('max-HP bonus expiration CLAMPS HP when current exceeds base max', () => {
+      const king = mkChar('k', 'king', 'left', 2, 2)
+      king.applyPureDamage(50)                            // HP 130 → healthy branch
+      applyEspirito(king)                                   // +10% = 198 max
+
+      // Heal up into the bonus range.
+      king.heal(60, { ignoreKingImmunity: true })         // 130 + 60 = 190 ≤ 198
+      expect(king.hp).toBe(190)
+      expect(king.hp).toBeGreaterThan(king.baseStats.maxHp)
+
+      // Tick — bonus expires, excess HP is lost (clamped to 180).
+      king.tickEffects()
+      expect(king.hp).toBe(180)
+    })
   })
 })
 

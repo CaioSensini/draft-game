@@ -115,6 +115,16 @@ export class Character {
   /** v3: Heals received this turn. Capped at 2 per HEAL_CAP_PER_TURN. Reset by engine. */
   private _healsThisTurn = 0
 
+  /**
+   * v3: Temporary increase to maximum HP (in flat HP points) — grants headroom
+   * without immediately raising current HP. Used by Espírito de Sobrevivência
+   * (lk_d4): +15% / +10% HP max for 1 turn depending on current HP ratio.
+   * Expires via tickEffects; on expiry, current HP is clamped to the new
+   * (lower) max HP.
+   */
+  private _maxHpBonus      = 0
+  private _maxHpBonusTicks = 0
+
   // ── Lifecycle ─────────────────────────────────────────────────────────────
   private _alive = true
 
@@ -146,9 +156,14 @@ export class Character {
   get col():      number { return this._col }
   get row():      number { return this._row }
   get hp():       number { return this._hp }
-  get maxHp():    number { return this.baseStats.maxHp }
+  /**
+   * Effective max HP = base max HP + any active temporary bonus.
+   * All consumers (heal cap, revive, regen, hpRatio used for Execute) read
+   * through this getter so max HP changes apply consistently.
+   */
+  get maxHp():    number { return this.baseStats.maxHp + this._maxHpBonus }
   get alive():    boolean { return this._alive }
-  get hpRatio():  number { return this._hp / this.baseStats.maxHp }
+  get hpRatio():  number { return this._hp / this.maxHp }
 
   /**
    * Current effective attack, after applying all active stat-modifier effects.
@@ -241,7 +256,7 @@ export class Character {
       const revive = this.reviveEffect
       if (revive) {
         const restoreHp = revive.trigger()
-        this._hp    = Math.min(restoreHp, this.baseStats.maxHp)
+        this._hp    = Math.min(restoreHp, this.maxHp)
         this._alive = true
         killed      = false
         revived     = true
@@ -303,7 +318,7 @@ export class Character {
       amount = Math.round(amount * (1 - reduction.factor))
     }
 
-    const actual = Math.min(amount, this.baseStats.maxHp - this._hp)
+    const actual = Math.min(amount, this.maxHp - this._hp)
     this._hp += actual
     if (actual > 0 && !opts?.ignoreCap) this._healsThisTurn += 1
     return { requested: requestedAmount, actual }
@@ -313,6 +328,29 @@ export class Character {
   resetHealCounter(): void {
     this._healsThisTurn = 0
   }
+
+  /**
+   * v3: Grant a temporary max-HP bonus for a number of turns. Expiration is
+   * handled in tickEffects — when the counter reaches zero, the bonus
+   * clears AND current HP is clamped down to the (new, lower) max.
+   *
+   * Stacking policy: same-effect re-application takes max(amount) and
+   * max(ticks), matching §2.6 debuff rules. A weaker re-application does
+   * not downgrade the active bonus.
+   *
+   * Used by Espírito de Sobrevivência (lk_d4 / rk_d4):
+   *   - HP ≤ 50%: +15% HP max for 1 turn + shield 10% HP max.
+   *   - HP > 50%: +10% HP max for 1 turn.
+   */
+  addMaxHpBonus(amount: number, ticks: number): void {
+    if (!this._alive || amount <= 0 || ticks <= 0) return
+    this._maxHpBonus      = Math.max(this._maxHpBonus, Math.round(amount))
+    this._maxHpBonusTicks = Math.max(this._maxHpBonusTicks, ticks)
+  }
+
+  /** Current temporary max-HP bonus (read-only). */
+  get maxHpBonus(): number      { return this._maxHpBonus }
+  get maxHpBonusTicks(): number { return this._maxHpBonusTicks }
 
   // ── Effects ───────────────────────────────────────────────────────────────
 
@@ -533,7 +571,7 @@ export class Character {
           const revive = this.reviveEffect
           if (revive) {
             const restoreHp = revive.trigger()
-            this._hp    = Math.min(restoreHp, this.baseStats.maxHp)
+            this._hp    = Math.min(restoreHp, this.maxHp)
             this._alive = true
           } else {
             this._alive = false
@@ -543,7 +581,7 @@ export class Character {
       }
 
       if (effect.type === 'regen' && result.value > 0 && this._alive) {
-        this._hp = Math.min(this.baseStats.maxHp, this._hp + result.value)
+        this._hp = Math.min(this.maxHp, this._hp + result.value)
         ticks.push(result)
         continue
       }
@@ -561,6 +599,20 @@ export class Character {
     // v3: Decrement silence-attack counter each round
     if (this._silencedAttackTicks > 0) {
       this._silencedAttackTicks--
+    }
+
+    // v3: Decrement max-HP bonus counter. On expiry, clear the bonus and
+    // clamp current HP down to the new (lower) max. Decision registered in
+    // DECISIONS.md 2026-04-21: when a temporary +HP max expires, excess HP
+    // is lost — standard RPG convention to prevent buffs being "banked".
+    if (this._maxHpBonusTicks > 0) {
+      this._maxHpBonusTicks--
+      if (this._maxHpBonusTicks === 0 && this._maxHpBonus > 0) {
+        this._maxHpBonus = 0
+        if (this._hp > this.baseStats.maxHp) {
+          this._hp = this.baseStats.maxHp
+        }
+      }
     }
 
     this._pruneExpired()

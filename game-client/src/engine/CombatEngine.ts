@@ -1012,6 +1012,19 @@ export class CombatEngine {
   private _applyDefenseSkill(char: Character, skill: Skill | null): void {
     if (!skill) return
 
+    // v3 §6.5 — Espírito de Sobrevivência (lk_d4 / rk_d4): HP-conditional.
+    // This skill has bespoke logic that the generic shield handler can't
+    // express (conditional magnitude + shield sized from HP ratio).
+    // We intercept before the targets loop and resolver dispatch.
+    if (skill.id === 'lk_d4' || skill.id === 'rk_d4') {
+      this.emit({
+        type: EventType.SKILL_USED, unitId: char.id, skillId: skill.id,
+        skillName: skill.name, category: 'defense', targetId: char.id,
+      })
+      this._applyEspiritoSobrevivencia(char)
+      return
+    }
+
     // Collect the list of targets based on targetType
     const targets = this._resolveDefenseTargets(char, skill)
 
@@ -1038,6 +1051,49 @@ export class CombatEngine {
         const secCtx: EffectContext = { ...ctx, power: sec.power, ticks: sec.ticks }
         const secResult = this.resolver.resolve(sec.effectType, secCtx)
         this._processResult(char, target, secResult)
+      }
+    }
+  }
+
+  /**
+   * v3 §6.5 Espírito de Sobrevivência (lk_d4 / rk_d4).
+   *
+   * Conditional on current HP ratio at cast time:
+   *   - HP ≤ 50%:  +15% base max HP (temporary, 1 turn) AND shield = 10% base max HP
+   *   - HP > 50%:  +10% base max HP (temporary, 1 turn), NO shield
+   *
+   * Uses `baseStats.maxHp` as the scaling base — any active bonus at cast
+   * time does not compound. This matches the player's mental model that
+   * "+15% HP" means "+15% of my CLASS's HP", not "of whatever I'm buffed to".
+   */
+  private _applyEspiritoSobrevivencia(caster: Character): void {
+    if (!caster.alive) return
+
+    const baseMax = caster.baseStats.maxHp
+    const hpRatio = caster.hp / caster.maxHp
+    const critical = hpRatio <= 0.50
+
+    const bonusPct = critical ? 0.15 : 0.10
+    const bonus    = Math.round(baseMax * bonusPct)
+
+    caster.addMaxHpBonus(bonus, 1)
+    this.emit({
+      type:   EventType.STATUS_APPLIED,
+      unitId: caster.id,
+      status: 'hp_up' as const,
+      value:  bonus,
+    })
+
+    if (critical) {
+      const shieldAmount = Math.round(baseMax * 0.10)
+      if (shieldAmount > 0) {
+        caster.addShield(shieldAmount)
+        this.emit({
+          type:   EventType.STATUS_APPLIED,
+          unitId: caster.id,
+          status: 'shield' as const,
+          value:  shieldAmount,
+        })
       }
     }
   }

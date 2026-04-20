@@ -4,6 +4,40 @@
 
 ---
 
+## 2026-04-21 — Bloco 2 quick-win: Espírito de Sobrevivência — HP bonus expiration clamps HP down
+
+**Contexto:** Quick Win 2 (Espírito de Sobrevivência, `lk_d4`/`rk_d4`) aplica um +HP max temporário (15% ou 10% do maxHp base) por 1 turno. Na expiração, se o HP atual do Rei estiver acima do maxHp base (porque ele se curou aproveitando o bônus), o que fazer com o excesso?
+
+**Alternativas avaliadas:**
+- **A) Clamp para baixo:** HP atual é reduzido até o maxHp base na expiração. O jogador perde o HP "extra" que estava no intervalo do bônus.
+- **B) Deixar como está:** HP atual fica acima do maxHp visível. Jogador mantém os HPs extras até serem gastos.
+- **C) Drenar gradualmente:** HP vai caindo 1/turno até atingir o maxHp base.
+
+**Decisao:** **A) Clamp para baixo.**
+
+**Justificativa:**
+1. Convenção RPG padrão — WoW, Path of Exile, Final Fantasy, todos clampam HP temporário ao expirar buff.
+2. Previne "banking" de buff — jogador não pode empilhar Espírito + cura pra manter HP acima do max permanente depois.
+3. Consistente com a expectativa do jogador: o bônus era temporário, o ganho não é permanente.
+4. Simplicidade: uma linha de código vs. sistema de drenagem.
+
+**Implementação (`Character.tickEffects`):**
+```typescript
+if (this._maxHpBonusTicks > 0) {
+  this._maxHpBonusTicks--
+  if (this._maxHpBonusTicks === 0 && this._maxHpBonus > 0) {
+    this._maxHpBonus = 0
+    if (this._hp > this.baseStats.maxHp) this._hp = this.baseStats.maxHp
+  }
+}
+```
+
+**Consequência de UX (documentado):** o jogador pode ver sua barra de HP "perder" alguns HPs na hora que Espírito expira. A UI deve destacar isso com um floating text "-X HP (buff expired)" para não parecer bug.
+
+**Status:** Concluido. 4 tests em `KingSkills.test.ts` cobrindo ambos os ramos (≤50% e >50%) + dois cenários de expiração (sem excesso vs com excesso).
+
+---
+
 ## 2026-04-21 — Bloco 2: 16 King skills — implementation depth
 
 **Contexto:** Bloco 2 pede as 16 skills do Rei implementadas data-driven. As entradas do catalog (`data/skillCatalog.ts`) ja estavam corretas desde o Sprint anterior. O que faltava era implementar mecanicas exoticas no EffectResolver.
