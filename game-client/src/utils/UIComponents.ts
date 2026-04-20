@@ -19,6 +19,32 @@ import Phaser from 'phaser'
 import { C, F, S, SHADOW, SCREEN, STROKE } from './DesignTokens'
 import { getSkillIconKey, hasSkillIcon } from './AssetPaths'
 
+// ── Touch-first constants (Sprint 0.7) ──────────────────────────────────────
+//
+// iOS Human Interface Guidelines: tappable targets must be at least 44×44 pt.
+// Material Design Android: 48×48 dp.
+// We use 44 as the baseline; components can opt into 48 via `minTouchSize: 48`.
+export const MIN_TOUCH_TARGET = 44 as const
+
+/**
+ * Given a visual width+height, returns the interaction area size that will be
+ * used by setInteractive(). If the visual size is below MIN_TOUCH_TARGET on
+ * either axis, the hit area expands invisibly so touch users have a comfortable
+ * tap area without affecting the visual layout.
+ *
+ * Returns `{ hitW, hitH }` — pass these to the hit-area rectangle/circle.
+ */
+export function touchHitSize(
+  visualW: number,
+  visualH: number,
+  minSize: number = MIN_TOUCH_TARGET,
+): { hitW: number; hitH: number } {
+  return {
+    hitW: Math.max(visualW, minSize),
+    hitH: Math.max(visualH, minSize),
+  }
+}
+
 // ── Helper: draw rounded rect with multi-layer depth ─────────────────────────
 
 function drawRichRect(
@@ -98,6 +124,25 @@ export const UI = {
       accent?: number; accentHex?: string; fill?: number;
       fontSize?: string; depth?: number; icon?: string;
       onPress?: () => void;
+      /**
+       * Touch-first hooks (Sprint 0.7). All optional. `onPress` remains the
+       * primary action callback and fires on pointerdown + delay. The hooks
+       * below give scenes finer-grained control for touch-specific UX:
+       *   onTouchStart — fires on pointerdown (raw, no delay)
+       *   onTouchEnd   — fires on pointerup
+       *   onHover      — fires on pointerover (mouse or finger drag-in)
+       *   onHoverEnd   — fires on pointerout
+       */
+      onTouchStart?: () => void;
+      onTouchEnd?:   () => void;
+      onHover?:      () => void;
+      onHoverEnd?:   () => void;
+      /**
+       * Minimum hit-area size (both axes). Defaults to 44×44 (iOS HIG).
+       * The visual button stays the original w×h; only the interactive
+       * rectangle grows to the minimum.
+       */
+      minTouchSize?: number;
     },
   ): { container: Phaser.GameObjects.Container; hitArea: Phaser.GameObjects.Rectangle } {
     const accent = opts?.accent ?? C.success
@@ -133,25 +178,32 @@ export const UI = {
       shadow: SHADOW.text,
     }).setOrigin(0.5)
 
-    const hitArea = scene.add.rectangle(0, 0, w, h, C.black, 0.001)
+    // Touch-first: hit area is at least 44×44 so finger taps have comfortable
+    // tolerance even when the visual button is smaller (e.g. icon buttons).
+    const { hitW, hitH } = touchHitSize(w, h, opts?.minTouchSize)
+    const hitArea = scene.add.rectangle(0, 0, hitW, hitH, C.black, 0.001)
       .setInteractive({ useHandCursor: true })
 
     hitArea.on('pointerover', () => {
       render(true, false)
       scene.tweens.add({ targets: container, scaleX: 1.02, scaleY: 1.02, duration: 100 })
+      opts?.onHover?.()
     })
     hitArea.on('pointerout', () => {
       render(false, false)
       scene.tweens.add({ targets: container, scaleX: 1, scaleY: 1, duration: 100 })
+      opts?.onHoverEnd?.()
     })
     hitArea.on('pointerdown', () => {
       render(true, true)
       scene.tweens.add({ targets: container, scaleX: 0.97, scaleY: 0.97, duration: 60 })
+      opts?.onTouchStart?.()
       if (opts?.onPress) scene.time.delayedCall(80, () => opts.onPress!())
     })
     hitArea.on('pointerup', () => {
       render(true, false)
       scene.tweens.add({ targets: container, scaleX: 1.02, scaleY: 1.02, duration: 60 })
+      opts?.onTouchEnd?.()
     })
 
     const container = scene.add.container(x, y, [g, label, hitArea]).setDepth(d)
