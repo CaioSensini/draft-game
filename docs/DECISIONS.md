@@ -4,6 +4,26 @@
 
 ---
 
+## 2026-04-21 — Bloco 3: Warrior skills — 3 sistemas novos como stub
+
+**Contexto:** Bloco 3 implementa as 16 skills do Guerreiro. Três skills dependem de sistemas que não existem hoje no engine. Ao invés de "fingir implementação" ou construir 3 sistemas grandes em um único bloco, registro como stubs explícitos.
+
+**Stubs:**
+
+1. **`summon_wall` (lw_a6 Muralha Viva, lw_a8 Prisão de Muralha Morta)** — requer sistema de "tile obstacle" no Grid: walls com HP próprio, bloqueio de movimento, DoT adjacente, quebra por atk1. Estimativa 6-8h de sprint dedicado. Stub hoje: emite STATUS_APPLIED(summon_wall), aplica damage/secondary nos alvos da área (valor parcial preservado).
+
+2. **`damage_redirect` (lw_d2 Guardião)** — requer damage interceptor protocol. Quando aliado protegido recebe dano, 60% redireciona pro Warrior com -30%. Estimativa 3-4h. Stub hoje: emite STATUS_APPLIED(damage_redirect) no aliado; nenhum redirect math.
+
+**Decisao:** Registrar os 3 como stubs documentados, seguir para Bloco 4. Sistemas novos merecem sprint dedicado futuro. Stubs emitem eventos para a UI pode animar e dispatch path e testavel.
+
+**Extensao do STATUS_APPLIED event type:** union agora inclui `summon_wall` e `damage_redirect`.
+
+**Gap secundario identificado:** O schema `secondaryEffect` do catalogo carrega apenas UM efeito. v3 tem 4 skills do Guerreiro com 3 efeitos (Impacto, Provocação, Investida, Colisão Titânica). O 3º efeito não fica no catalogo. Solução futura: `secondaryEffects: T[]` ou skill-specific handler. Não bloqueante hoje.
+
+**Status:** Concluido com 3 stubs. 13/16 skills funcionais. 56 tests em WarriorSkills.test.ts. Total projeto: 283 passing, 0 skipped. Build limpo.
+
+---
+
 ## 2026-04-21 — Bloco 2 quick-win: Espírito de Sobrevivência — HP bonus expiration clamps HP down
 
 **Contexto:** Quick Win 2 (Espírito de Sobrevivência, `lk_d4`/`rk_d4`) aplica um +HP max temporário (15% ou 10% do maxHp base) por 1 turno. Na expiração, se o HP atual do Rei estiver acima do maxHp base (porque ele se curou aproveitando o bônus), o que fazer com o excesso?
