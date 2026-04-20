@@ -4,6 +4,44 @@
 
 ---
 
+## 2026-04-21 — Bloco 1.2: politica de arredondamento de dano
+
+**Contexto:** SKILLS_CATALOG_v3_FINAL §5 define `dano_final = base × mitigacao × modificadores × execute`, mas nao especifica como arredondar o resultado. O prompt do Bloco 1 pede decisao explicita entre `Math.floor`, `Math.round` ou `Math.ceil`.
+
+**Alternativas avaliadas:**
+- **A) `Math.floor`** — sempre arredonda para baixo.
+  - Pro: atacante nunca recebe "bonus" nao intencional; fail-safe para tanks.
+  - Contra: vies sistematico contra o atacante; dano 1.99 vira 1. Tanque com DEF alta fica OP em cenarios limite.
+- **B) `Math.round` (half-up)** — arredonda para o inteiro mais proximo.
+  - Pro: mais natural ("cerca de 25"); reflete expectativa do jogador.
+  - Pro: mantem simetria; nao cria vies estrutural.
+  - Contra: em raros casos 0.5 vira 1 (atacante ganha "bonus" de meia unidade).
+- **C) `Math.ceil`** — sempre arredonda para cima.
+  - Pro: garante que execute (×1.25) sempre de pelo menos +1 dano.
+  - Contra: vies sistematico a favor do atacante; suba o dano em combates longos.
+
+**Decisao:** **B) `Math.round` (half-up)**.
+
+**Justificativa:**
+1. Nao introduz vies direcional estrutural — atacante e defensor sao tratados simetricamente.
+2. Matches player expectation em jogos tacticos (jogador ve "Corte Mortal 45", espera dano proximo de 45, nao significativamente menor).
+3. Evita que Execute (+25%) seja neutralizado em alvos com dano baixo (ex: alvo com dano 1.9, execute daria 2.375 → round = 2, floor daria 2 tambem — consistente).
+4. Alinha com o que o `Character.takeDamage` ja fazia internamente antes desta task.
+
+**Implementacao:**
+- `domain/DamageFormula.ts` usa `Math.round(preFloor)` para o resultado final.
+- O piso (`base × 0.10`) tambem e arredondado para manter consistencia de tipos inteiros.
+- Policy documentada no JSDoc da funcao e repetida no topo do arquivo.
+
+**Consequencias:**
+- Dano sempre e inteiro nao-negativo.
+- Tests reproduziveis entre plataformas (IEEE-754 deterministico).
+- Se o time de balanceamento quiser mudar no futuro, trocar em um unico lugar.
+
+**Status:** Concluido. 38 tests cobrindo a formula.
+
+---
+
 ## 2026-04-20 — Sprint 0.5: PARADA §3 — tabelas Supabase incompletas
 
 **Contexto:** Sprint 0 subtarefa 0.5 pediu migracao do PlayerDataManager (hoje 100% localStorage) para Supabase com fallback offline. Auditoria do schema backend revelou gaps significativos.

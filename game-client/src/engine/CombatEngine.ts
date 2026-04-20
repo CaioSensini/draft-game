@@ -36,14 +36,7 @@ import { Ok, Err, EventType } from './types'
 import type { Result } from './types'
 import { Grid, Position } from '../domain/Grid'
 import type { Direction, GridSide } from '../domain/Grid'
-import {
-  EXECUTE_HP_THRESHOLD,
-  EXECUTE_DAMAGE_MULT,
-  OVERTIME_START_TURN,
-  OVERTIME_DAMAGE_BONUS_PER_TURN,
-  MIN_DAMAGE_FLOOR_RATIO,
-  // HEAL_CAP_PER_TURN, SHIELD_CAP_PER_UNIT, KING_HEAL_IMMUNE — applied directly inside Character.ts
-} from '../data/globalRules'
+import { computeDamage } from '../domain/DamageFormula'
 
 // ── Supporting types ──────────────────────────────────────────────────────────
 
@@ -893,37 +886,25 @@ export class CombatEngine {
    * buffs/debuffs (atk_up, atk_down) that feed into `modificadores` below.
    */
   computeRawDamage(caster: Character, target: Character, skill: Skill): number {
-    const basePower = skill.power
-
-    // DEF mitigation factor (0-1). Lower target DEF → closer to 1.
-    const defFactor = 100 / (100 + Math.max(0, target.defense))
-
-    // Modifiers: ATK buffs (caster), mitigation bonuses (target), passive/rule contributions.
-    // Collapsed into a single multiplier.
+    // Gather contextual bonuses from passives and rules — pure math is
+    // delegated to domain/DamageFormula.ts so it stays testable without
+    // Character/Battle. True damage bypasses DEF mitigation but still
+    // receives passive/buff modifiers (v3 §4.1).
     const atkBonus = this.passive.getAtkBonus(caster, this.battle)
                    + this.rules.getAtkBonus(caster, this.battle)
     const mitBonus = this.passive.getMitigationBonus(target, this.battle)
                    + this.rules.getMitigationBonus(target, this.battle)
-    // Cap combined mitigation at 90% to avoid zero-damage stalemates.
-    const mitFactor = Math.max(0.10, 1 - Math.min(0.90, mitBonus))
-
-    const modifiers = (1 + atkBonus) * mitFactor
-
-    // Execute: +25% damage when target HP ≤ 30%.
     const hpRatio = target.hp / Math.max(1, target.maxHp)
-    const execMult = hpRatio <= EXECUTE_HP_THRESHOLD ? EXECUTE_DAMAGE_MULT : 1.0
 
-    // Overtime damage scaling (round 12+, +10% per round, cumulative, applies to DoT too).
-    const overtimeMult =
-      this.battle.round >= OVERTIME_START_TURN
-        ? 1 + (this.battle.round - OVERTIME_START_TURN + 1) * OVERTIME_DAMAGE_BONUS_PER_TURN
-        : 1.0
-
-    const final = basePower * defFactor * modifiers * execMult * overtimeMult
-
-    // Minimum floor (v3 §5 cap): at least 10% of base.
-    const floor = basePower * MIN_DAMAGE_FLOOR_RATIO
-    return Math.max(Math.round(floor), Math.round(final))
+    return computeDamage({
+      basePower:     skill.power,
+      targetDef:     target.defense,
+      targetHpRatio: hpRatio,
+      atkBonus,
+      mitBonus,
+      round:         this.battle.round,
+      isTrueDamage:  skill.effectType === 'true_damage',
+    })
   }
 
   // ── Win condition ─────────────────────────────────────────────────────────
