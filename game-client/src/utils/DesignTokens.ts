@@ -129,6 +129,39 @@ export const colors = {
     fog: 0x1a2a3a,
     ash: 0xc9a060,
   },
+
+  // ── Shadow tones (for text-shadow presets; not part of the main palette) ──
+  shadow: {
+    blackHex:    '#000000',
+    darkGoldHex: '#5a3a00',  // deep-gold glow used by BootScene logo
+    deepBgHex:   '#04070d',
+    // Dark accents reused across login/menu HTML fragments
+    bgGradStartHex: '#141a2a',
+    bgGradEndHex:   '#0e1320',
+    inputBgHex:     '#080c16',
+    inputBorderHex: '#1e1a14',
+    formBorderHex:  '#3d2e14',
+    mutedTabHex:    '#5a4a38',
+    bodyMutedHex:   '#c0b8a8',
+    // Green action button
+    buttonFromHex:      '#2a4e1e',
+    buttonToHex:        '#1e3a16',
+    buttonBorderHex:    '#4a8a3a',
+    buttonBorderHoverHex: '#6aaa5a',
+    buttonTextHex:      '#b8e8a0',
+    // Blue action button
+    blueFromHex:        '#1e3a5a',
+    blueToHex:          '#162a4a',
+    blueBorderHex:      '#3a6a9a',
+    blueBorderHoverHex: '#5a8aba',
+    blueTextHex:        '#80c8f7',
+    // Info / link
+    infoHoverHex:       '#81d4fa',
+    // Success alt (monospace verification code)
+    successAltHex:      '#4caf50',
+    // Error red
+    errorHex:           '#e05555',
+  },
 } as const
 
 export const fonts = {

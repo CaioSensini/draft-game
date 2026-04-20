@@ -1,5 +1,18 @@
 import Phaser from 'phaser'
 import { UI } from '../utils/UIComponents'
+import { colors, fonts } from '../utils/DesignTokens'
+
+// Destructure shadow/form tokens for brevity inside HTML template strings.
+// Using local aliases keeps the template compact while remaining token-based.
+const s = colors.shadow
+const GOLD      = colors.ui.goldHex
+const GOLD_DIM  = colors.ui.goldDimHex
+const GOLD_DARK = colors.ui.goldDarkHex
+const BODY      = colors.ui.bodyHex
+const MUTED     = colors.ui.mutedHex
+const DIM       = colors.ui.dimHex
+const INFO      = colors.semantic.infoHex
+const BLACK     = s.blackHex
 
 export default class LoginScene extends Phaser.Scene {
   private pendingUserId: string | null = null
@@ -23,14 +36,14 @@ export default class LoginScene extends Phaser.Scene {
     // =========================================================================
     const titleText = this.add
       .text(width / 2, 55, 'DRAFT', {
-        fontFamily: 'Arial Black, Arial',
+        fontFamily: fonts.heading,
         fontSize: '48px',
-        color: '#f0c850',
+        color: GOLD,
         fontStyle: 'bold',
         shadow: {
           offsetX: 0,
           offsetY: 3,
-          color: '#8b6914',
+          color: GOLD_DARK,
           blur: 8,
           fill: true,
         },
@@ -39,14 +52,14 @@ export default class LoginScene extends Phaser.Scene {
 
     this.add
       .text(width / 2, 98, 'GAME', {
-        fontFamily: 'Arial Black, Arial',
+        fontFamily: fonts.heading,
         fontSize: '22px',
-        color: '#c9a84c',
+        color: GOLD_DIM,
         fontStyle: 'bold',
         shadow: {
           offsetX: 0,
           offsetY: 2,
-          color: '#5a3a00',
+          color: s.darkGoldHex,
           blur: 4,
           fill: true,
         },
@@ -54,11 +67,11 @@ export default class LoginScene extends Phaser.Scene {
       .setOrigin(0.5)
 
     // Decorative lines under title
-    this.add.rectangle(width / 2 - 120, 118, 80, 1, 0xc9a84c, 0.35)
-    this.add.rectangle(width / 2 + 120, 118, 80, 1, 0xc9a84c, 0.35)
+    this.add.rectangle(width / 2 - 120, 118, 80, 1, colors.ui.goldDim, 0.35)
+    this.add.rectangle(width / 2 + 120, 118, 80, 1, colors.ui.goldDim, 0.35)
     // Small diamond center
     const diamondGfx = this.add.graphics()
-    diamondGfx.fillStyle(0xc9a84c, 0.5)
+    diamondGfx.fillStyle(colors.ui.goldDim, 0.5)
     diamondGfx.fillPoints(
       [
         new Phaser.Geom.Point(width / 2, 118 - 3),
@@ -71,13 +84,13 @@ export default class LoginScene extends Phaser.Scene {
 
     this.add
       .text(width / 2, 135, 'by Codeforje VIO', {
-        fontFamily: 'Arial',
+        fontFamily: fonts.body,
         fontSize: '12px',
-        color: '#5a4a30',
+        color: DIM,
         shadow: {
           offsetX: 0,
           offsetY: 1,
-          color: '#000000',
+          color: BLACK,
           blur: 2,
           fill: true,
         },
@@ -114,8 +127,8 @@ export default class LoginScene extends Phaser.Scene {
 
     const formHtml = `
       <div id="login-panel" style="
-        background: linear-gradient(180deg, #141a2a 0%, #0e1320 100%);
-        border: 1.5px solid #3d2e14;
+        background: linear-gradient(180deg, ${s.bgGradStartHex} 0%, ${s.bgGradEndHex} 100%);
+        border: 1.5px solid ${s.formBorderHex};
         border-radius: 12px;
         padding: 28px 32px;
         width: 370px;
@@ -132,14 +145,14 @@ export default class LoginScene extends Phaser.Scene {
         <!-- TAB BUTTONS -->
         <div style="display: flex; gap: 0; margin-bottom: 20px;">
           <button id="tab-login" style="
-            flex: 1; padding: 10px 0; background: transparent; color: #f0c850;
-            border: none; border-bottom: 2px solid #c9a84c; cursor: pointer;
+            flex: 1; padding: 10px 0; background: transparent; color: ${GOLD};
+            border: none; border-bottom: 2px solid ${GOLD_DIM}; cursor: pointer;
             font-size: 14px; font-weight: bold; letter-spacing: 1.5px;
             font-family: Arial, sans-serif;
             transition: color 0.2s, border-color 0.2s;
           ">LOGIN</button>
           <button id="tab-register" style="
-            flex: 1; padding: 10px 0; background: transparent; color: #5a4a38;
+            flex: 1; padding: 10px 0; background: transparent; color: ${s.mutedTabHex};
             border: none; border-bottom: 2px solid transparent; cursor: pointer;
             font-size: 14px; letter-spacing: 1.5px;
             font-family: Arial, sans-serif;
@@ -148,42 +161,42 @@ export default class LoginScene extends Phaser.Scene {
         </div>
 
         <!-- Separator -->
-        <div style="width: 100%; height: 1px; background: linear-gradient(90deg, transparent, #3d2e14, transparent); margin-bottom: 18px;"></div>
+        <div style="width: 100%; height: 1px; background: linear-gradient(90deg, transparent, ${s.formBorderHex}, transparent); margin-bottom: 18px;"></div>
 
         <!-- LOGIN FORM -->
         <div id="login-form">
           <input id="login-user" type="text" placeholder="Username"
             style="
               width: 100%; padding: 12px 14px; margin-bottom: 12px;
-              background: #080c16; border: 1.5px solid #1e1a14; border-radius: 6px;
-              color: #e8e0d0; font-size: 14px; box-sizing: border-box;
+              background: ${s.inputBgHex}; border: 1.5px solid ${s.inputBorderHex}; border-radius: 6px;
+              color: ${BODY}; font-size: 14px; box-sizing: border-box;
               outline: none; transition: border-color 0.2s, box-shadow 0.2s;
               font-family: Arial, sans-serif;
             "
-            onfocus="this.style.borderColor='#c9a84c'; this.style.boxShadow='0 0 8px rgba(201,168,76,0.3)'"
-            onblur="this.style.borderColor='#1e1a14'; this.style.boxShadow='none'"
+            onfocus="this.style.borderColor='${GOLD_DIM}'; this.style.boxShadow='0 0 8px rgba(201,168,76,0.3)'"
+            onblur="this.style.borderColor='${s.inputBorderHex}'; this.style.boxShadow='none'"
           />
           <input id="login-pass" type="password" placeholder="Senha"
             style="
               width: 100%; padding: 12px 14px; margin-bottom: 16px;
-              background: #080c16; border: 1.5px solid #1e1a14; border-radius: 6px;
-              color: #e8e0d0; font-size: 14px; box-sizing: border-box;
+              background: ${s.inputBgHex}; border: 1.5px solid ${s.inputBorderHex}; border-radius: 6px;
+              color: ${BODY}; font-size: 14px; box-sizing: border-box;
               outline: none; transition: border-color 0.2s, box-shadow 0.2s;
               font-family: Arial, sans-serif;
             "
-            onfocus="this.style.borderColor='#c9a84c'; this.style.boxShadow='0 0 8px rgba(201,168,76,0.3)'"
-            onblur="this.style.borderColor='#1e1a14'; this.style.boxShadow='none'"
+            onfocus="this.style.borderColor='${GOLD_DIM}'; this.style.boxShadow='0 0 8px rgba(201,168,76,0.3)'"
+            onblur="this.style.borderColor='${s.inputBorderHex}'; this.style.boxShadow='none'"
           />
           <button id="btn-login" style="
-            width: 100%; padding: 13px; background: linear-gradient(180deg, #2a4e1e 0%, #1e3a16 100%);
-            color: #b8e8a0; border: 1.5px solid #4a8a3a; border-radius: 6px;
+            width: 100%; padding: 13px; background: linear-gradient(180deg, ${s.buttonFromHex} 0%, ${s.buttonToHex} 100%);
+            color: ${s.buttonTextHex}; border: 1.5px solid ${s.buttonBorderHex}; border-radius: 6px;
             cursor: pointer; font-size: 16px; font-weight: bold; letter-spacing: 1.5px;
             font-family: Arial, sans-serif;
             transition: filter 0.15s, transform 0.15s, border-color 0.2s;
             text-shadow: 0 1px 3px rgba(0,0,0,0.4);
           "
-            onmouseover="this.style.filter='brightness(1.15)'; this.style.transform='translateY(-1px)'; this.style.borderColor='#6aaa5a'"
-            onmouseout="this.style.filter='none'; this.style.transform='none'; this.style.borderColor='#4a8a3a'"
+            onmouseover="this.style.filter='brightness(1.15)'; this.style.transform='translateY(-1px)'; this.style.borderColor='${s.buttonBorderHoverHex}'"
+            onmouseout="this.style.filter='none'; this.style.transform='none'; this.style.borderColor='${s.buttonBorderHex}'"
           >ENTRAR</button>
         </div>
 
@@ -192,55 +205,55 @@ export default class LoginScene extends Phaser.Scene {
           <input id="reg-user" type="text" placeholder="Username"
             style="
               width: 100%; padding: 12px 14px; margin-bottom: 12px;
-              background: #080c16; border: 1.5px solid #1e1a14; border-radius: 6px;
-              color: #e8e0d0; font-size: 14px; box-sizing: border-box;
+              background: ${s.inputBgHex}; border: 1.5px solid ${s.inputBorderHex}; border-radius: 6px;
+              color: ${BODY}; font-size: 14px; box-sizing: border-box;
               outline: none; transition: border-color 0.2s, box-shadow 0.2s;
               font-family: Arial, sans-serif;
             "
-            onfocus="this.style.borderColor='#c9a84c'; this.style.boxShadow='0 0 8px rgba(201,168,76,0.3)'"
-            onblur="this.style.borderColor='#1e1a14'; this.style.boxShadow='none'"
+            onfocus="this.style.borderColor='${GOLD_DIM}'; this.style.boxShadow='0 0 8px rgba(201,168,76,0.3)'"
+            onblur="this.style.borderColor='${s.inputBorderHex}'; this.style.boxShadow='none'"
           />
           <input id="reg-email" type="email" placeholder="Email"
             style="
               width: 100%; padding: 12px 14px; margin-bottom: 12px;
-              background: #080c16; border: 1.5px solid #1e1a14; border-radius: 6px;
-              color: #e8e0d0; font-size: 14px; box-sizing: border-box;
+              background: ${s.inputBgHex}; border: 1.5px solid ${s.inputBorderHex}; border-radius: 6px;
+              color: ${BODY}; font-size: 14px; box-sizing: border-box;
               outline: none; transition: border-color 0.2s, box-shadow 0.2s;
               font-family: Arial, sans-serif;
             "
-            onfocus="this.style.borderColor='#c9a84c'; this.style.boxShadow='0 0 8px rgba(201,168,76,0.3)'"
-            onblur="this.style.borderColor='#1e1a14'; this.style.boxShadow='none'"
+            onfocus="this.style.borderColor='${GOLD_DIM}'; this.style.boxShadow='0 0 8px rgba(201,168,76,0.3)'"
+            onblur="this.style.borderColor='${s.inputBorderHex}'; this.style.boxShadow='none'"
           />
           <input id="reg-pass" type="password" placeholder="Senha (min. 6 caracteres)"
             style="
               width: 100%; padding: 12px 14px; margin-bottom: 16px;
-              background: #080c16; border: 1.5px solid #1e1a14; border-radius: 6px;
-              color: #e8e0d0; font-size: 14px; box-sizing: border-box;
+              background: ${s.inputBgHex}; border: 1.5px solid ${s.inputBorderHex}; border-radius: 6px;
+              color: ${BODY}; font-size: 14px; box-sizing: border-box;
               outline: none; transition: border-color 0.2s, box-shadow 0.2s;
               font-family: Arial, sans-serif;
             "
-            onfocus="this.style.borderColor='#c9a84c'; this.style.boxShadow='0 0 8px rgba(201,168,76,0.3)'"
-            onblur="this.style.borderColor='#1e1a14'; this.style.boxShadow='none'"
+            onfocus="this.style.borderColor='${GOLD_DIM}'; this.style.boxShadow='0 0 8px rgba(201,168,76,0.3)'"
+            onblur="this.style.borderColor='${s.inputBorderHex}'; this.style.boxShadow='none'"
           />
           <button id="btn-register" style="
-            width: 100%; padding: 13px; background: linear-gradient(180deg, #1e3a5a 0%, #162a4a 100%);
-            color: #80c8f7; border: 1.5px solid #3a6a9a; border-radius: 6px;
+            width: 100%; padding: 13px; background: linear-gradient(180deg, ${s.blueFromHex} 0%, ${s.blueToHex} 100%);
+            color: ${s.blueTextHex}; border: 1.5px solid ${s.blueBorderHex}; border-radius: 6px;
             cursor: pointer; font-size: 16px; font-weight: bold; letter-spacing: 1.5px;
             font-family: Arial, sans-serif;
             transition: filter 0.15s, transform 0.15s, border-color 0.2s;
             text-shadow: 0 1px 3px rgba(0,0,0,0.4);
           "
-            onmouseover="this.style.filter='brightness(1.15)'; this.style.transform='translateY(-1px)'; this.style.borderColor='#5a8aba'"
-            onmouseout="this.style.filter='none'; this.style.transform='none'; this.style.borderColor='#3a6a9a'"
+            onmouseover="this.style.filter='brightness(1.15)'; this.style.transform='translateY(-1px)'; this.style.borderColor='${s.blueBorderHoverHex}'"
+            onmouseout="this.style.filter='none'; this.style.transform='none'; this.style.borderColor='${s.blueBorderHex}'"
           >CRIAR CONTA</button>
         </div>
 
         <!-- Separator -->
-        <div style="width: 100%; height: 1px; background: linear-gradient(90deg, transparent, #3d2e14, transparent); margin-top: 14px;"></div>
+        <div style="width: 100%; height: 1px; background: linear-gradient(90deg, transparent, ${s.formBorderHex}, transparent); margin-top: 14px;"></div>
 
         <!-- Error message -->
         <p id="error-msg" style="
-          color: #e05555; font-size: 13px; margin-top: 10px; text-align: center;
+          color: ${s.errorHex}; font-size: 13px; margin-top: 10px; text-align: center;
           min-height: 20px; text-shadow: 0 1px 3px rgba(0,0,0,0.4);
           font-family: Arial, sans-serif; transition: color 0.2s;
         "></p>
@@ -260,10 +273,10 @@ export default class LoginScene extends Phaser.Scene {
     loginTab.addEventListener('click', () => {
       loginForm.style.display = 'block'
       registerForm.style.display = 'none'
-      loginTab.style.color = '#f0c850'
+      loginTab.style.color = GOLD
       loginTab.style.fontWeight = 'bold'
-      loginTab.style.borderBottom = '2px solid #c9a84c'
-      registerTab.style.color = '#5a4a38'
+      loginTab.style.borderBottom = `2px solid ${GOLD_DIM}`
+      registerTab.style.color = s.mutedTabHex
       registerTab.style.fontWeight = 'normal'
       registerTab.style.borderBottom = '2px solid transparent'
       errorMsg.textContent = ''
@@ -272,10 +285,10 @@ export default class LoginScene extends Phaser.Scene {
     registerTab.addEventListener('click', () => {
       loginForm.style.display = 'none'
       registerForm.style.display = 'block'
-      registerTab.style.color = '#80c8f7'
+      registerTab.style.color = s.blueTextHex
       registerTab.style.fontWeight = 'bold'
-      registerTab.style.borderBottom = '2px solid #4fc3f7'
-      loginTab.style.color = '#5a4a38'
+      registerTab.style.borderBottom = `2px solid ${INFO}`
+      loginTab.style.color = s.mutedTabHex
       loginTab.style.fontWeight = 'normal'
       loginTab.style.borderBottom = '2px solid transparent'
       errorMsg.textContent = ''
@@ -288,12 +301,12 @@ export default class LoginScene extends Phaser.Scene {
       const password = (element.getChildByID('login-pass') as HTMLInputElement).value
       if (!username || !password) {
         errorMsg.textContent = 'Preencha todos os campos.'
-        errorMsg.style.color = '#e05555'
+        errorMsg.style.color = s.errorHex
         return
       }
       try {
         errorMsg.textContent = 'Conectando...'
-        errorMsg.style.color = '#7a7062'
+        errorMsg.style.color = MUTED
         const { authService } = await import('../services')
         const result = await authService.login(username, password)
 
@@ -306,7 +319,7 @@ export default class LoginScene extends Phaser.Scene {
         playerData.syncFromServer(result.user!)
         this.transitionOut('LobbyScene')
       } catch (e: unknown) {
-        errorMsg.style.color = '#e05555'
+        errorMsg.style.color = s.errorHex
         errorMsg.textContent =
           (e instanceof Error ? e.message : null) || 'Erro ao conectar. Verifique se o servidor esta rodando.'
       }
@@ -320,17 +333,17 @@ export default class LoginScene extends Phaser.Scene {
       const password = (element.getChildByID('reg-pass') as HTMLInputElement).value
       if (!username || !email || !password) {
         errorMsg.textContent = 'Preencha todos os campos.'
-        errorMsg.style.color = '#e05555'
+        errorMsg.style.color = s.errorHex
         return
       }
       if (password.length < 6) {
         errorMsg.textContent = 'Senha deve ter pelo menos 6 caracteres.'
-        errorMsg.style.color = '#e05555'
+        errorMsg.style.color = s.errorHex
         return
       }
       try {
         errorMsg.textContent = 'Criando conta...'
-        errorMsg.style.color = '#7a7062'
+        errorMsg.style.color = MUTED
         const { authService } = await import('../services')
         const result = await authService.register(username, email, password)
 
@@ -343,7 +356,7 @@ export default class LoginScene extends Phaser.Scene {
         playerData.syncFromServer(result.user!)
         this.transitionOut('LobbyScene')
       } catch (e: unknown) {
-        errorMsg.style.color = '#e05555'
+        errorMsg.style.color = s.errorHex
         errorMsg.textContent =
           (e instanceof Error ? e.message : null) || 'Erro ao registrar. Verifique se o servidor esta rodando.'
       }
@@ -364,8 +377,8 @@ export default class LoginScene extends Phaser.Scene {
 
     const verifyHtml = `
       <div style="
-        background: linear-gradient(180deg, #141a2a 0%, #0e1320 100%);
-        border: 1.5px solid #3d2e14;
+        background: linear-gradient(180deg, ${s.bgGradStartHex} 0%, ${s.bgGradEndHex} 100%);
+        border: 1.5px solid ${s.formBorderHex};
         border-radius: 12px;
         padding: 28px 32px;
         width: 370px;
@@ -381,61 +394,61 @@ export default class LoginScene extends Phaser.Scene {
         "></div>
 
         <h3 style="
-          color: #f0c850; margin: 0 0 8px 0; letter-spacing: 1.5px; font-size: 18px;
+          color: ${GOLD}; margin: 0 0 8px 0; letter-spacing: 1.5px; font-size: 18px;
           text-shadow: 0 2px 4px rgba(139,105,20,0.4);
           font-family: Arial, sans-serif;
         ">VERIFICACAO DE EMAIL</h3>
 
-        <div style="width: 100%; height: 1px; background: linear-gradient(90deg, transparent, #3d2e14, transparent); margin-bottom: 16px;"></div>
+        <div style="width: 100%; height: 1px; background: linear-gradient(90deg, transparent, ${s.formBorderHex}, transparent); margin-bottom: 16px;"></div>
 
-        <p style="color: #c0b8a8; font-size: 14px; margin: 0 0 20px 0; line-height: 1.5; font-family: Arial, sans-serif;">
+        <p style="color: ${s.bodyMutedHex}; font-size: 14px; margin: 0 0 20px 0; line-height: 1.5; font-family: Arial, sans-serif;">
           Um codigo de 6 digitos foi enviado para seu email.<br/>Digite abaixo:
         </p>
 
         <input id="verify-code" type="text" maxlength="6" placeholder="000000"
           style="
             width: 200px; padding: 14px; text-align: center; font-size: 28px;
-            letter-spacing: 8px; background: #080c16; border: 2px solid #1e1a14;
-            border-radius: 8px; color: #4caf50; font-weight: bold;
+            letter-spacing: 8px; background: ${s.inputBgHex}; border: 2px solid ${s.inputBorderHex};
+            border-radius: 8px; color: ${s.successAltHex}; font-weight: bold;
             box-sizing: border-box; outline: none;
             transition: border-color 0.2s, box-shadow 0.2s;
             font-family: 'Courier New', monospace;
             text-shadow: 0 0 6px rgba(76,175,80,0.3);
           "
-          onfocus="this.style.borderColor='#c9a84c'; this.style.boxShadow='0 0 10px rgba(201,168,76,0.3)'"
-          onblur="this.style.borderColor='#1e1a14'; this.style.boxShadow='none'"
+          onfocus="this.style.borderColor='${GOLD_DIM}'; this.style.boxShadow='0 0 10px rgba(201,168,76,0.3)'"
+          onblur="this.style.borderColor='${s.inputBorderHex}'; this.style.boxShadow='none'"
         />
         <br/><br/>
 
         <button id="btn-verify" style="
-          width: 100%; padding: 13px; background: linear-gradient(180deg, #2a4e1e 0%, #1e3a16 100%);
-          color: #b8e8a0; border: 1.5px solid #4a8a3a; border-radius: 6px;
+          width: 100%; padding: 13px; background: linear-gradient(180deg, ${s.buttonFromHex} 0%, ${s.buttonToHex} 100%);
+          color: ${s.buttonTextHex}; border: 1.5px solid ${s.buttonBorderHex}; border-radius: 6px;
           cursor: pointer; font-size: 16px; font-weight: bold; letter-spacing: 1.5px;
           font-family: Arial, sans-serif;
           transition: filter 0.15s, transform 0.15s, border-color 0.2s;
           text-shadow: 0 1px 3px rgba(0,0,0,0.4);
         "
-          onmouseover="this.style.filter='brightness(1.15)'; this.style.transform='translateY(-1px)'; this.style.borderColor='#6aaa5a'"
-          onmouseout="this.style.filter='none'; this.style.transform='none'; this.style.borderColor='#4a8a3a'"
+          onmouseover="this.style.filter='brightness(1.15)'; this.style.transform='translateY(-1px)'; this.style.borderColor='${s.buttonBorderHoverHex}'"
+          onmouseout="this.style.filter='none'; this.style.transform='none'; this.style.borderColor='${s.buttonBorderHex}'"
         >VERIFICAR</button>
 
-        <div style="width: 100%; height: 1px; background: linear-gradient(90deg, transparent, #3d2e14, transparent); margin-top: 14px;"></div>
+        <div style="width: 100%; height: 1px; background: linear-gradient(90deg, transparent, ${s.formBorderHex}, transparent); margin-top: 14px;"></div>
 
         <p id="verify-error" style="
-          color: #e05555; font-size: 13px; margin-top: 10px; min-height: 20px;
+          color: ${s.errorHex}; font-size: 13px; margin-top: 10px; min-height: 20px;
           text-shadow: 0 1px 3px rgba(0,0,0,0.4);
           font-family: Arial, sans-serif; transition: color 0.2s;
         "></p>
 
         <button id="btn-resend" style="
-          background: none; border: none; color: #4fc3f7; cursor: pointer;
+          background: none; border: none; color: ${INFO}; cursor: pointer;
           font-size: 13px; margin-top: 2px; padding: 4px 8px;
           font-family: Arial, sans-serif;
           transition: color 0.15s, filter 0.15s;
           text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         "
-          onmouseover="this.style.color='#81d4fa'; this.style.filter='brightness(1.2)'"
-          onmouseout="this.style.color='#4fc3f7'; this.style.filter='none'"
+          onmouseover="this.style.color='${s.infoHoverHex}'; this.style.filter='brightness(1.2)'"
+          onmouseout="this.style.color='${INFO}'; this.style.filter='none'"
         >Reenviar codigo</button>
       </div>
     `
@@ -451,12 +464,12 @@ export default class LoginScene extends Phaser.Scene {
       const code = (verifyEl.getChildByID('verify-code') as HTMLInputElement).value.trim()
       if (!code || code.length !== 6) {
         verifyError.textContent = 'Digite o codigo de 6 digitos.'
-        verifyError.style.color = '#e05555'
+        verifyError.style.color = s.errorHex
         return
       }
       try {
         verifyError.textContent = 'Verificando...'
-        verifyError.style.color = '#7a7062'
+        verifyError.style.color = MUTED
         const { authService } = await import('../services')
         const result = await authService.verifyCode(this.pendingUserId!, code)
 
@@ -464,7 +477,7 @@ export default class LoginScene extends Phaser.Scene {
         playerData.syncFromServer(result.user!)
         this.transitionOut('LobbyScene')
       } catch (e: unknown) {
-        verifyError.style.color = '#e05555'
+        verifyError.style.color = s.errorHex
         verifyError.textContent =
           (e instanceof Error ? e.message : null) || 'Codigo invalido. Tente novamente.'
       }
@@ -478,12 +491,12 @@ export default class LoginScene extends Phaser.Scene {
         btnResend.textContent = 'Enviando...'
         const { authService } = await import('../services')
         await authService.resendCode(this.pendingUserId!)
-        verifyError.style.color = '#4caf50'
+        verifyError.style.color = s.successAltHex
         verifyError.textContent = 'Codigo reenviado!'
         btnResend.textContent = 'Reenviar codigo'
         btnResend.disabled = false
       } catch (e: unknown) {
-        verifyError.style.color = '#e05555'
+        verifyError.style.color = s.errorHex
         verifyError.textContent =
           (e instanceof Error ? e.message : null) || 'Erro ao reenviar. Tente novamente.'
         btnResend.textContent = 'Reenviar codigo'
@@ -498,7 +511,7 @@ export default class LoginScene extends Phaser.Scene {
   private transitionOut(targetScene: string) {
     const { width, height } = this.scale
     const overlay = this.add
-      .rectangle(width / 2, height / 2, width, height, 0x000000, 0)
+      .rectangle(width / 2, height / 2, width, height, colors.ui.black, 0)
       .setDepth(999)
     this.tweens.add({
       targets: overlay,

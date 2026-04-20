@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { getAllCharacterAssets, getAllSkillAssets } from '../utils/AssetPaths'
+import { colors, fonts, sizes } from '../utils/DesignTokens'
 
 export default class BootScene extends Phaser.Scene {
   constructor() {
@@ -27,14 +28,14 @@ export default class BootScene extends Phaser.Scene {
     const { width, height } = this.scale
 
     // === LAYER 1: Solid dark base ===
-    this.add.rectangle(width / 2, height / 2, width, height, 0x04070d)
+    this.add.rectangle(width / 2, height / 2, width, height, colors.ui.bg)
 
     // === LAYER 2: Subtle radial vignette (darker edges) ===
     const vignette = this.add.graphics()
-    vignette.fillStyle(0x000000, 0.35)
+    vignette.fillStyle(colors.ui.black, 0.35)
     vignette.fillRect(0, 0, width * 0.15, height)
     vignette.fillRect(width * 0.85, 0, width * 0.15, height)
-    vignette.fillStyle(0x000000, 0.25)
+    vignette.fillStyle(colors.ui.black, 0.25)
     vignette.fillRect(0, 0, width, height * 0.12)
     vignette.fillRect(0, height * 0.88, width, height * 0.12)
 
@@ -43,7 +44,7 @@ export default class BootScene extends Phaser.Scene {
       const px = Math.random() * width
       const py = Math.random() * height
       const size = 0.8 + Math.random() * 1.5
-      const particle = this.add.circle(px, py, size, 0xc9a84c, 0.06 + Math.random() * 0.1)
+      const particle = this.add.circle(px, py, size, colors.ui.goldDim, 0.06 + Math.random() * 0.1)
       this.tweens.add({
         targets: particle,
         y: py - 30 - Math.random() * 50,
@@ -59,20 +60,20 @@ export default class BootScene extends Phaser.Scene {
     }
 
     // === DECORATIVE: Thin gold horizontal lines (ambient) ===
-    const lineTop = this.add.rectangle(width / 2, height / 2 - 50, 180, 1, 0xc9a84c, 0).setAlpha(0)
-    const lineBot = this.add.rectangle(width / 2, height / 2 + 50, 180, 1, 0xc9a84c, 0).setAlpha(0)
+    const lineTop = this.add.rectangle(width / 2, height / 2 - 50, 180, 1, colors.ui.goldDim, 0).setAlpha(0)
+    const lineBot = this.add.rectangle(width / 2, height / 2 + 50, 180, 1, colors.ui.goldDim, 0).setAlpha(0)
 
     // === STUDIO LOGO ===
     const logo = this.add
       .text(width / 2, height / 2 - 14, 'CODEFORJE VIO', {
-        fontFamily: 'Arial Black, Arial',
+        fontFamily: fonts.heading,
         fontSize: '28px',
-        color: '#c9a84c',
+        color: colors.ui.goldDimHex,
         fontStyle: 'bold',
         shadow: {
           offsetX: 0,
           offsetY: 2,
-          color: '#5a3a00',
+          color: colors.shadow.darkGoldHex,
           blur: 6,
           fill: true,
         },
@@ -82,13 +83,13 @@ export default class BootScene extends Phaser.Scene {
 
     const sub = this.add
       .text(width / 2, height / 2 + 22, 'presents', {
-        fontFamily: 'Arial',
-        fontSize: '14px',
-        color: '#5a4a30',
+        fontFamily: fonts.body,
+        fontSize: sizes.text.small,
+        color: colors.ui.dimHex,
         shadow: {
           offsetX: 0,
           offsetY: 1,
-          color: '#000000',
+          color: colors.shadow.blackHex,
           blur: 2,
           fill: true,
         },
@@ -138,7 +139,7 @@ export default class BootScene extends Phaser.Scene {
     // === AFTER 1.5s: Fade to black and navigate ===
     this.time.delayedCall(1500, () => {
       const overlay = this.add
-        .rectangle(width / 2, height / 2, width, height, 0x000000, 0)
+        .rectangle(width / 2, height / 2, width, height, colors.ui.black, 0)
         .setDepth(999)
 
       this.tweens.add({
