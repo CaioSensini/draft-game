@@ -1104,9 +1104,11 @@ export class CombatEngine {
           areaCenter: { col: target.col, row: target.row },
         })
         const hits = this._targeting.resolveTargets(skill, caster, target, this.battle) as Character[]
+        // Aggregate damage dealt for skill-specific post-hooks (e.g. Domínio Real).
+        let totalDamageDealt = 0
         for (const hit of hits) {
           if (this.battle.isOver) break
-          this._applyOffensiveSkill(caster, hit, skill)
+          totalDamageDealt += this._applyOffensiveSkill(caster, hit, skill)
         }
         // Always emit AREA_RESOLVED (even on 0 hits) so the renderer can show the blast
         this.emit({
@@ -1114,6 +1116,20 @@ export class CombatEngine {
           centerCol: target.col, centerRow: target.row,
           hitIds: hits.map((c) => c.id),
         })
+        // v3 §6.5 Domínio Real (lk_a4 / rk_a4): self-shield = 25% of total damage
+        // dealt, applied to the caster. If no damage landed (all evaded), no shield.
+        if ((skill.id === 'lk_a4' || skill.id === 'rk_a4') && totalDamageDealt > 0 && caster.alive) {
+          const shieldAmount = Math.round(totalDamageDealt * 0.25)
+          if (shieldAmount > 0) {
+            caster.addShield(shieldAmount)
+            this.emit({
+              type:   EventType.STATUS_APPLIED,
+              unitId: caster.id,
+              status: 'shield' as const,
+              value:  shieldAmount,
+            })
+          }
+        }
         break
       }
 
@@ -1148,9 +1164,13 @@ export class CombatEngine {
    * Apply one offensive skill from `caster` to `target`.
    * Computes raw damage, calls the resolver, then delegates meta-logic to
    * `_processResult` (stats, reflect, kill/victory).
+   *
+   * @returns the HP damage actually dealt to `target` (0 if evaded, dead,
+   *          or the effect was non-damage). Callers aggregate this for
+   *          skill-specific post-hooks such as Domínio Real's dynamic shield.
    */
-  private _applyOffensiveSkill(caster: Character, target: Character, skill: Skill): void {
-    if (!target.alive) return
+  private _applyOffensiveSkill(caster: Character, target: Character, skill: Skill): number {
+    if (!target.alive) return 0
 
     // Signal to Phaser: this attack is now executing against this target.
     // Suppressed for area skills — the top-level area announcement in
@@ -1175,7 +1195,7 @@ export class CombatEngine {
     const result = this.resolver.resolve(skill.effectType, ctx)
     this._processResult(caster, target, result)
 
-    if (this.battle.isOver || result.killed) return
+    if (this.battle.isOver || result.killed) return result.hpDamage
 
     // Post-damage passives (e.g. specialist heal-reduction, future on-hit effects)
     if (result.hpDamage > 0) {
@@ -1193,6 +1213,8 @@ export class CombatEngine {
       const secResult = this.resolver.resolve(sec.effectType, secCtx)
       this._processResult(caster, target, secResult)
     }
+
+    return result.hpDamage
   }
 
   /**

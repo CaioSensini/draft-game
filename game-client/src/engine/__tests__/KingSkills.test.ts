@@ -17,11 +17,17 @@
 import { describe, it, expect } from 'vitest'
 import { Character } from '../../domain/Character'
 import type { CharacterRole, CharacterSide } from '../../domain/Character'
+import { Team } from '../../domain/Team'
+import { Battle } from '../../domain/Battle'
+import { Skill } from '../../domain/Skill'
+import { EvadeEffect } from '../../domain/Effect'
+import { CombatEngine } from '../CombatEngine'
 import { createDefaultResolver } from '../EffectResolver'
 import type { EffectContext } from '../EffectResolver'
 import { getStatsForLevel } from '../../domain/Stats'
 import { SKILL_CATALOG } from '../../data/skillCatalog'
 import type { SkillDefinition } from '../../domain/Skill'
+import { PASSIVE_CATALOG } from '../../data/passiveCatalog'
 import { EventType } from '../types'
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -155,10 +161,59 @@ describe('King — Attack 1 (sustain)', () => {
       expect(target.hp).toBe(hpBefore - 18)
     })
 
-    // NOTE: the "shield = 25% of total damage dealt" mechanic is a
-    // skill-level custom behaviour not yet implemented in EffectResolver.
-    // Documented in DECISIONS.md as Bloco 2 stub.
-    it.skip('[STUB] shield equal to 25% of total damage applied to King', () => {})
+    // v3 §6.5: shield = 25% of total damage dealt across the 3x3 area.
+    // Implementation lives in CombatEngine._applyAttackSkill's area case
+    // (skill-id specific post-hook), not in the generic EffectResolver.
+    // We invoke the private method directly to avoid the phase-machinery
+    // overhead; the area post-hook is the unit under test.
+    it('shield equal to 25% of total damage is applied to the King', () => {
+      const king = mkChar('k', 'king', 'left', 5, 3)
+      const w1 = mkChar('w1', 'warrior', 'right', 7, 3)
+      const w2 = mkChar('w2', 'warrior', 'right', 8, 3)
+      const w3 = mkChar('w3', 'warrior', 'right', 9, 3)
+
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [king]),
+        rightTeam: new Team('right', [w1, w2, w3]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      const skill  = new Skill(kingSkill('lk_a4'))
+
+      // Directly invoke the private area-resolution path. The engine needs
+      // the grid synced so targeting finds the enemies.
+      engine.syncGrid(battle.allCharacters)
+      const applyFn = (engine as unknown as {
+        _applyAttackSkill: (c: Character, s: Skill, t: { kind: string; col: number; row: number }, side: string) => void
+      })._applyAttackSkill.bind(engine)
+      applyFn(king, skill, { kind: 'area', col: 8, row: 3 }, 'left')
+
+      // Each warrior takes damage from the 3x3 blast centered at (8, 3).
+      // Shield applied to King = round(totalDamageDealt × 0.25).
+      // We don't pin the exact damage number (depends on targeting, modifiers),
+      // but the shield MUST be > 0 and reasonable (< 30 on 3 warriors at base).
+      expect(king.totalShield).toBeGreaterThan(0)
+      expect(king.totalShield).toBeLessThanOrEqual(30)
+    })
+
+    it('edge case: zero damage dealt → no shield applied', () => {
+      const king = mkChar('k', 'king', 'left', 5, 3)
+      const w    = mkChar('w', 'warrior', 'right', 8, 3)
+      w.addEffect(new EvadeEffect(5))   // evade every hit in the area
+
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [king]),
+        rightTeam: new Team('right', [w]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill  = new Skill(kingSkill('lk_a4'))
+      const applyFn = (engine as unknown as {
+        _applyAttackSkill: (c: Character, s: Skill, t: { kind: string; col: number; row: number }, side: string) => void
+      })._applyAttackSkill.bind(engine)
+      applyFn(king, skill, { kind: 'area', col: 8, row: 3 }, 'left')
+
+      expect(king.totalShield).toBe(0)
+    })
   })
 })
 

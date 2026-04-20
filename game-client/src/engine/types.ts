@@ -249,8 +249,10 @@ export type EngineEvent =
   | { type: 'STATUS_APPLIED';
       unitId: string
       status: 'bleed' | 'poison' | 'burn' | 'stun' | 'snare' | 'regen' | 'reflect' | 'evade'
+            | 'shield'
             | 'def_down' | 'atk_down' | 'mov_down'
             | 'def_up'   | 'atk_up'   | 'mov_up'
+            | 'hp_up'
             | 'heal_reduction'
             | 'mark' | 'revive'
             | 'double_attack' | 'silence_defense' | 'silence_attack'
