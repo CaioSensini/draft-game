@@ -1,6 +1,6 @@
 import type { UnitData } from '../types'
 import type { RuntimeState } from '../entities/Unit'
-import { BOARD } from '../data/constants'
+import { BOARD } from '../utils/DesignTokens'
 
 const { COLS, ROWS } = BOARD
 

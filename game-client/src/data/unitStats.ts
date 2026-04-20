@@ -11,14 +11,14 @@ import type { UnitBaseStats, UnitRole } from '../types'
 export const unitStatsByRole: Record<UnitRole, UnitBaseStats> = {
   king: {
     maxHp: 180,
-    attack: 15,
-    defense: 15,
-    mobility: 3,
+    attack: 16,
+    defense: 14,
+    mobility: 4, // v3: removed free teleport (was 99). King now moves like a regular unit.
   },
   warrior: {
-    maxHp: 180,
-    attack: 16,
-    defense: 18,
+    maxHp: 200,
+    attack: 18,
+    defense: 20,
     mobility: 2,
   },
   specialist: {
@@ -29,7 +29,7 @@ export const unitStatsByRole: Record<UnitRole, UnitBaseStats> = {
   },
   executor: {
     maxHp: 120,
-    attack: 18,
+    attack: 24,
     defense: 8,
     mobility: 3,
   },

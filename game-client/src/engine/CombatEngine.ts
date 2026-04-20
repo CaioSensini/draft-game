@@ -36,6 +36,14 @@ import { Ok, Err, EventType } from './types'
 import type { Result } from './types'
 import { Grid, Position } from '../domain/Grid'
 import type { Direction, GridSide } from '../domain/Grid'
+import {
+  EXECUTE_HP_THRESHOLD,
+  EXECUTE_DAMAGE_MULT,
+  OVERTIME_START_TURN,
+  OVERTIME_DAMAGE_BONUS_PER_TURN,
+  MIN_DAMAGE_FLOOR_RATIO,
+  // HEAL_CAP_PER_TURN, SHIELD_CAP_PER_UNIT, KING_HEAL_IMMUNE — applied directly inside Character.ts
+} from '../data/globalRules'
 
 // ── Supporting types ──────────────────────────────────────────────────────────
 
@@ -874,25 +882,48 @@ export class CombatEngine {
   /**
    * Compute raw damage before Character.takeDamage() processes it.
    *
-   * Formula layers (applied in order):
-   *   gross  = power × (ATK / ATK_DIVISOR) × (1 + passiveAtkBonus + ruleAtkBonus)
-   *   mit    = DEF/200 + passiveMitBonus + ruleMitBonus
-   *   final  = max(1, round(gross × (1 − clamp(mit, 0, MAX_MITIGATION))))
+   * v3 formula (SKILLS_CATALOG_v3_FINAL.md §5):
+   *   dano_final = dano_base × mitigação_DEF × modificadores × execute_multiplier
+   *     mitigação_DEF = 100 / (100 + DEF_alvo)
+   *     modificadores = produto de (passivas × buffs × debuffs)
+   *     execute_multiplier = 1.25 se HP_alvo ≤ 30%, senão 1.0
+   *   Cap mínimo: dano_final ≥ dano_base × 0.10
+   *
+   * Note: ATK does NOT directly scale damage in v3 — it is only used via
+   * buffs/debuffs (atk_up, atk_down) that feed into `modificadores` below.
    */
   computeRawDamage(caster: Character, target: Character, skill: Skill): number {
-    // ATK multiplier — base + passive bonus + global rule bonus
-    let atkMult = caster.attack / CombatEngine.ATK_DIVISOR
-    atkMult *= (1 + this.passive.getAtkBonus(caster, this.battle)
-                  + this.rules.getAtkBonus(caster, this.battle))
-    const gross = Math.round(skill.power * atkMult)
+    const basePower = skill.power
 
-    // Mitigation — base DEF + passive bonuses + global rule bonuses
-    let mit = target.defense / 200
-    mit += this.passive.getMitigationBonus(target, this.battle)
-    mit += this.rules.getMitigationBonus(target, this.battle)
-    mit  = Math.min(CombatEngine.MAX_MITIGATION, Math.max(0, mit))
+    // DEF mitigation factor (0-1). Lower target DEF → closer to 1.
+    const defFactor = 100 / (100 + Math.max(0, target.defense))
 
-    return Math.max(1, Math.round(gross * (1 - mit)))
+    // Modifiers: ATK buffs (caster), mitigation bonuses (target), passive/rule contributions.
+    // Collapsed into a single multiplier.
+    const atkBonus = this.passive.getAtkBonus(caster, this.battle)
+                   + this.rules.getAtkBonus(caster, this.battle)
+    const mitBonus = this.passive.getMitigationBonus(target, this.battle)
+                   + this.rules.getMitigationBonus(target, this.battle)
+    // Cap combined mitigation at 90% to avoid zero-damage stalemates.
+    const mitFactor = Math.max(0.10, 1 - Math.min(0.90, mitBonus))
+
+    const modifiers = (1 + atkBonus) * mitFactor
+
+    // Execute: +25% damage when target HP ≤ 30%.
+    const hpRatio = target.hp / Math.max(1, target.maxHp)
+    const execMult = hpRatio <= EXECUTE_HP_THRESHOLD ? EXECUTE_DAMAGE_MULT : 1.0
+
+    // Overtime damage scaling (round 12+, +10% per round, cumulative, applies to DoT too).
+    const overtimeMult =
+      this.battle.round >= OVERTIME_START_TURN
+        ? 1 + (this.battle.round - OVERTIME_START_TURN + 1) * OVERTIME_DAMAGE_BONUS_PER_TURN
+        : 1.0
+
+    const final = basePower * defFactor * modifiers * execMult * overtimeMult
+
+    // Minimum floor (v3 §5 cap): at least 10% of base.
+    const floor = basePower * MIN_DAMAGE_FLOOR_RATIO
+    return Math.max(Math.round(floor), Math.round(final))
   }
 
   // ── Win condition ─────────────────────────────────────────────────────────

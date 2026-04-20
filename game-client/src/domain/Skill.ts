@@ -55,9 +55,18 @@ export type SkillEffectType =
   // ── Turn-modifier mechanics ──
   | 'double_attack'     // caster uses 2 attack skills next turn instead of 1 attack + 1 defense
   | 'silence_defense'   // target cannot use defense skills next turn
+  | 'silence_attack'    // target cannot use attack skills next turn (v3)
   // ── Ally movement ──
   | 'advance_allies'    // move all allies 1 tile toward enemy + buff
   | 'retreat_allies'    // move all allies 1 tile away from enemy + buff
+  // ── v3 new mechanics ──
+  | 'mov_up'            // increase target's mobility
+  | 'pull'              // drag target toward caster
+  | 'teleport'          // relocate caster
+  | 'summon_wall'       // create a physical wall tile with HP
+  | 'invisibility'      // untargetable by single-target skills until broken
+  | 'clone'             // summon decoy entities (Sombra Real)
+  | 'damage_redirect'   // ally's incoming damage routed to caster (Guardião)
 
 // ── Skill ─────────────────────────────────────────────────────────────────────
 
@@ -162,10 +171,19 @@ export class Skill {
       case 'burn':          // fire DoT — offensive
       case 'snare':         // movement lock — offensive
       case 'push':          // knockback — offensive
+      case 'pull':          // drag — offensive (v3)
       case 'lifesteal':     // damage + self-heal — offensive
       case 'mark':          // tag for bonus damage — offensive
       case 'silence_defense': // blocks enemy defense — offensive
+      case 'silence_attack':  // blocks enemy attack — offensive (v3)
         return targetSide !== casterSide
+      case 'mov_up':           // self/ally mobility buff
+      case 'teleport':         // caster reposition
+      case 'summon_wall':      // tactical board modifier (no side)
+      case 'invisibility':     // self-buff
+      case 'clone':            // self (summon decoys)
+      case 'damage_redirect':  // ally-to-self redirection
+        return targetSide === casterSide
       default:
         return true
     }

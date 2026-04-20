@@ -1,14 +1,14 @@
 /**
  * data/passiveCatalog.ts — the canonical list of all passive abilities.
  *
- * This file is PURE DATA — no imports from the engine, no logic.
+ * Updated per SKILLS_CATALOG_v3_FINAL.md (2026-04-20).
  *
- * ── Role catalogue (matches the game design document) ──────────────────────
+ * ── Role catalogue ──────────────────────────────────────────────────────────
  *
- *   king       → Proteção Real      — shield renovado a cada turno
- *   warrior    → Protetor           — aliados adjacentes ganham 15% mitigação
- *   executor   → Isolado            — +15% dano quando sem aliados adjacentes
- *   specialist → Queimação          — inimigos atingidos perdem 20% de cura por 1 turno
+ *   king       → Proteção Real   — -20% dano (aplica a true damage)
+ *   warrior    → Protetor        — aliados adjacentes -15% dano
+ *   executor   → Isolado         — +20% dano / +10% dano recebido sem aliados adjacentes (trade-off)
+ *   specialist → Queimação       — alvos atingidos -30% cura por 2 turnos
  */
 
 import type { PassiveDefinition } from '../domain/Passive'
@@ -21,10 +21,9 @@ export const PASSIVE_CATALOG: PassiveDefinition[] = [
     name:        'Proteção Real',
     forRole:     'king',
     type:        'incoming_damage_reduction',
-    value:       0.15,
+    value:       0.20,
     description:
-      'O rei sempre possui um pequeno escudo que é renovado no início de cada turno. ' +
-      'Reduz 15% do dano recebido permanentemente.',
+      'Reduz 20% do dano recebido de todas as fontes (inclui true damage). Sempre ativo.',
   },
 
   // ── Warrior ─────────────────────────────────────────────────────────────────
@@ -45,10 +44,9 @@ export const PASSIVE_CATALOG: PassiveDefinition[] = [
     name:        'Isolado',
     forRole:     'executor',
     type:        'atk_bonus_when_isolated',
-    value:       0.15,
+    value:       0.20,
     description:
-      'Se não tiver ninguém (aliado ou inimigo) nos 8 tiles adjacentes, ' +
-      'o executor ganha +15% de dano em todas as skills de ataque.',
+      'Sem aliados nas 8 células ao redor: +20% dano causado, +10% dano recebido (trade-off).',
   },
 
   // ── Specialist ───────────────────────────────────────────────────────────────
@@ -57,11 +55,11 @@ export const PASSIVE_CATALOG: PassiveDefinition[] = [
     name:        'Queimação',
     forRole:     'specialist',
     type:        'heal_reduction_on_hit',
-    value:       0.20,
-    ticks:       1,
+    value:       0.30,
+    ticks:       2,
     description:
-      'Inimigos atingidos pelas habilidades do especialista ficam com a cura ' +
-      'recebida reduzida em 20% por 1 turno.',
+      'Alvos atingidos recebem Queimação: -30% cura recebida por 2 turnos. ' +
+      'Renovável (não stackável): re-hit reseta timer.',
   },
 
 ]

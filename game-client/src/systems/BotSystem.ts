@@ -1,7 +1,7 @@
 import type { CardData, UnitData, UnitRole } from '../types'
 import type { RuntimeState } from '../entities/Unit'
 import { MovementSystem } from './MovementSystem'
-import { BOARD } from '../data/constants'
+import { BOARD } from '../utils/DesignTokens'
 
 const { COLS, ROWS } = BOARD
 

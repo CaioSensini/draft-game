@@ -12,4 +12,7 @@ export const getDatabaseConfig = (
   database: configService.get<string>('DATABASE_NAME', 'draft_game'),
   autoLoadEntities: true,
   synchronize: true, // disable in production
+  ssl: configService.get<string>('DATABASE_SSL') === 'true'
+    ? { rejectUnauthorized: false }
+    : false,
 });

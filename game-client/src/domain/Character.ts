@@ -100,6 +100,12 @@ export class Character {
   /** When > 0, the character cannot use defense skills this turn. Decremented each round. */
   private _silencedDefenseTicks = 0
 
+  /** v3: When > 0, the character cannot use attack skills this turn. */
+  private _silencedAttackTicks = 0
+
+  /** v3: Heals received this turn. Capped at 2 per HEAL_CAP_PER_TURN. Reset by engine. */
+  private _healsThisTurn = 0
+
   // ── Lifecycle ─────────────────────────────────────────────────────────────
   private _alive = true
 
@@ -260,10 +266,27 @@ export class Character {
   /**
    * Restore up to `requestedAmount` HP, capped at maxHp.
    * Applies heal-reduction if the debuff is active.
-   * Returns how much HP was actually restored.
+   *
+   * v3 rules (SKILLS_CATALOG_v3_FINAL.md §2):
+   *   - King is immune to direct external heals (KING_HEAL_IMMUNE).
+   *     Exceptions: self-heal from own skills (Sequência de Socos lifesteal,
+   *     Recuperação Real, Espírito de Sobrevivência). Caller must pass
+   *     `opts.ignoreKingImmunity=true` for these.
+   *   - Heal cap: max 2 heals per ally per turn (HEAL_CAP_PER_TURN).
+   *     Caller may bypass with `opts.ignoreCap=true` (for DoT-ordering flows).
    */
-  heal(requestedAmount: number): HealResult {
+  heal(requestedAmount: number, opts?: { ignoreKingImmunity?: boolean; ignoreCap?: boolean }): HealResult {
     if (!this._alive || requestedAmount <= 0) return { requested: requestedAmount, actual: 0 }
+
+    // v3: King is immune to external heals.
+    if (this.role === 'king' && !opts?.ignoreKingImmunity) {
+      return { requested: requestedAmount, actual: 0 }
+    }
+
+    // v3: Heal cap per turn.
+    if (!opts?.ignoreCap && this._healsThisTurn >= 2) {
+      return { requested: requestedAmount, actual: 0 }
+    }
 
     let amount = requestedAmount
     const reduction = this._effects.find((e): e is HealReductionEffect => e instanceof HealReductionEffect)
@@ -273,7 +296,13 @@ export class Character {
 
     const actual = Math.min(amount, this.baseStats.maxHp - this._hp)
     this._hp += actual
+    if (actual > 0 && !opts?.ignoreCap) this._healsThisTurn += 1
     return { requested: requestedAmount, actual }
+  }
+
+  /** Reset per-turn heal counter. Called by the engine at start of each turn. */
+  resetHealCounter(): void {
+    this._healsThisTurn = 0
   }
 
   // ── Effects ───────────────────────────────────────────────────────────────
@@ -389,6 +418,15 @@ export class Character {
   /** Set the number of turns defense is silenced. */
   setSilencedDefenseTicks(ticks: number): void { this._silencedDefenseTicks = Math.max(0, ticks) }
 
+  /** v3: Remaining turns where this character's attack is silenced. */
+  get silencedAttackTicks(): number { return this._silencedAttackTicks }
+
+  /** v3: True if the character is currently unable to use attack skills. */
+  get isAttackSilenced(): boolean { return this._silencedAttackTicks > 0 }
+
+  /** v3: Set the number of turns attack is silenced. */
+  setSilencedAttackTicks(ticks: number): void { this._silencedAttackTicks = Math.max(0, ticks) }
+
   // ── Round tick ────────────────────────────────────────────────────────────
 
   /**
@@ -431,6 +469,11 @@ export class Character {
     // Decrement silence-defense counter each round
     if (this._silencedDefenseTicks > 0) {
       this._silencedDefenseTicks--
+    }
+
+    // v3: Decrement silence-attack counter each round
+    if (this._silencedAttackTicks > 0) {
+      this._silencedAttackTicks--
     }
 
     this._pruneExpired()

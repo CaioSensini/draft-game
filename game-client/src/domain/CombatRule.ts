@@ -64,6 +64,8 @@ export type CombatRuleType =
   | 'wall_mit_per_toucher'   // +value% mit × wall-touch count (target team)
   | 'last_stand_mit_bonus'   // +value% mit for king when sole survivor
   | 'outnumbered_atk_bonus'  // +value% atk when team is outnumbered
+  | 'execute_threshold'      // v3: +value% damage when target HP ≤ EXECUTE_HP_THRESHOLD
+  | 'overtime_scaling'       // v3: +value% damage per turn after OVERTIME_START_TURN
 
 // ── CombatRuleDefinition ──────────────────────────────────────────────────────
 

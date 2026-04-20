@@ -157,3 +157,96 @@ export const dgRewards = {
   levelUp: 1,
   specialAchievement: 10,
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+// v3 — SCALING & UPGRADE (SKILLS_CATALOG_v3_FINAL.md §8 e §9)
+// ════════════════════════════════════════════════════════════════════════════
+
+/** Level used for ranked normalization — all ranked players are treated as this level. */
+export const RANKED_NORMALIZED_LEVEL = 50
+
+/**
+ * v3 HP scaling per level (§8.1):  HP(level) = HP_base × (1 + 0.005 × (level - 1))
+ * Lvl 1: 1.00x, Lvl 50: 1.245x, Lvl 100: 1.495x.
+ *
+ * Preserves the legacy getStatMultiplier for older call-sites; use this for
+ * v3-compliant scaling.
+ */
+export function hpMultiplierV3(level: number): number {
+  const lv = Math.max(1, Math.min(MAX_LEVEL, level))
+  return 1 + 0.005 * (lv - 1)
+}
+
+/**
+ * v3 ATK/DEF scaling per level (§8.1):  STAT(level) = STAT_base × (1 + 0.004 × (level - 1))
+ * Lvl 1: 1.00x, Lvl 50: 1.196x, Lvl 100: 1.396x.
+ */
+export function atkDefMultiplierV3(level: number): number {
+  const lv = Math.max(1, Math.min(MAX_LEVEL, level))
+  return 1 + 0.004 * (lv - 1)
+}
+
+// ── Skill upgrade (§9) ────────────────────────────────────────────────────────
+
+export const MAX_SKILL_LEVEL = 5
+
+/** Cópias necessárias para upar cada nível. */
+export const SKILL_UPGRADE_COPIES: Record<number, number> = {
+  2: 1, 3: 2, 4: 4, 5: 8,
+}
+
+/** Custo em gold para cada upgrade (acumulado total: 22.000 gold para lvl 5). */
+export const SKILL_UPGRADE_GOLD: Record<number, number> = {
+  2:  500, 3: 1500, 4: 5000, 5: 15000,
+}
+
+/**
+ * v3 §9.3 — Multiplicador aplicado aos valores numéricos da skill por nível.
+ *   damage: +0%, +8%, +16%, +24%, +32%
+ *   heal/shield: +0%, +7%, +14%, +21%, +28%
+ *   dot (tick): +0%, +10%, +20%, +30%, +40%
+ */
+export function skillLevelMultiplier(
+  skillLevel: number,
+  kind: 'damage' | 'heal' | 'shield' | 'dot',
+): number {
+  const lv = Math.max(1, Math.min(MAX_SKILL_LEVEL, skillLevel))
+  switch (kind) {
+    case 'damage':        return 1 + 0.08 * (lv - 1)
+    case 'heal':
+    case 'shield':        return 1 + 0.07 * (lv - 1)
+    case 'dot':           return 1 + 0.10 * (lv - 1)
+  }
+}
+
+/**
+ * v3 §9.3 — Bônus de duração em debuffs por nível de skill.
+ * Lvl 1-2: base; Lvl 3-4: +1 turno; Lvl 5: +2 turnos.
+ */
+export function skillLevelDurationBonus(skillLevel: number): number {
+  const lv = Math.max(1, Math.min(MAX_SKILL_LEVEL, skillLevel))
+  if (lv >= 5) return 2
+  if (lv >= 3) return 1
+  return 0
+}
+
+// ── v3 XP table (§8.5) ────────────────────────────────────────────────────────
+
+export const XP_TABLE_V3 = {
+  pve: {
+    winSameLevel:  100,
+    winUnderdog:   30,
+    winOverdog:    200,
+    loss:          30,
+  },
+  pvp: {
+    winSameLevel:  80,
+    winUnderdog:   20,
+    winOverdog:    160,
+    loss:          20,
+  },
+  ranked: {
+    win:           150,
+    loss:          40,
+  },
+} as const
