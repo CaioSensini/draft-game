@@ -258,6 +258,7 @@ export type EngineEvent =
             | 'double_attack' | 'silence_defense' | 'silence_attack'
             | 'teleport_self' | 'teleport_target'
             | 'invisibility' | 'clone'
+            | 'summon_wall' | 'damage_redirect'
       value: number }
   | { type: 'BLEED_TICK';           unitId: string; damage: number; newHp: number }
   | { type: 'POISON_TICK';          unitId: string; damage: number; newHp: number }

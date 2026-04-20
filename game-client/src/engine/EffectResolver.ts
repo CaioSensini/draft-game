@@ -784,6 +784,66 @@ const handleClone: EffectHandler = (ctx) => {
   }
 }
 
+// ── Summon wall (Muralha Viva, Prisão de Muralha Morta) — stub handler ──────
+// v3 §6.3:
+//   Muralha Viva: creates a 2-sqm vertical wall in enemy field for 2 turns;
+//     enemies adjacent to the wall take 3 dmg/turn + def_down 15% + mov_down 1.
+//   Prisão de Muralha Morta: 8 temporary walls around a 3x3 center; enemies
+//     in the ring are snared 2 turns; walls break to any atk1 hit.
+//
+// Full implementation requires a "tile obstacle" system in Grid (occupancy
+// semantics, HP per wall tile, area damage zones, break-on-atk1 detection).
+// That's out of scope for Bloco 3 — we emit a status event so animations can
+// signal the wall summon, and leave the mechanic as a documented stub.
+// The secondaryEffect (def_down / snare) still applies to whatever targets
+// the area shape resolves to, so partial gameplay value exists today.
+
+const handleSummonWall: EffectHandler = (ctx) => {
+  // If the skill carries damage (power > 0 and rawDamage computed, e.g.
+  // Prisão de Muralha Morta has 12 center damage), apply it first.
+  const hit = ctx.rawDamage > 0 ? _applyRawDamage(ctx) : EMPTY
+
+  return {
+    ...hit,
+    events: [
+      ...hit.events,
+      {
+        type:   EventType.STATUS_APPLIED,
+        unitId: ctx.caster.id,
+        status: 'summon_wall' as const,
+        value:  ctx.power,
+      },
+    ],
+  }
+}
+
+// ── Damage redirect (Guardião) — stub handler ────────────────────────────────
+// v3 §6.3: 60% of damage dealt to the target ally is redirected to the
+// caster (Warrior), reduced 30% on the Warrior. Lasts 1 turn.
+//
+// Full enforcement requires hooking into Character.takeDamage so that when
+// the protected ally receives damage, 60% of it routes to the warrior with
+// a -30% mitigation stacked on. That requires a "damage interceptor"
+// protocol on Character — out of scope for Bloco 3.
+//
+// Stub: emits STATUS_APPLIED on the target ally signalling protection is
+// active. The scene / UI can show the guardian link; the redirect math is
+// documented in DECISIONS.md as pending.
+
+const handleDamageRedirect: EffectHandler = (ctx) => {
+  if (!ctx.target.alive) return EMPTY
+
+  return {
+    ...EMPTY,
+    events: [{
+      type:   EventType.STATUS_APPLIED,
+      unitId: ctx.target.id,
+      status: 'damage_redirect' as const,
+      value:  ctx.power,   // redirect percentage (e.g. 60)
+    }],
+  }
+}
+
 // ── Advance allies — move target 1 tile toward enemy side + DEF buff ─────────
 
 const handleAdvanceAllies: EffectHandler = (ctx) => {
@@ -898,6 +958,10 @@ export function createDefaultResolver(): EffectResolver {
   // Ally movement mechanics
   r.register('advance_allies',   handleAdvanceAllies)
   r.register('retreat_allies',   handleRetreatAllies)
+
+  // Bloco 3 Warrior stubs
+  r.register('summon_wall',      handleSummonWall)
+  r.register('damage_redirect',  handleDamageRedirect)
 
   return r
 }
