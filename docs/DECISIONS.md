@@ -4,6 +4,30 @@
 
 ---
 
+## 2026-04-20 — Sprint 0.4: PARADA AUTOMATICA §4 — refactor de BattleScene adiado
+
+**Contexto:** Sprint 0 subtarefa 0.4 pediu extracao de 3 managers (Targeting, Animation, UI) do BattleScene.ts (3659 LOC) com meta de BattleScene final abaixo de 1500 LOC. A inspecao detalhada revelou:
+
+- ~100 campos privados no BattleScene, todos inter-referenciados
+- Metodos de renderizacao (`_drawBackground`, `_drawGrid`, `_drawHUD`, `_drawStatusPanels`, `_buildTurnTrackerShell`, `_renderTurnTracker`, `_renderMiniLog`, etc.) compartilham estado via `this._sprites`, `this._panelBg`, `this._turnEntries`, `this._miniLogObjs`, etc.
+- Handlers de eventos tocam multiplos sistemas (animacao + UI + targeting) em um mesmo callback.
+
+**Alternativas avaliadas:**
+- **A)** Extracao completa e limpa — 1-2 semanas de refactor dedicado, fora do escopo Sprint 0.
+- **B)** Extracao parcial/superficial (managers que so seguram referencias de volta pra scene) — produz codigo organizacionalmente dividido mas sem ganho real de manutencao, e deixa estado hibrido que atrapalha refactor futuro.
+- **C)** Acionar regra de parada §4 do prompt ("se achar que 1500 LOC e inatingivel sem quebrar gameplay, pare e reporte") — documentar arquitetura alvo, deixar placeholder, seguir adiante com as outras subtarefas.
+
+**Decisao:** Alternativa **C**. Razao: o custo-beneficio de uma extracao parcial neste sprint nao compensa o risco de introduzir estado hibrido que atrapalhe o refactor real futuro. Sprint 0 tem outras subtarefas de alto impacto (0.5 Supabase, 0.6 mobile scale, 0.7 touch audit) que sao mais viaveis de entregar bem.
+
+**Consequencias:**
+- `src/scenes/battle/managers/README.md` criado com a arquitetura alvo e o plano de migracao detalhado.
+- `BattleScene.ts` fica nos 3659 LOC atuais. Sem extracao aplicada.
+- Refactor real entra no backlog como sprint dedicado de 1-2 semanas.
+
+**Status:** Subtarefa 0.4 marcada como **parcialmente concluida — stop rule §4 acionada**. Continuando 0.5-0.7.
+
+---
+
 ## 2026-04-20 — Sprint 0.1: unificacao de design tokens
 
 **Contexto:** `constants.ts` (205 LOC em src/data/) e `DesignTokens.ts` (131 LOC em src/utils/) coexistiam como duas fontes conflitantes de cores, tamanhos, fontes e regras visuais. 7 conflitos reais foram identificados antes da consolidacao (cores de time, cores de classe, shape do STROKE).
