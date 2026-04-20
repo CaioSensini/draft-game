@@ -360,7 +360,7 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
   },
   {
     id: 'le_d4', name: 'Teleport', category: 'defense', group: 'defense1',
-    effectType: 'teleport', targetType: 'self', power: 5,
+    effectType: 'teleport_self', targetType: 'self', power: 5,
     description: 'Teleporta até 5 sqm. Consome próximo turno de movimento.',
   },
 
@@ -442,7 +442,7 @@ const LEFT_KING: SkillDefinition[] = [
   {
     id: 'lk_a7', name: 'Intimidação', category: 'attack', group: 'attack2',
     effectType: 'damage', targetType: 'single', power: 10, range: 0,
-    secondaryEffect: { effectType: 'teleport', power: 0 },
+    secondaryEffect: { effectType: 'teleport_target', power: 0 },
     description:
       '10 dano + teleporta alvo e adjacentes pra local escolhido. Não pode colocar em bordas.',
   },
@@ -501,7 +501,7 @@ const LEFT_KING: SkillDefinition[] = [
   },
   {
     id: 'lk_d8', name: 'Ordem Real', category: 'defense', group: 'defense2',
-    effectType: 'teleport', targetType: 'all_allies', power: 0,
+    effectType: 'teleport_target', targetType: 'all_allies', power: 0,
     secondaryEffect: { effectType: 'def_up', power: 15, ticks: 1 },
     description:
       'Rei volta pra posição inicial, aliados teleportados pra posições adjacentes. ' +

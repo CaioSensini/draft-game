@@ -21,52 +21,205 @@ export type SkillCategory  = 'attack' | 'defense'
 export type SkillGroup     = 'attack1' | 'attack2' | 'defense1' | 'defense2'
 export type SkillTargetType = 'single' | 'self' | 'lowest_ally' | 'all_allies' | 'area'
 
+/**
+ * SkillEffectType — the 31 canonical effect types from SKILLS_CATALOG_v3_FINAL §13,
+ * plus 4 extensions required by specific v3 skills.
+ *
+ * ── Canonical 31 (v3 §13) ─────────────────────────────────────────────────────
+ *   Damage:     damage, true_damage
+ *   Healing:    heal, regen, lifesteal
+ *   Defense:    shield, evade, reflect, revive
+ *   DoT:        bleed, burn, poison
+ *   CC:         stun, snare, silence_attack, silence_defense
+ *   Movement:   push, pull, teleport_self, teleport_target
+ *   Stat mods:  def_up, def_down, atk_up, atk_down, mov_up, mov_down
+ *   Special:    mark, purge, cleanse, double_attack, area_field,
+ *               summon_wall, invisibility
+ *
+ * ── v3 §6 extensions (required by specific skills) ────────────────────────────
+ *   area            — instant AoE damage. Legacy in this codebase; many skills
+ *                     combine `area` + `areaShape` to specify the hit pattern.
+ *                     Conceptually a convenience synonym for `damage` + AoE.
+ *   advance_allies  — Avançar (Guerreiro d7): move own team forward 1 tile + buff.
+ *   retreat_allies  — Bater em Retirada (Guerreiro d8): move own team back + buff.
+ *   clone           — Sombra Real (Rei d3): summon visual decoy entities.
+ *   damage_redirect — Guardião (Guerreiro d2): reroute ally's incoming damage
+ *                     to the caster with mitigation.
+ *
+ * NOTE: the TypeScript exhaustive-switch pattern requires that every resolver
+ * (EffectResolver, Skill.isValidTargetSide, etc.) handle every variant here.
+ * If you add a new effect type, TS will force you to update those call sites.
+ */
 export type SkillEffectType =
-  // ── Offensive ──
-  | 'damage'        // direct HP damage
-  | 'bleed'         // damage over time (physical laceration)
-  | 'poison'        // damage over time (toxic — stacks with bleed)
-  | 'stun'          // prevent action for N rounds
-  | 'area'          // AoE damage (area + damage combined)
-  // ── Offensive stat debuffs ──
-  | 'def_down'      // reduce target's defense
-  | 'atk_down'      // reduce target's attack
-  | 'mov_down'      // reduce target's mobility
-  // ── Defensive ──
-  | 'heal'          // restore HP
-  | 'shield'        // grant absorb buffer
-  | 'evade'         // negate next hit
-  | 'reflect'       // retaliate on next hit
-  | 'regen'         // heal over time
-  // ── Defensive stat buffs ──
-  | 'def_up'        // increase own defense
-  | 'atk_up'        // increase own attack
-  // ── Special ──
-  | 'true_damage'   // flat damage — skips ATK scaling and DEF mitigation
-  | 'cleanse'       // remove all active debuffs from target (ally/self)
-  | 'purge'         // remove all active buffs from target (enemy)
-  // ── New mechanics ──
-  | 'burn'          // damage over time (fire — stacks with bleed/poison)
-  | 'snare'         // prevents movement for N turns (allows skill usage unlike stun)
-  | 'push'          // knockback target in a direction
-  | 'lifesteal'     // deal damage and heal caster for power% of damage dealt
-  | 'mark'          // tag target for bonus damage on next hit; if already marked, deal bonus
-  | 'revive'        // grant target a revive buffer — on fatal blow, restore to low HP
-  // ── Turn-modifier mechanics ──
-  | 'double_attack'     // caster uses 2 attack skills next turn instead of 1 attack + 1 defense
-  | 'silence_defense'   // target cannot use defense skills next turn
-  | 'silence_attack'    // target cannot use attack skills next turn (v3)
-  // ── Ally movement ──
-  | 'advance_allies'    // move all allies 1 tile toward enemy + buff
-  | 'retreat_allies'    // move all allies 1 tile away from enemy + buff
-  // ── v3 new mechanics ──
-  | 'mov_up'            // increase target's mobility
-  | 'pull'              // drag target toward caster
-  | 'teleport'          // relocate caster
-  | 'summon_wall'       // create a physical wall tile with HP
-  | 'invisibility'      // untargetable by single-target skills until broken
-  | 'clone'             // summon decoy entities (Sombra Real)
-  | 'damage_redirect'   // ally's incoming damage routed to caster (Guardião)
+  // ── Damage ────────────────────────────────────────────────────────────────
+  /** Direct HP damage. Scales with atk buffs/passives, mitigated by DEF. */
+  | 'damage'
+  /** Flat damage that **ignores DEF mitigation**. Still multiplied by passives
+   * and modifiers (e.g. Proteção Real reduces true damage too — v3 §4.1). */
+  | 'true_damage'
+  // ── Healing ───────────────────────────────────────────────────────────────
+  /** Instant HP restore. Blocked on Kings (v3 §2.1) unless caller signals
+   * self-skill exception. Counted against Heal Cap (v3 §2.4). */
+  | 'heal'
+  /** Heal over time. Same blocks as `heal`. */
+  | 'regen'
+  /** Damage + self-heal for a % of damage dealt. Exception to King heal-immunity
+   * when the caster IS the King (v3 §2.1 note — Sequência de Socos). */
+  | 'lifesteal'
+  // ── Defense ───────────────────────────────────────────────────────────────
+  /** Absorb buffer — consumed by incoming damage before HP. Subject to the
+   * Shield Cap of 100 HP total per unit (v3 §2.5). */
+  | 'shield'
+  /** Negate the next single incoming hit. Charges are consumed one at a time. */
+  | 'evade'
+  /** Retaliate against the next attacker — deal `power` damage back. */
+  | 'reflect'
+  /** Grant a revive buffer: on fatal damage, restore to a low HP instead of dying. */
+  | 'revive'
+  // ── Damage-over-time (DoT) ────────────────────────────────────────────────
+  /** Physical laceration DoT. v3 §2.3: resolves before heal each turn. */
+  | 'bleed'
+  /** Fire DoT. Same ordering as bleed. */
+  | 'burn'
+  /** Toxic DoT. Stacks with bleed/burn. */
+  | 'poison'
+  // ── Crowd Control (CC) ────────────────────────────────────────────────────
+  /** Prevent any action for N rounds. Target also cannot use defense skills. */
+  | 'stun'
+  /** Prevent movement for N rounds. Target can still use skills (unlike stun). */
+  | 'snare'
+  /** Prevent attack skill usage for N rounds. */
+  | 'silence_attack'
+  /** Prevent defense skill usage for N rounds. */
+  | 'silence_defense'
+  // ── Movement ──────────────────────────────────────────────────────────────
+  /** Knockback the target away from the caster. `power` = tiles pushed. */
+  | 'push'
+  /** Drag the target toward the caster. `power` = tiles pulled. */
+  | 'pull'
+  /** Relocate the CASTER to a chosen tile. v3: replaces the old generic `teleport`. */
+  | 'teleport_self'
+  /** Relocate the TARGET (and optionally their adjacents). v3: Intimidação, Ordem Real. */
+  | 'teleport_target'
+  // ── Stat modifiers ────────────────────────────────────────────────────────
+  /** Increase target's DEF for N rounds. */
+  | 'def_up'
+  /** Reduce target's DEF for N rounds. */
+  | 'def_down'
+  /** Increase target's ATK for N rounds. */
+  | 'atk_up'
+  /** Reduce target's ATK for N rounds. */
+  | 'atk_down'
+  /** Increase target's mobility (tiles per movement phase) for N rounds. */
+  | 'mov_up'
+  /** Reduce target's mobility for N rounds. */
+  | 'mov_down'
+  // ── Special mechanics ─────────────────────────────────────────────────────
+  /** Tag target for a conditional follow-up. Explosão Central: 1st = mark,
+   * 2nd on marked target = bonus damage. */
+  | 'mark'
+  /** Remove all active buffs from the target (typically an enemy). */
+  | 'purge'
+  /** Remove all active debuffs from the target (typically an ally/self). */
+  | 'cleanse'
+  /** Caster uses 2 attack skills next turn and no defense skill. */
+  | 'double_attack'
+  /** Persistent ground/area effect on the grid for N rounds (zone hazard,
+   * healing zone, mist). Different from the instant `area` AoE. */
+  | 'area_field'
+  /** Create a physical wall entity with HP that blocks movement/los. */
+  | 'summon_wall'
+  /** Caster becomes untargetable by single-target skills until dispelled. */
+  | 'invisibility'
+  // ── v3 §6 extensions (beyond §13 canonical list) ──────────────────────────
+  /** AoE instant damage. Use `areaShape` to specify the hit pattern.
+   * Kept for compatibility with the catalog — conceptually `damage` + area. */
+  | 'area'
+  /** Sombra Real (Rei d3) — spawn visual decoys to confuse the enemy. */
+  | 'clone'
+  /** Guardião (Guerreiro d2) — reroute ally's incoming damage to caster with
+   * mitigation bonus for the duration. */
+  | 'damage_redirect'
+  /** Avançar (Guerreiro d7) — shift the entire team one tile toward enemy + buff. */
+  | 'advance_allies'
+  /** Bater em Retirada (Guerreiro d8) — shift team one tile back + buff. */
+  | 'retreat_allies'
+
+// ── Type guards ───────────────────────────────────────────────────────────────
+//
+// Exhaustive predicates that group effect types by behavior. Engine layers
+// (EffectResolver, PassiveSystem, rules) use these instead of open-coded
+// switch statements when they only care about a category.
+//
+// Each guard has a corresponding `const` array so callers can also enumerate
+// the members. All arrays are `as const` so tests can check completeness at
+// type level.
+
+/** All effects that deal HP damage on application (including true damage). */
+export const DAMAGE_EFFECTS = ['damage', 'true_damage', 'area'] as const
+export function isDamageEffect(t: SkillEffectType): boolean {
+  return (DAMAGE_EFFECTS as readonly string[]).includes(t)
+}
+
+/** Damage-over-time effects. Resolve before heal each turn (v3 §2.3). */
+export const DOT_EFFECTS = ['bleed', 'burn', 'poison'] as const
+export function isDoTEffect(t: SkillEffectType): boolean {
+  return (DOT_EFFECTS as readonly string[]).includes(t)
+}
+
+/** Healing-family effects — subject to King heal-immunity + Heal Cap. */
+export const HEAL_EFFECTS = ['heal', 'regen', 'lifesteal'] as const
+export function isHealEffect(t: SkillEffectType): boolean {
+  return (HEAL_EFFECTS as readonly string[]).includes(t)
+}
+
+/** Positive stat/buff effects. */
+export const BUFF_EFFECTS = [
+  'shield', 'evade', 'reflect', 'revive',
+  'def_up', 'atk_up', 'mov_up',
+  'double_attack', 'invisibility',
+] as const
+export function isBuffEffect(t: SkillEffectType): boolean {
+  return (BUFF_EFFECTS as readonly string[]).includes(t)
+}
+
+/** Crowd-control effects — prevent or restrict actions. */
+export const CROWD_CONTROL_EFFECTS = [
+  'stun', 'snare', 'silence_attack', 'silence_defense',
+] as const
+export function isCrowdControlEffect(t: SkillEffectType): boolean {
+  return (CROWD_CONTROL_EFFECTS as readonly string[]).includes(t)
+}
+
+/** Negative stat-reduction effects (not CC). */
+export const DEBUFF_STAT_EFFECTS = ['def_down', 'atk_down', 'mov_down'] as const
+export function isDebuffStatEffect(t: SkillEffectType): boolean {
+  return (DEBUFF_STAT_EFFECTS as readonly string[]).includes(t)
+}
+
+/** Movement/displacement effects. */
+export const MOVEMENT_EFFECTS = [
+  'push', 'pull', 'teleport_self', 'teleport_target',
+  'advance_allies', 'retreat_allies',
+] as const
+export function isMovementEffect(t: SkillEffectType): boolean {
+  return (MOVEMENT_EFFECTS as readonly string[]).includes(t)
+}
+
+/** The full ordered list of every canonical effect type — used by tests and
+ * registries to enumerate without relying on the union. */
+export const ALL_EFFECT_TYPES: readonly SkillEffectType[] = [
+  'damage', 'true_damage',
+  'heal', 'regen', 'lifesteal',
+  'shield', 'evade', 'reflect', 'revive',
+  'bleed', 'burn', 'poison',
+  'stun', 'snare', 'silence_attack', 'silence_defense',
+  'push', 'pull', 'teleport_self', 'teleport_target',
+  'def_up', 'def_down', 'atk_up', 'atk_down', 'mov_up', 'mov_down',
+  'mark', 'purge', 'cleanse', 'double_attack', 'area_field',
+  'summon_wall', 'invisibility',
+  'area', 'clone', 'damage_redirect', 'advance_allies', 'retreat_allies',
+] as const
 
 // ── Skill ─────────────────────────────────────────────────────────────────────
 
@@ -144,49 +297,61 @@ export class Skill {
    * `casterSide` is the side that is casting.
    */
   isValidTargetSide(casterSide: CharacterSide, targetSide: CharacterSide): boolean {
-    switch (this.effectType) {
+    const type: SkillEffectType = this.effectType
+    switch (type) {
+      // Ally-targeting (own side only)
       case 'heal':
       case 'regen':
+      case 'lifesteal':       // caster only heals from own damage — still targets enemies,
+                              // but the heal side-effect lands on caster (same side). Treated
+                              // as "own side" for the lifesteal self-heal check. Enemy damage
+                              // path is validated separately by the engine.
       case 'shield':
       case 'evade':
       case 'reflect':
+      case 'revive':
       case 'def_up':
       case 'atk_up':
-      case 'cleanse':       // cleanse removes debuffs from allies/self
-      case 'revive':        // revive buffer — applied to allies/self
-      case 'double_attack': // self-buff — enables 2 attacks next turn
-      case 'advance_allies':  // ally movement + buff — targets own side
-      case 'retreat_allies':  // ally movement + buff — targets own side
+      case 'mov_up':
+      case 'cleanse':
+      case 'double_attack':
+      case 'advance_allies':
+      case 'retreat_allies':
+      case 'teleport_self':
+      case 'invisibility':
+      case 'clone':
+      case 'damage_redirect':
         return targetSide === casterSide
+      // Enemy-targeting
       case 'damage':
       case 'true_damage':
+      case 'area':
       case 'bleed':
+      case 'burn':
       case 'poison':
       case 'stun':
-      case 'area':
+      case 'snare':
+      case 'silence_attack':
+      case 'silence_defense':
       case 'def_down':
       case 'atk_down':
       case 'mov_down':
-      case 'purge':         // purge removes buffs from enemies
-      case 'burn':          // fire DoT — offensive
-      case 'snare':         // movement lock — offensive
-      case 'push':          // knockback — offensive
-      case 'pull':          // drag — offensive (v3)
-      case 'lifesteal':     // damage + self-heal — offensive
-      case 'mark':          // tag for bonus damage — offensive
-      case 'silence_defense': // blocks enemy defense — offensive
-      case 'silence_attack':  // blocks enemy attack — offensive (v3)
+      case 'push':
+      case 'pull':
+      case 'teleport_target':
+      case 'mark':
+      case 'purge':
         return targetSide !== casterSide
-      case 'mov_up':           // self/ally mobility buff
-      case 'teleport':         // caster reposition
-      case 'summon_wall':      // tactical board modifier (no side)
-      case 'invisibility':     // self-buff
-      case 'clone':            // self (summon decoys)
-      case 'damage_redirect':  // ally-to-self redirection
-        return targetSide === casterSide
-      default:
+      // Board-level (not associated with a specific side)
+      case 'summon_wall':
+      case 'area_field':
         return true
     }
+    // Exhaustiveness: if a new SkillEffectType is added, TS forces the switch
+    // above to be updated. The `never`-assignment below is the compile-time
+    // check; it cannot be reached at runtime.
+    const _exhaustive: never = type
+    return _exhaustive
   }
 
   // ── Display ───────────────────────────────────────────────────────────────
