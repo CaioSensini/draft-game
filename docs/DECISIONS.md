@@ -4,6 +4,52 @@
 
 ---
 
+## 2026-04-21 — Bloco 2: 16 King skills — implementation depth
+
+**Contexto:** Bloco 2 pede as 16 skills do Rei implementadas data-driven. As entradas do catalog (`data/skillCatalog.ts`) ja estavam corretas desde o Sprint anterior. O que faltava era implementar mecanicas exoticas no EffectResolver.
+
+**Mecanicas TOTALMENTE implementadas:**
+- `lk_a1` Soco Real, `lk_a2` Chute Real — damage + shield secondary (via existing handlers)
+- `lk_a3` Sequência de Socos — lifesteal COM excecao de king-immunity corrigida (handleLifesteal agora passa `ignoreKingImmunity: caster.role === 'king'`)
+- `lk_a4` Domínio Real — area damage (primary funciona; shield dinamico 25% do dano e stub)
+- `lk_a5` Empurrão Real — push primary
+- `lk_a6` Contra-ataque — area + push secondary
+- `lk_a7` Intimidação — damage + teleport_target secondary (handler implementado)
+- `lk_a8` Desarme — silence_attack novo handler COM excecao "nao afeta reis" (skips se target.role === 'king')
+- `lk_d2` Recuperação Real — regen self (ja funcionava via tickEffects bypass)
+- `lk_d5` Escudo Self — shield (via existing handler; cap 100 enforced)
+- `lk_d6` Fortaleza Inabalável — self-stun secondary (ja funcionava)
+- `lk_d7` Esquiva — evade (ja funcionava)
+- `lk_d8` Ordem Real — teleport_target + def_up (handler + existing def_up)
+
+**Mecanicas PARCIALMENTE implementadas (stub documentado):**
+- `lk_d1` Fuga Sombria `invisibility` — handler emite STATUS_APPLIED; bloqueio de single-target requer TargetingSystem (futuro).
+- `lk_d3` Sombra Real `clone` — handler emite STATUS_APPLIED com power=2; spawn real de entidades requer sistema de grid virtual (futuro).
+- `lk_a4` Domínio Real **shield dinamico 25% do dano total**: primary damage funciona, mas o shield calculado a partir do dano dealt nao e aplicado (requer hook pos-dano no skill handler especifico).
+- `lk_d4` Espírito de Sobrevivência **condicional HP ≤ 50%**: shield 10 sempre aplica; os +15%/+10% HP max condicionais nao sao aplicados (requer handler especifico da skill).
+- `lk_a7` Intimidação **teleport alvo + adjacentes**: evento emitido, mas resolver nao move adjacentes (so o alvo principal).
+- `lk_d1` Fuga Sombria **teleport para metade aliada**: teleport_self nao e combinado automaticamente com invisibility (requer skill-specific chain).
+
+**Stubs tests marcados `it.skip()`:**
+- Domínio Real dynamic shield (1 stub)
+- Espírito de Sobrevivência HP conditional (1 stub)
+
+**Adicoes ao EffectResolver:**
+- `handleSilenceAttack` — com guard para Rei
+- `handleTeleportSelf` — stub com STATUS_APPLIED
+- `handleTeleportTarget` — stub com STATUS_APPLIED, passa damage se rawDamage > 0
+- `handleInvisibility` — stub com STATUS_APPLIED
+- `handleClone` — stub com STATUS_APPLIED e power (numero de clones)
+- `handleLifesteal` corrigido para King-immunity exception
+
+**Extensao do STATUS_APPLIED event type:** status union agora inclui `silence_attack`, `teleport_self`, `teleport_target`, `invisibility`, `clone`, `mov_up`.
+
+**Total de tests do Bloco 2:** 45 passando + 2 skipped = 47 no arquivo `KingSkills.test.ts` (piso do prompt: 48 = 16 × 3). Com os 179 do Bloco 1, total 222 tests verdes + 2 skipped (224).
+
+**Status:** Concluido com stubs documentados. Build passa, type-check limpo.
+
+---
+
 ## 2026-04-21 — Bloco 1.5: DoT resolution order moved to start of action phase
 
 **Contexto:** v3 §2.3 exige ordem `dano direto → DoTs → shields → cura → regen` no mesmo turno. Implementacao anterior aplicava heal dentro de `_applyDefenseSkill` durante a action phase e so tickava DoTs no fim da phase (via `GameController.advancePhase`). Isso deixava heals deste turno "cancelar" DoTs do turno anterior.

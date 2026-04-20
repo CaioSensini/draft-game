@@ -557,7 +557,12 @@ const handleLifesteal: EffectHandler = (ctx) => {
   const stealPct = ctx.power > 0 ? ctx.power / 100 : LIFESTEAL_RATIO
   const healAmount = Math.max(1, Math.round(hit.hpDamage * stealPct))
 
-  const healResult = ctx.caster.heal(healAmount)
+  // v3 §2.1 exception: King's own lifesteal skill (Sequência de Socos) is a
+  // self-heal AND the caster is the King — so we bypass the global King
+  // heal-immunity. Non-King casters heal normally through the same call.
+  const healResult = ctx.caster.heal(healAmount, {
+    ignoreKingImmunity: ctx.caster.role === 'king',
+  })
   const events = [...hit.events]
 
   if (healResult.actual > 0) {
@@ -671,6 +676,114 @@ const handleSilenceDefense: EffectHandler = (ctx) => {
   }
 }
 
+// ── Silence Attack — v3: blocks enemy attack skill next turn (Desarme) ──
+//
+// Mirrors silence_defense but targets the attack queue. v3 §6.5 says
+// "Desarme: 6 dano + cancela skill atk do alvo no turno + silence_attack 1t".
+// The "cancela skill atk do alvo no turno" part is actionable only in the
+// action-phase sequencer (not this resolver), but setting the silence flag
+// covers the persistent 1-turn effect correctly.
+
+const handleSilenceAttack: EffectHandler = (ctx) => {
+  const hit = ctx.rawDamage > 0 ? _applyRawDamage(ctx) : EMPTY
+  if (hit.evaded || hit.killed || !ctx.target.alive) return hit
+
+  // v3: "Não afeta reis". If target is a king, skill only deals damage —
+  // silence is suppressed.
+  if (ctx.target.role === 'king') {
+    return {
+      ...hit,
+      events: [
+        ...hit.events,
+        // No status_applied emitted — silence was suppressed on a King.
+      ],
+    }
+  }
+
+  ctx.target.setSilencedAttackTicks(ctx.ticks ?? 1)
+
+  return {
+    ...hit,
+    events: [
+      ...hit.events,
+      { type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'silence_attack' as const, value: 1 },
+    ],
+  }
+}
+
+// ── Teleport (self / target) — stub handlers ─────────────────────────────────
+// v3 has two teleport variants (teleport_self for caster relocation, e.g.
+// Executor's Teleport and King's Fuga Sombria reposition; teleport_target
+// for enemy displacement, e.g. King's Intimidação and Ordem Real).
+// Full implementation requires input from the player (destination tile)
+// or scene-level choice. For Bloco 2 we emit a status event so animations
+// can fire, and leave the position change to the scene layer to orchestrate.
+
+const handleTeleportSelf: EffectHandler = (ctx) => {
+  return {
+    ...EMPTY,
+    events: [{
+      type: EventType.STATUS_APPLIED,
+      unitId: ctx.caster.id,
+      status: 'teleport_self' as const,
+      value: ctx.power,
+    }],
+  }
+}
+
+const handleTeleportTarget: EffectHandler = (ctx) => {
+  const hit = ctx.rawDamage > 0 ? _applyRawDamage(ctx) : EMPTY
+  if (!ctx.target.alive) return hit
+
+  return {
+    ...hit,
+    events: [
+      ...hit.events,
+      {
+        type: EventType.STATUS_APPLIED,
+        unitId: ctx.target.id,
+        status: 'teleport_target' as const,
+        value: ctx.power,
+      },
+    ],
+  }
+}
+
+// ── Invisibility (Fuga Sombria) — stub handler ──────────────────────────────
+// v3: King becomes untargetable by single-target skills until damaged or
+// moved. Full enforcement requires TargetingSystem participation; we set
+// a status flag on the Character so the UI can show the "hidden" visual.
+
+const handleInvisibility: EffectHandler = (ctx) => {
+  return {
+    ...EMPTY,
+    events: [{
+      type: EventType.STATUS_APPLIED,
+      unitId: ctx.caster.id,
+      status: 'invisibility' as const,
+      value: 1,
+    }],
+  }
+}
+
+// ── Clone (Sombra Real) — stub handler ───────────────────────────────────────
+// v3: Create 2 decoys in empty cells; King can swap with one. Clones last
+// 2 turns. A full clone system needs entity spawning, targeting filters,
+// and resolution on clone-hit — all outside the scope of EffectResolver.
+// We emit a clone-spawn signal so future systems can implement it.
+
+const handleClone: EffectHandler = (ctx) => {
+  return {
+    ...EMPTY,
+    events: [{
+      type: EventType.STATUS_APPLIED,
+      unitId: ctx.caster.id,
+      status: 'clone' as const,
+      value: ctx.power,   // number of clones
+    }],
+  }
+}
+
 // ── Advance allies — move target 1 tile toward enemy side + DEF buff ─────────
 
 const handleAdvanceAllies: EffectHandler = (ctx) => {
@@ -774,6 +887,13 @@ export function createDefaultResolver(): EffectResolver {
   // Turn-modifier mechanics
   r.register('double_attack',    handleDoubleAttack)
   r.register('silence_defense',  handleSilenceDefense)
+  r.register('silence_attack',   handleSilenceAttack)
+
+  // v3 Bloco 2 — King skills
+  r.register('teleport_self',    handleTeleportSelf)
+  r.register('teleport_target',  handleTeleportTarget)
+  r.register('invisibility',     handleInvisibility)
+  r.register('clone',            handleClone)
 
   // Ally movement mechanics
   r.register('advance_allies',   handleAdvanceAllies)

@@ -250,10 +250,12 @@ export type EngineEvent =
       unitId: string
       status: 'bleed' | 'poison' | 'burn' | 'stun' | 'snare' | 'regen' | 'reflect' | 'evade'
             | 'def_down' | 'atk_down' | 'mov_down'
-            | 'def_up'   | 'atk_up'
+            | 'def_up'   | 'atk_up'   | 'mov_up'
             | 'heal_reduction'
             | 'mark' | 'revive'
-            | 'double_attack' | 'silence_defense'
+            | 'double_attack' | 'silence_defense' | 'silence_attack'
+            | 'teleport_self' | 'teleport_target'
+            | 'invisibility' | 'clone'
       value: number }
   | { type: 'BLEED_TICK';           unitId: string; damage: number; newHp: number }
   | { type: 'POISON_TICK';          unitId: string; damage: number; newHp: number }
