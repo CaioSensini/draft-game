@@ -257,7 +257,7 @@ describe('Passive — Queimação (Specialist)', () => {
   it('emits a PASSIVE_TRIGGERED event on Specialist damage', () => {
     const specialist = mkChar('sp', 'specialist', 'left', 5, 3)
     const target     = mkChar('t',  'warrior',    'right', 10, 3)
-    const battle     = mkBattle([specialist], [target])
+    void mkBattle([specialist], [target])
 
     const events = ps.onDamageDealt(specialist, target, 1)
     expect(events.some((e) => e.type === 'PASSIVE_TRIGGERED')).toBe(true)
@@ -266,7 +266,7 @@ describe('Passive — Queimação (Specialist)', () => {
   it('applies HealReduction effect to the target (30%, 2 turns)', () => {
     const specialist = mkChar('sp', 'specialist', 'left', 5, 3)
     const target     = mkChar('t',  'warrior',    'right', 10, 3)
-    const battle     = mkBattle([specialist], [target])
+    void mkBattle([specialist], [target])
 
     ps.onDamageDealt(specialist, target, 1)
 
@@ -278,7 +278,7 @@ describe('Passive — Queimação (Specialist)', () => {
   it('re-hit renews duration (does not stack)', () => {
     const specialist = mkChar('sp', 'specialist', 'left', 5, 3)
     const target     = mkChar('t',  'warrior',    'right', 10, 3)
-    const battle     = mkBattle([specialist], [target])
+    void mkBattle([specialist], [target])
 
     ps.onDamageDealt(specialist, target, 1)
     const countAfterFirst = target.effects.filter((e) => e.type === 'heal_reduction').length
@@ -293,7 +293,7 @@ describe('Passive — Queimação (Specialist)', () => {
   it('does NOT fire on non-Specialist casters', () => {
     const warrior = mkChar('w', 'warrior', 'left', 5, 3)
     const target  = mkChar('t', 'warrior', 'right', 10, 3)
-    const battle  = mkBattle([warrior], [target])
+    void mkBattle([warrior], [target])
 
     const events = ps.onDamageDealt(warrior, target, 1)
     expect(events.some((e) => e.type === 'PASSIVE_TRIGGERED')).toBe(false)
@@ -303,7 +303,7 @@ describe('Passive — Queimação (Specialist)', () => {
   it('affects HEAL amount but not direct damage (verified via Character.heal)', () => {
     const specialist = mkChar('sp', 'specialist', 'left', 5, 3)
     const target     = mkChar('t',  'warrior',    'right', 10, 3)
-    const battle     = mkBattle([specialist], [target])
+    void mkBattle([specialist], [target])
 
     // Apply Queimação to target.
     ps.onDamageDealt(specialist, target, 1)

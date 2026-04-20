@@ -400,8 +400,11 @@ export class GameController {
     // Round boundary: the interleaved action phase has resolved (both sides
     // act within a single action phase now, so the boundary is simply after
     // any action phase ends — no need to check which side it was).
+    //
+    // v3 §2.3 — DoT ticking moved to beginActionPhase (start of next action
+    // phase) so DoTs resolve BEFORE heals that turn. We no longer call
+    // tickStatusEffects here; CombatEngine handles it at the right moment.
     if (wasActionPhase) {
-      this._engine.tickStatusEffects()
       if (!this._battle.isOver) {
         this._bus.emit({ type: EventType.ROUND_STARTED, round: this._battle.round })
         this._engine.applyRoundStartRules()

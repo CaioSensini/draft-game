@@ -4,6 +4,66 @@
 
 ---
 
+## 2026-04-21 — Bloco 1.5: DoT resolution order moved to start of action phase
+
+**Contexto:** v3 §2.3 exige ordem `dano direto → DoTs → shields → cura → regen` no mesmo turno. Implementacao anterior aplicava heal dentro de `_applyDefenseSkill` durante a action phase e so tickava DoTs no fim da phase (via `GameController.advancePhase`). Isso deixava heals deste turno "cancelar" DoTs do turno anterior.
+
+**Decisao:** Mover `tickStatusEffects()` de "fim da action phase" para "inicio da action phase" (dentro de `CombatEngine.beginActionPhase`). A chamada no `GameController.advancePhase` foi removida.
+
+**Resultado:**
+- DoTs aplicados no turno N ticam no **inicio** do turno N+1 — antes de qualquer heal daquele turno.
+- Exemplo v3 validado: unidade com 5 HP e bleed 10 morre antes de uma cura de 20 no mesmo turno.
+- Heal cap (§2.4) tambem resetado no mesmo ponto (`resetHealCounter()` em todas as unidades vivas).
+
+**Alternativa avaliada e rejeitada:** Reescrever pipeline para "categoria-first" (todos os ataques → todos os DoT → todos os shields → todas as curas). Seria fiel ao literal do §2.3 mas quebra a arquitetura interleaved-por-character atual. Risco alto, beneficio marginal.
+
+**Status:** Concluido. 4 tests no `CombatEngine.dotOrder.test.ts` cobrem o caso.
+
+---
+
+## 2026-04-21 — Bloco 1.5: shield cap 100 com "sobrescreve o mais fraco"
+
+**Contexto:** v3 §2.5 — "Shields de uma unidade somam ate 100 HP. Acima disso, novo shield sobrescreve o mais fraco." O codigo anterior simplesmente substituia qualquer shield existente (replace-only).
+
+**Decisao:**
+- Novo metodo `Character.addShield(amount)` encapsula a logica.
+- Se (soma atual + novo) <= 100: adiciona como ShieldEffect independente. Permite stacking.
+- Se (soma atual + novo) > 100 e existem shields ativos: remove o mais fraco, adiciona o novo.
+- Edge case documentado: shield solo > 100 → clampa em 100.
+
+**Consequencia do edge case "replace weakest":**  
+Se o novo shield for MAIS FRACO que todos os existentes, ainda assim ele substitui o mais fraco. Exemplo: shields `[80]`, novo `50` → resultado `[50]`. Player perde 80 pra ganhar 50. Decisao: jogar a responsabilidade no jogador (nao lancar shield pequeno quando ja no cap). Interpretacao mais literal do texto de v3.
+
+**Status:** Concluido. 8 tests em `Character.rules.test.ts`.
+
+---
+
+## 2026-04-21 — Bloco 1.5: debuff stacking "max valor + max duracao"
+
+**Contexto:** v3 §2.6 — "Mesmo debuff tipo+nome nao stacka. Nova aplicacao sobrescreve (pega maior valor/duracao maior)." Anteriormente `Character.addEffect` substituia totalmente o efeito existente de mesmo tipo, perdendo magnitude quando uma skill mais fraca era aplicada depois.
+
+**Decisao:** Nova funcao `mergeSameTypeEffect(existing, incoming)` em `Character.ts`:
+- **StatModEffect** (def_down/up, atk_down/up, mov_down/up): `Ctor(max(amount, amount'), max(ticks, ticks'))`.
+- **DoT** (bleed, poison, burn): `Ctor(max(damagePerTick, damagePerTick'), max(ticks, ticks'))`.
+- **HoT** (regen): `Ctor(max(healPerTick, healPerTick'), max(ticks, ticks'))`.
+- **Outros** (stun, snare, evade, reflect, mark, revive, heal_reduction): fall-through para "replace" (o codigo existente).
+
+Usa `existing.constructor` + cast para preservar a classe concreta (evita `instanceof` switch por subclasse).
+
+**Status:** Concluido. 8 tests em `Character.rules.test.ts` cobrindo stat mods, DoTs e HoT.
+
+---
+
+## 2026-04-21 — Bloco 1.5: overtime (§2.8) aplica a DoT
+
+**Contexto:** v3 §2.8 — "Aplica a DoT tambem." Anteriormente DoT ticks iam direto de `Effect.tick()` para HP sem passar por modificador de turno.
+
+**Decisao:** `Character.tickEffects(opts?: { damageMultiplier?: number })` aceita um multiplicador opcional. `CombatEngine.tickStatusEffects` calcula `1 + 0.10 × (round - 11)` para round >= 12 e passa para tickEffects. Multiplicador aplicado apenas a DoT (bleed/poison/burn), NAO a regen.
+
+**Status:** Concluido. 5 tests em `Character.rules.test.ts` + 1 em `CombatEngine.dotOrder.test.ts`.
+
+---
+
 ## 2026-04-21 — Bloco 1.2: politica de arredondamento de dano
 
 **Contexto:** SKILLS_CATALOG_v3_FINAL §5 define `dano_final = base × mitigacao × modificadores × execute`, mas nao especifica como arredondar o resultado. O prompt do Bloco 1 pede decisao explicita entre `Math.floor`, `Math.round` ou `Math.ceil`.

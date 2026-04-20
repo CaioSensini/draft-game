@@ -479,6 +479,20 @@ export class CombatEngine {
    * Emits `turn_started` for the first actor.
    */
   beginActionPhase(): void {
+    // v3 §2.4: reset the per-turn heal counter on every living character so
+    // the new phase can track "heals applied this turn" correctly.
+    for (const char of this.battle.livingCharacters) {
+      char.resetHealCounter()
+    }
+
+    // v3 §2.3 — DoT resolution order: DoTs resolve at the start of each
+    // action phase, BEFORE any defense skill heals. This ensures a unit at
+    // 5 HP with bleed 10 dies from the tick before a 20 HP heal can save it.
+    // Previously tickStatusEffects was called at end of action phase, which
+    // let this-turn heals undo last-turn's DoT pressure.
+    this.tickStatusEffects()
+    if (this.battle.isOver) return
+
     const leftChars  = this.battle.teamOf('left').all
     const rightChars = this.battle.teamOf('right').all
     const ordered    = getInterleavedOrder(this.battle.round, leftChars, rightChars)
@@ -821,10 +835,16 @@ export class CombatEngine {
     // Snapshot living characters before ticking — the list may change mid-loop
     const living = [...this.battle.livingCharacters]
 
+    // v3 §2.8: Overtime applies to DoT too. Compute the same scaling factor
+    // used by computeDamage and pass it to Character.tickEffects, which will
+    // scale bleed/burn/poison per-tick damage by this multiplier.
+    const round = this.battle.round
+    const overtimeMult = round >= 12 ? 1 + 0.10 * (round - 11) : 1
+
     for (const char of living) {
       if (this.battle.isOver) break
 
-      const result = char.tickEffects()
+      const result = char.tickEffects({ damageMultiplier: overtimeMult })
 
       for (const tick of result.ticks) {
         if (tick.effectType === 'bleed' && tick.value > 0) {
