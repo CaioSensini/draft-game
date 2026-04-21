@@ -1,5 +1,9 @@
 import Phaser from 'phaser'
-import { C, F, SHADOW, SCREEN } from './DesignTokens'
+import {
+  SCREEN,
+  surface, accent, fg, state,
+  fontFamily, typeScale, radii,
+} from './DesignTokens'
 import { SKILL_CATALOG } from '../data/skillCatalog'
 import { UI } from './UIComponents'
 
@@ -67,22 +71,22 @@ export function showPackOpen(
   const drawBox = (glow: boolean) => {
     boxG.clear()
     if (glow) {
-      boxG.fillStyle(C.gold, 0.15)
+      boxG.fillStyle(accent.primary, 0.15)
       boxG.fillRoundedRect(
         W / 2 - boxSize / 2 - 8, H / 2 - boxSize / 2 - 8,
-        boxSize + 16, boxSize + 16, 16,
+        boxSize + 16, boxSize + 16, radii.xl + 4,
       )
     }
-    boxG.fillStyle(0x1a2a3a, 1)
-    boxG.fillRoundedRect(W / 2 - boxSize / 2, H / 2 - boxSize / 2, boxSize, boxSize, 12)
+    boxG.fillStyle(surface.panel, 1)
+    boxG.fillRoundedRect(W / 2 - boxSize / 2, H / 2 - boxSize / 2, boxSize, boxSize, radii.xl)
     boxG.fillStyle(0xffffff, 0.05)
     boxG.fillRoundedRect(
       W / 2 - boxSize / 2 + 4, H / 2 - boxSize / 2 + 4,
       boxSize - 8, boxSize * 0.4,
-      { tl: 8, tr: 8, bl: 0, br: 0 },
+      { tl: radii.lg, tr: radii.lg, bl: 0, br: 0 },
     )
-    boxG.lineStyle(2, C.gold, glow ? 1 : 0.6)
-    boxG.strokeRoundedRect(W / 2 - boxSize / 2, H / 2 - boxSize / 2, boxSize, boxSize, 12)
+    boxG.lineStyle(2, accent.primary, glow ? 1 : 0.6)
+    boxG.strokeRoundedRect(W / 2 - boxSize / 2, H / 2 - boxSize / 2, boxSize, boxSize, radii.xl)
   }
 
   drawBox(false)
@@ -90,8 +94,8 @@ export function showPackOpen(
   // Question mark
   const qm = track(
     scene.add.text(W / 2, H / 2 - 10, '?', {
-      fontFamily: F.title, fontSize: '48px', color: C.goldDimHex,
-      shadow: SHADOW.goldGlow,
+      fontFamily: fontFamily.display, fontSize: '48px',
+      color: accent.dimHex, fontStyle: 'bold',
     }).setOrigin(0.5).setDepth(depth + 2),
   )
   scene.tweens.add({
@@ -122,7 +126,7 @@ export function showPackOpen(
         const angle = Math.random() * Math.PI * 2
         const dist = 60 + Math.random() * 100
         const size = 2 + Math.random() * 5
-        const colors = [C.gold, 0x4fc3f7, 0x4ade80, 0xab47bc, 0xff6633]
+        const colors = [accent.primary, state.info, state.success, state.warn, state.error]
         const color = colors[Math.floor(Math.random() * colors.length)]
         const p = track(scene.add.circle(W / 2, H / 2, size, color, 0.9).setDepth(depth + 3))
         scene.tweens.add({
@@ -151,11 +155,11 @@ export function showPackOpen(
           // ── 7. "Toque para fechar" ───────────────────────────────────
           const closeText = track(
             scene.add.text(W / 2, H - 50, 'Toque para fechar', {
-              fontFamily: F.body, fontSize: '12px', color: C.dimHex,
-              shadow: SHADOW.text,
-            }).setOrigin(0.5).setDepth(depth + 10).setAlpha(0),
+              fontFamily: fontFamily.body, fontSize: typeScale.meta,
+              color: fg.tertiaryHex, fontStyle: 'bold',
+            }).setOrigin(0.5).setDepth(depth + 10).setAlpha(0).setLetterSpacing(1.6),
           )
-          scene.tweens.add({ targets: closeText, alpha: 0.6, duration: 400 })
+          scene.tweens.add({ targets: closeText, alpha: 0.75, duration: 400 })
 
           // ── 8. Click to close ────────────────────────────────────────
           scene.time.delayedCall(300, () => {
@@ -190,19 +194,20 @@ function revealSkillCards(
   onAllRevealed: () => void,
 ): void {
   const count = drops.length
-  const cardW = 300
-  const cardH = 100
+  // Vertical 120×160 (INTEGRATION_SPEC §2 canonical). Mantém a regra de
+  // 1 row pra 1-4 cards, 2 rows pra 5-8 — 4 × 120 + 3 × 16 = 528 cabe folgado em 1280.
+  const cardW = 120
+  const cardH = 160
 
-  // Layout: 1-3 cards = single row, 4-6 = two rows
   let cols: number, rows: number
-  if (count <= 3) {
+  if (count <= 4) {
     cols = count; rows = 1
   } else {
     cols = Math.ceil(count / 2); rows = 2
   }
 
   const gapX = 16
-  const gapY = 14
+  const gapY = 18
   const totalW = cols * cardW + (cols - 1) * gapX
   const totalH = rows * cardH + (rows - 1) * gapY
   const startX = (W - totalW) / 2 + cardW / 2
@@ -235,7 +240,7 @@ function revealSkillCards(
 function drawSkillCard(
   scene: Phaser.Scene,
   cx: number, cy: number,
-  _cardW: number, _cardH: number,
+  cardW: number, cardH: number,
   drop: DroppedSkill,
   depth: number,
   track: <T extends Phaser.GameObjects.GameObject>(obj: T) => T,
@@ -246,7 +251,11 @@ function drawSkillCard(
     : null
   const group = drop.group ?? catalogEntry?.group ?? 'attack1'
 
-  const container = UI.skillCard(scene, cx, cy + 40, {
+  // Slide-up offset proportional to card height so the entrance reads at
+  // any size; 60% of the card's height is enough travel to feel airy.
+  const slideFrom = cardH * 0.6
+
+  const container = UI.skillCard(scene, cx, cy + slideFrom, {
     name: drop.name,
     effectType: drop.effectType,
     power: drop.power,
@@ -257,8 +266,9 @@ function drawSkillCard(
     skillId: drop.skillId,
     description: drop.description,
   }, {
-    width: 280,
-    height: 105,
+    orientation: 'vertical',
+    width: cardW,
+    height: cardH,
     depth,
     showTooltip: false,
     animateLastDot: drop.isProgressGain ?? false,
@@ -267,12 +277,30 @@ function drawSkillCard(
   container.setAlpha(0)
   track(container)
 
+  // Soft halo pulse behind each card — accent colour @ 18%, 1×320 ms
+  const halo = track(
+    scene.add.graphics().setDepth(depth - 1),
+  )
+  halo.fillStyle(accent.primary, 0.18)
+  halo.fillRoundedRect(cx - cardW / 2 - 6, cy - cardH / 2 - 6, cardW + 12, cardH + 12, radii.lg)
+  halo.setAlpha(0)
+
   // ── Entrance animation: slide up from below + fade in ──────────────────
   scene.tweens.add({
     targets: container,
     y: cy,
     alpha: 1,
-    duration: 400,
+    duration: 460,
     ease: 'Back.Out',
   })
+  scene.tweens.add({
+    targets: halo,
+    alpha: { from: 0, to: 0.85 },
+    duration: 240,
+    yoyo: true,
+    delay: 120,
+    onComplete: () => halo.destroy(),
+  })
 }
+
+
