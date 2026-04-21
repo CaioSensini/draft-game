@@ -10,7 +10,7 @@
 
 ---
 
-## Status das 16 skills do Executor (v3 §6.4) — **12/16 completas**
+## Status das 16 skills do Executor (v3 §6.4) — **15/16 completas (pós-quick-wins)**
 
 | ID | Nome | Estado | Tests |
 |----|------|--------|-------|
@@ -20,10 +20,10 @@
 | `le_a4` | Corte Preciso | ✅ Completo (damage line + purge) | 3 |
 | `le_a5` | Corte Hemorragia | ✅ Completo (bleed + bleed 4/3t) | 3 |
 | `le_a6` | Bomba de Espinhos | ✅ Completo (bleed + bleed 5/2t) | 3 |
-| `le_a7` | Marca da Morte | 🟠 PARTIAL — shield-strip + heal 20% pendente (skill-specific handler) | 3 |
+| `le_a7` | Marca da Morte | ✅ **Completo** (damage + **strip shields + heal 20%** + bleed 8/2t) | 7 |
 | `le_a8` | Armadilha Oculta | 🟠 PARTIAL — tile-trap system pendente (Grid-aware) | 3 |
-| `le_d1` | Refletir | 🟠 PARTIAL — reflect 25 funciona; "-25% dano recebido" pendente | 3 |
-| `le_d2` | Adrenalina | 🟠 PARTIAL — atk_up 25/2t funciona; "-15% HP max na expiração" pendente | 3 |
+| `le_d1` | Refletir | ✅ **Completo** (**-25% DR + 25% reflect via ReflectPercentEffect**) | 5 |
+| `le_d2` | Adrenalina | ✅ **Completo** (atk_up 25/2t + **-15% HP max na expiração**, bloqueável por shield) | 6 |
 | `le_d3` | Ataque em Dobro | 🟠 PARTIAL — double_attack funciona; cooldown 2t pendente | 3 |
 | `le_d4` | Teleport | 🟡 **STUB** — teleport_self status emit; consume-movement pendente | 3 |
 | `le_d5` | Recuo Rápido | 🟠 PARTIAL — shield 20 funciona; pre-move pendente | 3 |
@@ -31,7 +31,15 @@
 | `le_d7` | Bloqueio Total | ✅ Compartilhada (shield 60) | 2 |
 | `le_d8` | Shield | ✅ shield 25 + respeita cap 100 | 3 |
 
-**Resumo:** 7 completas (primárias ok, sem v3 extras) + 3 mecânicas centrais completas (bleed-conditional) + 2 shared = **12 completas**. 4 PARTIAL. 1 STUB.
+**Resumo pós-quick-wins:** **15 completas** + 3 PARTIAL + 1 STUB. Tests Executor: 55 → 64.
+
+### Parte 3 — Quick wins entregues (3 skills)
+
+| Skill | Mecânica adicionada | LOC | Tests |
+|-------|---------------------|-----|-------|
+| `le_a7` Marca da Morte | Strip all shields pré-damage, heal Executor 20% HP máx do shield stripped | +25 | 4 |
+| `le_d1` Refletir | `ReflectPercentEffect` class (absorb X% + reflect X%), skill-specific intercept | +40 | 3 |
+| `le_d2` Adrenalina | `Character.setAdrenalinePenalty`, tick-countdown, takeDamage on expire (shields absorb) | +35 | 4 |
 
 ---
 
