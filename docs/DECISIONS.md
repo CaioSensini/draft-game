@@ -4,6 +4,40 @@
 
 ---
 
+## 2026-04-21 — Bloco 5: Specialist — 3 Character-level flags para skill-specifics
+
+**Contexto:** v3 §6.2 define 3 mecânicas defensivas do Specialist que exigem state persistente no Character (não encodável via Effect único):
+- Renascimento Parcial: "1x por aliado por partida"
+- Proteção: "imunidade a novos debuffs por 1 turno"
+- Campo de Cura Contínuo: "cancelado se aliado tomar dano"
+
+**Decisão:** Adicionar 3 flags/counters privados em `Character`:
+- `_reviveConsumedThisBattle: boolean` — lifetime da instância; set no primeiro revive dispatched.
+- `_debuffImmuneTicks: number` — counter decrementado por round; addEffect() rejeita kind='debuff' quando > 0.
+- `RegenEffect.cancellable: boolean` (construtor arg) — flag na effect, não no Character; takeDamage strip quando hpDamage > 0.
+
+**Alternativas rejeitadas:**
+- A) Adicionar Effect subclasses para cada caso — polui hierarquia, cada subclass vira um case em mergeSameTypeEffect.
+- B) Event hooks em Character (onTakeDamage, onEffectExpire, etc.) — maior refactor, não justificável pra 3 skills.
+
+**Justificativa:** os 3 flags são comportamentos transversais (não estado de uma skill específica), então fazem sentido no Character. Precedente do Bloco 2 (`_healsThisTurn`, `_maxHpBonus`, `_silencedAttackTicks`) e Bloco 4 (`_adrenalinePenaltyHp`). A convenção de manter state em Character quando transversal agora está consolidada.
+
+**Escopo:**
+- 3 campos novos, 3 getters, 2 APIs (setDebuffImmunity, setAdrenalinePenalty já existia).
+- `addEffect` guarda: debuff immunity + revive lock.
+- `takeDamage` strip: cancellable regens.
+- `tickEffects` decrementa _debuffImmuneTicks.
+- Skill-specific intercepts em `_applyDefenseSkill` para ls_d2 (via addEffect guard), ls_d4 (cleanse+setDebuffImmunity), ls_d5 (cancellable regen).
+
+**Consequências:**
+- 12 Specialist skills completas vs 8 antes (+quick fix ls_a5 mov_down).
+- Non-cancellable regens (Rei's Recuperação Real) preservados — backward compat.
+- Outro sistema onboardable pelo padrão: qualquer nova skill "self-flag" cai nesse molde.
+
+**Status:** Concluído. 54 tests em SpecialistSkills.test.ts. Total projeto: 404 passing, 0 skipped.
+
+---
+
 ## 2026-04-21 — Bloco 4: Executor bleed-conditional mechanic — snapshot pré-hit
 
 **Contexto:** v3 §6.4 define três skills do Executor com bônus condicional em alvos sangrando:
