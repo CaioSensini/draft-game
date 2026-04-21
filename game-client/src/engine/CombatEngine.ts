@@ -1239,12 +1239,61 @@ export class CombatEngine {
       })
     }
 
+    // v3 §6.4 — bleed-conditional bonuses (Executor signature trick):
+    //   Corte Mortal (le_a1/ra1):     +50% damage if target had bleed pre-hit
+    //   Tempestade de Lâminas (le_a2):+50% damage if target had bleed pre-hit
+    //   Disparo Preciso (le_a3/ra3):  bypass shields if target had bleed pre-hit
+    // The snapshot MUST be taken BEFORE any effect runs because the primary
+    // hit / cleanse secondary may strip the bleed first.
+    const targetHadBleed = _hadBleedEffect(target)
+    const isLeA1 = skill.id === 'le_a1' || skill.id === 'ra_a1'
+    const isLeA2 = skill.id === 'le_a2' || skill.id === 'ra_a2'
+    const isLeA3 = skill.id === 'le_a3' || skill.id === 'ra_a3'
+    const bleedAmplifies = (isLeA1 || isLeA2) && targetHadBleed
+    const bleedBypassesShield = isLeA3 && targetHadBleed
+
     // true_damage bypasses the ATK/DEF formula — use power directly
-    const rawDamage = skill.effectType === 'true_damage'
+    let rawDamage = skill.effectType === 'true_damage'
       ? skill.power
       : _isDamageCarrying(skill.effectType)
         ? this.computeRawDamage(caster, target, skill)
         : 0
+    if (bleedAmplifies) {
+      rawDamage = Math.round(rawDamage * 1.5)
+    }
+
+    // Disparo Preciso bleed-bypass: apply true damage DIRECTLY via
+    // applyPureDamage so shields are skipped. Still respects alive checks
+    // and kill tracking via a minimal _processResult emit below.
+    if (bleedBypassesShield) {
+      const hpBefore = target.hp
+      target.applyPureDamage(rawDamage)
+      const dealt = hpBefore - target.hp
+      this.emit({
+        type: EventType.DAMAGE_APPLIED,
+        unitId: target.id,
+        amount: dealt,
+        newHp: target.hp,
+        sourceId: caster.id,
+      })
+      if (dealt > 0) {
+        this._addStat(caster.id, 'damageDealt',    dealt)
+        this._addStat(target.id, 'damageReceived', dealt)
+      }
+      if (!target.alive) {
+        this._recordDeath(target.id, caster.id)
+        this._addStat(caster.id, 'kills', 1)
+        this.emit({
+          type:    EventType.CHARACTER_DIED,
+          unitId:  target.id,
+          killedBy: caster.id,
+          wasKing: target.role === 'king',
+          round:   this.battle.round,
+        })
+        this._checkAndEmitVictory()
+      }
+      return dealt
+    }
 
     const ctx: EffectContext = {
       caster, target, power: skill.power, rawDamage, round: this.battle.round,
@@ -1483,4 +1532,16 @@ function _isDamageCarrying(type: string): boolean {
       || type === 'bleed'   || type === 'poison'  || type === 'burn'
       || type === 'stun'    || type === 'def_down' || type === 'atk_down'
       || type === 'snare'   || type === 'push'    || type === 'lifesteal'
+}
+
+/**
+ * v3 §6.4 Executor bleed-conditional helper.
+ *
+ * Returns true if the character currently carries an un-expired bleed
+ * effect. Poison and burn are NOT counted — v3 is specific about "bleed".
+ * This snapshot MUST be taken before the primary hit so secondaries like
+ * cleanse (which would strip the bleed) don't invalidate the condition.
+ */
+function _hadBleedEffect(target: Character): boolean {
+  return target.effects.some((e) => e.type === 'bleed' && !e.isExpired)
 }
