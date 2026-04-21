@@ -3149,11 +3149,16 @@ export default class BattleScene extends Phaser.Scene {
 
     const onClick = () => {
       if (isSolo) {
-        this._showConfirmPopup('Desistir da partida?', '#dd6666', 0xcc4444, () => {
+        this._showConfirmPopup('Render-se?', '', 0, () => {
           this._ctrl.forfeit(this._playerSide as 'left' | 'right')
+        }, {
+          eyebrow: 'Confirmação',
+          body: 'Abandonar esta partida afeta seu rank e não pode ser desfeito.',
+          confirmLabel: 'Render-se',
+          destructive: true,
         })
       } else {
-        this._showConfirmPopup('Votar para desistir?', '#dd6666', 0xcc4444, () => {
+        this._showConfirmPopup('Votar para render-se?', '', 0, () => {
           this._surrenderVotes++
           if (this._surrenderCountText) {
             this._surrenderCountText.setText(`${this._surrenderVotes}/${this._surrenderRequired}`)
@@ -3163,6 +3168,11 @@ export default class BattleScene extends Phaser.Scene {
           if (this._surrenderVotes >= this._surrenderRequired) {
             this._ctrl.forfeit(this._playerSide as 'left' | 'right')
           }
+        }, {
+          eyebrow: 'Votação',
+          body: `Seu voto conta para ${this._surrenderRequired}. Todos do time precisam concordar para render.`,
+          confirmLabel: 'Votar',
+          destructive: true,
         })
       }
     }
@@ -3186,93 +3196,75 @@ export default class BattleScene extends Phaser.Scene {
     }
   }
 
-  // ── Confirmation popup (reusable for Pular and Confirmar) ────────────────────
+  // ── Confirmation modal ────────────────────────────────────────────────────
+  //
+  // Delegates to UI.modal (INTEGRATION_SPEC §10 + Print 14). Callers pass the
+  // semantic content (eyebrow, title, body) plus the confirm action; legacy
+  // (title, titleColor, borderColor, onConfirm) signature is preserved as a
+  // thin shim so the surrender/skip/commit sites don't have to re-order their
+  // arguments in this sub-etapa. The three old color args are ignored — the
+  // modal colors come from UI.buttonPrimary/Destructive/Secondary styling.
 
-  private _confirmPopupEls: Phaser.GameObjects.GameObject[] = []
+  private _activeConfirmModal: { close: () => void } | null = null
 
   private _showConfirmPopup(
     title: string,
-    titleColor: string,
-    borderColor: number,
+    _titleColor: string,       // deprecated — kept for back-compat
+    _borderColor: number,       // deprecated — kept for back-compat
     onConfirm: () => void,
+    extra?: {
+      eyebrow?: string;
+      body?: string;
+      confirmLabel?: string;
+      destructive?: boolean;
+    },
   ): void {
-    if (this._confirmPopupEls.length > 0) return
-
-    const stk = { stroke: '#000000', strokeThickness: 3 }
-    const popW = 180; const popH = 70
-    const popX = SKILL_COL_W / 2
-    const popY = PANEL_Y + 4 * (CARD_H + CARD_GAP) + BTN_BAR_H + 6 - popH - 8
-
-    // Fullscreen overlay to block all clicks outside the popup
-    const overlay = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.3)
-      .setInteractive().setDepth(19)
-    overlay.on('pointerdown', () => this._closeConfirmPopup())
-
-    // Background
-    const bg = this.add.graphics().setDepth(20)
-    bg.fillStyle(0x0e1420, 0.98)
-    bg.fillRoundedRect(popX - popW / 2, popY, popW, popH, 8)
-    bg.lineStyle(1.5, borderColor, 0.5)
-    bg.strokeRoundedRect(popX - popW / 2, popY, popW, popH, 8)
-
-    // Text
-    const msg = this.add.text(popX, popY + 14, title, {
-      fontFamily: 'Arial Black', fontSize: '14px', color: titleColor, fontStyle: 'bold', ...stk,
-    }).setOrigin(0.5).setDepth(21)
-
-    // Sim button
-    const btnW = 60; const btnH = 24; const btnY = popY + popH - 20
-    const simBg = this.add.graphics().setDepth(21)
-    simBg.fillStyle(0x1a3a1a, 1)
-    simBg.fillRoundedRect(popX - btnW - 6, btnY - btnH / 2, btnW, btnH, 4)
-    simBg.lineStyle(1, 0x44dd44, 0.5)
-    simBg.strokeRoundedRect(popX - btnW - 6, btnY - btnH / 2, btnW, btnH, 4)
-    const simLabel = this.add.text(popX - btnW / 2 - 6, btnY, 'SIM', {
-      fontFamily: 'Arial Black', fontSize: '13px', color: '#44dd44', fontStyle: 'bold', ...stk,
-    }).setOrigin(0.5).setDepth(22)
-    const simHit = this.add.rectangle(popX - btnW / 2 - 6, btnY, btnW, btnH, 0, 0.001)
-      .setInteractive({ useHandCursor: true }).setDepth(23)
-    simHit.on('pointerdown', () => {
-      this._closeConfirmPopup()
-      onConfirm()
+    if (this._activeConfirmModal) return
+    this._activeConfirmModal = UI.modal(this, {
+      eyebrow: extra?.eyebrow ?? 'Confirmação',
+      title,
+      body: extra?.body,
+      actions: [
+        { label: 'Cancelar', kind: 'secondary', onClick: () => { /* noop — close handled */ } },
+        {
+          label: extra?.confirmLabel ?? 'Confirmar',
+          kind: extra?.destructive ? 'destructive' : 'primary',
+          onClick: onConfirm,
+        },
+      ],
+    }, {
+      onClose: () => { this._activeConfirmModal = null },
     })
-
-    // Não button
-    const naoBg = this.add.graphics().setDepth(21)
-    naoBg.fillStyle(0x3a1515, 1)
-    naoBg.fillRoundedRect(popX + 6, btnY - btnH / 2, btnW, btnH, 4)
-    naoBg.lineStyle(1, 0xdd4444, 0.5)
-    naoBg.strokeRoundedRect(popX + 6, btnY - btnH / 2, btnW, btnH, 4)
-    const naoLabel = this.add.text(popX + btnW / 2 + 6, btnY, 'NAO', {
-      fontFamily: 'Arial Black', fontSize: '13px', color: '#dd4444', fontStyle: 'bold', ...stk,
-    }).setOrigin(0.5).setDepth(22)
-    const naoHit = this.add.rectangle(popX + btnW / 2 + 6, btnY, btnW, btnH, 0, 0.001)
-      .setInteractive({ useHandCursor: true }).setDepth(23)
-    naoHit.on('pointerdown', () => this._closeConfirmPopup())
-
-    this._confirmPopupEls = [overlay, bg, msg, simBg, simLabel, simHit, naoBg, naoLabel, naoHit]
   }
 
   private _closeConfirmPopup(): void {
-    for (const el of this._confirmPopupEls) el.destroy()
-    this._confirmPopupEls = []
+    this._activeConfirmModal?.close()
+    this._activeConfirmModal = null
   }
 
   private _showSkipConfirm(): void {
-    this._showConfirmPopup('Pular turno?', '#ffaa44', 0xcc8822, () => {
+    this._showConfirmPopup('Pular turno?', '', 0, () => {
       if (this._currentActorId) {
         // Clear any selected skills before skipping
         this._ctrl.clearSelection(this._currentActorId)
         this._ctrl.skipTurn('no_selection')
       }
+    }, {
+      eyebrow: 'Atenção',
+      body: 'Seu personagem não joga este turno.',
+      confirmLabel: 'Pular',
     })
   }
 
   private _showCommitConfirm(): void {
-    this._showConfirmPopup('Confirmar acao?', '#44ff88', 0x22cc44, () => {
+    this._showConfirmPopup('Confirmar ação?', '', 0, () => {
       if (this._selReady) {
         this._ctrl.commitTurn()
       }
+    }, {
+      eyebrow: 'Confirmação',
+      body: 'As skills selecionadas entram na fila e serão resolvidas neste turno.',
+      confirmLabel: 'Confirmar',
     })
   }
 

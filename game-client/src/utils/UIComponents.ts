@@ -1722,6 +1722,179 @@ export const UI = {
     const offsetY = opts?.anchor === 'bottom' ? 0 : -totalH
     return scene.add.container(x, y + offsetY, [g, ...children]).setDepth(depth)
   },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MODAL (INTEGRATION_SPEC §10 + Print 14)
+  //
+  // Centered dialog with:
+  //   • backdrop rgba(0,0,0,0.70) over the full scene (full blur not possible
+  //     in Phaser's 2D renderer — docs/DECISIONS handoff README notes this)
+  //   • surface.panel fill, 1px border.default, radii.xl, shadow-lg emulation
+  //   • header: optional eyebrow (meta) + title (Cinzel h2)
+  //   • body: small Manrope fg-secondary, word-wrapped
+  //   • footer: right-aligned button row (12px gap), separator above
+  //   • close X top-right, ghost style
+  //
+  // Animation: opacity 0→1 + scale 0.98→1 over motion.durBase ease-out.
+  //
+  // Returns `{ close }`: callers can programmatically dismiss the modal; the
+  // helper also wires backdrop click + X button + any `kind:'primary/...'`
+  // button press to call close() automatically.
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  modal(
+    scene: Phaser.Scene,
+    content: {
+      eyebrow?: string;
+      title:    string;
+      body?:    string;
+      actions:  Array<{
+        label: string;
+        kind:  'primary' | 'secondary' | 'destructive' | 'ghost';
+        onClick: () => void;
+      }>;
+    },
+    opts?: {
+      width?: number;             // default 440 per spec §10
+      closeOnBackdrop?: boolean;  // default true
+      onClose?: () => void;
+    },
+  ): { close: () => void } {
+    const W = scene.scale.width
+    const H = scene.scale.height
+    const dialogW = opts?.width ?? 440
+    const pad = 24
+    const footerH = 64
+
+    // ── Measure pass: create texts at (0,0) just to read .height ──
+    const eyebrow = content.eyebrow
+      ? scene.add.text(0, 0, content.eyebrow.toUpperCase(), {
+          fontFamily: fontFamily.body, fontSize: typeScale.meta,
+          color: fg.tertiaryHex, fontStyle: 'bold',
+        })
+      : null
+    const anyEb = eyebrow as unknown as { setLetterSpacing?: (n: number) => void }
+    if (eyebrow && typeof anyEb.setLetterSpacing === 'function') anyEb.setLetterSpacing(1.6)
+
+    const title = scene.add.text(0, 0, content.title.toUpperCase(), {
+      fontFamily: fontFamily.display, fontSize: typeScale.h2,
+      color: fg.primaryHex, fontStyle: 'bold',
+    })
+    const anyTitle = title as unknown as { setLetterSpacing?: (n: number) => void }
+    if (typeof anyTitle.setLetterSpacing === 'function') anyTitle.setLetterSpacing(2)
+
+    const body = content.body
+      ? scene.add.text(0, 0, content.body, {
+          fontFamily: fontFamily.body, fontSize: typeScale.small,
+          color: fg.secondaryHex, wordWrap: { width: dialogW - pad * 2 },
+        })
+      : null
+
+    // ── Layout pass ──
+    let innerY = pad
+    const posEyebrow = innerY
+    if (eyebrow) innerY += eyebrow.height + 6
+    const posTitle = innerY
+    innerY += title.height + 12
+    const posBody = innerY
+    if (body) innerY += body.height
+    innerY += pad
+    const dialogH = innerY + footerH
+
+    const dx = Math.floor(W / 2 - dialogW / 2)
+    const dy = Math.floor(H / 2 - dialogH / 2)
+
+    const all: Phaser.GameObjects.GameObject[] = []
+
+    // ── Backdrop (70% black, blocks clicks) ──
+    const backdrop = scene.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.70)
+      .setInteractive().setDepth(990)
+    all.push(backdrop)
+
+    // ── Dialog bg (shadow + panel + inset highlight + border + footer rule) ──
+    const bg = scene.add.graphics().setDepth(991)
+    bg.fillStyle(0x000000, 0.55)
+    bg.fillRoundedRect(dx + 2, dy + 6, dialogW, dialogH, radii.xl)
+    bg.fillStyle(surface.panel, 1)
+    bg.fillRoundedRect(dx, dy, dialogW, dialogH, radii.xl)
+    bg.fillStyle(0xffffff, 0.05)
+    bg.fillRoundedRect(dx + 2, dy + 2, dialogW - 4, 1,
+      { tl: radii.xl - 2, tr: radii.xl - 2, bl: 0, br: 0 })
+    bg.lineStyle(1, border.default, 1)
+    bg.strokeRoundedRect(dx, dy, dialogW, dialogH, radii.xl)
+    bg.lineStyle(1, border.subtle, 0.6)
+    bg.lineBetween(dx + 0.5, dy + dialogH - footerH, dx + dialogW - 0.5, dy + dialogH - footerH)
+    all.push(bg)
+
+    // ── Position text nodes now that dialog top-left is known ──
+    if (eyebrow) { eyebrow.setPosition(dx + pad, dy + posEyebrow).setDepth(992); all.push(eyebrow) }
+    title.setPosition(dx + pad, dy + posTitle).setDepth(992); all.push(title)
+    if (body) { body.setPosition(dx + pad, dy + posBody).setDepth(992); all.push(body) }
+
+    // ── Close X (top-right, ghost) ──
+    const closeTxt = scene.add.text(dx + dialogW - 18, dy + 14, '\u2715', {
+      fontFamily: fontFamily.body, fontSize: typeScale.h3,
+      color: fg.tertiaryHex, fontStyle: 'bold',
+    }).setOrigin(1, 0).setDepth(993).setInteractive({ useHandCursor: true })
+    closeTxt.on('pointerover', () => closeTxt.setColor(fg.primaryHex))
+    closeTxt.on('pointerout',  () => closeTxt.setColor(fg.tertiaryHex))
+    all.push(closeTxt)
+
+    // ── Footer buttons (right-aligned, 12px gap) ──
+    const btnH = 40
+    const footerCy = dy + dialogH - footerH / 2
+    let rightEdge = dx + dialogW - 20
+    const btnContainers: Phaser.GameObjects.Container[] = []
+    const builderOf = (kind: string) =>
+      kind === 'primary'     ? UI.buttonPrimary
+      : kind === 'destructive' ? UI.buttonDestructive
+      : kind === 'ghost'     ? UI.buttonGhost
+      : UI.buttonSecondary
+    for (let i = content.actions.length - 1; i >= 0; i--) {
+      const a = content.actions[i]
+      const btnW = Math.max(120, a.label.length * 9 + 36)
+      const btnCx = rightEdge - btnW / 2
+      const b = builderOf(a.kind)(scene, btnCx, footerCy, a.label, {
+        w: btnW, h: btnH, depth: 993,
+        onPress: () => { a.onClick(); doClose() },
+      })
+      b.container.setDepth(993)
+      btnContainers.push(b.container)
+      rightEdge -= (btnW + 12)
+    }
+    all.push(...btnContainers)
+
+    let closed = false
+    const doClose = () => {
+      if (closed) return
+      closed = true
+      scene.tweens.add({
+        targets: all, alpha: 0, duration: motion.durFast, ease: motion.easeOut,
+        onComplete: () => {
+          for (const el of all) el.destroy()
+          opts?.onClose?.()
+        },
+      })
+    }
+
+    closeTxt.on('pointerdown', () => doClose())
+    if (opts?.closeOnBackdrop !== false) {
+      backdrop.on('pointerdown', () => doClose())
+    }
+
+    // ── Entry animation: opacity 0→1 + scale 0.98→1 ──
+    for (const el of all) (el as unknown as { setAlpha: (a: number) => void }).setAlpha(0)
+    // Scale only works on elements with scale; skip graphics/rectangles.
+    const scalable = [title, ...btnContainers]
+    if (body) scalable.push(body as unknown as Phaser.GameObjects.Container)
+    if (eyebrow) scalable.push(eyebrow as unknown as Phaser.GameObjects.Container)
+    for (const s of scalable) (s as unknown as { setScale: (v: number) => void }).setScale(0.98)
+    scene.tweens.add({ targets: all, alpha: 1, duration: motion.durBase, ease: motion.easeOut })
+    scene.tweens.add({ targets: scalable, scale: 1, duration: motion.durBase, ease: motion.easeOut })
+
+    return { close: doClose }
+  },
+
 }
 
 // ── Internal variant-button builder ─────────────────────────────────────────
