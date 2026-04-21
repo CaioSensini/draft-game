@@ -2525,6 +2525,400 @@ export const UI = {
     return container
   },
 
+  /**
+   * Toggle pill — boolean on/off switch.
+   *
+   * Spec §S8: 44×22 track with circular knob; switches accent.primary on,
+   * surface.deepest off. Knob slides 120ms ease-out. Includes invisible
+   * touch hit area sized for finger taps.
+   *
+   * Returns:
+   *   - container: positioned at (x,y), origin centered
+   *   - setValue(v, animate?): programmatic state change
+   *   - isOn(): current state
+   */
+  toggle(
+    scene: Phaser.Scene, x: number, y: number,
+    opts: {
+      value:    boolean
+      width?:   number   // default 44
+      height?:  number   // default 22
+      onChange: (v: boolean) => void
+    },
+  ): {
+    container: Phaser.GameObjects.Container
+    setValue: (v: boolean, animate?: boolean) => void
+    isOn: () => boolean
+  } {
+    const w = opts.width ?? 44
+    const h = opts.height ?? 22
+    const knobR = (h - 4) / 2
+    const offX = -w / 2 + knobR + 2
+    const onX  = +w / 2 - knobR - 2
+
+    let value = opts.value
+
+    const container = scene.add.container(x, y)
+
+    const track = scene.add.graphics()
+    const knob = scene.add.circle(value ? onX : offX, 0, knobR, fg.primary, 1)
+      .setStrokeStyle(1, value ? accent.primary : border.default, 1)
+    container.add(track)
+    container.add(knob)
+
+    const drawTrack = () => {
+      track.clear()
+      // Track fill: success green when on, deep surface when off
+      track.fillStyle(value ? dsState.success : surface.deepest, 1)
+      track.fillRoundedRect(-w / 2, -h / 2, w, h, h / 2)
+      track.lineStyle(1, value ? dsState.successDim : border.default, 1)
+      track.strokeRoundedRect(-w / 2, -h / 2, w, h, h / 2)
+    }
+    drawTrack()
+
+    // Hit area sized to spec §1 minimum touch target (44×44)
+    const hit = scene.add.rectangle(0, 0,
+      Math.max(w, 44), Math.max(h, 44), 0x000000, 0.001)
+      .setInteractive({ useHandCursor: true })
+    container.add(hit)
+
+    const setValue = (v: boolean, animate = true) => {
+      if (value === v) return
+      value = v
+      drawTrack()
+      knob.setStrokeStyle(1, value ? accent.primary : border.default, 1)
+      if (animate) {
+        scene.tweens.add({
+          targets: knob,
+          x: value ? onX : offX,
+          duration: 140, ease: 'Quad.Out',
+        })
+      } else {
+        knob.x = value ? onX : offX
+      }
+    }
+
+    hit.on('pointerdown', () => {
+      setValue(!value, true)
+      opts.onChange(value)
+    })
+
+    return { container, setValue, isOn: () => value }
+  },
+
+  /**
+   * Slider — horizontal track with thumb, INTEGRATION_SPEC §S8 style.
+   *
+   * Track 320×6 pill with accent.primary fill on the active portion,
+   * surface.deepest on the inactive. Thumb is a 16×16 circle with a 2px
+   * accent border. Drag to update; onChange fires on release.
+   *
+   * Note: not yet wired in any consumer scene — Settings ETAPA 4 deferred
+   * sliders pending a real volume API on soundManager. This helper exists
+   * for ETAPA 5+ consumers.
+   */
+  slider(
+    scene: Phaser.Scene, x: number, y: number,
+    opts: {
+      value:     number              // 0..1
+      width?:    number              // default 320
+      height?:   number              // default 6
+      thumbR?:   number              // default 8
+      label?:    string              // optional UPPER meta label drawn above
+      onChange?: (v: number) => void  // continuous (during drag)
+      onCommit?: (v: number) => void  // on release
+    },
+  ): {
+    container: Phaser.GameObjects.Container
+    setValue: (v: number) => void
+    getValue: () => number
+  } {
+    const w = opts.width ?? 320
+    const h = opts.height ?? 6
+    const thumbR = opts.thumbR ?? 8
+
+    let value = Math.max(0, Math.min(1, opts.value))
+
+    const container = scene.add.container(x, y)
+
+    // Optional label above the track
+    let labelText: Phaser.GameObjects.Text | null = null
+    if (opts.label) {
+      labelText = scene.add.text(-w / 2, -h - 14, opts.label.toUpperCase(), {
+        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+        color: fg.tertiaryHex, fontStyle: '700',
+      }).setOrigin(0, 0.5).setLetterSpacing(1.6)
+      container.add(labelText)
+    }
+
+    const track = scene.add.graphics()
+    const fill = scene.add.graphics()
+    const thumb = scene.add.circle(0, 0, thumbR, fg.primary, 1)
+      .setStrokeStyle(2, accent.primary, 1)
+    container.add(track)
+    container.add(fill)
+    container.add(thumb)
+
+    const draw = () => {
+      track.clear()
+      track.fillStyle(surface.deepest, 1)
+      track.fillRoundedRect(-w / 2, -h / 2, w, h, h / 2)
+      track.lineStyle(1, border.subtle, 1)
+      track.strokeRoundedRect(-w / 2, -h / 2, w, h, h / 2)
+
+      fill.clear()
+      const fw = Math.max(h, w * value)
+      fill.fillStyle(accent.primary, 1)
+      fill.fillRoundedRect(-w / 2, -h / 2, fw, h, h / 2)
+
+      thumb.x = -w / 2 + w * value
+    }
+    draw()
+
+    // Hit area bigger than track for easier dragging
+    const hit = scene.add.rectangle(0, 0, w + 24, Math.max(h * 4, 28), 0x000000, 0.001)
+      .setInteractive({ useHandCursor: true })
+    container.add(hit)
+
+    let dragging = false
+
+    const updateFromPointer = (px: number) => {
+      // px is in scene coords; container is at (x, y) — convert to local
+      const localX = px - x
+      const newVal = Math.max(0, Math.min(1, (localX + w / 2) / w))
+      if (newVal !== value) {
+        value = newVal
+        draw()
+        opts.onChange?.(value)
+      }
+    }
+
+    hit.on('pointerdown', (p: Phaser.Input.Pointer) => {
+      dragging = true
+      thumb.setScale(1.15)
+      thumb.fillColor = accent.primary
+      updateFromPointer(p.x)
+    })
+    scene.input.on('pointermove', (p: Phaser.Input.Pointer) => {
+      if (!dragging) return
+      updateFromPointer(p.x)
+    })
+    scene.input.on('pointerup', () => {
+      if (!dragging) return
+      dragging = false
+      thumb.setScale(1)
+      thumb.fillColor = fg.primary
+      opts.onCommit?.(value)
+    })
+
+    return {
+      container,
+      setValue: (v: number) => {
+        value = Math.max(0, Math.min(1, v))
+        draw()
+      },
+      getValue: () => value,
+    }
+  },
+
+  /**
+   * Segmented control — group of pill segments, exactly one active.
+   *
+   * Spec §S8: container surface.raised + radii.md + 1px border.default;
+   * each segment transparent inactive / surface.primary active w/ accent
+   * border. Label in Manrope meta letterSpacing 1.6.
+   *
+   * Used by: ShopScene tabs, SettingsScene difficulty picker.
+   */
+  segmentedControl<T extends string>(
+    scene: Phaser.Scene, x: number, y: number,
+    opts: {
+      options:  Array<{ key: T; label: string }>
+      value:    T
+      width?:   number   // total width; segments split evenly. Default = 144 × N
+      height?:  number   // default 36
+      onChange: (key: T) => void
+    },
+  ): {
+    container: Phaser.GameObjects.Container
+    setValue: (v: T) => void
+  } {
+    const N = opts.options.length
+    const segW = (opts.width ?? 144 * N) / N
+    const totalW = segW * N
+    const h = opts.height ?? 36
+
+    let value: T = opts.value
+
+    const container = scene.add.container(x, y)
+
+    // Outer container frame
+    const frame = scene.add.graphics()
+    frame.fillStyle(surface.raised, 1)
+    frame.fillRoundedRect(-totalW / 2, -h / 2, totalW, h, radii.md)
+    frame.lineStyle(1, border.default, 1)
+    frame.strokeRoundedRect(-totalW / 2, -h / 2, totalW, h, radii.md)
+    container.add(frame)
+
+    // Per-segment graphics + label
+    const segGraphics: Phaser.GameObjects.Graphics[] = []
+    const segLabels: Phaser.GameObjects.Text[] = []
+
+    const drawSegment = (i: number, isActive: boolean) => {
+      const g = segGraphics[i]
+      const segX = -totalW / 2 + i * segW
+      g.clear()
+      if (isActive) {
+        g.fillStyle(surface.primary, 1)
+        g.fillRoundedRect(segX + 2, -h / 2 + 2, segW - 4, h - 4, radii.md - 1)
+        g.lineStyle(1, accent.primary, 1)
+        g.strokeRoundedRect(segX + 2, -h / 2 + 2, segW - 4, h - 4, radii.md - 1)
+      }
+    }
+
+    opts.options.forEach((o, i) => {
+      const segX = -totalW / 2 + i * segW + segW / 2
+
+      const g = scene.add.graphics()
+      segGraphics.push(g)
+      container.add(g)
+
+      const isActive = o.key === value
+      const label = scene.add.text(segX, 0, o.label.toUpperCase(), {
+        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+        color: isActive ? accent.primaryHex : fg.secondaryHex,
+        fontStyle: '700',
+      }).setOrigin(0.5).setLetterSpacing(1.6)
+      segLabels.push(label)
+      container.add(label)
+
+      drawSegment(i, isActive)
+
+      const hit = scene.add.rectangle(segX, 0, segW, h, 0x000000, 0.001)
+        .setInteractive({ useHandCursor: true })
+      container.add(hit)
+
+      hit.on('pointerover', () => {
+        if (o.key !== value) label.setColor(fg.primaryHex)
+      })
+      hit.on('pointerout', () => {
+        if (o.key !== value) label.setColor(fg.secondaryHex)
+      })
+      hit.on('pointerdown', () => {
+        if (o.key === value) return
+        const prevIdx = opts.options.findIndex(opt => opt.key === value)
+        value = o.key
+        if (prevIdx >= 0) {
+          drawSegment(prevIdx, false)
+          segLabels[prevIdx].setColor(fg.secondaryHex)
+        }
+        drawSegment(i, true)
+        label.setColor(accent.primaryHex)
+        opts.onChange(value)
+      })
+    })
+
+    return {
+      container,
+      setValue: (v: T) => {
+        if (v === value) return
+        const prevIdx = opts.options.findIndex(o => o.key === value)
+        const nextIdx = opts.options.findIndex(o => o.key === v)
+        if (nextIdx < 0) return
+        value = v
+        if (prevIdx >= 0) {
+          drawSegment(prevIdx, false)
+          segLabels[prevIdx].setColor(fg.secondaryHex)
+        }
+        drawSegment(nextIdx, true)
+        segLabels[nextIdx].setColor(accent.primaryHex)
+      },
+    }
+  },
+
+  /**
+   * Tokenized progress bar — replaces the legacy `UI.progressBar` for new
+   * callers. Spec §S4 / §S6 style: surface.deepest track + accent.primary
+   * fill (or override) + optional fractional label.
+   *
+   * Returns a re-rendering helper so animated progress just calls setRatio.
+   * The legacy `UI.progressBar` (mask-based) is kept for backward compat
+   * but new code should use this.
+   */
+  progressBarV2(
+    scene: Phaser.Scene, x: number, y: number,
+    opts: {
+      width:     number
+      height?:   number   // default 8
+      ratio:     number   // 0..1
+      color?:    number   // default accent.primary
+      showLabel?: boolean // overlays "X%" label centered
+    },
+  ): {
+    container: Phaser.GameObjects.Container
+    setRatio: (r: number, animate?: boolean) => void
+  } {
+    const w = opts.width
+    const h = opts.height ?? 8
+    const color = opts.color ?? accent.primary
+
+    let ratio = Math.max(0, Math.min(1, opts.ratio))
+
+    const container = scene.add.container(x, y)
+
+    const track = scene.add.graphics()
+    const fill = scene.add.graphics()
+    container.add(track)
+    container.add(fill)
+
+    let label: Phaser.GameObjects.Text | null = null
+    if (opts.showLabel) {
+      label = scene.add.text(0, 0, `${Math.round(ratio * 100)}%`, {
+        fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+        color: fg.primaryHex, fontStyle: '700',
+      }).setOrigin(0.5)
+      container.add(label)
+    }
+
+    const draw = () => {
+      track.clear()
+      track.fillStyle(surface.deepest, 1)
+      track.fillRoundedRect(-w / 2, -h / 2, w, h, h / 2)
+      track.lineStyle(1, border.subtle, 1)
+      track.strokeRoundedRect(-w / 2, -h / 2, w, h, h / 2)
+
+      fill.clear()
+      const fw = Math.max(h, w * ratio)
+      fill.fillStyle(color, 1)
+      fill.fillRoundedRect(-w / 2, -h / 2, fw, h, h / 2)
+      // Top inset highlight
+      fill.fillStyle(0xffffff, 0.18)
+      fill.fillRoundedRect(-w / 2 + 1, -h / 2 + 1, fw - 2, h * 0.4,
+        { tl: h / 2 - 1, tr: 0, bl: h / 2 - 1, br: 0 })
+
+      if (label) label.setText(`${Math.round(ratio * 100)}%`)
+    }
+    draw()
+
+    return {
+      container,
+      setRatio: (r: number, animate = false) => {
+        const target = Math.max(0, Math.min(1, r))
+        if (!animate) {
+          ratio = target
+          draw()
+          return
+        }
+        const proxy = { r: ratio }
+        scene.tweens.add({
+          targets: proxy, r: target,
+          duration: 800, ease: 'Quad.Out',
+          onUpdate: () => { ratio = proxy.r; draw() },
+        })
+      },
+    }
+  },
+
 }
 
 // ── Internal variant-button builder ─────────────────────────────────────────
