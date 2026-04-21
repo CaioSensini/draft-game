@@ -4,6 +4,38 @@
 
 ---
 
+## 2026-04-21 — Bloco 4: Executor bleed-conditional mechanic — snapshot pré-hit
+
+**Contexto:** v3 §6.4 define três skills do Executor com bônus condicional em alvos sangrando:
+- Corte Mortal (le_a1): +50% dano se alvo tinha bleed
+- Tempestade de Lâminas (le_a2): +50% dano per-target se tinha bleed
+- Disparo Preciso (le_a3): ignora shield se alvo tinha bleed
+
+**Problema:** le_a1 tem `cleanse` como secondary — cleanse remove debuffs do target, incluindo bleed. Se o bônus fosse computado depois do secondary, o cleanse sabotaria o +50%.
+
+**Alternativas avaliadas:**
+- **A) Snapshot pré-hit:** capturar bleed existence ANTES do resolver rodar; decisão de amplificação fica cristalizada nesse ponto.
+- **B) Snapshot pós-primary, pré-secondary:** mais complexo, sujeito a ordem de efeitos.
+- **C) Checar bleed em cada etapa:** inconsistente com intenção v3.
+
+**Decisão:** **A — snapshot pré-hit.** Implementado em `CombatEngine._applyOffensiveSkill`:
+```typescript
+const targetHadBleed = _hadBleedEffect(target)   // ← snapshot FIRST
+// ... compute rawDamage ...
+// ... apply bonus based on targetHadBleed ...
+// ... resolver runs (may include cleanse that removes bleed) ...
+```
+
+**Consequência:** le_a1 tira vantagem do bleed E então o remove, o que é exatamente a mecânica v3 ("remove debuffs do alvo" + "+50% se tinha bleed"). Cleanse funciona como efeito secundário legítimo, não contradiz o bônus.
+
+**Disparo Preciso (le_a3) shield bypass:** requer saída pela rota de `Character.applyPureDamage` (que ignora shields) ao invés de `takeDamage` (que aplica shield interception). O handler emite eventos DAMAGE_APPLIED e CHARACTER_DIED manualmente pra manter compatibilidade com o fluxo normal de stats/victory check.
+
+**Helper `_hadBleedEffect`:** checa só `type === 'bleed'` não expirado. Poison e burn NÃO contam — v3 é específico sobre "bleed".
+
+**Status:** Concluído. 55 tests em ExecutorSkills.test.ts + 4 em PassiveSystem.test.ts (Isolado stack). Total projeto: 342 passing, 0 skipped.
+
+---
+
 ## 2026-04-21 — Bloco 3 Parte 1: secondaryEffect → secondaryEffects[] (Opção B)
 
 **Contexto:** Bloco 3 identificou que o schema `secondaryEffect: T | null` limita skills a um efeito follow-up. v3 tem pelo menos 4 Warrior skills com 3 efeitos (Impacto, Provocação, Investida + Colisão Titânica com conditional). Sem array, o 3º efeito não cabe.
