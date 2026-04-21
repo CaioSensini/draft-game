@@ -3155,7 +3155,7 @@ export default class BattleScene extends Phaser.Scene {
     const isSolo = this._surrenderRequired === 1
     const btnW = isSolo ? 92 : 108
     const btnH = 24
-    const btnX = GRID_X + (isSolo ? 150 : 170)
+    const btnX = GRID_X + (isSolo ? 132 : 152)
     const btnY = TOP_BAR_H2 / 2
 
     const onClick = () => {
