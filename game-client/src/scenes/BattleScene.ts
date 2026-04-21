@@ -2542,17 +2542,24 @@ export default class BattleScene extends Phaser.Scene {
       const barW      = CHAR_SIZE + 4
       const barH      = 8
 
-      // Movement-selection ring (cyan) — shown on MOVE_CHARACTER_SELECTED
-      const moveRing = this.add.rectangle(0, 0, CHAR_SIZE + 14, CHAR_SIZE + 14)
-        .setStrokeStyle(2, 0x00ccaa, 1).setFillStyle(0x00ccaa, 0.06).setVisible(false)
+      // Ring colors — INTEGRATION_SPEC §5 states (retire legacy 0x00ccaa/
+      // 0xffffff/0x00ff88 hardcoded hues). Each state maps to a token:
+      //   move  → team color (ally/enemy) — identifies owning side during move
+      //   focus → accent.primary (gold)   — INTEGRATION_SPEC §5 "selected"
+      //   active → state.success (green)  — TURN_STARTED indicator
+      const teamRingColor = u.side === 'left' ? dsColors.team.ally : dsColors.team.enemy
 
-      // Action-selection ring (white) — shown on CHARACTER_FOCUSED
+      // Movement-selection ring — shown on MOVE_CHARACTER_SELECTED
+      const moveRing = this.add.rectangle(0, 0, CHAR_SIZE + 14, CHAR_SIZE + 14)
+        .setStrokeStyle(3, teamRingColor, 1).setFillStyle(teamRingColor, 0.06).setVisible(false)
+
+      // Action-selection ring (gold) — shown on CHARACTER_FOCUSED
       const focusRing = this.add.rectangle(0, 0, CHAR_SIZE + 14, CHAR_SIZE + 14)
-        .setStrokeStyle(2, 0xffffff, 1).setFillStyle(0xffffff, 0.06).setVisible(false)
+        .setStrokeStyle(2, accent.primary, 1).setFillStyle(accent.primary, 0.06).setVisible(false)
 
       // Turn-active ring (green, pulsing) — shown on TURN_STARTED
       const activeRing = this.add.rectangle(0, 0, CHAR_SIZE + 8, CHAR_SIZE + 8)
-        .setStrokeStyle(3, 0x00ff88).setFillStyle(0x00ff88, 0.04).setVisible(false)
+        .setStrokeStyle(3, dsState.success).setFillStyle(dsState.success, 0.04).setVisible(false)
 
       // Sprite: normal character or training dummy.
       // The player's side reads its skin from the per-class skinConfig (set by
@@ -2581,13 +2588,14 @@ export default class BattleScene extends Phaser.Scene {
       // Flash overlay — colour-filled rectangle tweened to alpha=0 on damage/heal
       const flashRect = this.add.rectangle(0, 0, CHAR_SIZE, CHAR_SIZE, 0xff2222).setAlpha(0)
 
-      // HP bar only (no numbers) — compact below the sprite. Initial fill color
-      // uses the design-system "full" hp state (#22c55e); subsequent updates
-      // run through hpStatusColor() to pick full/wounded/critical per ratio.
-      const hpBarBg = this.add.rectangle(0, half + 4, barW, barH, 0x331111)
-        .setStrokeStyle(1, 0x111111, 0.9)
+      // HP bar only (no numbers) — compact below the sprite. Track uses
+      // surface.deepest (the navy-black token); fill uses hpStatusColor so
+      // full/wounded/critical flows through the same breakpoints as the
+      // status panel. Legacy 0x331111/0x4488ff hardcoded hues retired.
+      const hpBarBg = this.add.rectangle(0, half + 4, barW, barH, surface.deepest)
+        .setStrokeStyle(1, border.subtle, 0.9)
       const hpBar   = this.add.rectangle(-barW / 2, half + 4, barW, barH, hpStatusColor(1).fill).setOrigin(0, 0.5)
-      const shieldBar = this.add.rectangle(-barW / 2, half + 4, 0, barH, 0x4488ff, 0.7).setOrigin(0, 0.5)
+      const shieldBar = this.add.rectangle(-barW / 2, half + 4, 0, barH, hpState.shield, 0.7).setOrigin(0, 0.5)
 
       // Hidden hpText — kept for interface compatibility
       const hpText = this.add.text(0, -999, '', { fontSize: '1px' }).setVisible(false)
@@ -2606,12 +2614,36 @@ export default class BattleScene extends Phaser.Scene {
       // Persistent status dots — positioned at top of the tile
       const statusDots = this.add.container(0, -(half + 2))
 
+      // Class sigil chip (bottom-right of token) — INTEGRATION_SPEC §5
+      // "class sigil SVG" — gives a persistent class indicator without
+      // adding a fourth ring. Chip is a surface.panel disc with the
+      // class sigil (already preloaded from handoff) tinted class color.
+      const sigilChipR = 9
+      const sigilChipX = half - 2
+      const sigilChipY = half - 2
+      const classColor = dsColors.class[u.role as UnitRole]
+      const sigilChipG = this.add.graphics()
+      sigilChipG.fillStyle(surface.panel, 0.95)
+      sigilChipG.fillCircle(sigilChipX, sigilChipY, sigilChipR)
+      sigilChipG.lineStyle(1, classColor, 0.95)
+      sigilChipG.strokeCircle(sigilChipX, sigilChipY, sigilChipR)
+      const sigilKey = getClassSigilKey(u.role as UnitRole)
+      const sigilImg = this.textures.exists(sigilKey)
+        ? this.add.image(sigilChipX, sigilChipY, sigilKey).setTintFill(classColor)
+        : null
+      if (sigilImg) {
+        const target = sigilChipR * 2 - 4
+        const scale = target / Math.max(sigilImg.width, sigilImg.height, 1)
+        sigilImg.setScale(scale)
+      }
+
       const container = this.add.container(x, y, [
         moveRing, focusRing, activeRing,
         charGraphics,   // sprite placeholder (will be replaced with real sprites later)
         rect,           // invisible hit area (keeps flash/interaction working)
         flashRect,
         hpBarBg, hpBar, shieldBar, hpText, posText, roleLabel, statusDots,
+        sigilChipG, ...(sigilImg ? [sigilImg] : []),
       ])
 
       // AAA animator — drives procedural idle/hop/attack/hurt/death on the
