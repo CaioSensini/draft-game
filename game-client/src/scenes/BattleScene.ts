@@ -53,7 +53,8 @@ import { GameState, GameStateManager } from '../core/GameState'
 import { soundManager } from '../utils/SoundManager'
 import { UI, hpStatusColor } from '../utils/UIComponents'
 import {
-  accent, border, state as dsState, fg, fontFamily, hpState, radii, surface, typeScale,
+  accent, border, colors as dsColors, state as dsState, fg, fontFamily, hpState,
+  radii, surface, tile as dsTile, typeScale,
 } from '../utils/DesignTokens'
 import { VFXManager } from '../utils/VFXManager'
 import { drawCharacterSprite } from '../utils/SpriteFactory'
@@ -1414,15 +1415,18 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   private _addMoveOverlay(col: number, row: number): void {
+    // Valid-move overlay: green wash per INTEGRATION_SPEC §4 (tile.validMove).
     const { x, y } = _tileCenter(col, row)
+    const fillA = dsTile.validMove.alpha
+    const hoverA = Math.min(1, fillA + 0.14)
     const tile = this.add.rectangle(x, y, TILE - 4, TILE - 4)
-      .setStrokeStyle(2, 0x00ccaa, 1)
-      .setFillStyle(0x00ccaa, 0.14)
+      .setStrokeStyle(2, dsTile.validMoveBorder, 1)
+      .setFillStyle(dsTile.validMove.color, fillA)
       .setInteractive({ useHandCursor: true })
       .setDepth(4)
 
-    tile.on('pointerover', () => tile.setFillStyle(0x00ccaa, 0.30))
-    tile.on('pointerout',  () => tile.setFillStyle(0x00ccaa, 0.14))
+    tile.on('pointerover', () => tile.setFillStyle(dsTile.validMove.color, hoverA))
+    tile.on('pointerout',  () => tile.setFillStyle(dsTile.validMove.color, fillA))
     tile.on('pointerdown', () => {
       if (!this._moveSelectedId) return
       const result = this._ctrl.moveCharacter(this._moveSelectedId, col, row)
@@ -1847,17 +1851,18 @@ export default class BattleScene extends Phaser.Scene {
     const sprite = this._sprite(target.id)
     if (!sprite) return
 
+    // Valid-skill target: gold wash per §4 (tile.validSkill = accent.primary).
     const ring = this.add.rectangle(
       sprite.container.x, sprite.container.y,
       CHAR_SIZE + 16, CHAR_SIZE + 16,
     )
-      .setStrokeStyle(2, 0xffee00, 1)
-      .setFillStyle(0xffee00, 0.10)
+      .setStrokeStyle(2, dsTile.validSkillBorder, 1)
+      .setFillStyle(dsTile.validSkill.color, dsTile.validSkill.alpha * 0.5)
       .setInteractive({ useHandCursor: true })
       .setDepth(6)
 
-    ring.on('pointerover', () => ring.setFillStyle(0xffee00, 0.22))
-    ring.on('pointerout',  () => ring.setFillStyle(0xffee00, 0.10))
+    ring.on('pointerover', () => ring.setFillStyle(dsTile.validSkill.color, dsTile.validSkill.alpha))
+    ring.on('pointerout',  () => ring.setFillStyle(dsTile.validSkill.color, dsTile.validSkill.alpha * 0.5))
     ring.on('pointerdown', () => {
       const result = this._ctrl.chooseTarget({ kind: 'character', characterId: target.id })
       if (result.ok) {
@@ -1877,19 +1882,22 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   private _addTileOverlay(col: number, row: number): void {
+    // Valid-skill tile (area origin): gold wash per §4 (tile.validSkill).
     const { x, y } = _tileCenter(col, row)
+    const idleA = dsTile.validSkill.alpha
+    const hoverA = Math.min(1, idleA + 0.12)
     const tile = this.add.rectangle(x, y, TILE - 4, TILE - 4)
-      .setStrokeStyle(2, 0xffee00, 1)
-      .setFillStyle(0xffee00, 0.14)
+      .setStrokeStyle(2, dsTile.validSkillBorder, 1)
+      .setFillStyle(dsTile.validSkill.color, idleA)
       .setInteractive({ useHandCursor: true })
       .setDepth(6)
 
     tile.on('pointerover', () => {
-      tile.setFillStyle(0xffee00, 0.28)
+      tile.setFillStyle(dsTile.validSkill.color, hoverA)
       if (this._awaitingSkillId) this._showAreaPreview(col, row, this._awaitingSkillId)
     })
     tile.on('pointerout',  () => {
-      tile.setFillStyle(0xffee00, 0.14)
+      tile.setFillStyle(dsTile.validSkill.color, idleA)
       this._clearAreaPreview()
     })
     tile.on('pointerdown', () => {
@@ -1925,6 +1933,10 @@ export default class BattleScene extends Phaser.Scene {
     const skill = this._ctrl.getSkill(skillId)
     if (!skill?.areaShape) return
 
+    // AoE preview: red wash per §4 (tile.areaPreview). Spec calls for a 4-2
+    // dashed border; Phaser Graphics has no dashed stroke primitive, so we
+    // render a solid 1px border at the full spec alpha and leave the dash
+    // pattern as a polish item for a later pass.
     const offsets = areaOffsets(skill.areaShape)
     for (const [dc, dr] of offsets) {
       const c = centerCol + dc
@@ -1932,8 +1944,9 @@ export default class BattleScene extends Phaser.Scene {
       if (c < 0 || c >= COLS || r < 0 || r >= ROWS) continue
       const px = GRID_X + c * TILE + TILE / 2
       const py = GRID_Y + r * TILE + TILE / 2
-      const rect = this.add.rectangle(px, py, TILE - 2, TILE - 2, 0xff6633, 0.25)
-        .setStrokeStyle(1, 0xff6633, 0.5)
+      const rect = this.add.rectangle(px, py, TILE - 2, TILE - 2,
+        dsTile.areaPreview.color, dsTile.areaPreview.alpha)
+        .setStrokeStyle(1, dsTile.areaBorder, 0.9)
         .setDepth(50)
       this._areaPreviewRects.push(rect)
     }
@@ -2025,33 +2038,40 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   private _drawGrid() {
+    // INTEGRATION_SPEC §4 + Print 12: ally half = navy wash with alt checker,
+    // enemy half = crimson wash with alt checker, wall column = neutral gray
+    // with a 1px highlight on the top edge.
+    //
+    // `_drawGrid` is idempotent and runs once in create(); per-tile hover /
+    // movement / target / area states live in separate overlay Rectangles.
     const g = this.add.graphics()
+    const WALL_COL = 8
+    // Enemy-side alt comes from spec §4 ("alt stripe | +#1f2a42 / #4a1c26").
+    const ENEMY_SIDE_ALT = 0x4a1c26
 
-    // ── Checkerboard tile pattern (alternating dark/light for visibility) ──
+    // ── Checkerboard tile pattern (ally navy / enemy crimson / wall gray) ──
     for (let col = 0; col < COLS; col++) {
       for (let row = 0; row < ROWS; row++) {
-        const isLeft = col < 8
         const isEven = (col + row) % 2 === 0
-        const baseColor = isLeft ? (isEven ? 0x0e1e30 : 0x0b1828) : (isEven ? 0x1a1030 : 0x150c28)
+        let baseColor: number
+        if (col === WALL_COL) {
+          baseColor = dsTile.wall
+        } else if (col < WALL_COL) {
+          baseColor = isEven ? dsTile.allySide : dsTile.defaultAlt
+        } else {
+          baseColor = isEven ? dsTile.enemySide : ENEMY_SIDE_ALT
+        }
         g.fillStyle(baseColor, 1)
         g.fillRect(GRID_X + col * TILE, GRID_Y + row * TILE, TILE, TILE)
       }
     }
 
-    // ── Wall column (col 8) — strong divider ──
-    const wallCol = 8
-    // Glow on both sides of wall
-    g.fillStyle(0x4422aa, 0.15)
-    g.fillRect(GRID_X + (wallCol - 1) * TILE, GRID_Y, TILE * 2, ROWS * TILE)
-    // Wall line (thick, bright)
-    g.fillStyle(0x6644cc, 0.6)
-    g.fillRect(GRID_X + wallCol * TILE - 2, GRID_Y, 4, ROWS * TILE)
-    // Inner wall highlight
-    g.fillStyle(0x8866dd, 0.3)
-    g.fillRect(GRID_X + wallCol * TILE - 1, GRID_Y, 2, ROWS * TILE)
+    // ── Wall column highlight — 1px bright top edge per spec §4 ──
+    g.fillStyle(dsTile.wallShine, 0.6)
+    g.fillRect(GRID_X + WALL_COL * TILE, GRID_Y, TILE, 1)
 
-    // ── Grid lines (subtle but visible) ──
-    g.lineStyle(1, 0x2a3a50, 0.6)
+    // ── Grid lines (subtle border between every cell) ──
+    g.lineStyle(1, border.subtle, 0.85)
     for (let col = 0; col <= COLS; col++) {
       g.lineBetween(GRID_X + col * TILE, GRID_Y, GRID_X + col * TILE, GRID_Y + ROWS * TILE)
     }
@@ -2059,51 +2079,44 @@ export default class BattleScene extends Phaser.Scene {
       g.lineBetween(GRID_X, GRID_Y + row * TILE, GRID_X + COLS * TILE, GRID_Y + row * TILE)
     }
 
-    // ── Intersection dots ──
-    g.fillStyle(0x445566, 0.6)
-    for (let col = 0; col <= COLS; col++) {
-      for (let row = 0; row <= ROWS; row++) {
-        g.fillCircle(GRID_X + col * TILE, GRID_Y + row * TILE, 2)
-      }
-    }
-
-    // ── Arena outer border (thick, team-colored halves) ──
-    g.lineStyle(2, 0x00ccaa, 0.4)
-    g.lineBetween(GRID_X, GRID_Y, GRID_X + 8 * TILE, GRID_Y)
+    // ── Arena outer border — team-colored halves (INTEGRATION_SPEC colors) ──
+    g.lineStyle(2, dsColors.team.ally, 0.55)
+    g.lineBetween(GRID_X, GRID_Y, GRID_X + WALL_COL * TILE, GRID_Y)
     g.lineBetween(GRID_X, GRID_Y, GRID_X, GRID_Y + ROWS * TILE)
-    g.lineBetween(GRID_X, GRID_Y + ROWS * TILE, GRID_X + 8 * TILE, GRID_Y + ROWS * TILE)
+    g.lineBetween(GRID_X, GRID_Y + ROWS * TILE, GRID_X + WALL_COL * TILE, GRID_Y + ROWS * TILE)
 
-    g.lineStyle(2, 0x8844cc, 0.4)
-    g.lineBetween(GRID_X + 8 * TILE, GRID_Y, GRID_X + COLS * TILE, GRID_Y)
+    g.lineStyle(2, dsColors.team.enemy, 0.55)
+    g.lineBetween(GRID_X + WALL_COL * TILE, GRID_Y, GRID_X + COLS * TILE, GRID_Y)
     g.lineBetween(GRID_X + COLS * TILE, GRID_Y, GRID_X + COLS * TILE, GRID_Y + ROWS * TILE)
-    g.lineBetween(GRID_X + 8 * TILE, GRID_Y + ROWS * TILE, GRID_X + COLS * TILE, GRID_Y + ROWS * TILE)
+    g.lineBetween(GRID_X + WALL_COL * TILE, GRID_Y + ROWS * TILE, GRID_X + COLS * TILE, GRID_Y + ROWS * TILE)
 
-    // ── Chess-style coordinates inside tiles ──
-    const coordStyle = { fontFamily: 'Arial Black', fontSize: '12px', color: '#8090a0', stroke: '#000000', strokeThickness: 3 }
-    // Letters (A-P) in last row, bottom-left corner of each tile
+    // ── Chess-style coordinates (meta Manrope, fg-4 per spec §4) ──
+    const coordStyle = {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: fg.disabledHex, fontStyle: 'bold',
+    }
     const lastRow = ROWS - 1
     for (let col = 0; col < COLS; col++) {
       this.add.text(
         GRID_X + col * TILE + 4, GRID_Y + lastRow * TILE + TILE - 4,
-        String.fromCharCode(65 + col),  // A, B, C...P
+        String.fromCharCode(65 + col),
         coordStyle,
-      ).setOrigin(0, 1).setAlpha(0.8)
+      ).setOrigin(0, 1).setAlpha(0.85).setDepth(2)
     }
-    // Numbers (1-6) in first column, top-left corner of each tile
     for (let row = 0; row < ROWS; row++) {
       this.add.text(
         GRID_X + 4, GRID_Y + row * TILE + 4,
         `${row + 1}`,
         coordStyle,
-      ).setOrigin(0, 0).setAlpha(0.8)
+      ).setOrigin(0, 0).setAlpha(0.85).setDepth(2)
     }
 
-    // Ambient battle particles (subtle gold dust floating over the arena)
+    // Ambient gold motes — same atmosphere, restyled to accent.primary.
     for (let i = 0; i < 12; i++) {
       const px = GRID_X + Math.random() * (COLS * TILE)
       const py = GRID_Y + Math.random() * (ROWS * TILE)
       const size = 0.5 + Math.random() * 1
-      const p = this.add.circle(px, py, size, 0xc9a84c, 0.04 + Math.random() * 0.04).setDepth(1)
+      const p = this.add.circle(px, py, size, accent.primary, 0.05 + Math.random() * 0.05).setDepth(1)
       this.tweens.add({
         targets: p,
         y: py - 20 - Math.random() * 30,
@@ -2114,7 +2127,7 @@ export default class BattleScene extends Phaser.Scene {
         delay: Math.random() * 3000,
         onRepeat: () => {
           p.setPosition(GRID_X + Math.random() * (COLS * TILE), GRID_Y + Math.random() * (ROWS * TILE))
-          p.setAlpha(0.04 + Math.random() * 0.04)
+          p.setAlpha(0.05 + Math.random() * 0.05)
         },
       })
     }
