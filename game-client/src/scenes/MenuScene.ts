@@ -1,7 +1,10 @@
 import Phaser from 'phaser'
 import { GameState, GameStateManager } from '../core/GameState'
 import { UI } from '../utils/UIComponents'
-import { C, F, SHADOW, SCREEN } from '../utils/DesignTokens'
+import {
+  C, SHADOW, SCREEN,
+  accent, fg, fontFamily, typeScale,
+} from '../utils/DesignTokens'
 import { transitionTo } from '../utils/SceneTransition'
 
 export default class MenuScene extends Phaser.Scene {
@@ -85,17 +88,19 @@ export default class MenuScene extends Phaser.Scene {
       ease: 'Sine.InOut',
     })
 
-    // Shadow layer (offset, darker)
+    // Shadow layer (offset, darker) — Cinzel 900 via design system typeScale.displayXl
     const titleShadow = this.add.text(cx + 2, titleY + 4, 'DRAFT', {
-      fontFamily: F.title, fontSize: '88px', color: '#1a0e00', fontStyle: 'bold',
+      fontFamily: fontFamily.display, fontSize: '88px', color: '#1a0e00', fontStyle: '900',
     }).setOrigin(0.5).setAlpha(0)
+    const anyShadow = titleShadow as unknown as { setLetterSpacing?: (n: number) => void }
+    if (typeof anyShadow.setLetterSpacing === 'function') anyShadow.setLetterSpacing(7)
 
-    // Main title
+    // Main title — gold accent from tokens, Cinzel 900
     const title = this.add.text(cx, titleY, 'DRAFT', {
-      fontFamily: F.title,
+      fontFamily: fontFamily.display,
       fontSize: '88px',
-      color: '#e8c340',
-      fontStyle: 'bold',
+      color: accent.primaryHex,
+      fontStyle: '900',
       shadow: {
         offsetX: 0,
         offsetY: 6,
@@ -104,39 +109,44 @@ export default class MenuScene extends Phaser.Scene {
         fill: true,
       },
     }).setOrigin(0.5).setAlpha(0)
+    const anyTitle = title as unknown as { setLetterSpacing?: (n: number) => void }
+    if (typeof anyTitle.setLetterSpacing === 'function') anyTitle.setLetterSpacing(7)
 
     // Top highlight layer (lighter gold, offset up — simulates metallic bevel)
     const titleHighlight = this.add.text(cx, titleY - 1, 'DRAFT', {
-      fontFamily: F.title, fontSize: '88px', fontStyle: 'bold',
+      fontFamily: fontFamily.display, fontSize: '88px', fontStyle: '900',
       color: '#fff0a0',
     }).setOrigin(0.5).setAlpha(0)
+    const anyHi = titleHighlight as unknown as { setLetterSpacing?: (n: number) => void }
+    if (typeof anyHi.setLetterSpacing === 'function') anyHi.setLetterSpacing(7)
 
     // Animated shimmer sweep
     const shimmer = UI.shimmer(this, cx, titleY, 380, 80, 5000)
     shimmer.setDepth(8)
 
     // =========================================================================
-    // LAYER 9 — "G  A  M  E" subtitle
+    // LAYER 9 — "TACTICAL WARFARE" subtitle (Cinzel 700, per Print 19)
     // =========================================================================
-    const subY = titleY + 72
-    const subtitle = this.add.text(cx, subY, 'G  A  M  E', {
-      fontFamily: F.title, fontSize: '28px', fontStyle: 'bold',
-      color: '#a08840',
+    const subY = titleY + 62
+    const subtitle = this.add.text(cx, subY, 'TACTICAL WARFARE', {
+      fontFamily: fontFamily.display, fontSize: '22px', fontStyle: '700',
+      color: fg.secondaryHex,
       shadow: { offsetX: 0, offsetY: 2, color: '#3a2800', blur: 6, fill: true },
     }).setOrigin(0.5).setAlpha(0)
+    const anySub = subtitle as unknown as { setLetterSpacing?: (n: number) => void }
+    if (typeof anySub.setLetterSpacing === 'function') anySub.setLetterSpacing(4)
 
-    // Small accent dots between letters
+    // Small crossed-sword accent dots flanking the subtitle (Print 19 flourish)
     const dotGfx = this.add.graphics().setAlpha(0)
-    const dotPositions = [-50, -16, 18, 52]
-    dotPositions.forEach(dx => {
-      dotGfx.fillStyle(C.goldDim, 0.3)
-      dotGfx.fillCircle(cx + dx, subY + 16, 1.5)
-    })
+    dotGfx.fillStyle(accent.primary, 0.45)
+    dotGfx.fillCircle(cx - 140, subY, 2)
+    dotGfx.fillCircle(cx + 140, subY, 2)
 
-    // Studio credit
+    // Studio credit — Cormorant italic body text
     const studioText = this.add.text(cx, subY + 35, 'by Codeforje VIO', {
-      fontFamily: F.body, fontSize: '12px',
-      color: '#4a3d28',
+      fontFamily: fontFamily.serif, fontSize: '13px',
+      color: fg.disabledHex,
+      fontStyle: 'italic',
       shadow: SHADOW.text,
     }).setOrigin(0.5).setAlpha(0)
 
@@ -148,35 +158,35 @@ export default class MenuScene extends Phaser.Scene {
     dividerGfx.setAlpha(0)
 
     // =========================================================================
-    // LAYER 11 — Tagline (two lines, key phrase stands out)
+    // LAYER 11 — Tagline: Cormorant italic (key phrase) + Manrope body (explainer)
     // =========================================================================
     const tagY = dividerY + 28
-    const tag1 = this.add.text(cx, tagY, 'Estrategia. Tatica. Conquista.', {
-      fontFamily: F.title, fontSize: '18px', fontStyle: 'bold',
-      color: '#c8b880',
+    const tag1 = this.add.text(cx, tagY, 'Estratégia. Tática. Conquista.', {
+      fontFamily: fontFamily.serif, fontSize: '18px', fontStyle: 'italic',
+      color: fg.secondaryHex,
       shadow: SHADOW.text,
     }).setOrigin(0.5).setAlpha(0)
 
     const tag2 = this.add.text(cx, tagY + 26, 'Monte seu deck e derrote o Rei inimigo em batalhas 4v4', {
-      fontFamily: F.body, fontSize: '13px',
-      color: '#6a6050',
+      fontFamily: fontFamily.body, fontSize: '13px',
+      color: fg.tertiaryHex,
       wordWrap: { width: 480 },
       align: 'center',
       shadow: SHADOW.text,
     }).setOrigin(0.5).setAlpha(0)
 
     // =========================================================================
-    // LAYER 13 — "JOGAR" button (epic, artifact-like)
+    // LAYER 13 — "JOGAR" CTA: UI.buttonPrimary size 'lg' with gold aura + orbit
     // =========================================================================
     const btnY = tagY + 80
-    const btnW = 340
-    const btnH = 72
+    const btnW = 280   // spec §1 size 'lg'
+    const btnH = 56
 
-    // Energy field behind button (pulsing)
+    // Gold energy field behind button (pulsing) — tinted with accent.primary
     const energyField = this.add.graphics()
     for (let r = 100; r > 0; r -= 3) {
-      const a = 0.006 * (r / 100)
-      energyField.fillStyle(C.success, a)
+      const a = 0.008 * (r / 100)
+      energyField.fillStyle(accent.primary, a)
       energyField.fillEllipse(cx, btnY, btnW + r, btnH + r * 0.6)
     }
     energyField.setAlpha(0)
@@ -189,14 +199,14 @@ export default class MenuScene extends Phaser.Scene {
       ease: 'Sine.InOut',
     })
 
-    // Orbiting rune particles (8 particles in elliptical orbit)
+    // Orbiting gold particles (10 particles in elliptical orbit)
     const orbitParticles: Phaser.GameObjects.Arc[] = []
     for (let i = 0; i < 10; i++) {
-      const p = this.add.circle(cx, btnY, 1.5 + Math.random(), C.success, 0)
+      const p = this.add.circle(cx, btnY, 1.5 + Math.random(), accent.primary, 0)
       orbitParticles.push(p)
       const angle = (Math.PI * 2 * i) / 10
-      const rx = btnW / 2 + 22
-      const ry = btnH / 2 + 16
+      const rx = btnW / 2 + 28
+      const ry = btnH / 2 + 20
       const speed = 5500 + Math.random() * 1500
       this.tweens.add({
         targets: { a: angle },
@@ -209,118 +219,32 @@ export default class MenuScene extends Phaser.Scene {
       })
     }
 
-    // Button shadow
-    const btnShadowGfx = this.add.graphics()
-    btnShadowGfx.fillStyle(0x000000, 0.45)
-    btnShadowGfx.fillRoundedRect(cx - btnW / 2 + 4, btnY - btnH / 2 + 6, btnW, btnH, 16)
-
-    // Button body (layered)
-    const btnBg = this.add.graphics()
-    // Main dark green
-    btnBg.fillStyle(0x0e2a12, 1)
-    btnBg.fillRoundedRect(cx - btnW / 2, btnY - btnH / 2, btnW, btnH, 16)
-    // Inner gradient (brighter center)
-    btnBg.fillStyle(0x1a4a22, 0.5)
-    btnBg.fillRoundedRect(cx - btnW / 2 + 20, btnY - btnH / 2 + 8, btnW - 40, btnH - 16, 10)
-    // Top glass
-    btnBg.fillStyle(0xffffff, 0.04)
-    btnBg.fillRoundedRect(cx - btnW / 2 + 4, btnY - btnH / 2 + 3, btnW - 8, btnH * 0.4,
-      { tl: 13, tr: 13, bl: 0, br: 0 })
-    // Bottom darkening
-    btnBg.fillStyle(0x000000, 0.15)
-    btnBg.fillRoundedRect(cx - btnW / 2 + 4, btnY + 2, btnW - 8, btnH / 2 - 5,
-      { tl: 0, tr: 0, bl: 13, br: 13 })
-    // Inner gold border
-    btnBg.lineStyle(1, C.goldDim, 0.12)
-    btnBg.strokeRoundedRect(cx - btnW / 2 + 3, btnY - btnH / 2 + 3, btnW - 6, btnH - 6, 13)
-    // Outer green border
-    btnBg.lineStyle(2, C.success, 0.65)
-    btnBg.strokeRoundedRect(cx - btnW / 2, btnY - btnH / 2, btnW, btnH, 16)
-
-    // Rune decorations on button border (4 small marks)
-    const runeGfx = this.add.graphics()
-    runeGfx.lineStyle(1.5, C.success, 0.3)
-    const runePositions = [
-      { x: cx - btnW / 2 + 30, y: btnY - btnH / 2 - 1 },
-      { x: cx + btnW / 2 - 30, y: btnY - btnH / 2 - 1 },
-      { x: cx - btnW / 2 + 30, y: btnY + btnH / 2 + 1 },
-      { x: cx + btnW / 2 - 30, y: btnY + btnH / 2 + 1 },
-    ]
-    runePositions.forEach(rp => {
-      runeGfx.lineBetween(rp.x - 8, rp.y, rp.x + 8, rp.y)
-      runeGfx.fillStyle(C.success, 0.4)
-      runeGfx.fillCircle(rp.x, rp.y, 2)
+    // Core button — design-system primary gold (size 'lg' = 280×56 per spec §1.1)
+    const jogarBtn = UI.buttonPrimary(this, cx, btnY, 'JOGAR', {
+      size: 'lg', depth: 7,
+      onPress: () => transitionTo(this, 'LobbyScene', undefined, 400, 'zoomIn'),
     })
 
-    // Shield+sword icon
-    const swordGfx = this.add.graphics()
-    const sX = cx - 72, sY = btnY
-    // Shield
-    swordGfx.fillStyle(C.success, 0.15)
-    swordGfx.lineStyle(2, C.success, 0.5)
-    swordGfx.beginPath()
-    swordGfx.moveTo(sX, sY - 16)
-    swordGfx.lineTo(sX + 13, sY - 9)
-    swordGfx.lineTo(sX + 13, sY + 5)
-    swordGfx.lineTo(sX, sY + 16)
-    swordGfx.lineTo(sX - 13, sY + 5)
-    swordGfx.lineTo(sX - 13, sY - 9)
-    swordGfx.closePath()
-    swordGfx.fillPath()
-    swordGfx.strokePath()
-    // Sword
-    swordGfx.lineStyle(2.5, C.success, 0.75)
-    swordGfx.lineBetween(sX, sY - 20, sX, sY + 12)
-    swordGfx.lineStyle(2, C.success, 0.5)
-    swordGfx.lineBetween(sX - 7, sY - 7, sX + 7, sY - 7)
-
-    // "JOGAR" text
-    const btnLabel = this.add.text(cx + 10, btnY, 'JOGAR', {
-      fontFamily: F.title, fontSize: '32px', fontStyle: 'bold',
-      color: '#5ae890',
-      shadow: { offsetX: 0, offsetY: 3, color: '#0a2a0a', blur: 10, fill: true },
-    }).setOrigin(0.5)
-
-    // Button shimmer
-    const btnShimmer = UI.shimmer(this, cx + 10, btnY, 170, 36, 3500)
+    // Button shimmer over the gold face
+    const btnShimmer = UI.shimmer(this, cx, btnY, 170, btnH - 12, 3500)
     btnShimmer.setDepth(8)
 
-    // Hit area
-    const hitArea = this.add.rectangle(cx, btnY, btnW, btnH, 0, 0.001)
-      .setInteractive({ useHandCursor: true })
-
-    hitArea.on('pointerover', () => {
-      this.tweens.add({
-        targets: [btnBg, btnShadowGfx, btnLabel, hitArea, swordGfx, runeGfx],
-        scaleX: 1.06, scaleY: 1.06, duration: 160, ease: 'Quad.Out',
-      })
-      btnLabel.setColor('#aaffcc')
-      orbitParticles.forEach(p => p.setAlpha(0.6))
-    })
-    hitArea.on('pointerout', () => {
-      this.tweens.add({
-        targets: [btnBg, btnShadowGfx, btnLabel, hitArea, swordGfx, runeGfx],
-        scaleX: 1, scaleY: 1, duration: 160, ease: 'Quad.Out',
-      })
-      btnLabel.setColor('#5ae890')
-      orbitParticles.forEach(p => p.setAlpha(0.3))
-    })
-    hitArea.on('pointerdown', () => {
-      btnLabel.setColor('#2a8a4a')
-      this.tweens.add({
-        targets: [btnBg, btnShadowGfx, btnLabel, hitArea, swordGfx, runeGfx],
-        scaleX: 0.96, scaleY: 0.96, duration: 80, yoyo: true, ease: 'Quad.InOut',
-        onComplete: () => transitionTo(this, 'LobbyScene', undefined, 400, 'zoomIn'),
-      })
-    })
+    // Hover: lift the orbit particles alpha for extra presence
+    const jogarHit = jogarBtn.hitArea
+    jogarHit.on('pointerover', () => orbitParticles.forEach(p => p.setAlpha(0.6)))
+    jogarHit.on('pointerout',  () => orbitParticles.forEach(p => p.setAlpha(0.3)))
 
     // =========================================================================
-    // LAYER 14 — Hint text + version
+    // LAYER 14 — Hint text + version (Manrope meta tokens)
     // =========================================================================
-    const hintText = this.add.text(cx, btnY + 55, 'Clique para entrar', {
-      fontFamily: F.body, fontSize: '11px', color: '#3a5a3a',
+    const hintText = this.add.text(cx, btnY + 48, 'Clique para entrar', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: fg.disabledHex,
+      fontStyle: '700',
       shadow: SHADOW.text,
     }).setOrigin(0.5).setAlpha(0)
+    const anyHint = hintText as unknown as { setLetterSpacing?: (n: number) => void }
+    if (typeof anyHint.setLetterSpacing === 'function') anyHint.setLetterSpacing(1.6)
 
     this.tweens.add({
       targets: hintText,
@@ -332,18 +256,24 @@ export default class MenuScene extends Phaser.Scene {
       delay: 2500,
     })
 
-    // Footer line
+    // Footer line — subtle gold gradient (preserved)
     const footerGfx = this.add.graphics()
     for (let i = 0; i < W; i++) {
       const d = Math.abs(i - cx) / cx
-      footerGfx.fillStyle(C.goldDim, 0.08 * (1 - d * d))
+      footerGfx.fillStyle(accent.primary, 0.06 * (1 - d * d))
       footerGfx.fillRect(i, H - 32, 1, 1)
     }
 
-    UI.badge(this, W - 50, H - 14, 'v1.0', C.goldDark, '#4a3d28')
+    // Version + studio in Manrope meta (fg.disabled)
+    this.add.text(W - 16, H - 14, 'v1.0', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta, fontStyle: '700',
+      color: fg.disabledHex,
+      shadow: SHADOW.text,
+    }).setOrigin(1, 0.5)
 
     this.add.text(16, H - 14, 'Codeforje VIO', {
-      fontFamily: F.body, fontSize: '10px', color: '#3a3020',
+      fontFamily: fontFamily.body, fontSize: typeScale.meta, fontStyle: '700',
+      color: fg.disabledHex,
       shadow: SHADOW.text,
     }).setOrigin(0, 0.5)
 
@@ -445,8 +375,14 @@ export default class MenuScene extends Phaser.Scene {
     })
 
     // 1700ms — Button materializes
-    const btnElements = [energyField, btnShadowGfx, btnBg, btnLabel, hitArea, swordGfx, runeGfx, btnShimmer]
-    btnElements.forEach(el => el.setAlpha(0).setScale(0.7))
+    const btnElements: Array<Phaser.GameObjects.GameObject & {
+      setAlpha: (a: number) => unknown; setScale: (x: number, y?: number) => unknown
+    }> = [
+      energyField as unknown as never,
+      jogarBtn.container as unknown as never,
+      btnShimmer as unknown as never,
+    ]
+    btnElements.forEach(el => { el.setAlpha(0); el.setScale(0.7) })
     this.tweens.add({
       targets: btnElements,
       alpha: 1, scaleX: 1, scaleY: 1,
