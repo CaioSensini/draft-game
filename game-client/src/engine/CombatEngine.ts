@@ -21,7 +21,10 @@ import type { VictoryResult } from '../domain/Battle'
 import { Character } from '../domain/Character'
 import { Skill } from '../domain/Skill'
 import type { CharacterRole, CharacterSide } from '../domain/Character'
-import { ReflectPercentEffect, RegenEffect, PositionalDrEffect } from '../domain/Effect'
+import {
+  ReflectPercentEffect, RegenEffect, PositionalDrEffect,
+  DefReductionEffect, MovReductionEffect,
+} from '../domain/Effect'
 import type { PositionalDrShape } from '../domain/Effect'
 import { EventBus } from './EventBus'
 import { TurnManager } from './TurnManager'
@@ -886,6 +889,76 @@ export class CombatEngine {
         if (this.battle.isOver) break
       }
     }
+
+    // v3 §6.3 Tile-obstacle lifecycle. Apply wall_viva adjacency effects
+    // FIRST (while the obstacles are still active), then tick the counters
+    // and remove anything that expired. Walls that broke earlier this round
+    // (via atk1 hits) already don't show up in getObstacles().
+    this._applyWallVivaAdjacency()
+    this._grid.tickObstacles()
+  }
+
+  /**
+   * v3 §6.3 Muralha Viva adjacency effects.
+   *
+   * For every active wall_viva obstacle, iterate the 8 surrounding cells.
+   * Any enemy character (not same side as obstacle.side) standing there
+   * takes 3 direct damage, refreshed 15% def_down + 1 mov_down for 1 turn.
+   *
+   * Runs once per round, before ticking the obstacle counter. Allies do
+   * NOT suffer adjacency effects (v3 says "inimigos adjacentes").
+   */
+  private _applyWallVivaAdjacency(): void {
+    const walls = this._grid.getObstacles().filter((o) => o.kind === 'wall_viva')
+    if (walls.length === 0) return
+
+    const offsets: Array<[number, number]> = [
+      [-1,-1],[0,-1],[1,-1],
+      [-1, 0],       [1, 0],
+      [-1, 1],[0, 1],[1, 1],
+    ]
+
+    // First pass — collect all unique (victim, sourceSide) pairs so that a
+    // unit adjacent to multiple Muralha Viva tiles only suffers the effect
+    // ONCE per round (v3 intent: "3 dano/turno adjacente", per round).
+    const hits = new Map<string, Character>()
+
+    for (const wall of walls) {
+      const enemySide = wall.side === 'left' ? 'right' : 'left'
+      for (const [dc, dr] of offsets) {
+        const col = wall.col + dc
+        const row = wall.row + dr
+        const victim = this.battle.teamOf(enemySide).living
+          .find((c) => c.col === col && c.row === row)
+        if (victim) hits.set(victim.id, victim)
+      }
+    }
+
+    for (const victim of hits.values()) {
+      victim.applyPureDamage(3)
+      this.emit({
+        type:     EventType.DAMAGE_APPLIED,
+        unitId:   victim.id,
+        amount:   3,
+        newHp:    victim.hp,
+        sourceId: null,
+      })
+      if (!victim.alive) {
+        this._recordDeath(victim.id, null)
+        this.emit({
+          type:     EventType.CHARACTER_DIED,
+          unitId:   victim.id,
+          killedBy: null,
+          wasKing:  victim.role === 'king',
+          round:    this.battle.round,
+        })
+        this._checkAndEmitVictory()
+        if (this.battle.isOver) return
+        continue
+      }
+      victim.addEffect(new DefReductionEffect(15, 1))
+      victim.addEffect(new MovReductionEffect(1, 1))
+    }
   }
 
   // ── Damage formula ────────────────────────────────────────────────────────
@@ -1430,6 +1503,19 @@ export class CombatEngine {
         if (target.kind !== 'character') return
         const targetChar = this.battle.getCharacter(target.characterId)
         if (!targetChar?.alive) return
+        // v3 §6.3 — atk1 single-target hits also break any obstacle on
+        // the target's tile (obstacles block movement, not targeting).
+        if (skill.group === 'attack1') {
+          const broken = this._grid.breakObstacle(targetChar.col, targetChar.row)
+          if (broken) {
+            this.emit({
+              type:   EventType.STATUS_APPLIED,
+              unitId: broken.sourceId,
+              status: 'summon_wall' as const,
+              value:  0,
+            })
+          }
+        }
         this._applyOffensiveSkill(caster, targetChar, skill)
         break
       }
@@ -1442,7 +1528,66 @@ export class CombatEngine {
           skillName: skill.name, category: 'attack',
           areaCenter: { col: target.col, row: target.row },
         })
+
+        // v3 §6.3 Muralha Viva (lw_a6 / rw_a6): spawn 2 vertical walls at
+        // the aim center column. Adjacent effects fire each round via the
+        // wall_viva hook in tickObstacles. Secondary def_down is still
+        // applied to whatever targets the area resolves to (partial value
+        // even without adjacency ticking yet).
+        if (skill.id === 'lw_a6' || skill.id === 'rw_a6') {
+          // Place 2 obstacles: one at the center tile, one directly above
+          // (v3: "2 sqm vertical"). If either is blocked (OOB / wall /
+          // occupied), skip that position silently.
+          for (const dr of [0, -1]) {
+            this._grid.placeObstacle({
+              col: target.col, row: target.row + dr,
+              kind: 'wall_viva', side: caster.side,
+              ticksRemaining: 2, sourceId: caster.id,
+            })
+          }
+        }
+
+        // v3 §6.3 Prisão de Muralha Morta (lw_a8 / rw_a8): 8 walls in the
+        // 3x3 ring around center (center itself is free), plus 12 damage
+        // and snare to enemies in the center. The primary damage + snare
+        // are handled by the standard resolver flow below — we only need
+        // to spawn the wall ring here.
+        if (skill.id === 'lw_a8' || skill.id === 'rw_a8') {
+          for (const [dc, dr] of [
+            [-1,-1],[0,-1],[1,-1],
+            [-1, 0],       [1, 0],
+            [-1, 1],[0, 1],[1, 1],
+          ]) {
+            this._grid.placeObstacle({
+              col: target.col + dc, row: target.row + dr,
+              kind: 'wall_ring', side: caster.side,
+              ticksRemaining: 2, sourceId: caster.id,
+            })
+          }
+        }
+
         const hits = this._targeting.resolveTargets(skill, caster, target, this.battle) as Character[]
+
+        // v3 §6.3 — obstacles break on atk1 hits. After resolving targets,
+        // but before applying damage, check the area's footprint and break
+        // any obstacle standing there if this is an atk1 skill. The
+        // `group` field on SkillDefinition is canonical.
+        if (skill.group === 'attack1') {
+          const footprint = this._targeting.previewArea(
+            skill, Position.of(target.col, target.row),
+          )
+          for (const pos of footprint) {
+            const broken = this._grid.breakObstacle(pos.col, pos.row)
+            if (broken) {
+              this.emit({
+                type:   EventType.STATUS_APPLIED,
+                unitId: broken.sourceId,
+                status: 'summon_wall' as const,
+                value:  0,   // 0 signals removal/break to the UI
+              })
+            }
+          }
+        }
 
         // v3 §6.4 Marca da Morte (le_a7 / ra_a7): strip every hit target's
         // shields BEFORE the damage loop so the 12 damage hits HP directly

@@ -320,6 +320,38 @@ export interface GridSnapshot {
 
 // ── Grid ──────────────────────────────────────────────────────────────────────
 
+/**
+ * v3 §6.3 temporary tile obstacle (Muralha Viva, Prisão de Muralha Morta,
+ * Armadilha Oculta). Unlike static walls (`Cell.type === 'wall'`), obstacles
+ * have a lifespan and can be broken by an atk1 hit.
+ *
+ * Obstacles occupy exactly one tile and:
+ *   - Block character movement (via Grid.isWalkable)
+ *   - Do NOT block area-effect damage by default — AoE skills still hit
+ *     the tile; the obstacle itself takes the hit if it's an atk1
+ *   - Track `ticksRemaining` that counts down each round
+ *
+ * Kinds:
+ *   wall_viva  — Muralha Viva: applies adjacency effects (def_down + DoT)
+ *                to enemies standing in the 8 cells around the obstacle.
+ *   wall_ring  — Prisão de Muralha Morta: pure blocker. Breaking it lets
+ *                snared enemies (secondary) escape the ring.
+ *   trap       — Armadilha Oculta: fires on step-over (future integration).
+ */
+export type TileObstacleKind = 'wall_viva' | 'wall_ring' | 'trap'
+
+export interface TileObstacle {
+  readonly col: number
+  readonly row: number
+  readonly kind: TileObstacleKind
+  /** Team that placed the obstacle (allies may walk through? v3 silent — we treat as blocking for all). */
+  readonly side: 'left' | 'right'
+  /** Round counter — decrements to 0 then the obstacle is removed. */
+  ticksRemaining: number
+  /** ID of the character that cast the skill (for event attribution). */
+  readonly sourceId: string
+}
+
 export class Grid {
   readonly cols:    number
   readonly rows:    number
@@ -327,6 +359,13 @@ export class Grid {
 
   private readonly _cells:     Cell[][]                    // [col][row]
   private readonly _occupants: Map<string, Position>       // characterId → Position
+
+  /**
+   * v3 §6.3 tile obstacles — keyed by "col,row". Only one obstacle per
+   * tile; attempting to place a second overwrites the existing one (last
+   * write wins, consistent with the general replace-on-conflict policy).
+   */
+  private readonly _obstacles: Map<string, TileObstacle> = new Map()
 
   constructor(config: GridConfig = {}) {
     this.cols    = config.cols    ?? 16
@@ -456,9 +495,78 @@ export class Grid {
     return this._cells[col]?.[row]?.isOccupied ?? false
   }
 
-  /** True when (col, row) can be entered: in bounds, not wall, not occupied. */
+  /** True when (col, row) can be entered: in bounds, not wall, not occupied, not obstacle. */
   isWalkable(col: number, row: number): boolean {
-    return this._cells[col]?.[row]?.isWalkable ?? false
+    const baseWalkable = this._cells[col]?.[row]?.isWalkable ?? false
+    if (!baseWalkable) return false
+    if (this._obstacles.has(this._obsKey(col, row))) return false
+    return true
+  }
+
+  // ── v3 §6.3 Tile obstacles ────────────────────────────────────────────────
+
+  private _obsKey(col: number, row: number): string {
+    return `${col},${row}`
+  }
+
+  /**
+   * Place a temporary obstacle on a tile. Fails if the tile is out of
+   * bounds, a permanent wall, or currently occupied by a character.
+   * Overwrites any existing obstacle on the same tile (last-write-wins).
+   */
+  placeObstacle(obstacle: TileObstacle): GridResult {
+    const cell = this._cells[obstacle.col]?.[obstacle.row]
+    if (!cell) return { ok: false, error: 'out of bounds' }
+    if (cell.isWall) return { ok: false, error: 'cell is a permanent wall' }
+    if (cell.isOccupied) return { ok: false, error: 'cell is occupied by a character' }
+    this._obstacles.set(this._obsKey(obstacle.col, obstacle.row), obstacle)
+    return { ok: true, value: undefined }
+  }
+
+  /** Remove an obstacle if present. Returns the removed obstacle, or null. */
+  removeObstacle(col: number, row: number): TileObstacle | null {
+    const key = this._obsKey(col, row)
+    const existing = this._obstacles.get(key)
+    if (!existing) return null
+    this._obstacles.delete(key)
+    return existing
+  }
+
+  /** Obstacle at the given tile, or null. */
+  obstacleAt(col: number, row: number): TileObstacle | null {
+    return this._obstacles.get(this._obsKey(col, row)) ?? null
+  }
+
+  /** True when the tile has an active obstacle. */
+  hasObstacleAt(col: number, row: number): boolean {
+    return this._obstacles.has(this._obsKey(col, row))
+  }
+
+  /** All active obstacles. Order is insertion order (stable). */
+  getObstacles(): TileObstacle[] {
+    return [...this._obstacles.values()]
+  }
+
+  /**
+   * Tick every obstacle: decrement `ticksRemaining` and remove any that
+   * reach zero. Returns the list of obstacles that expired (for event
+   * emission by the caller).
+   */
+  tickObstacles(): TileObstacle[] {
+    const expired: TileObstacle[] = []
+    for (const [key, ob] of this._obstacles) {
+      ob.ticksRemaining -= 1
+      if (ob.ticksRemaining <= 0) {
+        expired.push(ob)
+        this._obstacles.delete(key)
+      }
+    }
+    return expired
+  }
+
+  /** Alias for removeObstacle — semantic marker for "broken by atk1 hit". */
+  breakObstacle(col: number, row: number): TileObstacle | null {
+    return this.removeObstacle(col, row)
   }
 
   // ── Movement validation ────────────────────────────────────────────────────
