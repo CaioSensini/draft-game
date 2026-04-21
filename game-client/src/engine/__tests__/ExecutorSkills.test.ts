@@ -440,11 +440,68 @@ describe('Executor — Defense 1 (self-buffs)', () => {
       expect(exec.effects.some((e) => e.type === 'reflect' && !e.isExpired)).toBe(true)
     })
 
-    it('[PARTIAL] v3 "-25% dano recebido + reflete o mitigado" DR pending', () => {
-      // v3 says the skill reduces damage taken by 25% AND reflects the
-      // mitigated amount. Current implementation only reflects; no DR.
-      const s = executorSkill('le_d1')
-      expect(s.effectType).toBe('reflect')
+    // v3 §6.4 Refletir — implemented via skill-specific intercept in
+    // CombatEngine._applyDefenseSkill that applies ReflectPercentEffect
+    // (absorb 25% + reflect 25%) instead of the generic flat ReflectEffect.
+
+    it('-25% DR: bearer takes 75 of a 100 damage hit (25 absorbed)', () => {
+      const exec = mkChar('e', 'executor', 'left', 5, 3)
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [exec]),
+        rightTeam: new Team('right', [mkChar('enemy', 'warrior', 'right', 10, 3)]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(executorSkill('le_d1'))
+      const applyFn = (engine as unknown as {
+        _applyDefenseSkill: (c: Character, s: Skill) => void
+      })._applyDefenseSkill.bind(engine)
+      applyFn(exec, skill)
+
+      // Reflect effect is active with 25% fraction.
+      const hpBefore = exec.hp
+      const result = exec.takeDamage(100)
+      // Absorbed 25 (from reflect), 75 reaches HP.
+      expect(exec.hp).toBe(hpBefore - 75)
+      expect(result.shieldAbsorbed).toBe(25)
+      expect(result.reflected).toBe(25)
+    })
+
+    it('reflects 25% back to attacker', () => {
+      const exec = mkChar('e', 'executor', 'left', 5, 3)
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [exec]),
+        rightTeam: new Team('right', [mkChar('enemy', 'warrior', 'right', 10, 3)]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const applyFn = (engine as unknown as {
+        _applyDefenseSkill: (c: Character, s: Skill) => void
+      })._applyDefenseSkill.bind(engine)
+
+      applyFn(exec, new Skill(executorSkill('le_d1')))
+      // 80 damage hit: absorbed 20, reflected 20, HP takes 60.
+      const result = exec.takeDamage(80)
+      expect(result.reflected).toBe(20)
+    })
+
+    it('single-use: expires after one reflected hit', () => {
+      const exec = mkChar('e', 'executor', 'left', 5, 3)
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [exec]),
+        rightTeam: new Team('right', [mkChar('enemy', 'warrior', 'right', 10, 3)]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const applyFn = (engine as unknown as {
+        _applyDefenseSkill: (c: Character, s: Skill) => void
+      })._applyDefenseSkill.bind(engine)
+      applyFn(exec, new Skill(executorSkill('le_d1')))
+
+      exec.takeDamage(100)   // first hit triggers
+      // Reflect has expired. Second hit is not intercepted.
+      const result = exec.takeDamage(40)
+      expect(result.reflected).toBe(0)
     })
   })
 

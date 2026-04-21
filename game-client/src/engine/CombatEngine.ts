@@ -21,6 +21,7 @@ import type { VictoryResult } from '../domain/Battle'
 import { Character } from '../domain/Character'
 import { Skill } from '../domain/Skill'
 import type { CharacterRole, CharacterSide } from '../domain/Character'
+import { ReflectPercentEffect } from '../domain/Effect'
 import { EventBus } from './EventBus'
 import { TurnManager } from './TurnManager'
 import type { SkipReason } from './TurnManager'
@@ -1022,6 +1023,26 @@ export class CombatEngine {
         skillName: skill.name, category: 'defense', targetId: char.id,
       })
       this._applyEspiritoSobrevivencia(char)
+      return
+    }
+
+    // v3 §6.4 Refletir (le_d1 / re_d1). The generic 'reflect' handler
+    // applies a flat ReflectEffect(power). v3 wants PERCENT reduction +
+    // PERCENT reflect. We swap in ReflectPercentEffect here.
+    if (skill.id === 'le_d1' || skill.id === 're_d1') {
+      this.emit({
+        type: EventType.SKILL_USED, unitId: char.id, skillId: skill.id,
+        skillName: skill.name, category: 'defense', targetId: char.id,
+      })
+      // power is expressed as "percentage points" (25 = 25%). Convert to fraction.
+      const fraction = Math.max(0, Math.min(1, skill.power / 100))
+      char.addEffect(new ReflectPercentEffect(fraction))
+      this.emit({
+        type:   EventType.STATUS_APPLIED,
+        unitId: char.id,
+        status: 'reflect' as const,
+        value:  skill.power,
+      })
       return
     }
 

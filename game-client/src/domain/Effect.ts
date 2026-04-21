@@ -312,6 +312,47 @@ export class ReflectEffect extends Effect {
   }
 }
 
+/**
+ * v3 §6.4 Refletir (le_d1) — percent-based reflect with damage reduction.
+ *
+ * On the NEXT hit taken by the bearer:
+ *   - Absorbs `fraction` of the incoming damage (bearer takes the rest).
+ *   - Reflects the same fraction back to the attacker.
+ *
+ * Example: fraction = 0.25, incoming 100:
+ *   bearer takes 75 (100 − 25 absorbed), attacker takes 25 (reflected).
+ *
+ * Both absorbed and reflected portions are rounded via Math.round to match
+ * the project-wide damage policy.
+ *
+ * Uses the same `type = 'reflect'` as ReflectEffect so addEffect() replaces
+ * one with the other cleanly — only one reflect is ever active at a time.
+ */
+export class ReflectPercentEffect extends Effect {
+  readonly type = 'reflect' as const
+  readonly kind = 'buff' as const
+  private _triggered = false
+
+  /** Fraction in [0, 1]. E.g. 0.25 for Refletir. */
+  readonly fraction: number
+
+  constructor(fraction: number) {
+    super()
+    this.fraction = Math.max(0, Math.min(1, fraction))
+  }
+
+  get isExpired(): boolean { return this._triggered }
+
+  tick(): null { return null }
+
+  override interceptDamage(rawDamage: number): DamageInterception {
+    if (this._triggered) return { absorbed: 0, reflected: 0, evaded: false }
+    this._triggered = true
+    const amount = Math.round(rawDamage * this.fraction)
+    return { absorbed: amount, reflected: amount, evaded: false }
+  }
+}
+
 // ── Concrete effects — stat debuffs ───────────────────────────────────────────
 
 /**
