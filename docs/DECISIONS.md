@@ -504,3 +504,30 @@ Usa `existing.constructor` + cast para preservar a classe concreta (evita `insta
 **Status:** Concluido. Type-check passa.
 
 ---
+
+## 2026-04-20 — Sprint Alfa (Combat Engine 100%) — Debito residual aceitavel
+
+Contexto: Sprint Alfa fechou os 5 sistemas medios restantes (Damage interceptor, Pre-movement, Arena-wide mixed-side, Tile-trap on-step, Wall de escudo). Com isso, as 64/64 skills do catalogo estao mecanicamente completas. Durante a execucao, dois pontos de integracao ficaram DOCUMENTADOS como debito do sistema de movimento (nao das skills), por decisao explicita do sprint:
+
+### 1. Teleport consome proximo movimento — integracao MovementEngine pendente
+
+- `Character._movementConsumedNextTurn` + `setMovementConsumedNextTurn` + `movementConsumedNextTurn` getter estao implementados.
+- `le_d4` Teleport seta a flag na execucao via `preMovement.consumesNextMovement`.
+- **O que falta:** MovementEngine (fase de movimento entre rounds) precisa consultar `movementConsumedNextTurn`, tratar como "turn pulado" e limpar a flag.
+- **Por que aceitavel:** MovementEngine e codigo legado baseado em `BattleState` (nao em Character/Battle domain). A integracao completa exige refactor do GameEngine/Scene para passar a flag adiante. Esta fora de escopo do sprint de skills.
+- **Como fechar:** sprint dedicado a integracao MovementEngine - Character. Chamar `char.movementConsumedNextTurn` no inicio da fase de movimento; se true, skip e reset.
+
+### 2. Armadilha Oculta movimento voluntario — hook em MovementEngine pendente
+
+- `_checkTrapTrigger` e chamado em `_executePush` (push) e `_applyPreMovement` (pre-skill movement). Ambos os caminhos disparam a trap corretamente.
+- **O que falta:** movimento voluntario na fase de movimento (player/bot escolhe caminho) nao passa por CombatEngine, logo nao aciona `_checkTrapTrigger`.
+- **Por que aceitavel:** a skill esta mecanicamente completa — a trap existe, expira, e triggera nos caminhos onde CombatEngine controla a posicao. O gap e do **sistema de movimento**, nao da skill.
+- **Como fechar:** quando o MovementEngine for refatorado, adicionar callback onCharacterMoved(char, newCol, newRow) que chame a mesma logica de trap-trigger (extraida para um servico compartilhavel, se necessario).
+
+### Resumo
+
+Ambos itens compartilham o mesmo caminho de remediacao: **sprint dedicado a modernizar MovementEngine para falar com Character/Battle domain** (em vez do BattleState legado). Esse sprint fecharia os 2 itens simultaneamente e tambem desbloquearia hooks similares futuros (e.g. on-enter tile para Escudo do Protetor wall, zona de Nevoa com proximity effects, etc).
+
+**Status:** Skills 64/64 completas. Sistemas de movimento pendentes como debito isolado.
+
+---
