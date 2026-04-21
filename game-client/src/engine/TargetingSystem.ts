@@ -64,6 +64,10 @@ export class TargetingSystem {
         if (spec.kind !== 'character') return []
         const target = battle.getCharacter(spec.characterId)
         if (!target?.alive) return []
+        // v3 §6.5 Fuga Sombria — invisible units are untargetable by
+        // single-target skills. Area skills still hit them (handled in
+        // the 'area' case below).
+        if (target.isInvisible) return []
         if (!this.isInRange(caster, Position.of(target.col, target.row), skill.range))
           return []
         return [target]
@@ -106,6 +110,8 @@ export class TargetingSystem {
         if (spec.kind !== 'character') return false
         const target = battle.getCharacter(spec.characterId)
         if (!target?.alive) return false
+        // v3 §6.5 — invisible units reject single-target selection.
+        if (target.isInvisible) return false
         if (!skill.isValidTargetSide(caster.side, target.side)) return false
         return this.isInRange(caster, Position.of(target.col, target.row), skill.range)
       }
@@ -137,7 +143,10 @@ export class TargetingSystem {
    */
   getValidUnitTargets(skill: Skill, caster: Character, battle: Battle): Character[] {
     const enemySide = caster.side === 'left' ? 'right' : 'left'
-    const candidates = [...battle.teamOf(enemySide).living] as Character[]
+    // v3 §6.5 — invisible enemies are excluded from single-target lists
+    // (AI/UI can't select them). For consistency with resolveTargets/validate.
+    const candidates = [...battle.teamOf(enemySide).living]
+      .filter((c) => !c.isInvisible) as Character[]
     if (skill.range === 0) return candidates
     return candidates.filter((c) =>
       this.isInRange(caster, Position.of(c.col, c.row), skill.range),

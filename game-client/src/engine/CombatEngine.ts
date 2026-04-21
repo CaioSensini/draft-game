@@ -1070,6 +1070,44 @@ export class CombatEngine {
       return
     }
 
+    // v3 §6.5 Fuga Sombria (lk_d1 / rk_d1). Grant invisibility for 1t.
+    // Breaks on HP damage (handled in Character.takeDamage) or naturally
+    // expires via tickEffects.
+    if (skill.id === 'lk_d1' || skill.id === 'rk_d1') {
+      this.emit({
+        type: EventType.SKILL_USED, unitId: char.id, skillId: skill.id,
+        skillName: skill.name, category: 'defense', targetId: char.id,
+      })
+      char.setInvisibility(1)
+      this.emit({
+        type:   EventType.STATUS_APPLIED,
+        unitId: char.id,
+        status: 'invisibility' as const,
+        value:  1,
+      })
+      return
+    }
+
+    // v3 §6.5 Sombra Real (lk_d3 / rk_d3). Spawn 2 visual-only decoys
+    // in empty cells near the King. The engine emits CLONE_SPAWNED with
+    // the computed positions; the scene layer handles rendering. Clones
+    // do NOT occupy tiles, block targeting, or take damage in the
+    // engine — Option B (visual-only) per DECISIONS.md.
+    if (skill.id === 'lk_d3' || skill.id === 'rk_d3') {
+      this.emit({
+        type: EventType.SKILL_USED, unitId: char.id, skillId: skill.id,
+        skillName: skill.name, category: 'defense', targetId: char.id,
+      })
+      const positions = this._pickCloneSpawnPositions(char, 2)
+      this.emit({
+        type:      EventType.CLONE_SPAWNED,
+        casterId:  char.id,
+        positions,
+        duration:  2,   // v3: "Clones duram 2 turnos"
+      })
+      return
+    }
+
     // v3 §6.2 Proteção (ls_d4 / rs_d4). Cleanse debuffs on allies in
     // area + grant 1-turn debuff immunity. The cleanse part fires
     // through the normal resolver path; we ADD the immunity flag to
@@ -1192,6 +1230,48 @@ export class CombatEngine {
         })
       }
     }
+  }
+
+  /**
+   * v3 §6.5 Sombra Real — pick empty cells near the King for clone spawn.
+   *
+   * Greedy search of the 8-adjacent cells (and falling back to radius 2
+   * if fewer than `count` open tiles are available). Returns at most
+   * `count` positions. Empty array is valid if no open tiles around.
+   *
+   * "Open tile" means: in-bounds, not a wall, not occupied by any living
+   * character. Ignores territory (clones can spawn on either side as
+   * long as the cell is free).
+   */
+  private _pickCloneSpawnPositions(
+    caster: Character,
+    count: number,
+  ): Array<{ col: number; row: number }> {
+    const picked: Array<{ col: number; row: number }> = []
+    // Ring of radius 1 first, then 2 if needed.
+    const ring1: Array<[number, number]> = [
+      [-1,-1],[0,-1],[1,-1],
+      [-1, 0],       [1, 0],
+      [-1, 1],[0, 1],[1, 1],
+    ]
+    const ring2: Array<[number, number]> = [
+      [-2,-2],[-1,-2],[0,-2],[1,-2],[2,-2],
+      [-2,-1],                          [2,-1],
+      [-2, 0],                          [2, 0],
+      [-2, 1],                          [2, 1],
+      [-2, 2],[-1, 2],[0, 2],[1, 2],[2, 2],
+    ]
+    for (const offsets of [ring1, ring2]) {
+      for (const [dc, dr] of offsets) {
+        if (picked.length >= count) return picked
+        const c = caster.col + dc
+        const r = caster.row + dr
+        if (this._grid.isWalkable(c, r)) {
+          picked.push({ col: c, row: r })
+        }
+      }
+    }
+    return picked
   }
 
   /**

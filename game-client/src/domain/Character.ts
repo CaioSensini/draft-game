@@ -150,6 +150,14 @@ export class Character {
    */
   private _debuffImmuneTicks = 0
 
+  /**
+   * v3 §6.5 Fuga Sombria (lk_d1) — invisibility window.
+   * When > 0, the character is skipped by single-target targeting
+   * (see TargetingSystem.filterVisible). Area-of-effect skills still
+   * hit the character. Broken when the character takes HP damage.
+   */
+  private _invisibleTicks = 0
+
   // ── Lifecycle ─────────────────────────────────────────────────────────────
   private _alive = true
 
@@ -281,6 +289,9 @@ export class Character {
         if (e instanceof RegenEffect && e.cancellable) return false
         return true
       })
+      // v3 §6.5 Fuga Sombria — invisibility breaks on actual HP damage.
+      // Evaded / absorbed hits do NOT break invisibility (hpDamage=0).
+      this._invisibleTicks = 0
     }
 
     let killed  = this._hp === 0
@@ -424,6 +435,23 @@ export class Character {
   setDebuffImmunity(ticks: number): void {
     if (!this._alive || ticks <= 0) return
     this._debuffImmuneTicks = Math.max(this._debuffImmuneTicks, ticks)
+  }
+
+  /** True if the character is currently invisible (v3 §6.5 Fuga Sombria). */
+  get isInvisible(): boolean { return this._invisibleTicks > 0 }
+
+  /** Remaining turns the character is invisible. */
+  get invisibleTicks(): number { return this._invisibleTicks }
+
+  /**
+   * Activate the invisibility window (v3 §6.5 Fuga Sombria).
+   * Max-stacking policy consistent with other buff timers.
+   * Broken automatically inside takeDamage when the character takes
+   * actual HP damage (evaded / absorbed hits don't break invisibility).
+   */
+  setInvisibility(ticks: number): void {
+    if (!this._alive || ticks <= 0) return
+    this._invisibleTicks = Math.max(this._invisibleTicks, ticks)
   }
 
   /**
@@ -741,6 +769,12 @@ export class Character {
     // v3 §6.2 Proteção — debuff immunity window countdown.
     if (this._debuffImmuneTicks > 0) {
       this._debuffImmuneTicks--
+    }
+
+    // v3 §6.5 Fuga Sombria — invisibility countdown (breaks on HP damage
+    // too; see takeDamage). Natural expiration fires here.
+    if (this._invisibleTicks > 0) {
+      this._invisibleTicks--
     }
 
     this._pruneExpired()

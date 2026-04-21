@@ -173,6 +173,7 @@ export const EventType = {
   LIFESTEAL_HEAL:         'LIFESTEAL_HEAL',
   DOUBLE_ATTACK_READY:    'DOUBLE_ATTACK_READY',
   DEFENSE_SILENCED:       'DEFENSE_SILENCED',
+  CLONE_SPAWNED:          'CLONE_SPAWNED',
 
   // ── Passives
   PASSIVE_TRIGGERED:      'PASSIVE_TRIGGERED',
@@ -279,6 +280,18 @@ export type EngineEvent =
   | { type: 'DOUBLE_ATTACK_READY'; unitId: string }
   /** A character's defense was silenced — they cannot use defense skills this turn. */
   | { type: 'DEFENSE_SILENCED'; unitId: string; sourceId: string }
+  /**
+   * v3 §6.5 Sombra Real — visual-only clones spawned around the caster.
+   * The engine doesn't track clone entities (they don't occupy tiles or
+   * take damage). The scene layer reads this event to render decoys.
+   */
+  | { type: 'CLONE_SPAWNED'
+      /** King who cast the skill. */
+      casterId: string
+      /** Grid positions where clones appear. */
+      positions: Array<{ col: number; row: number }>
+      /** How many turns the clones persist (purely UI hint). */
+      duration: number }
 
   // ── Passives ──
   /**
