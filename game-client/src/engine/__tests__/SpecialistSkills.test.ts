@@ -126,7 +126,7 @@ describe('Specialist — Attack 1 (dano alto)', () => {
     })
   })
 
-  describe('ls_a3 — Raio Purificador [PARTIAL — mixed-side shield pending]', () => {
+  describe('ls_a3 — Raio Purificador', () => {
     it('catalog entry', () => {
       const s = specialistSkill('ls_a3')
       expect(s.name).toBe('Raio Purificador')
@@ -145,10 +145,44 @@ describe('Specialist — Attack 1 (dano alto)', () => {
       expect(target.effects.some((e) => e.type === 'atk_up')).toBe(false)
     })
 
-    it('[PARTIAL] ally-shield-on-hit mixed-side effect pending', () => {
-      // v3: allies in the line receive shield 10. Not encoded today.
-      const s = specialistSkill('ls_a3')
-      expect(s.secondaryEffects?.length).toBe(1)
+    it('allies in the area footprint gain shield 10', () => {
+      // Specialist at (5, 6) aims at (5, 4). Line north length 6 → hits rows 4..-2.
+      // Ally standing at (5, 5) sits in the footprint and should be shielded.
+      const sp = mkChar('s', 'specialist', 'left', 5, 6)
+      const ally = mkChar('a', 'warrior', 'left', 5, 5)
+      const enemy = mkChar('e', 'king', 'right', 5, 4)
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [sp, ally]),
+        rightTeam: new Team('right', [enemy]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(specialistSkill('ls_a3'))
+      ;(engine as unknown as {
+        _applyAttackSkill: (c: Character, s: Skill, t: unknown, side: string) => void
+      })._applyAttackSkill.bind(engine)(
+        sp, skill, { kind: 'area', col: 5, row: 5 }, 'left',
+      )
+      expect(ally.shieldAmount).toBeGreaterThanOrEqual(10)
+    })
+
+    it('allies outside the footprint do NOT gain shield', () => {
+      const sp = mkChar('s', 'specialist', 'left', 5, 6)
+      const offLine = mkChar('a', 'warrior', 'left', 2, 6)  // far from line path
+      const enemy = mkChar('e', 'king', 'right', 5, 4)
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [sp, offLine]),
+        rightTeam: new Team('right', [enemy]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(specialistSkill('ls_a3'))
+      ;(engine as unknown as {
+        _applyAttackSkill: (c: Character, s: Skill, t: unknown, side: string) => void
+      })._applyAttackSkill.bind(engine)(
+        sp, skill, { kind: 'area', col: 5, row: 4 }, 'left',
+      )
+      expect(offLine.shieldAmount).toBe(0)
     })
   })
 

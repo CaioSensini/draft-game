@@ -1643,6 +1643,30 @@ export class CombatEngine {
           }
         }
 
+        // v3 §6.2 Raio Purificador (ls_a3 / rs_a3): mixed-side area shield.
+        // Enemies take damage + purge (handled by the normal resolver loop);
+        // allies standing in the same line footprint gain shield 10.
+        if (skill.id === 'ls_a3' || skill.id === 'rs_a3') {
+          const footprint = this._targeting.previewArea(
+            skill, Position.of(target.col, target.row),
+          )
+          const allies = this.battle.teamOf(caster.side).living as Character[]
+          const inFootprint = (c: Character) => footprint.some(
+            (p) => p.col === c.col && p.row === c.row,
+          )
+          for (const ally of allies) {
+            if (!ally.alive) continue
+            if (!inFootprint(ally)) continue
+            ally.addShield(10)
+            this.emit({
+              type:   EventType.STATUS_APPLIED,
+              unitId: ally.id,
+              status: 'shield' as const,
+              value:  10,
+            })
+          }
+        }
+
         // v3 §6.3 Investida Brutal (lw_a4 / rw_a4): per-line push rules.
         // - Central row (hit.row === aim.row): push 1 along charge axis +
         //   snare 1t if the hit was blocked.
