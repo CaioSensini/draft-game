@@ -721,7 +721,7 @@ export class Character {
 
       // Apply overtime multiplier to DoT damage — the tick result surfaces
       // the post-multiplier value so engine events log what really hit.
-      if ((effect.type === 'bleed' || effect.type === 'poison' || effect.type === 'burn') && result.value > 0) {
+      if ((effect.type === 'bleed' || effect.type === 'poison' || effect.type === 'burn' || effect.type === 'delayed_damage') && result.value > 0) {
         const scaledValue = Math.max(1, Math.round(result.value * damageMultiplier))
         ticks.push({ effectType: result.effectType, value: scaledValue, expired: result.expired })
         this._hp = Math.max(0, this._hp - scaledValue)

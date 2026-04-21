@@ -23,7 +23,7 @@ import { Skill } from '../domain/Skill'
 import type { CharacterRole, CharacterSide } from '../domain/Character'
 import {
   ReflectPercentEffect, RegenEffect, PositionalDrEffect,
-  DefReductionEffect, MovReductionEffect,
+  DefReductionEffect, MovReductionEffect, DelayedDamageEffect,
 } from '../domain/Effect'
 import type { PositionalDrShape } from '../domain/Effect'
 import { EventBus } from './EventBus'
@@ -1012,8 +1012,16 @@ export class CombatEngine {
     const targetIncomingDamageBonus = this.passive.getIncomingDamageBonus(target, this.battle)
     const hpRatio = target.hp / Math.max(1, target.maxHp)
 
+    // v3 §6.2 Chuva de Mana (ls_a2 / rs_a2): 22 damage is split into two
+    // 11-damage pulses. The primary pulse lands here at half power; the
+    // second pulse is queued as a DelayedDamageEffect and fires on the
+    // next tick.
+    const basePower = (skill.id === 'ls_a2' || skill.id === 'rs_a2')
+      ? Math.max(1, Math.round(skill.power / 2))
+      : skill.power
+
     return computeDamage({
-      basePower:                 skill.power,
+      basePower,
       targetDef:                 target.defense,
       targetHpRatio:             hpRatio,
       atkBonus,
@@ -1640,6 +1648,20 @@ export class CombatEngine {
             }
             const snareRes = this.resolver.resolve('snare', snareCtx)
             this._processResult(caster, blocked, snareRes)
+          }
+        }
+
+        // v3 §6.2 Chuva de Mana (ls_a2 / rs_a2): 22 damage split across 2
+        // ticks (11 + 11). Primary hit lands now for half of the declared
+        // power; the remaining half is queued as a DelayedDamageEffect that
+        // fires next round via Character.tickEffects. Queimação heal-
+        // reduction does NOT stack twice because the passive's onDamageDealt
+        // hook fires per caster-target pair, not per damage pulse.
+        if (skill.id === 'ls_a2' || skill.id === 'rs_a2') {
+          const halfPower = Math.max(1, Math.round(skill.power / 2))
+          for (const hit of hits) {
+            if (!hit.alive) continue
+            hit.addEffect(new DelayedDamageEffect(halfPower, 1))
           }
         }
 

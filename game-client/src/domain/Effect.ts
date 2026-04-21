@@ -41,6 +41,7 @@ export type EffectType =
   | 'mark'
   | 'revive'
   | 'positional_dr'
+  | 'delayed_damage'
 
 /** Stat targeted by a stat-modifier effect. */
 export type ModifiableStat = 'defense' | 'attack' | 'mobility'
@@ -135,6 +136,38 @@ export class BleedEffect extends Effect {
     const value = this._ticks > 0 ? this.damagePerTick : 0
     this._ticks = Math.max(0, this._ticks - 1)
     return { effectType: 'bleed', value, expired: this.isExpired }
+  }
+}
+
+/**
+ * Fires a fixed number of deferred damage pulses, one per round.
+ *
+ * Unlike Bleed/Poison/Burn (which are DoTs that last as long as their
+ * duration and are visible as status debuffs), a DelayedDamageEffect
+ * represents the *deferred portion of a single cast* — e.g. Chuva de
+ * Mana (ls_a2) applies 11 damage on cast plus a DelayedDamageEffect of
+ * 11 over 1 tick to deliver the second half the following round.
+ *
+ * Treated as 'neutral' kind (not a debuff) because it is not a hostile
+ * status the target picked up; it is the tail of the same strike.
+ */
+export class DelayedDamageEffect extends Effect {
+  readonly type = 'delayed_damage' as const
+  readonly kind = 'neutral' as const
+  private _ticks: number
+
+  constructor(readonly damagePerTick: number, ticks = 1) {
+    super()
+    this._ticks = ticks
+  }
+
+  get isExpired(): boolean     { return this._ticks <= 0 }
+  get ticksRemaining(): number { return this._ticks }
+
+  tick(): TickResult {
+    const value = this._ticks > 0 ? this.damagePerTick : 0
+    this._ticks = Math.max(0, this._ticks - 1)
+    return { effectType: 'delayed_damage', value, expired: this.isExpired }
   }
 }
 
@@ -715,5 +748,6 @@ export function createEffect(type: EffectType, value: number, ticks?: number): E
       // generic (type, value, ticks) factory. Callers must instantiate
       // PositionalDrEffect directly.
       throw new Error('positional_dr cannot be created via createEffect(); instantiate PositionalDrEffect directly')
+    case 'delayed_damage': return new DelayedDamageEffect(value, ticks)
   }
 }

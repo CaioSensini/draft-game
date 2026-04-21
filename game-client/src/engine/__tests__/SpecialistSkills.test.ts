@@ -24,6 +24,7 @@ import { Battle } from '../../domain/Battle'
 import { Skill } from '../../domain/Skill'
 import {
   RegenEffect, AtkBoostEffect, ReviveEffect, DefReductionEffect,
+  DelayedDamageEffect,
 } from '../../domain/Effect'
 import { CombatEngine } from '../CombatEngine'
 import { createDefaultResolver } from '../EffectResolver'
@@ -104,7 +105,7 @@ describe('Specialist — Attack 1 (dano alto)', () => {
     })
   })
 
-  describe('ls_a2 — Chuva de Mana [PARTIAL — 2-tick mechanic pending]', () => {
+  describe('ls_a2 — Chuva de Mana', () => {
     it('catalog entry', () => {
       const s = specialistSkill('ls_a2')
       expect(s.name).toBe('Chuva de Mana')
@@ -112,17 +113,36 @@ describe('Specialist — Attack 1 (dano alto)', () => {
       expect(s.effectType).toBe('area')
     })
 
-    it('primary damage applies (single hit, full 22 in current impl)', () => {
-      const sp = mkChar('s', 'specialist', 'left')
-      const target = mkChar('t', 'warrior', 'right')
-      const hp = target.hp
-      resolver.resolve('area', ctx(sp, target, 22, 22))
-      expect(target.hp).toBe(hp - 22)
+    it('first pulse lands for half power and attaches a delayed_damage effect', () => {
+      const sp = mkChar('s', 'specialist', 'left', 5, 6)
+      const target = mkChar('t', 'warrior', 'right', 5, 4)
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [sp]),
+        rightTeam: new Team('right', [target]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(specialistSkill('ls_a2'))
+      const hpBefore = target.hp
+      ;(engine as unknown as {
+        _applyAttackSkill: (c: Character, s: Skill, t: unknown, side: string) => void
+      })._applyAttackSkill.bind(engine)(
+        sp, skill, { kind: 'area', col: 5, row: 5 }, 'left',
+      )
+      // First pulse dealt some damage (≤ 11)
+      expect(target.hp).toBeLessThan(hpBefore)
+      // Delayed effect queued for the second pulse
+      expect(target.effects.some((e) => e.type === 'delayed_damage' && !e.isExpired)).toBe(true)
     })
 
-    it('[PARTIAL] "22 dano em 2 ticks (11+11)" mechanic not yet split', () => {
-      const s = specialistSkill('ls_a2')
-      expect(s.secondaryEffects?.length ?? 0).toBe(0)
+    it('delayed_damage fires on tickEffects for the second pulse', () => {
+      const target = mkChar('t', 'warrior', 'right')
+      target.addEffect(new DelayedDamageEffect(11, 1))
+      const hpBefore = target.hp
+      target.tickEffects()
+      expect(target.hp).toBe(hpBefore - 11)
+      // Effect expired after firing
+      expect(target.effects.some((e) => e.type === 'delayed_damage' && !e.isExpired)).toBe(false)
     })
   })
 
