@@ -150,3 +150,33 @@ export function hasCharacterSprite(
   const key = getCharacterKey(charClass, skin)
   return scene.textures.exists(key)
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DESIGN SYSTEM SVGs (Phase 1 — wordmark, class sigils, currency icons)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type DesignSvgEntry = { key: string; path: string; width: number; height: number }
+
+export const DESIGN_SVG_ASSETS: readonly DesignSvgEntry[] = [
+  { key: 'logo-wordmark',          path: '/assets/logo/draft-game-wordmark.svg',        width: 240, height: 80 },
+  { key: 'sigil-rei',              path: '/assets/icons/classes/rei.svg',               width: 64,  height: 64 },
+  { key: 'sigil-guerreiro',        path: '/assets/icons/classes/guerreiro.svg',         width: 64,  height: 64 },
+  { key: 'sigil-executor',         path: '/assets/icons/classes/executor.svg',          width: 64,  height: 64 },
+  { key: 'sigil-especialista',     path: '/assets/icons/classes/especialista.svg',      width: 64,  height: 64 },
+  { key: 'currency-gold',          path: '/assets/icons/currency/gold.svg',             width: 32,  height: 32 },
+  { key: 'currency-dg',            path: '/assets/icons/currency/dg.svg',               width: 32,  height: 32 },
+] as const
+
+export function getAllDesignSvgAssets(): ReadonlyArray<DesignSvgEntry> {
+  return DESIGN_SVG_ASSETS.map((a) => ({ ...a, path: `${a.path}${ASSET_VERSION}` }))
+}
+
+export function getClassSigilKey(charClass: CharClass): string {
+  const map: Record<CharClass, string> = {
+    king:       'sigil-rei',
+    warrior:    'sigil-guerreiro',
+    executor:   'sigil-executor',
+    specialist: 'sigil-especialista',
+  }
+  return map[charClass]
+}

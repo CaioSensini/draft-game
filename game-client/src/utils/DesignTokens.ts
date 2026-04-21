@@ -506,3 +506,207 @@ export const GAME_RULES = {
   HEAL_REDUCTION_DURATION: gameRules.healReductionDuration,
   BLEED_TICKS:             gameRules.bleedTicks,
 } as const
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DESIGN SYSTEM PHASE 1 (2026-04-21) — parallel namespaces
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// These namespaces encode the tokens from `design-system-handoff/colors_and_type.css`
+// into Phaser-friendly shapes. They live ALONGSIDE the legacy namespaces above —
+// no legacy value is modified, so all existing callers keep working.
+//
+// New components should prefer these tokens. Migration of legacy code is organic,
+// per component, and will happen as scenes are redesigned in Phase 2.
+//
+// Reference: design-system-handoff/INTEGRATION_SPEC.md and colors_and_type.css.
+// Conversion rules:
+//   #RRGGBB       → 0xRRGGBB
+//   rgba(...)     → { color: 0xRRGGBB, alpha: number }
+//   Ndpi durations → plain ms numbers
+//   cubic-bezier  → Phaser easing name (approximate if no exact match)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/** Color with optional alpha channel — preferred shape for translucent tokens. */
+export type TokenRgba = { color: number; alpha: number }
+
+// ── Class aura glows (4 new tokens) ──
+export const classGlow = {
+  rei:          { color: 0xfbbf24, alpha: 0.40 } as TokenRgba,
+  guerreiro:    { color: 0x8b5cf6, alpha: 0.40 } as TokenRgba,
+  executor:     { color: 0xdc2626, alpha: 0.40 } as TokenRgba,
+  especialista: { color: 0x10b981, alpha: 0.40 } as TokenRgba,
+  teamAlly:     { color: 0x3b82f6, alpha: 0.35 } as TokenRgba,
+  teamEnemy:    { color: 0xef4444, alpha: 0.35 } as TokenRgba,
+} as const
+
+// ── Surface layers — CSS --bg-0..4 (navy palette, NOT the legacy deep-black) ──
+export const surface = {
+  deepest: 0x0a0f1c,  // --bg-0 : cloth behind parchment
+  primary: 0x0f172a,  // --bg-1 : primary app bg
+  panel:   0x1e293b,  // --bg-2 : panels, cards, modals
+  raised:  0x273449,  // --bg-3 : raised panel, hover surface
+  input:   0x334155,  // --bg-4 : top-of-stack, input fill
+} as const
+
+// ── Border weights ──
+export const border = {
+  subtle:    0x1e293b,
+  default:   0x334155,
+  strong:    0x475569,
+  royal:     0x78562a,
+  royalLit:  0xa97b2e,
+} as const
+
+// ── Foreground (text) palette ──
+export const fg = {
+  primary:   0xf1f5f9,  primaryHex:   '#f1f5f9',
+  secondary: 0xcbd5e1,  secondaryHex: '#cbd5e1',
+  tertiary:  0x94a3b8,  tertiaryHex:  '#94a3b8',
+  disabled:  0x64748b,  disabledHex:  '#64748b',
+  inverse:   0x0f172a,  inverseHex:   '#0f172a',
+} as const
+
+// ── Accents (gold CTA family) ──
+export const accent = {
+  primary: 0xfbbf24,  primaryHex: '#fbbf24',
+  hot:     0xf59e0b,  hotHex:     '#f59e0b',
+  dim:     0x78562a,  dimHex:     '#78562a',
+} as const
+
+// ── Stateful colors (success/error/warn/info) ──
+// NOTE: values differ from legacy `colors.semantic.*` — use these for any new UI.
+export const state = {
+  success:      0x10b981,  successHex:      '#10b981',
+  successDim:   0x065f46,  successDimHex:   '#065f46',
+  error:        0xef4444,  errorHex:        '#ef4444',
+  errorDim:     0x7f1d1d,  errorDimHex:     '#7f1d1d',
+  warn:         0xf59e0b,  warnHex:         '#f59e0b',
+  warnCritical: 0xdc2626,  warnCriticalHex: '#dc2626',
+  info:         0x3b82f6,  infoHex:         '#3b82f6',
+} as const
+
+// ── Currency ──
+export const currency = {
+  goldCoin:     0xfbbf24,  goldCoinHex:     '#fbbf24',
+  goldCoinEdge: 0x78562a,  goldCoinEdgeHex: '#78562a',
+  dgGem:        0xa78bfa,  dgGemHex:        '#a78bfa',
+  dgGemEdge:    0x5b21b6,  dgGemEdgeHex:    '#5b21b6',
+} as const
+
+// ── HP state aliases (CSS-compliant nomenclature) ──
+// Legacy `colors.hp.full/medium/low` kept intact. New code uses these names.
+export const hpState = {
+  full:     0x22c55e,  fullHex:     '#22c55e',
+  wounded:  0xf59e0b,  woundedHex:  '#f59e0b',
+  critical: 0xef4444,  criticalHex: '#ef4444',
+  shield:   0x94a3b8,  shieldHex:   '#94a3b8',
+} as const
+
+// ── HP threshold (CSS-compliant rules, alias to legacy hpThresholds) ──
+export const hpBreakpoint = {
+  wounded:  0.55, // <= 0.55 & > 0.25 → wounded (amber)
+  critical: 0.25, // <= 0.25 → critical (red)
+} as const
+
+// ── Tactical board tile states ──
+export const tile = {
+  default:         0x1b2438,
+  defaultAlt:      0x1f2a42,
+  allySide:        0x1a2a4a,
+  enemySide:       0x3a1a22,
+  hover:           { color: 0xffffff, alpha: 0.08 } as TokenRgba,
+  validMove:       { color: 0x10b981, alpha: 0.28 } as TokenRgba,
+  validMoveBorder: 0x10b981,
+  validSkill:      { color: 0xfbbf24, alpha: 0.22 } as TokenRgba,
+  validSkillBorder:0xfbbf24,
+  areaPreview:     { color: 0xef4444, alpha: 0.22 } as TokenRgba,
+  areaBorder:      0xef4444,
+  wall:            0x4b5563,
+  wallShine:       0x94a3b8,
+} as const
+
+// ── Typography: new font stacks (Google Fonts + generic fallbacks) ──
+export const fontFamily = {
+  display: "'Cinzel', 'Trajan Pro', serif",
+  serif:   "'Cormorant Garamond', 'Cinzel', serif",
+  body:    "'Manrope', 'Inter', system-ui, sans-serif",
+  mono:    "'JetBrains Mono', ui-monospace, monospace",
+} as const
+
+// ── Type scale (CSS --fs-*). Values in px as numeric strings for Phaser. ──
+export const typeScale = {
+  displayXl: '56px',
+  displayLg: '40px',
+  displayMd: '32px',
+  h1:        '28px',
+  h2:        '22px',
+  h3:        '18px',
+  body:      '15px',
+  small:     '13px',
+  meta:      '11px',
+  statLg:    '22px',
+  statMd:    '16px',
+} as const
+
+export const lineHeight = {
+  tight: 1.1,
+  body:  1.5,
+} as const
+
+export const letterSpacing = {
+  display: '0.08em',
+  label:   '0.14em',
+  body:    '0.005em',
+} as const
+
+// ── Radii (CSS --r-*). NOTE: numerically different from legacy sizes.radius.*. ──
+export const radii = {
+  sm:   4,
+  md:   6,
+  lg:   8,
+  xl:   12,
+  pill: 999,
+} as const
+
+// ── Spacing extension (legacy `spacing` missed 12/48/64) ──
+export const spacingScale = {
+  sp1:  4,   // --sp-1
+  sp2:  8,   // --sp-2
+  sp3:  12,  // --sp-3
+  sp4:  16,  // --sp-4
+  sp5:  24,  // --sp-5
+  sp6:  32,  // --sp-6
+  sp8:  48,  // --sp-8
+  sp10: 64,  // --sp-10
+} as const
+
+// ── Motion curves & durations ──
+// Phaser easing names approximated to CSS cubic-beziers.
+export const motion = {
+  easeOut:   'Cubic.easeOut',     // cubic-bezier(0.22, 1, 0.36, 1)
+  easeInOut: 'Cubic.easeInOut',   // cubic-bezier(0.65, 0, 0.35, 1)
+  durFast:   120,                 // --dur-fast  (ms)
+  durBase:   200,                 // --dur-base  (ms)
+  durSlow:   360,                 // --dur-slow  (ms)
+} as const
+
+// ── Elevation (CSS shadows interpreted as Phaser-friendly specs) ──
+// Phaser can't render box-shadow; Graphics must emulate. These specs provide
+// enough parameters for a consumer to draw an offset drop-shadow rect and
+// optionally an inset highlight.
+export type ElevationSpec = {
+  offsetY: number
+  blur:    number
+  color:   number
+  alpha:   number
+  inset?:  { color: number; alpha: number } | null
+}
+
+export const elevation = {
+  sm:   { offsetY: 1,  blur: 2,  color: 0x000000, alpha: 0.35, inset: null } as ElevationSpec,
+  md:   { offsetY: 4,  blur: 12, color: 0x000000, alpha: 0.45, inset: { color: 0xffffff, alpha: 0.04 } } as ElevationSpec,
+  lg:   { offsetY: 16, blur: 40, color: 0x000000, alpha: 0.55, inset: { color: 0xffffff, alpha: 0.05 } } as ElevationSpec,
+  gold: { offsetY: 6,  blur: 18, color: 0xfbbf24, alpha: 0.18, inset: null } as ElevationSpec,
+  inset:{ offsetY: -1, blur: 0,  color: 0xffffff, alpha: 0.05, inset: { color: 0x000000, alpha: 0.5 } } as ElevationSpec,
+  focusRing: { offsetY: 0, blur: 4, color: 0xfbbf24, alpha: 1.0, inset: null } as ElevationSpec,
+} as const

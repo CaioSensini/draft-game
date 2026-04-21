@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { getAllCharacterAssets, getAllSkillAssets } from '../utils/AssetPaths'
+import { getAllCharacterAssets, getAllDesignSvgAssets, getAllSkillAssets } from '../utils/AssetPaths'
 import { colors, fonts, sizes } from '../utils/DesignTokens'
 
 export default class BootScene extends Phaser.Scene {
@@ -21,6 +21,11 @@ export default class BootScene extends Phaser.Scene {
     // Skill icons — /assets/skills/{skillId}.png
     for (const { key, path } of getAllSkillAssets()) {
       this.load.image(key, path)
+    }
+
+    // Design-system SVGs (Phase 1) — wordmark, class sigils, currency icons
+    for (const { key, path, width, height } of getAllDesignSvgAssets()) {
+      this.load.svg(key, path, { width, height })
     }
   }
 

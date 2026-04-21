@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="24" cy="24" r="14" fill="#fbbf24" fill-opacity="0.2" stroke="#78562a"></circle>
+  <circle cx="24" cy="24" r="14" stroke="#fbbf24"></circle>
+  <text x="24" y="30" text-anchor="middle" font-family="Cinzel,serif" font-weight="900" font-size="18" fill="#fbbf24" stroke="none">G</text>
+</svg>

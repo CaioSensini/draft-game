@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 120" width="480" height="120">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fcd34d"></stop>
+      <stop offset="1" stop-color="#b4832a"></stop>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="120" fill="#0f172a"></rect>
+  <g stroke="#78562a" stroke-width="1" fill="none">
+    <line x1="24" y1="18" x2="456" y2="18"></line>
+    <line x1="24" y1="102" x2="456" y2="102"></line>
+  </g>
+  <text x="240" y="64" text-anchor="middle" font-family="Cinzel, &#39;Trajan Pro&#39;, serif" font-weight="900" font-size="46" letter-spacing="10" fill="url(#g)">DRAFT</text>
+  <text x="240" y="92" text-anchor="middle" font-family="Cinzel, serif" font-weight="500" font-size="14" letter-spacing="8" fill="#94a3b8">— TACTICAL WARFARE —</text>
+  <g stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round" fill="none">
+    <path d="M150 72 l20 -14 M170 58 l2 2 M150 72 l2 2"></path>
+    <path d="M330 72 l-20 -14 M310 58 l-2 2 M330 72 l-2 2"></path>
+  </g>
+</svg>
