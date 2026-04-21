@@ -21,7 +21,7 @@ import type { VictoryResult } from '../domain/Battle'
 import { Character } from '../domain/Character'
 import { Skill } from '../domain/Skill'
 import type { CharacterRole, CharacterSide } from '../domain/Character'
-import { ReflectPercentEffect } from '../domain/Effect'
+import { ReflectPercentEffect, RegenEffect } from '../domain/Effect'
 import { EventBus } from './EventBus'
 import { TurnManager } from './TurnManager'
 import type { SkipReason } from './TurnManager'
@@ -1067,6 +1067,56 @@ export class CombatEngine {
       // Queue the post-expire HP cost: 15% of base max HP, rounded.
       const hpCost = Math.round(char.baseStats.maxHp * 0.15)
       char.setAdrenalinePenalty(hpCost, buffTicks)
+      return
+    }
+
+    // v3 §6.2 Proteção (ls_d4 / rs_d4). Cleanse debuffs on allies in
+    // area + grant 1-turn debuff immunity. The cleanse part fires
+    // through the normal resolver path; we ADD the immunity flag to
+    // every ally in the area.
+    if (skill.id === 'ls_d4' || skill.id === 'rs_d4') {
+      this.emit({
+        type: EventType.SKILL_USED, unitId: char.id, skillId: skill.id,
+        skillName: skill.name, category: 'defense', targetId: char.id,
+      })
+      const targets = this._resolveDefenseTargets(char, skill)
+      for (const t of targets) {
+        const ctx: EffectContext = {
+          caster: char, target: t, power: 0, rawDamage: 0, round: this.battle.round,
+        }
+        const res = this.resolver.resolve('cleanse', ctx)
+        this._processResult(char, t, res)
+        t.setDebuffImmunity(1)
+        this.emit({
+          type:   EventType.STATUS_APPLIED,
+          unitId: t.id,
+          status: 'debuff_immunity' as const,
+          value:  1,
+        })
+      }
+      return
+    }
+
+    // v3 §6.2 Campo de Cura Contínuo (ls_d5 / rs_d5). Regen 6/turno
+    // por 2t em área 3x3, FLAG cancellable=true so incoming damage
+    // strips the effect (handled inside Character.takeDamage).
+    if (skill.id === 'ls_d5' || skill.id === 'rs_d5') {
+      this.emit({
+        type: EventType.SKILL_USED, unitId: char.id, skillId: skill.id,
+        skillName: skill.name, category: 'defense', targetId: char.id,
+      })
+      const targets = this._resolveDefenseTargets(char, skill)
+      for (const t of targets) {
+        // v3 says Rei does not receive regen. Skip king targets.
+        if (t.role === 'king') continue
+        t.addEffect(new RegenEffect(skill.power, 2, /* cancellable */ true))
+        this.emit({
+          type:   EventType.STATUS_APPLIED,
+          unitId: t.id,
+          status: 'regen' as const,
+          value:  skill.power,
+        })
+      }
       return
     }
 

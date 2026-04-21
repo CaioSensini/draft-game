@@ -135,6 +135,21 @@ export class Character {
   private _adrenalinePenaltyHp    = 0
   private _adrenalinePenaltyTicks = 0
 
+  /**
+   * v3 §6.2 Renascimento Parcial (ls_d2) — "máximo 1x por aliado por partida".
+   * Flips to true the first time a revive is consumed on this Character,
+   * blocking future `addEffect(new ReviveEffect(...))` calls from landing.
+   * Reset only by constructing a new Character instance (new battle).
+   */
+  private _reviveConsumedThisBattle = false
+
+  /**
+   * v3 §6.2 Proteção (ls_d4) — "imunidade a novos debuffs por 1 turno".
+   * When > 0, `addEffect` rejects any incoming effect whose kind is
+   * 'debuff'. Decremented each round via tickEffects.
+   */
+  private _debuffImmuneTicks = 0
+
   // ── Lifecycle ─────────────────────────────────────────────────────────────
   private _alive = true
 
@@ -257,6 +272,17 @@ export class Character {
     const hpDamage = evaded ? 0 : Math.max(0, remaining)
     this._hp = Math.max(this._isDummy ? 1 : 0, this._hp - hpDamage)
 
+    // v3 §6.2 Campo de Cura Contínuo — "cancelado se aliado tomar dano".
+    // Any RegenEffect flagged `cancellable` is stripped when the character
+    // actually loses HP (evaded hits don't trigger this). Non-cancellable
+    // regens (e.g. King's Recuperação Real) stay active.
+    if (hpDamage > 0) {
+      this._effects = this._effects.filter((e) => {
+        if (e instanceof RegenEffect && e.cancellable) return false
+        return true
+      })
+    }
+
     let killed  = this._hp === 0
     let revived = false
     let revivedHp = 0
@@ -271,6 +297,7 @@ export class Character {
         killed      = false
         revived     = true
         revivedHp   = this._hp
+        this._reviveConsumedThisBattle = true   // v3 §6.2 — lock out future revives this battle
         this._pruneExpired()   // remove the consumed revive effect
       } else {
         this._alive = false
@@ -381,6 +408,24 @@ export class Character {
   get adrenalinePenaltyHp(): number    { return this._adrenalinePenaltyHp }
   get adrenalinePenaltyTicks(): number { return this._adrenalinePenaltyTicks }
 
+  // ── v3 §6.2 Renascimento Parcial + Proteção + Campo de Cura Contínuo ─────
+
+  /** True if this character already consumed a revive this battle (v3 §6.2 ls_d2). */
+  get reviveConsumedThisBattle(): boolean { return this._reviveConsumedThisBattle }
+
+  /** Current remaining debuff-immunity turns (v3 §6.2 ls_d4). */
+  get debuffImmuneTicks(): number { return this._debuffImmuneTicks }
+
+  /**
+   * Activate the debuff-immunity window (v3 §6.2 Proteção).
+   * While active, `addEffect` refuses to apply effects whose `kind === 'debuff'`.
+   * Max-stacking policy — re-application only extends, never shrinks.
+   */
+  setDebuffImmunity(ticks: number): void {
+    if (!this._alive || ticks <= 0) return
+    this._debuffImmuneTicks = Math.max(this._debuffImmuneTicks, ticks)
+  }
+
   /**
    * v3 §6.4 Marca da Morte support: remove every active shield effect and
    * return the total shield HP that was stripped. Used by Executor skills
@@ -417,6 +462,19 @@ export class Character {
   addEffect(effect: Effect): void {
     if (effect instanceof ShieldEffect) {
       this.addShield(effect.remaining)
+      return
+    }
+
+    // v3 §6.2 Proteção — debuff immunity. While active, reject any
+    // effect with kind 'debuff' (bleed, poison, burn, def_down, etc.).
+    // Buffs and neutral effects pass through unchanged.
+    if (this._debuffImmuneTicks > 0 && effect.kind === 'debuff') {
+      return
+    }
+
+    // v3 §6.2 Renascimento Parcial — 1x por aliado por partida. A second
+    // ReviveEffect application is ignored after the first has fired.
+    if (effect instanceof ReviveEffect && this._reviveConsumedThisBattle) {
       return
     }
 
@@ -621,6 +679,7 @@ export class Character {
             const restoreHp = revive.trigger()
             this._hp    = Math.min(restoreHp, this.maxHp)
             this._alive = true
+            this._reviveConsumedThisBattle = true   // v3 §6.2 lock-out
           } else {
             this._alive = false
           }
@@ -677,6 +736,11 @@ export class Character {
         // damage attributed to self.
         this.takeDamage(cost)
       }
+    }
+
+    // v3 §6.2 Proteção — debuff immunity window countdown.
+    if (this._debuffImmuneTicks > 0) {
+      this._debuffImmuneTicks--
     }
 
     this._pruneExpired()

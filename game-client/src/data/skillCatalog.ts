@@ -67,7 +67,10 @@ const LEFT_SPECIALIST: SkillDefinition[] = [
     id: 'ls_a5', name: 'Orbe de Lentidão', category: 'attack', group: 'attack2',
     effectType: 'area', targetType: 'area', power: 12, range: 0,
     areaShape: { type: 'square', radius: 1 },
-    secondaryEffects: [{ effectType: 'def_down', power: 25, ticks: 1 }],
+    secondaryEffects: [
+      { effectType: 'def_down', power: 25, ticks: 1 },
+      { effectType: 'mov_down', power: 1,  ticks: 1 },
+    ],
     description: '12 dano em área 3x3. def_down 25% + mov_down 1 por 1 turno.',
   },
   {

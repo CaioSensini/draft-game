@@ -169,10 +169,18 @@ export class RegenEffect extends Effect {
   readonly type = 'regen' as const
   readonly kind = 'buff' as const
   private _ticks: number
+  /**
+   * When true, this regen is stripped by `Character.takeDamage` on ANY
+   * incoming damage (v3 §6.2 Campo de Cura Contínuo — "cancelado se
+   * aliado tomar dano"). Default false for backward compatibility with
+   * existing skills.
+   */
+  readonly cancellable: boolean
 
-  constructor(readonly healPerTick: number, ticks = 3) {
+  constructor(readonly healPerTick: number, ticks = 3, cancellable = false) {
     super()
     this._ticks = ticks
+    this.cancellable = cancellable
   }
 
   get isExpired(): boolean    { return this._ticks <= 0 }

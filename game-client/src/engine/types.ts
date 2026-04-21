@@ -254,6 +254,7 @@ export type EngineEvent =
             | 'def_up'   | 'atk_up'   | 'mov_up'
             | 'hp_up'
             | 'heal_reduction'
+            | 'debuff_immunity'
             | 'mark' | 'revive'
             | 'double_attack' | 'silence_defense' | 'silence_attack'
             | 'teleport_self' | 'teleport_target'
