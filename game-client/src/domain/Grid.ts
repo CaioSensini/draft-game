@@ -338,7 +338,7 @@ export interface GridSnapshot {
  *                snared enemies (secondary) escape the ring.
  *   trap       — Armadilha Oculta: fires on step-over (future integration).
  */
-export type TileObstacleKind = 'wall_viva' | 'wall_ring' | 'trap'
+export type TileObstacleKind = 'wall_viva' | 'wall_ring' | 'trap' | 'wall_shield'
 
 export interface TileObstacle {
   readonly col: number

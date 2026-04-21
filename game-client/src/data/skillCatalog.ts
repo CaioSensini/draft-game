@@ -235,6 +235,7 @@ const LEFT_WARRIOR: SkillDefinition[] = [
   {
     id: 'lw_d1', name: 'Escudo do Protetor', category: 'defense', group: 'defense1',
     effectType: 'shield', targetType: 'all_allies', power: 50,
+    preMovement: { maxTiles: 2 },
     description:
       'Move até 2 sqm + cria parede de escudo 3 casas à frente vertical. ' +
       'Aliados no retângulo 6 sqm atrás: -50% dano por 1 turno.',

@@ -1347,6 +1347,22 @@ export class CombatEngine {
         skillName: skill.name, category: 'defense', targetId: char.id,
       })
       this._applyPositionalDr(char, 'rect_back_6', 0.50)
+
+      // v3 §6.3 Escudo do Protetor — ALSO spawn a "parede de escudo" of 3
+      // vertical tiles directly in front of the Warrior (toward the enemy
+      // half). Uses the dedicated `wall_shield` kind so it blocks movement
+      // and breaks on atk1 (generic obstacle-break logic), but does NOT
+      // trigger the Muralha Viva adjacency damage. 1t duration matches
+      // the DR zone behind.
+      const forwardDc = char.side === 'left' ? 1 : -1
+      const wallCol = char.col + forwardDc
+      for (const dr of [-1, 0, 1]) {
+        this._grid.placeObstacle({
+          col: wallCol, row: char.row + dr,
+          kind: 'wall_shield', side: char.side,
+          ticksRemaining: 1, sourceId: char.id,
+        })
+      }
       return
     }
 

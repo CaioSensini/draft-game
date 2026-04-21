@@ -487,12 +487,32 @@ describe('Warrior — Defense 1 (forte)', () => {
       expect(warrior.totalShield).toBe(50)
     })
 
-    it('[PARTIAL] 6-sqm-behind positional damage reduction is not encoded', () => {
-      // v3: "aliados no retângulo 6 sqm atrás: -50% dano (1t)". The current
-      // implementation is a flat shield 50 on all allies — a reasonable
-      // proxy. Fuller implementation would need positional DR tagging.
+    it('preMovement spec allows a 2-sqm reposition before the skill fires', () => {
       const s = warriorSkill('lw_d1')
-      expect(s.effectType).toBe('shield')
+      expect(s.preMovement?.maxTiles).toBe(2)
+    })
+
+    it('spawns a 3-tile vertical wall_shield directly in front of the warrior', () => {
+      const warrior = mkChar('w', 'warrior', 'left', 5, 3)
+      const enemy   = mkChar('e', 'king',    'right', 15, 3)
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [warrior]),
+        rightTeam: new Team('right', [enemy]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(warriorSkill('lw_d1'))
+
+      ;(engine as unknown as {
+        _applyDefenseSkill: (c: Character, s: Skill) => void
+      })._applyDefenseSkill.bind(engine)(warrior, skill)
+
+      // Three wall_shield obstacles at col=6, rows 2,3,4 (left-side → forward = +1 col).
+      const grid = (engine as unknown as { _grid: { obstacleAt: (c: number, r: number) => { kind: string } | null } })._grid
+      for (const r of [2, 3, 4]) {
+        const ob = grid.obstacleAt(6, r)
+        expect(ob?.kind).toBe('wall_shield')
+      }
     })
   })
 
