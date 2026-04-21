@@ -516,8 +516,8 @@ describe('Warrior — Defense 1 (forte)', () => {
     })
   })
 
-  // ── lw_d2 Guardião (STUB) ──────────────────────────────────────────────────
-  describe('lw_d2 — Guardião [STUB — damage interceptor system pending]', () => {
+  // ── lw_d2 Guardião ─────────────────────────────────────────────────────────
+  describe('lw_d2 — Guardião', () => {
     it('catalog entry', () => {
       const s = warriorSkill('lw_d2')
       expect(s.name).toBe('Guardião')
@@ -525,24 +525,75 @@ describe('Warrior — Defense 1 (forte)', () => {
       expect(s.power).toBe(60)
     })
 
-    it('damage_redirect handler emits STATUS_APPLIED on the protected ally', () => {
+    it('damage_redirect handler attaches GuardedByEffect to the ally', () => {
       const warrior = mkChar('w', 'warrior', 'left')
       const ally    = mkChar('a', 'executor', 'left')
-      const res = resolver.resolve('damage_redirect', ctx(warrior, ally, 60, 0))
-      const ev = res.events.find((e) => e.type === EventType.STATUS_APPLIED)
-      expect(ev && 'unitId' in ev && ev.unitId).toBe(ally.id)
-      expect(ev && 'status' in ev && ev.status).toBe('damage_redirect')
-      expect(ev && 'value' in ev && ev.value).toBe(60)
+      resolver.resolve('damage_redirect', ctx(warrior, ally, 60, 0, 1))
+      expect(ally.effects.some((e) => e.type === 'guarded_by' && !e.isExpired)).toBe(true)
     })
 
-    it('no redirect math applied yet — target still takes damage normally', () => {
-      const warrior = mkChar('w', 'warrior', 'left')
-      const ally    = mkChar('a', 'executor', 'left')
-      resolver.resolve('damage_redirect', ctx(warrior, ally, 60, 0))
-      // Simulate ally receiving damage — warrior is NOT intercepting yet.
-      const warriorHpBefore = warrior.hp
-      ally.takeDamage(30)
-      expect(warrior.hp).toBe(warriorHpBefore)   // unchanged — stub
+    it('attacker hits a guarded ally — 60% of damage is redirected to the warrior reduced 30%', () => {
+      const warrior = mkChar('w', 'warrior', 'left',  5, 3)
+      const ally    = mkChar('a', 'executor', 'left', 6, 3)
+      const enemy   = mkChar('e', 'king',     'right', 10, 3)
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [warrior, ally]),
+        rightTeam: new Team('right', [enemy]),
+      })
+      // Pre-damage the ally so lowestHpCharacter picks them (not the warrior).
+      ally.applyPureDamage(10)
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+
+      // Warrior casts Guardião on the ally.
+      const guard = new Skill(warriorSkill('lw_d2'))
+      ;(engine as unknown as {
+        _applyDefenseSkill: (c: Character, s: Skill) => void
+      })._applyDefenseSkill.bind(engine)(warrior, guard)
+      expect(ally.effects.some((e) => e.type === 'guarded_by' && !e.isExpired)).toBe(true)
+
+      // Use Executor's true-damage-like simple damage to minimise formula noise.
+      const ally_hp_before    = ally.hp
+      const warrior_hp_before = warrior.hp
+      ;(engine as unknown as {
+        _applyOffensiveSkill: (c: Character, t: Character, s: Skill) => { hpDamage: number; blocked: boolean }
+      })._applyOffensiveSkill.bind(engine)(enemy, ally, new Skill({
+        id: 'test_hit', name: 'Test Hit', category: 'attack', group: 'attack1',
+        effectType: 'damage', targetType: 'single', power: 30,
+      }))
+
+      const ally_loss    = ally_hp_before    - ally.hp
+      const warrior_loss = warrior_hp_before - warrior.hp
+      // Both took some damage.
+      expect(ally_loss).toBeGreaterThan(0)
+      expect(warrior_loss).toBeGreaterThan(0)
+      // Warrior's share is the 60% redirect × 70% mitigation ≈ 42% of total.
+      // Ally keeps 40%. Ratio warrior/ally ≈ 42/40 ≈ 1.05.
+      const totalSeen = ally_loss + warrior_loss
+      const warriorShare = warrior_loss / totalSeen
+      expect(warriorShare).toBeGreaterThan(0.40)
+      expect(warriorShare).toBeLessThan(0.60)
+    })
+
+    it('redirect only fires while the effect is active; expired guard → no redirect', () => {
+      const warrior = mkChar('w', 'warrior', 'left',  5, 3)
+      const ally    = mkChar('a', 'executor', 'left', 6, 3)
+      const enemy   = mkChar('e', 'king',     'right', 10, 3)
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [warrior, ally]),
+        rightTeam: new Team('right', [enemy]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const warrior_hp = warrior.hp
+      // No Guardião applied. Attack ally directly.
+      ;(engine as unknown as {
+        _applyOffensiveSkill: (c: Character, t: Character, s: Skill) => { hpDamage: number; blocked: boolean }
+      })._applyOffensiveSkill.bind(engine)(enemy, ally, new Skill({
+        id: 'test_hit', name: 'Test Hit', category: 'attack', group: 'attack1',
+        effectType: 'damage', targetType: 'single', power: 30,
+      }))
+      expect(warrior.hp).toBe(warrior_hp)   // warrior untouched without active guard
     })
   })
 

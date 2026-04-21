@@ -24,7 +24,7 @@ import type { CharacterRole, CharacterSide } from '../domain/Character'
 import {
   ReflectPercentEffect, RegenEffect, PositionalDrEffect,
   DefReductionEffect, MovReductionEffect, DelayedDamageEffect,
-  MarkEffect, DefBoostEffect, HealReductionEffect,
+  MarkEffect, DefBoostEffect, HealReductionEffect, GuardedByEffect,
 } from '../domain/Effect'
 import type { PositionalDrShape } from '../domain/Effect'
 import { EventBus } from './EventBus'
@@ -2130,6 +2130,28 @@ export class CombatEngine {
       rawDamage = Math.round(rawDamage * 1.5)
     }
 
+    // v3 §6.3 Guardião (lw_d2) — damage redirect. If the target carries
+    // an active GuardedByEffect, split the computed rawDamage: a fraction
+    // is routed to the protector (with the configured mitigation), the
+    // remainder stays with the target. Runs AFTER DEF mitigation
+    // (rawDamage is already post-formula) and BEFORE evade/shield on the
+    // ally, so the protector absorbs the redirect regardless of the
+    // ally's own defensive effects.
+    if (rawDamage > 0 && _isDamageCarrying(skill.effectType)) {
+      const guard = target.effects.find(
+        (e): e is GuardedByEffect => e instanceof GuardedByEffect && !e.isExpired,
+      )
+      if (guard) {
+        const protector = this.battle.getCharacter(guard.protectorId)
+        if (protector?.alive && protector.id !== target.id) {
+          const redirected = Math.round(rawDamage * guard.redirectFraction)
+          const protectorTakes = Math.max(1, Math.round(redirected * (1 - guard.protectorMitFraction)))
+          rawDamage = Math.max(0, rawDamage - redirected)
+          this._applyRedirectedDamage(caster, protector, protectorTakes)
+        }
+      }
+    }
+
     // Disparo Preciso bleed-bypass: apply true damage DIRECTLY via
     // applyPureDamage so shields are skipped. Still respects alive checks
     // and kill tracking via a minimal _processResult emit below.
@@ -2235,6 +2257,36 @@ export class CombatEngine {
   }
 
   /** Apply reflect damage from `reflector` back to `caster`. */
+  /**
+   * v3 §6.3 Guardião — apply redirected damage to the protector. Uses
+   * takeDamage so the protector's own shields/evade still apply (the
+   * protector is a willing shield, not an environmental hazard). Emits
+   * DAMAGE_APPLIED sourced from the original attacker and routes death
+   * through CHARACTER_DIED + victory check.
+   */
+  private _applyRedirectedDamage(attacker: Character, protector: Character, amount: number): void {
+    if (!protector.alive || amount <= 0) return
+    const res = protector.takeDamage(amount)
+    if (res.hpDamage > 0) {
+      this.emit({
+        type: EventType.DAMAGE_APPLIED, unitId: protector.id,
+        amount: res.hpDamage, newHp: protector.hp, sourceId: attacker.id,
+      })
+      this._addStat(attacker.id,  'damageDealt',    res.hpDamage)
+      this._addStat(protector.id, 'damageReceived', res.hpDamage)
+    }
+    if (res.killed) {
+      this._recordDeath(protector.id, attacker.id)
+      this._addStat(attacker.id, 'kills', 1)
+      this.emit({
+        type: EventType.CHARACTER_DIED, unitId: protector.id,
+        killedBy: attacker.id, wasKing: protector.role === 'king',
+        round: this.battle.round,
+      })
+      this._checkAndEmitVictory()
+    }
+  }
+
   private _applyReflectDamage(reflector: Character, caster: Character, amount: number): void {
     const result = caster.takeDamage(amount)
     if (result.hpDamage > 0) {

@@ -39,6 +39,7 @@ import {
   MovReductionEffect,
   DefBoostEffect,
   AtkBoostEffect,
+  GuardedByEffect,
 } from '../domain/Effect'
 import type { EffectType } from '../domain/Effect'
 import type { Direction } from '../domain/Grid'
@@ -817,21 +818,17 @@ const handleSummonWall: EffectHandler = (ctx) => {
   }
 }
 
-// ── Damage redirect (Guardião) — stub handler ────────────────────────────────
-// v3 §6.3: 60% of damage dealt to the target ally is redirected to the
-// caster (Warrior), reduced 30% on the Warrior. Lasts 1 turn.
-//
-// Full enforcement requires hooking into Character.takeDamage so that when
-// the protected ally receives damage, 60% of it routes to the warrior with
-// a -30% mitigation stacked on. That requires a "damage interceptor"
-// protocol on Character — out of scope for Bloco 3.
-//
-// Stub: emits STATUS_APPLIED on the target ally signalling protection is
-// active. The scene / UI can show the guardian link; the redirect math is
-// documented in DECISIONS.md as pending.
+// ── Damage redirect (Guardião) ───────────────────────────────────────────────
+// v3 §6.3 — attaches a GuardedByEffect to the protected ally. The actual
+// damage-split math is applied inside CombatEngine._applyOffensiveSkill,
+// which inspects the effect on every incoming hit and routes the
+// configured fraction to the protector after a 30% mitigation.
 
 const handleDamageRedirect: EffectHandler = (ctx) => {
   if (!ctx.target.alive) return EMPTY
+
+  // v3 §6.3: 60% redirected, reduced 30% on the warrior, 1 turn.
+  ctx.target.addEffect(new GuardedByEffect(ctx.caster.id, 0.60, 0.30, ctx.ticks ?? 1))
 
   return {
     ...EMPTY,
@@ -839,7 +836,7 @@ const handleDamageRedirect: EffectHandler = (ctx) => {
       type:   EventType.STATUS_APPLIED,
       unitId: ctx.target.id,
       status: 'damage_redirect' as const,
-      value:  ctx.power,   // redirect percentage (e.g. 60)
+      value:  Math.round(0.60 * 100),
     }],
   }
 }

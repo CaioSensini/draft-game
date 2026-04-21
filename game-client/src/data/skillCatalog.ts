@@ -242,7 +242,7 @@ const LEFT_WARRIOR: SkillDefinition[] = [
   },
   {
     id: 'lw_d2', name: 'Guardião', category: 'defense', group: 'defense1',
-    effectType: 'damage_redirect', targetType: 'single', power: 60,
+    effectType: 'damage_redirect', targetType: 'lowest_ally', power: 60,
     description:
       '60% do dano recebido pelo aliado é redirecionado ao guerreiro, reduzido 30% no guerreiro (1 turno).',
   },

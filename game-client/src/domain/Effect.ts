@@ -42,6 +42,7 @@ export type EffectType =
   | 'revive'
   | 'positional_dr'
   | 'delayed_damage'
+  | 'guarded_by'
 
 /** Stat targeted by a stat-modifier effect. */
 export type ModifiableStat = 'defense' | 'attack' | 'mobility'
@@ -701,6 +702,46 @@ export class MarkEffect extends Effect {
 }
 
 /**
+ * v3 §6.3 Guardião (lw_d2) — marks the bearer as being protected by a
+ * specific Warrior. Incoming damage is split: `redirectFraction` is routed
+ * to the protector (after applying `protectorMitFraction` reduction),
+ * while the bearer only suffers the remainder.
+ *
+ * The effect itself is a passive tag — the split math lives in the
+ * CombatEngine so it can access both sides of the relationship.
+ */
+export class GuardedByEffect extends Effect {
+  readonly type = 'guarded_by' as const
+  readonly kind = 'buff' as const
+  private _ticks: number
+
+  readonly protectorId:           string
+  readonly redirectFraction:      number
+  readonly protectorMitFraction:  number
+
+  constructor(
+    protectorId: string,
+    redirectFraction = 0.60,
+    protectorMitFraction = 0.30,
+    ticks = 1,
+  ) {
+    super()
+    this.protectorId          = protectorId
+    this.redirectFraction     = redirectFraction
+    this.protectorMitFraction = protectorMitFraction
+    this._ticks               = ticks
+  }
+
+  get isExpired(): boolean     { return this._ticks <= 0 }
+  get ticksRemaining(): number { return this._ticks }
+
+  tick(): TickResult {
+    this._ticks = Math.max(0, this._ticks - 1)
+    return { effectType: 'guarded_by', value: 0, expired: this.isExpired }
+  }
+}
+
+/**
  * Grants the bearer a one-time death-prevention buffer.
  * When the bearer would be killed, HP is restored to `reviveHp` instead.
  * Consumes itself after triggering.
@@ -757,5 +798,9 @@ export function createEffect(type: EffectType, value: number, ticks?: number): E
       // PositionalDrEffect directly.
       throw new Error('positional_dr cannot be created via createEffect(); instantiate PositionalDrEffect directly')
     case 'delayed_damage': return new DelayedDamageEffect(value, ticks)
+    case 'guarded_by':
+      // Requires protectorId and fractions — must be instantiated directly
+      // via `new GuardedByEffect(...)`, not through this generic factory.
+      throw new Error('guarded_by cannot be created via createEffect(); instantiate GuardedByEffect directly')
   }
 }
