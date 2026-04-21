@@ -59,6 +59,7 @@ import {
 import { VFXManager } from '../utils/VFXManager'
 import { drawCharacterSprite } from '../utils/SpriteFactory'
 import type { SpriteRole, SpriteSide } from '../utils/SpriteFactory'
+import { getClassSigilKey } from '../utils/AssetPaths'
 import { CharacterAnimator } from '../utils/CharacterAnimator'
 import type { UnitDeckConfig, UnitRole } from '../types'
 
@@ -278,8 +279,20 @@ export default class BattleScene extends Phaser.Scene {
   // ── Status panel dynamic elements ──────────────────────────────────────────
   private _statusStatTexts: Map<string, { atk: Phaser.GameObjects.Text; def: Phaser.GameObjects.Text; mov: Phaser.GameObjects.Text }> = new Map()
   private _statusCardBgs: Map<string, Phaser.GameObjects.Graphics> = new Map()
-  private _statusCardBounds: Map<string, { x: number; y: number; w: number; h: number }> = new Map()
-  private _statusEffectContainers: Map<string, { container: Phaser.GameObjects.Container; lx: number; rx: number; startY: number }> = new Map()
+  private _statusCardBounds: Map<string, { x: number; y: number; w: number; h: number; teamColor: number }> = new Map()
+  private _statusEffectContainers: Map<string, { container: Phaser.GameObjects.Container; lx: number; rx: number; startY: number; availH: number }> = new Map()
+  /**
+   * Per-card HP bar + number + shield overlay. Rebuilt by _refreshStatusPanels
+   * on HP/shield events — keeps the bottom panel in sync with damage/heal
+   * without a full redraw.
+   */
+  private _statusHpElems: Map<string, {
+    hpText:       Phaser.GameObjects.Text
+    hpBarFill:    Phaser.GameObjects.Graphics
+    shieldStripes:Phaser.GameObjects.Graphics
+    shieldLabel:  Phaser.GameObjects.Text
+    barX: number; barY: number; barW: number; barH: number
+  }> = new Map()
   /**
    * Per-card "MURO +X%" line — surfaces the team-wide wall-touch buff that
    * is otherwise invisible in the per-character stat deltas (the bonus is a
@@ -404,6 +417,7 @@ export default class BattleScene extends Phaser.Scene {
     this._unitStatuses.clear()
     this._statusStatTexts.clear(); this._statusCardBgs.clear(); this._statusCardBounds.clear()
     this._statusEffectContainers.clear()
+    this._statusHpElems.clear()
     this._statusWallTexts.clear()
     this._highlightedStatusId = null
     this._cardBtns = []
@@ -1190,6 +1204,21 @@ export default class BattleScene extends Phaser.Scene {
     })
   }
 
+  /**
+   * Draw one character's status card in the arena bottom strip.
+   *
+   * Redesigned per INTEGRATION_SPEC §3 + Print 10:
+   *   - Portrait: class-color disc 36 + class sigil SVG overlay (replaces
+   *     the teamHex-tinted role text header).
+   *   - Typography: Cormorant (name), Manrope meta (class label), JetBrains
+   *     Mono (HP number) — legacy Arial + stroke 3 retired.
+   *   - HP bar fill from hpStatusColor(); shield overlay drawn as diagonal
+   *     stripes (per CSS `--hp-shield`) layered over the right-edge portion.
+   *   - Buff/debuff chips 24×18 with polarity-tinted border (green buff,
+   *     red debuff, gray neutral shield).
+   *   - Stat deltas (ATK/DEF/MOV) use `state.success` / `state.error`
+   *     tokens instead of hardcoded #44dd44 / #dd4444.
+   */
   private _drawMiniStatusCard(
     x: number, y: number, w: number, h: number,
     unitId: string, side: string,
@@ -1198,19 +1227,26 @@ export default class BattleScene extends Phaser.Scene {
     if (!char) return
 
     const teamColor = side === 'left' ? dsColors.team.ally : dsColors.team.enemy
-    const teamHex = side === 'left' ? dsColors.team.allyHex : dsColors.team.enemyHex
-    const ROLE_NAMES: Record<string, string> = { king: 'REI', warrior: 'GUERREIRO', executor: 'EXECUTOR', specialist: 'ESPECIALISTA' }
-    const roleName = ROLE_NAMES[char.role] ?? char.role
+    const role = char.role as UnitRole
+    const classColor = dsColors.class[role]
+    const classHex   = dsColors.class[`${role}Hex` as const] ?? fg.primaryHex
+    const ROLE_NAMES: Record<string, string> = {
+      king: 'REI', warrior: 'GUERREIRO', executor: 'EXECUTOR', specialist: 'ESPECIALISTA',
+    }
+    const roleName = ROLE_NAMES[char.role] ?? char.role.toUpperCase()
+    const unitName = char.name
 
+    // ── Frame (surface.panel + subtle team border) ──
     const g = this.add.graphics()
-    g.fillStyle(0x0a0e18, 0.95)
-    g.fillRoundedRect(x - w / 2, y, w, h, 4)
-    g.fillStyle(teamColor, 0.5)
-    g.fillRoundedRect(x - w / 2, y, w, 2, { tl: 4, tr: 4, bl: 0, br: 0 })
-    g.lineStyle(1, teamColor, 0.12)
-    g.strokeRoundedRect(x - w / 2, y, w, h, 4)
+    g.fillStyle(surface.panel, 0.96)
+    g.fillRoundedRect(x - w / 2, y, w, h, radii.md)
+    g.lineStyle(1, border.default, 0.7)
+    g.strokeRoundedRect(x - w / 2, y, w, h, radii.md)
+    // Subtle team accent stripe on top edge
+    g.fillStyle(teamColor, 0.45)
+    g.fillRoundedRect(x - w / 2, y, w, 2, { tl: radii.md, tr: radii.md, bl: 0, br: 0 })
     this._statusCardBgs.set(unitId, g)
-    this._statusCardBounds.set(unitId, { x: x - w / 2, y, w, h })
+    this._statusCardBounds.set(unitId, { x: x - w / 2, y, w, h, teamColor })
 
     // Click on status card → select character in arena
     const cardHit = this.add.rectangle(x, y + h / 2, w, h, 0x000000, 0.001)
@@ -1227,86 +1263,139 @@ export default class BattleScene extends Phaser.Scene {
       }
     })
 
-    let cy = y + 2
-    const lx = x - w / 2 + 4
-    const rx = x + w / 2 - 4
-    const fs = '14px'
-    const fsSmall = '13px'
-    const stk = { stroke: '#000000', strokeThickness: 3 }
+    const PAD = 6
+    const lx = x - w / 2 + PAD
+    const rx = x + w / 2 - PAD
+    const innerW = w - 2 * PAD
 
-    // Role name
-    this.add.text(x, cy + 8, roleName, {
-      fontFamily: 'Arial Black', fontSize: fs, color: teamHex, fontStyle: 'bold', ...stk,
-    }).setOrigin(0.5).setDepth(6)
-    cy += 20
+    // ── HEADER ROW: portrait (class disc + sigil) + name/class stack ──
+    const portraitSize = 36
+    const portraitCx = lx + portraitSize / 2
+    const portraitCy = y + PAD + portraitSize / 2
 
-    // Separator: name → HP
-    const sep1 = this.add.graphics().setDepth(6)
-    sep1.fillStyle(teamColor, 0.15)
-    sep1.fillRect(lx, cy, w - 8, 1)
+    // Class-color disc
+    const portraitG = this.add.graphics().setDepth(6)
+    portraitG.fillStyle(classColor, 1)
+    portraitG.fillCircle(portraitCx, portraitCy, portraitSize / 2)
+    portraitG.lineStyle(1.5, teamColor, 0.85)
+    portraitG.strokeCircle(portraitCx, portraitCy, portraitSize / 2)
 
-    // HP (design-system color per CSS hp-full/wounded/critical thresholds)
-    const hpRatio = char.hp / char.maxHp
-    const hpStyle = hpStatusColor(hpRatio)
-    this.add.text(x, cy + 5, `${char.hp}/${char.maxHp}`, {
-      fontFamily: 'Arial', fontSize: fsSmall, color: hpStyle.fillHex, fontStyle: 'bold', ...stk,
-    }).setOrigin(0.5).setDepth(6)
-    // HP bar
-    const barW2 = w - 8; const barH2 = 5
-    const bg2 = this.add.graphics()
-    bg2.fillStyle(0x331111, 1); bg2.fillRoundedRect(lx, cy + 18, barW2, barH2, 2)
-    bg2.fillStyle(hpStyle.fill, 0.9)
-    bg2.fillRoundedRect(lx, cy + 18, Math.max(2, barW2 * hpRatio), barH2, 2)
-    cy += 26
+    // Sigil SVG overlay (tinted dark per Print 10 — shapes are mono)
+    const sigilKey = getClassSigilKey(role)
+    if (this.textures.exists(sigilKey)) {
+      const sigil = this.add.image(portraitCx, portraitCy, sigilKey)
+      const targetSize = portraitSize - 12
+      const scale = targetSize / Math.max(sigil.width, sigil.height, 1)
+      sigil.setScale(scale).setDepth(6).setTintFill(fg.inverse).setAlpha(0.85)
+    }
 
-    // Separator: HP → stats
-    const sep2 = this.add.graphics().setDepth(6)
-    sep2.fillStyle(teamColor, 0.15)
-    sep2.fillRect(lx, cy + 2, w - 8, 1)
-    cy += 2
+    // Name + class column to the right of the portrait
+    const textX = portraitCx + portraitSize / 2 + 8
+    this.add.text(textX, portraitCy - portraitSize / 2 + 2, roleName, {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: classHex, fontStyle: 'bold',
+    }).setOrigin(0, 0).setLetterSpacing(1.6).setDepth(6)
 
-    // Stat modifiers (real delta: current - base)
-    const atkDelta = char.attack - char.baseStats.attack
+    this.add.text(textX, portraitCy - 1, unitName, {
+      fontFamily: fontFamily.serif, fontSize: typeScale.h3,
+      color: fg.primaryHex, fontStyle: 'bold',
+    }).setOrigin(0, 0).setDepth(6)
+
+    // Bottom of header row anchors the HP bar
+    let cy = y + PAD + portraitSize + 6
+
+    // ── HP BAR ──
+    const barX = lx
+    const barY = cy
+    const barW = innerW
+    const barH = 10
+
+    const hpBarBg = this.add.graphics().setDepth(6)
+    hpBarBg.fillStyle(surface.deepest, 1)
+    hpBarBg.fillRoundedRect(barX, barY, barW, barH, barH / 2)
+    hpBarBg.lineStyle(1, border.subtle, 0.9)
+    hpBarBg.strokeRoundedRect(barX, barY, barW, barH, barH / 2)
+
+    const hpBarFill = this.add.graphics().setDepth(6)
+    const shieldStripes = this.add.graphics().setDepth(6)
+
+    cy += barH + 4
+
+    // HP number row (Mono, right-aligned) + shield amount label on the left
+    const shieldLabel = this.add.text(barX, cy, '', {
+      fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+      color: hpState.shieldHex, fontStyle: 'bold',
+    }).setOrigin(0, 0).setDepth(6).setVisible(false)
+
+    const hpText = this.add.text(rx, cy, `${char.hp}/${char.maxHp}`, {
+      fontFamily: fontFamily.mono, fontSize: typeScale.small,
+      color: hpStatusColor(char.hp / char.maxHp).fillHex, fontStyle: 'bold',
+    }).setOrigin(1, 0).setDepth(6)
+
+    this._statusHpElems.set(unitId, {
+      hpText, hpBarFill, shieldStripes, shieldLabel,
+      barX, barY, barW, barH,
+    })
+
+    cy += 16
+
+    // ── Stats row (ATK / DEF / MOV as deltas) ──
+    const atkDelta = char.attack  - char.baseStats.attack
     const defDelta = char.defense - char.baseStats.defense
     const movDelta = char.mobility - char.baseStats.mobility
 
-    const makeStat = (label: string, val: number): Phaser.GameObjects.Text => {
-      const color = val > 0 ? '#44dd44' : val < 0 ? '#dd4444' : '#555555'
-      const txt = val > 0 ? `+${val}` : val < 0 ? `${val}` : '0'
-      this.add.text(lx, cy + 4, label, { fontFamily: 'Arial', fontSize: fsSmall, color: '#888888', fontStyle: 'bold', ...stk }).setDepth(6)
-      const valText = this.add.text(rx, cy + 4, txt, { fontFamily: 'Arial Black', fontSize: fsSmall, color, fontStyle: 'bold', ...stk }).setOrigin(1, 0).setDepth(6)
-      cy += 16
-      return valText
+    const STAT_LABEL_SIZE = typeScale.meta
+    const STAT_VALUE_SIZE = typeScale.small
+
+    const statColFor = (val: number): string =>
+      val > 0 ? dsState.successHex : val < 0 ? dsState.errorHex : fg.disabledHex
+    const statTxtFor = (val: number): string =>
+      val > 0 ? `+${val}` : val < 0 ? String(val) : '0'
+
+    const colW = Math.floor(innerW / 3)
+    const makeStat = (label: string, val: number, colIdx: number): Phaser.GameObjects.Text => {
+      const colCx = lx + colW * colIdx + colW / 2
+      this.add.text(colCx, cy, label, {
+        fontFamily: fontFamily.body, fontSize: STAT_LABEL_SIZE,
+        color: fg.tertiaryHex, fontStyle: 'bold',
+      }).setOrigin(0.5, 0).setLetterSpacing(1.4).setDepth(6)
+      return this.add.text(colCx, cy + 12, statTxtFor(val), {
+        fontFamily: fontFamily.mono, fontSize: STAT_VALUE_SIZE,
+        color: statColFor(val), fontStyle: 'bold',
+      }).setOrigin(0.5, 0).setDepth(6)
     }
 
-    const atkText = makeStat('ATK', atkDelta)
-    const defText = makeStat('DEF', defDelta)
-    const movText = makeStat('MOV', movDelta)
+    const atkText = makeStat('ATK', atkDelta, 0)
+    const defText = makeStat('DEF', defDelta, 1)
+    const movText = makeStat('MOV', movDelta, 2)
     this._statusStatTexts.set(unitId, { atk: atkText, def: defText, mov: movText })
 
-    // Wall-touch buff line — shows team-wide bonus from CombatRuleSystem.
-    // Hidden by default; _refreshStatusPanels populates and shows it when
-    // the team has at least one ally on the wall column.
-    const wallText = this.add.text(x, cy + 3, '', {
-      fontFamily: 'Arial Black',
-      fontSize: '11px',
-      color: '#f0c850',          // gold — terrain bonus accent
-      fontStyle: 'bold',
-      ...stk,
+    cy += 28
+
+    // Wall-touch buff (conditional — hidden unless team has ally on wall column)
+    const wallText = this.add.text(x, cy, '', {
+      fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+      color: accent.primaryHex, fontStyle: 'bold',
     }).setOrigin(0.5, 0).setDepth(6).setVisible(false)
     this._statusWallTexts.set(unitId, wallText)
-    cy += 14
+    cy += 12
 
-    // Separator: stats → status effects
-    const sep3 = this.add.graphics().setDepth(6)
-    sep3.fillStyle(teamColor, 0.15)
-    sep3.fillRect(lx, cy + 6, w - 8, 1)
-    cy += 8
+    // ── Separator before status chips ──
+    const sepY = cy + 2
+    const sepG = this.add.graphics().setDepth(6)
+    sepG.lineStyle(1, border.subtle, 0.9)
+    sepG.beginPath(); sepG.moveTo(lx, sepY); sepG.lineTo(rx, sepY); sepG.strokePath()
+    cy = sepY + 6
 
-    // Dynamic status effects container (rebuilt on every status change)
+    // ── Status chips container (rebuilt on every status change) ──
     const statusContainer = this.add.container(0, 0).setDepth(6)
-    this._statusEffectContainers.set(unitId, { container: statusContainer, lx, rx, startY: cy })
+    this._statusEffectContainers.set(unitId, {
+      container: statusContainer, lx, rx, startY: cy, availH: y + h - cy - 4,
+    })
     this._rebuildStatusPanel(unitId)
+
+    // Prime the HP bar fill + shield overlay so the initial render isn't empty
+    this._refreshStatusPanelHp(unitId)
   }
 
   private _buildActionButtons(): void {
@@ -3291,19 +3380,80 @@ export default class BattleScene extends Phaser.Scene {
    *   - A unit moves      (CHARACTER_MOVED) — wall buff is position-dependent
    *   - A status effect changes (effect added / removed / cleared)
    */
+  /**
+   * Redraw the HP bar fill + HP number + shield stripe overlay for one unit.
+   * Extracted so damage/heal/shield events can update the panel without a
+   * full card rebuild.
+   */
+  private _refreshStatusPanelHp(unitId: string): void {
+    const hp = this._statusHpElems.get(unitId)
+    if (!hp) return
+    const char = this._ctrl.getCharacter(unitId)
+    if (!char) return
+
+    const ratio    = Phaser.Math.Clamp(char.hp / char.maxHp, 0, 1)
+    const hpStyle  = hpStatusColor(ratio)
+    const shieldAmt = char.totalShield
+
+    // HP number
+    hp.hpText.setText(`${char.hp}/${char.maxHp}`).setColor(hpStyle.fillHex)
+
+    // HP bar fill — rounded pill with wounded/critical/full color per ratio
+    hp.hpBarFill.clear()
+    const fillW = Math.max(2, hp.barW * ratio)
+    hp.hpBarFill.fillStyle(hpStyle.fill, 0.95)
+    hp.hpBarFill.fillRoundedRect(hp.barX, hp.barY, fillW, hp.barH, hp.barH / 2)
+    // Inner top highlight for polish
+    hp.hpBarFill.fillStyle(dsColors.ui.white, 0.08)
+    hp.hpBarFill.fillRoundedRect(hp.barX + 1, hp.barY + 1, Math.max(0, fillW - 2), 2,
+      { tl: hp.barH / 2, tr: hp.barH / 2, bl: 0, br: 0 })
+
+    // Shield overlay — diagonal stripes on the right-edge portion of the bar.
+    hp.shieldStripes.clear()
+    if (shieldAmt > 0 && char.maxHp > 0) {
+      const shieldRatio = Math.min(shieldAmt / char.maxHp, ratio)
+      const overlayW = Math.max(2, hp.barW * shieldRatio)
+      const overlayX = hp.barX + Math.max(0, fillW - overlayW)
+
+      // Base wash + stripes clipped to the overlay rect
+      hp.shieldStripes.fillStyle(hpState.shield, 0.40)
+      hp.shieldStripes.fillRoundedRect(overlayX, hp.barY, overlayW, hp.barH, hp.barH / 2)
+
+      // Diagonal hatch lines — low-cost Graphics primitive
+      const startX = overlayX - hp.barH
+      const endX   = overlayX + overlayW + hp.barH
+      hp.shieldStripes.lineStyle(1.5, hpState.shield, 0.55)
+      for (let sx = startX; sx < endX; sx += 5) {
+        hp.shieldStripes.beginPath()
+        hp.shieldStripes.moveTo(sx, hp.barY + hp.barH)
+        hp.shieldStripes.lineTo(sx + hp.barH, hp.barY)
+        hp.shieldStripes.strokePath()
+      }
+
+      hp.shieldLabel.setText(`SH +${shieldAmt}`).setVisible(true)
+    } else {
+      hp.shieldLabel.setVisible(false)
+    }
+  }
+
   private _refreshStatusPanels(): void {
+    // ── HP + shield (per-unit, rebuilt on every event that touches either) ──
+    for (const unitId of this._statusHpElems.keys()) {
+      this._refreshStatusPanelHp(unitId)
+    }
+
     // ── ATK / DEF / MOV deltas (per-character entity stats) ─────────────────
     for (const [unitId, texts] of this._statusStatTexts) {
       const char = this._ctrl.getCharacter(unitId)
       if (!char) continue
       const updateStat = (t: Phaser.GameObjects.Text, current: number, base: number) => {
         const delta = current - base
-        const color = delta > 0 ? '#44dd44' : delta < 0 ? '#dd4444' : '#555555'
-        const txt = delta > 0 ? `+${delta}` : delta < 0 ? `${delta}` : '0'
+        const color = delta > 0 ? dsState.successHex : delta < 0 ? dsState.errorHex : fg.disabledHex
+        const txt   = delta > 0 ? `+${delta}` : delta < 0 ? String(delta) : '0'
         t.setText(txt).setColor(color)
       }
-      updateStat(texts.atk, char.attack, char.baseStats.attack)
-      updateStat(texts.def, char.defense, char.baseStats.defense)
+      updateStat(texts.atk, char.attack,   char.baseStats.attack)
+      updateStat(texts.def, char.defense,  char.baseStats.defense)
       updateStat(texts.mov, char.mobility, char.baseStats.mobility)
     }
 
@@ -3329,92 +3479,114 @@ export default class BattleScene extends Phaser.Scene {
 
   /** Highlight a character's status card and arena sprite. */
   private _highlightStatusCard(unitId: string | null): void {
-    // Clear previous highlight
-    if (this._highlightedStatusId) {
-      const prevBg = this._statusCardBgs.get(this._highlightedStatusId)
-      const prevB = this._statusCardBounds.get(this._highlightedStatusId)
-      if (prevBg && prevB) {
-        const prevChar = this._ctrl.getCharacter(this._highlightedStatusId)
-        const prevColor = prevChar?.side === 'left' ? 0x00ccaa : 0x8844cc
-        prevBg.clear()
-        prevBg.fillStyle(0x0a0e18, 0.95)
-        prevBg.fillRoundedRect(prevB.x, prevB.y, prevB.w, prevB.h, 4)
-        prevBg.fillStyle(prevColor, 0.5)
-        prevBg.fillRoundedRect(prevB.x, prevB.y, prevB.w, 2, { tl: 4, tr: 4, bl: 0, br: 0 })
-        prevBg.lineStyle(1, prevColor, 0.12)
-        prevBg.strokeRoundedRect(prevB.x, prevB.y, prevB.w, prevB.h, 4)
-      }
+    const redrawBase = (id: string) => {
+      const bg = this._statusCardBgs.get(id)
+      const b = this._statusCardBounds.get(id)
+      if (!bg || !b) return
+      bg.clear()
+      bg.fillStyle(surface.panel, 0.96)
+      bg.fillRoundedRect(b.x, b.y, b.w, b.h, radii.md)
+      bg.lineStyle(1, border.default, 0.7)
+      bg.strokeRoundedRect(b.x, b.y, b.w, b.h, radii.md)
+      bg.fillStyle(b.teamColor, 0.45)
+      bg.fillRoundedRect(b.x, b.y, b.w, 2, { tl: radii.md, tr: radii.md, bl: 0, br: 0 })
     }
+
+    // Clear previous highlight
+    if (this._highlightedStatusId) redrawBase(this._highlightedStatusId)
+
     this._highlightedStatusId = unitId
     if (!unitId) return
 
-    // Draw highlight on new card
+    // Draw highlight on new card — gold accent frame per §1 focus state
     const bg = this._statusCardBgs.get(unitId)
     const b = this._statusCardBounds.get(unitId)
     if (bg && b) {
-      const char = this._ctrl.getCharacter(unitId)
-      const color = char?.side === 'left' ? 0x00ccaa : 0x8844cc
       bg.clear()
-      bg.fillStyle(0x0a0e18, 0.95)
-      bg.fillRoundedRect(b.x, b.y, b.w, b.h, 4)
-      bg.fillStyle(color, 0.15)
-      bg.fillRoundedRect(b.x, b.y, b.w, b.h, 4)
-      bg.fillStyle(color, 0.8)
-      bg.fillRoundedRect(b.x, b.y, b.w, 2, { tl: 4, tr: 4, bl: 0, br: 0 })
-      bg.lineStyle(2, color, 0.7)
-      bg.strokeRoundedRect(b.x, b.y, b.w, b.h, 4)
+      // Raised fill
+      bg.fillStyle(surface.raised, 0.98)
+      bg.fillRoundedRect(b.x, b.y, b.w, b.h, radii.md)
+      // Gold focus ring
+      bg.lineStyle(2, accent.primary, 0.95)
+      bg.strokeRoundedRect(b.x, b.y, b.w, b.h, radii.md)
+      // Team color stays as top stripe so side identity persists
+      bg.fillStyle(b.teamColor, 0.9)
+      bg.fillRoundedRect(b.x, b.y, b.w, 2, { tl: radii.md, tr: radii.md, bl: 0, br: 0 })
     }
   }
 
-  /** Rebuild the status effects list in a unit's bottom status panel. */
+  /** Rebuild the status effects chip grid in a unit's bottom status panel. */
   private _rebuildStatusPanel(unitId: string): void {
     const info = this._statusEffectContainers.get(unitId)
     if (!info) return
-    const { container, lx, rx, startY } = info
+    const { container, lx, rx, startY, availH } = info
     container.removeAll(true)
 
     const statuses = this._unitStatuses.get(unitId) ?? new Set<string>()
-    const stk = { stroke: '#000000', strokeThickness: 3 }
-    let cy = startY
+    const innerW = rx - lx
 
-    const STATUS_LIST: Array<{ key: string; label: string; detail?: string }> = [
-      { key: 'stun', label: 'STUN', detail: '!' },
-      { key: 'snare', label: 'SNARE', detail: '!' },
-      { key: 'heal_reduction', label: 'CURA -', detail: '50%' },
-      { key: 'poison', label: 'VENENO' },
-      { key: 'bleed', label: 'SANGR.' },
-      { key: 'burn', label: 'QUEIMA' },
-      { key: 'silence_defense', label: 'DEF BLOQ' },
-      { key: 'atk_up', label: 'ATK ↑' },
-      { key: 'atk_down', label: 'ATK ↓' },
-      { key: 'def_up', label: 'DEF ↑' },
-      { key: 'def_down', label: 'DEF ↓' },
-      { key: 'regen', label: 'REGEN' },
-      { key: 'reflect', label: 'REFLET' },
-      { key: 'evade', label: 'ESQUIVA' },
-      { key: 'shield', label: 'ESCUDO' },
+    // ── Chip catalog: label, polarity → border color ──
+    type Polarity = 'buff' | 'debuff' | 'neutral'
+    const STATUS_LIST: Array<{ key: string; label: string; polarity: Polarity }> = [
+      { key: 'stun',            label: 'ST',  polarity: 'debuff'  },
+      { key: 'snare',           label: 'SN',  polarity: 'debuff'  },
+      { key: 'silence_defense', label: 'SD',  polarity: 'debuff'  },
+      { key: 'heal_reduction',  label: 'H-',  polarity: 'debuff'  },
+      { key: 'poison',          label: 'PO',  polarity: 'debuff'  },
+      { key: 'bleed',           label: 'BL',  polarity: 'debuff'  },
+      { key: 'burn',            label: 'BU',  polarity: 'debuff'  },
+      { key: 'atk_down',        label: 'A-',  polarity: 'debuff'  },
+      { key: 'def_down',        label: 'D-',  polarity: 'debuff'  },
+      { key: 'mov_down',        label: 'M-',  polarity: 'debuff'  },
+      { key: 'atk_up',          label: 'A+',  polarity: 'buff'    },
+      { key: 'def_up',          label: 'D+',  polarity: 'buff'    },
+      { key: 'regen',           label: 'RE',  polarity: 'buff'    },
+      { key: 'reflect',         label: 'RF',  polarity: 'buff'    },
+      { key: 'evade',           label: 'EV',  polarity: 'buff'    },
+      { key: 'shield',          label: 'SH',  polarity: 'neutral' },
     ]
 
-    const STATUS_COLORS: Record<string, string> = {
-      stun: '#ffdd00', snare: '#00ccaa', poison: '#44cc44', bleed: '#cc6666',
-      burn: '#ff8844', heal_reduction: '#cc4444', silence_defense: '#ff6666',
-      atk_up: '#44dd44', atk_down: '#dd4444', def_up: '#44dd44', def_down: '#dd4444',
-      regen: '#44cc88', reflect: '#aa88ff', evade: '#88ccff', shield: '#4488ff',
+    const BORDER_BY_POLARITY: Record<Polarity, number> = {
+      buff:    dsState.success,
+      debuff:  dsState.error,
+      neutral: hpState.shield,
+    }
+    const HEX_BY_POLARITY: Record<Polarity, string> = {
+      buff:    dsState.successHex,
+      debuff:  dsState.errorHex,
+      neutral: hpState.shieldHex,
     }
 
-    for (const s of STATUS_LIST) {
-      if (!statuses.has(s.key)) continue
-      const col = STATUS_COLORS[s.key] ?? '#cccccc'
-      container.add(this.add.text(lx, cy + 3, s.label, {
-        fontFamily: 'Arial Black', fontSize: '13px', color: col, fontStyle: 'bold', ...stk,
-      }).setDepth(6))
-      if (s.detail) {
-        container.add(this.add.text(rx, cy + 3, s.detail, {
-          fontFamily: 'Arial Black', fontSize: '13px', color: col, fontStyle: 'bold', ...stk,
-        }).setOrigin(1, 0).setDepth(6))
-      }
-      cy += 14
-    }
+    const CHIP_W  = 26
+    const CHIP_H  = 18
+    const CHIP_GAP = 4
+    const chipsPerRow = Math.max(1, Math.floor((innerW + CHIP_GAP) / (CHIP_W + CHIP_GAP)))
+    const maxRows = Math.max(1, Math.floor((availH + CHIP_GAP) / (CHIP_H + CHIP_GAP)))
+    const maxChips = chipsPerRow * maxRows
+
+    const active = STATUS_LIST.filter((s) => statuses.has(s.key)).slice(0, maxChips)
+
+    active.forEach((s, i) => {
+      const col = i % chipsPerRow
+      const row = Math.floor(i / chipsPerRow)
+      const cx = lx + col * (CHIP_W + CHIP_GAP)
+      const cy = startY + row * (CHIP_H + CHIP_GAP)
+      const borderColor = BORDER_BY_POLARITY[s.polarity]
+      const hexColor    = HEX_BY_POLARITY[s.polarity]
+
+      const chipG = this.add.graphics().setDepth(6)
+      chipG.fillStyle(surface.raised, 0.85)
+      chipG.fillRoundedRect(cx, cy, CHIP_W, CHIP_H, radii.sm)
+      chipG.lineStyle(1, borderColor, 0.9)
+      chipG.strokeRoundedRect(cx, cy, CHIP_W, CHIP_H, radii.sm)
+      container.add(chipG)
+
+      const label = this.add.text(cx + CHIP_W / 2, cy + CHIP_H / 2, s.label, {
+        fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+        color: hexColor, fontStyle: 'bold',
+      }).setOrigin(0.5).setDepth(6)
+      container.add(label)
+    })
   }
 
   // ── Staggered resolution ─────────────────────────────────────────────────────
