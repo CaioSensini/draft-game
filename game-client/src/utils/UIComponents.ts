@@ -1595,6 +1595,133 @@ export const UI = {
 
     return scene.add.container(x, y + offsetY, [g, ...children]).setDepth(depth)
   },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SKILL TOOLTIP (INTEGRATION_SPEC §7 + Print 16)
+  //
+  // Rich hover tooltip for skill cards. Renders:
+  //   • Heading row: skill name (Cormorant h3) + "CLASSE · CATEGORIA" meta top-right
+  //   • Body: description (Manrope 13 fg-2, 2-3 lines)
+  //   • Stats row: LABEL VALUE pairs in JetBrains Mono (DMG/HEAL/SHLD · CD · RNG)
+  //   • Optional flavor: Cormorant italic, fg-3
+  //
+  // Same card surface as UI.tooltip (surface.raised, border.strong, shadow-md,
+  // radii.md) but wider (maxW 320) with richer internal structure.
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  skillTooltip(
+    scene: Phaser.Scene, x: number, y: number,
+    content: {
+      name: string;
+      className?:   string;                       // "Guerreiro" etc
+      classColorHex?: string;                     // "#8b5cf6" — drives meta row tint
+      categoryLabel?: string;                     // "ATK1", "DEF2" — rendered top-right
+      description?:   string;
+      stats?:        Array<{ label: string; value: string; colorHex?: string }>;
+      flavor?:       string;                      // optional italic quote at the bottom
+    },
+    opts?: { maxW?: number; depth?: number; anchor?: 'top' | 'bottom' },
+  ): Phaser.GameObjects.Container {
+    const pad = 14
+    const maxW = opts?.maxW ?? 320
+    const minW = 260
+    const depth = opts?.depth ?? 1000
+
+    const tintHex = content.classColorHex ?? accent.primaryHex
+
+    // Heading (name in Cormorant serif h3). Measured first to drive width.
+    const nameText = scene.add.text(pad, pad, content.name, {
+      fontFamily: fontFamily.serif, fontSize: typeScale.h3,
+      color: fg.primaryHex, fontStyle: 'bold',
+    })
+
+    // Meta top-right: "CLASSE · CATEGORIA" (Manrope 11 bold UPPER tinted)
+    const metaParts: string[] = []
+    if (content.className)     metaParts.push(content.className.toUpperCase())
+    if (content.categoryLabel) metaParts.push(content.categoryLabel.toUpperCase())
+    const metaStr = metaParts.join('  ·  ')
+    const metaText = metaStr
+      ? scene.add.text(0, pad + 4, metaStr, {
+          fontFamily: fontFamily.body, fontSize: typeScale.meta,
+          color: tintHex, fontStyle: 'bold',
+        })
+      : null
+    const anyMeta = metaText as unknown as { setLetterSpacing?: (n: number) => void }
+    if (metaText && typeof anyMeta.setLetterSpacing === 'function') {
+      anyMeta.setLetterSpacing(1.4)
+    }
+
+    const neededForHead = pad + nameText.width + 18 + (metaText?.width ?? 0) + pad
+    const contentW = Math.max(minW, Math.min(maxW, neededForHead))
+    if (metaText) metaText.setPosition(contentW - pad - metaText.width, pad + 4)
+
+    let cursorY = pad + nameText.height + 8
+    const children: Phaser.GameObjects.GameObject[] = [nameText]
+    if (metaText) children.push(metaText)
+
+    // Description (Manrope 13 fg-2)
+    if (content.description) {
+      const desc = scene.add.text(pad, cursorY, content.description, {
+        fontFamily: fontFamily.body, fontSize: typeScale.small,
+        color: fg.secondaryHex,
+        wordWrap: { width: contentW - pad * 2 },
+      })
+      children.push(desc)
+      cursorY += desc.height + 10
+    }
+
+    // Stats row: Mono LABEL value · LABEL value...
+    if (content.stats && content.stats.length > 0) {
+      let cx = pad
+      for (const s of content.stats) {
+        const lbl = scene.add.text(cx, cursorY, s.label.toUpperCase(), {
+          fontFamily: fontFamily.mono, fontSize: typeScale.small,
+          color: fg.tertiaryHex, fontStyle: 'bold',
+        })
+        children.push(lbl)
+        cx += lbl.width + 4
+        const val = scene.add.text(cx, cursorY, s.value, {
+          fontFamily: fontFamily.mono, fontSize: typeScale.small,
+          color: s.colorHex ?? fg.primaryHex, fontStyle: 'bold',
+        })
+        children.push(val)
+        cx += val.width + 14
+      }
+      cursorY += 20
+    }
+
+    // Flavor (italic, fg-3)
+    if (content.flavor) {
+      const flv = scene.add.text(pad, cursorY, `"${content.flavor}"`, {
+        fontFamily: fontFamily.serif, fontSize: typeScale.small,
+        color: fg.tertiaryHex, fontStyle: 'italic',
+        wordWrap: { width: contentW - pad * 2 },
+      })
+      children.push(flv)
+      cursorY += flv.height + 4
+    }
+
+    cursorY += pad
+    const totalH = cursorY
+
+    // Background card
+    const g = scene.add.graphics()
+    // Shadow-md
+    g.fillStyle(0x000000, 0.45)
+    g.fillRoundedRect(2, 4, contentW, totalH, radii.md)
+    // Fill
+    g.fillStyle(surface.raised, 0.98)
+    g.fillRoundedRect(0, 0, contentW, totalH, radii.md)
+    // Inset top highlight
+    g.fillStyle(0xffffff, 0.04)
+    g.fillRoundedRect(1, 1, contentW - 2, 1, { tl: radii.md - 1, tr: radii.md - 1, bl: 0, br: 0 })
+    // Border
+    g.lineStyle(1, border.strong, 1)
+    g.strokeRoundedRect(0, 0, contentW, totalH, radii.md)
+
+    const offsetY = opts?.anchor === 'bottom' ? 0 : -totalH
+    return scene.add.container(x, y + offsetY, [g, ...children]).setDepth(depth)
+  },
 }
 
 // ── Internal variant-button builder ─────────────────────────────────────────

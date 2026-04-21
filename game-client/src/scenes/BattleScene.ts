@@ -53,7 +53,7 @@ import { GameState, GameStateManager } from '../core/GameState'
 import { soundManager } from '../utils/SoundManager'
 import { UI, hpStatusColor } from '../utils/UIComponents'
 import {
-  state as dsState, fg, fontFamily, typeScale,
+  state as dsState, fg, fontFamily, hpState, typeScale,
 } from '../utils/DesignTokens'
 import { VFXManager } from '../utils/VFXManager'
 import { drawCharacterSprite } from '../utils/SpriteFactory'
@@ -1732,19 +1732,56 @@ export default class BattleScene extends Phaser.Scene {
   private _showSkillTooltip(skill: Skill, x: number, y: number): void {
     this._hideSkillTooltip()
 
-    // Position next to the card, clamped to screen
-    const ttX = Math.min(x + CARD_W / 2 + 150, W - 150)
-    const ttY = Phaser.Math.Clamp(y, 185, H - 185)
-
     const ttActor = this._currentActorId ? this._ctrl.getCharacter(this._currentActorId) : null
-    this._skillTooltip = UI.skillDetailCard(this, ttX, ttY, {
-      skillId: skill.id,
-      name: skill.name, effectType: skill.effectType, power: skill.power,
-      group: skill.group, unitClass: ttActor?.role ?? 'king', level: 1,
+    const role = (ttActor?.role ?? 'king') as 'king' | 'warrior' | 'executor' | 'specialist'
+
+    const CLASS_NAMES: Record<string, string> = {
+      king: 'Rei', warrior: 'Guerreiro', executor: 'Executor', specialist: 'Especialista',
+    }
+    const CLASS_HEX: Record<string, string> = {
+      king: '#fbbf24', warrior: '#8b5cf6', executor: '#dc2626', specialist: '#10b981',
+    }
+    const CATEGORY_LABEL: Record<string, string> = {
+      attack1: 'ATK 1', attack2: 'ATK 2', defense1: 'DEF 1', defense2: 'DEF 2',
+    }
+
+    const DMG_TYPES = new Set([
+      'damage', 'true_damage', 'area', 'bleed', 'burn', 'poison', 'lifesteal', 'mark',
+    ])
+    const HEAL_TYPES = new Set(['heal', 'regen', 'revive'])
+    const SHIELD_TYPES = new Set(['shield'])
+
+    // Build stats row (DMG/HEAL/SHLD + CD + RNG). Follows Print 16 layout.
+    const stats: Array<{ label: string; value: string; colorHex?: string }> = []
+    if (skill.power > 0) {
+      if (DMG_TYPES.has(skill.effectType)) {
+        stats.push({ label: 'DMG', value: String(skill.power), colorHex: dsState.errorHex })
+      } else if (HEAL_TYPES.has(skill.effectType)) {
+        stats.push({ label: 'HEAL', value: String(skill.power), colorHex: dsState.successHex })
+      } else if (SHIELD_TYPES.has(skill.effectType)) {
+        stats.push({ label: 'SHLD', value: String(skill.power), colorHex: hpState.shieldHex })
+      }
+    }
+    stats.push({ label: 'CD', value: String(skill.cooldownTurns ?? 0) })
+    if (skill.range && skill.range > 0) {
+      stats.push({ label: 'RNG', value: String(skill.range) })
+    }
+
+    // Position tooltip to the right of the card, vertically clamped. The helper
+    // draws from (ttX, ttY) top-left when anchor='bottom'; estTH estimate is
+    // enough to keep the tooltip on-screen without pre-measuring.
+    const estTH = 180
+    const ttX = Math.min(x + CARD_W / 2 + 16, W - 330)
+    const ttY = Phaser.Math.Clamp(y - estTH / 2, 16, H - estTH - 16)
+
+    this._skillTooltip = UI.skillTooltip(this, ttX, ttY, {
+      name: skill.name,
+      className: CLASS_NAMES[role] ?? role,
+      classColorHex: CLASS_HEX[role],
+      categoryLabel: CATEGORY_LABEL[skill.group] ?? skill.group.toUpperCase(),
       description: skill.description,
-      targetType: skill.targetType, range: skill.range,
-      secondaryEffect: skill.secondaryEffect ?? null,
-    })
+      stats,
+    }, { anchor: 'bottom' })
   }
 
   private _hideSkillTooltip(): void {
