@@ -591,11 +591,12 @@ describe('Executor — Defense 1 (self-buffs)', () => {
   })
 
   // ── le_d3 Ataque em Dobro ──────────────────────────────────────────────────
-  describe('le_d3 — Ataque em Dobro [PARTIAL — cooldown tracking pending]', () => {
-    it('catalog entry', () => {
+  describe('le_d3 — Ataque em Dobro', () => {
+    it('catalog entry exposes cooldownTurns=2', () => {
       const s = executorSkill('le_d3')
       expect(s.name).toBe('Ataque em Dobro')
       expect(s.effectType).toBe('double_attack')
+      expect(s.cooldownTurns).toBe(2)
     })
 
     it('double_attack sets the caster flag', () => {
@@ -605,12 +606,43 @@ describe('Executor — Defense 1 (self-buffs)', () => {
       expect(exec.doubleAttackNextTurn).toBe(true)
     })
 
-    it('[PARTIAL] 2-turn cooldown between uses not enforced', () => {
-      // v3 says "cooldown 2 turnos (não usável consecutivamente)". Today
-      // nothing blocks re-selection. Requires ActionEngine / TurnManager
-      // integration for per-skill last-used tracking.
-      const s = executorSkill('le_d3')
-      expect(s.effectType).toBe('double_attack')
+    it('cooldown blocks re-selection for 2 rounds after use', () => {
+      const exec = mkChar('e', 'executor', 'left')
+      const king = mkChar('k', 'king', 'right', 6, 3)
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [exec]),
+        rightTeam: new Team('right', [king]),
+        startPhase: 'action',
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+
+      const skill = new Skill(executorSkill('le_d3'))
+
+      // Round 1 — selection allowed, use records cooldown at round 1+2=3.
+      expect(engine.selectDefense(exec.id, skill).ok).toBe(true)
+      ;(engine as unknown as {
+        _applyDefenseSkill: (c: Character, s: Skill) => void
+      })._applyDefenseSkill.bind(engine)(exec, skill)
+
+      // Round 2 — still on cooldown (available at 3).
+      ;(battle as unknown as { _round: number })._round = 2
+      expect(exec.isSkillOnCooldown('le_d3', 2)).toBe(true)
+      const r2 = engine.selectDefense(exec.id, skill)
+      expect(r2.ok).toBe(false)
+
+      // Round 3 — off cooldown.
+      ;(battle as unknown as { _round: number })._round = 3
+      expect(exec.isSkillOnCooldown('le_d3', 3)).toBe(false)
+      expect(exec.skillCooldownRemaining('le_d3', 3)).toBe(0)
+    })
+
+    it('skills without cooldownTurns never enter cooldown', () => {
+      const exec = mkChar('e', 'executor', 'left')
+      expect(exec.isSkillOnCooldown('le_a1', 1)).toBe(false)
+      exec.noteSkillUsed('le_a1', 1, 0)  // cooldown 0 → no-op
+      expect(exec.isSkillOnCooldown('le_a1', 1)).toBe(false)
+      expect(exec.isSkillOnCooldown('le_a1', 2)).toBe(false)
     })
   })
 

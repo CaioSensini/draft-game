@@ -258,6 +258,14 @@ export class Skill {
   readonly secondaryEffects: ReadonlyArray<SecondaryEffectDef>
 
   /**
+   * Minimum number of rounds between consecutive uses of this skill by the
+   * same character. `undefined`/0 means no cooldown (default). When set, the
+   * skill cannot be selected again until `lastUsedRound + cooldownTurns` has
+   * passed. Drives v3 rules like Ataque em Dobro's 2-turn lockout.
+   */
+  readonly cooldownTurns: number
+
+  /**
    * @deprecated Use `secondaryEffects` — returns the first secondary (or null)
    * for backward compatibility with pre-refactor callers. Will be removed once
    * all callers migrate (tracked in DECISIONS.md 2026-04-21).
@@ -289,6 +297,7 @@ export class Skill {
     } else {
       this.secondaryEffects = []
     }
+    this.cooldownTurns = def.cooldownTurns ?? 0
   }
 
   // ── Targeting queries ──────────────────────────────────────────────────────
@@ -460,6 +469,10 @@ export interface SkillDefinition {
    * refactor — ignored when `secondaryEffects` is present.
    */
   secondaryEffect?: SecondaryEffectDef
+  /**
+   * Minimum rounds between consecutive uses. Omit or 0 for no cooldown.
+   */
+  cooldownTurns?:   number
 }
 
 // Deck management has moved to domain/Deck.ts (SkillQueue, CharacterDeck, TeamDecks).

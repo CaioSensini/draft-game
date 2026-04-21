@@ -243,6 +243,9 @@ export class CombatEngine {
     const deck = this.battle.teamOf(char.side).attackDeck(characterId)
     if (deck && !deck.inHand(skill.id)) return Err(`'${skill.name}' is not in ${char.name}'s current hand`)
 
+    if (char.isSkillOnCooldown(skill.id, this.battle.round))
+      return Err(`'${skill.name}' is on cooldown (${char.skillCooldownRemaining(skill.id, this.battle.round)} turn(s) remaining)`)
+
     // Validate single-target
     if (skill.targetType === 'single') {
       if (target.kind !== 'character') return Err('Single-target skill requires a character target')
@@ -296,6 +299,9 @@ export class CombatEngine {
     const deck = this.battle.teamOf(char.side).defenseDeck(characterId)
     if (deck && !deck.inHand(skill.id)) return Err(`'${skill.name}' is not in ${char.name}'s current hand`)
 
+    if (char.isSkillOnCooldown(skill.id, this.battle.round))
+      return Err(`'${skill.name}' is on cooldown (${char.skillCooldownRemaining(skill.id, this.battle.round)} turn(s) remaining)`)
+
     const sel = this._getOrCreateSelection(characterId)
     sel.defenseSkill = skill
 
@@ -327,6 +333,9 @@ export class CombatEngine {
 
     const deck = this.battle.teamOf(char.side).attackDeck(characterId)
     if (deck && !deck.inHand(skill.id)) return Err(`'${skill.name}' is not in ${char.name}'s current hand`)
+
+    if (char.isSkillOnCooldown(skill.id, this.battle.round))
+      return Err(`'${skill.name}' is on cooldown (${char.skillCooldownRemaining(skill.id, this.battle.round)} turn(s) remaining)`)
 
     const sel = this._getOrCreateSelection(characterId)
     sel.secondAttackSkill = skill
@@ -1097,6 +1106,10 @@ export class CombatEngine {
   private _applyDefenseSkill(char: Character, skill: Skill | null): void {
     if (!skill) return
 
+    if (skill.cooldownTurns > 0) {
+      char.noteSkillUsed(skill.id, this.battle.round, skill.cooldownTurns)
+    }
+
     // v3 §6.5 — Espírito de Sobrevivência (lk_d4 / rk_d4): HP-conditional.
     // This skill has bespoke logic that the generic shield handler can't
     // express (conditional magnitude + shield sized from HP ratio).
@@ -1496,6 +1509,10 @@ export class CombatEngine {
     _side: CharacterSide,
   ): void {
     if (!skill || !target) return
+
+    if (skill.cooldownTurns > 0) {
+      caster.noteSkillUsed(skill.id, this.battle.round, skill.cooldownTurns)
+    }
 
     switch (skill.targetType) {
 

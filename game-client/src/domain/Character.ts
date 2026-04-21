@@ -106,6 +106,8 @@ export class Character {
   // ── Turn-modifier flags ──────────────────────────────────────────────────
   /** When true, the character uses 2 attack skills instead of 1 attack + 1 defense next turn. Reset after use. */
   private _doubleAttackNextTurn = false
+  /** Per-skill cooldown tracker: maps skill id to the earliest round (1-based) the skill is available again. */
+  private _skillCooldowns: Map<string, number> = new Map()
   /** When > 0, the character cannot use defense skills this turn. Decremented each round. */
   private _silencedDefenseTicks = 0
 
@@ -651,6 +653,29 @@ export class Character {
 
   /** Enable double-attack mode for the next turn. */
   setDoubleAttackNextTurn(value: boolean): void { this._doubleAttackNextTurn = value }
+
+  /**
+   * True when `skillId` is still on cooldown at `currentRound`.
+   * Cooldown is stored as the earliest round the skill can be reused.
+   */
+  isSkillOnCooldown(skillId: string, currentRound: number): boolean {
+    const availAt = this._skillCooldowns.get(skillId)
+    return availAt !== undefined && currentRound < availAt
+  }
+
+  /** Rounds remaining until the skill becomes usable again (0 if not on cooldown). */
+  skillCooldownRemaining(skillId: string, currentRound: number): number {
+    const availAt = this._skillCooldowns.get(skillId)
+    if (availAt === undefined) return 0
+    return Math.max(0, availAt - currentRound)
+  }
+
+  /** Record that `skillId` was used at `usedAtRound` with `cooldownTurns` lockout. */
+  noteSkillUsed(skillId: string, usedAtRound: number, cooldownTurns: number): void {
+    if (cooldownTurns > 0) {
+      this._skillCooldowns.set(skillId, usedAtRound + cooldownTurns)
+    }
+  }
 
   /** Remaining turns where this character's defense is silenced. */
   get silencedDefenseTicks(): number { return this._silencedDefenseTicks }

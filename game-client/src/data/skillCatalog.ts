@@ -367,6 +367,7 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
   {
     id: 'le_d3', name: 'Ataque em Dobro', category: 'defense', group: 'defense1',
     effectType: 'double_attack', targetType: 'self', power: 0,
+    cooldownTurns: 2,
     description:
       'Próximo turno: 2 skills atk, 0 def. Cooldown: 2 turnos (não usável consecutivamente).',
   },
