@@ -187,10 +187,9 @@ export default class LobbyScene extends Phaser.Scene {
     const dgBounds = dgPill.getBounds()
     dgPill.setX(gearX - 24 - dgBounds.width / 2)
 
-    // Gold pill
+    // Gold pill (display-only — no ShopScene route, matching original behavior)
     const goldPill = UI.currencyPill(this, 0, avatarY, {
       kind: 'gold', amount: p.gold,
-      onClick: () => transitionTo(this, 'ShopScene', { tab: 'gold' }),
     })
     const goldBounds = goldPill.getBounds()
     goldPill.setX(dgPill.x - dgBounds.width / 2 - 12 - goldBounds.width / 2)
