@@ -4,6 +4,24 @@
 
 ---
 
+## 2026-04-21 — Bloco Deck: contrato locked por testes; HAND_UPDATED rejeitado
+
+**Contexto:** Sprint Dupla Parte 2 pediu "completar Deck domain + integrar CombatEngine + BattleScene". Audit inicial revelou que o trabalho principal **já estava feito**: `Deck.ts` (369 LOC) cumpre v3 §2.9 integralmente, `Team` auto-constrói decks, `CombatEngine.selectAttack/Defense` validam via `deck.inHand(id)`, `_rotateUsedCards` roda após skill resolver emitindo `CARD_ROTATED`, `GameController.getHand` expõe só a mão atual, e `BattleScene._rebuildCardButtons` renderiza apenas as 4 cartas da mão (não as 8 do deck). Fechado implicitamente durante o Sprint Alfa.
+
+**Gap real:** zero tests cobrindo `Deck.ts` e zero cobrindo deck ↔ engine wiring.
+
+**Decisão 1 (entregue):** Criar cobertura de testes. 43 tests em `Deck.test.ts` (domain puro) + 13 em `DeckIntegration.test.ts` (engine × deck × event). Total projeto: 473 → 529.
+
+**Decisão 2 — `HAND_UPDATED` rejeitado:** prompt pediu novo event `HAND_UPDATED`. Análise: `CARD_ROTATED` (com payload `{unitId, cardId, category, nextCardId}`) já cobre o mesmo caso de uso. Consumers que precisam do snapshot completo da mão chamam `getHand(unitId)` após ouvir `CARD_ROTATED`. Adicionar `HAND_UPDATED` seria redundância — mesmos triggers, informação subconjunto. Padrão alinhado com outros events (ex: `DAMAGE_APPLIED` transporta delta, não HP total). Futuros consumers podem mudar de ideia; se `HAND_UPDATED` vier, adicionar emit side-by-side sem quebrar `CARD_ROTATED`.
+
+**Decisão 3 — belt-and-suspenders listener:** BattleScene já rebuilda cartas em `CHARACTER_FOCUSED / cancelAction / pós-select-defense` (3 triggers cobrindo o fluxo normal). Adicionado 4º listener em `CARD_ROTATED` (só rebuilda se `e.unitId === this._currentActorId`). Cobre edge case onde rotação acontece sem mudar de actor (segunda carta em double-attack turn). Custo 11 linhas, risco zero.
+
+**Decisão 4 — bench não visualizado:** spec do prompt menciona "cartas na fila podem aparecer em área 'próximas' com visual menor" como opcional. Hoje apenas a mão (2+2) é exibida. **Adiado pra Fase 2 de design polish** — mecânica está 100%, é feature de UX, não de gameplay.
+
+**Status:** 3 commits (`deck: complete domain logic + rotation queue`, `deck: integrate with CombatEngine (hand validation + rotation on use)`, `deck: integrate with BattleScene UI`). Relatório em `docs/BLOCO_DECK_REPORT.md`. 529 tests verdes, 0 regressão.
+
+---
+
 ## 2026-04-21 — Design System Fase 1: namespaces paralelos + aplicação piloto
 
 **Contexto:** Sprint Dupla pede integrar o `design-system-handoff/` no projeto (tokens CSS, fontes Google Fonts, SVGs) sem quebrar nenhum dos ~21 arquivos que importam `DesignTokens.ts`. Auditoria revelou múltiplos conflitos entre CSS handoff e TS atual.
