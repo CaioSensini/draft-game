@@ -680,6 +680,17 @@ export default class BattleScene extends Phaser.Scene {
         if (e.unitId !== this._currentActorId) return
         this._rebuildCardButtons(e.unitId)
       })
+      // Deck rotation: when the active character's hand changes, rebuild the
+      // card buttons so the UI reflects the new front-of-queue cards. Other
+      // rebuild triggers (CHARACTER_FOCUSED, post-cancel, post-select-defense)
+      // already cover the common flow; this handler is the belt-and-suspenders
+      // for edge cases where rotation happens while the same actor is focused
+      // (e.g. second attack in a double-attack turn).
+      .on(EventType.CARD_ROTATED, (e) => {
+        if (e.unitId === this._currentActorId) {
+          this._rebuildCardButtons(e.unitId)
+        }
+      })
       .on(EventType.MOVE_CHARACTER_SELECTED, (e) => {
         this._moveSelectedId = e.unitId
         this._showMoveRing(e.unitId)
