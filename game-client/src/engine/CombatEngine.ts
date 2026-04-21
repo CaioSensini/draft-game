@@ -21,7 +21,8 @@ import type { VictoryResult } from '../domain/Battle'
 import { Character } from '../domain/Character'
 import { Skill } from '../domain/Skill'
 import type { CharacterRole, CharacterSide } from '../domain/Character'
-import { ReflectPercentEffect, RegenEffect } from '../domain/Effect'
+import { ReflectPercentEffect, RegenEffect, PositionalDrEffect } from '../domain/Effect'
+import type { PositionalDrShape } from '../domain/Effect'
 import { EventBus } from './EventBus'
 import { TurnManager } from './TurnManager'
 import type { SkipReason } from './TurnManager'
@@ -913,8 +914,18 @@ export class CombatEngine {
     // receives passive/buff modifiers (v3 §4.1).
     const atkBonus = this.passive.getAtkBonus(caster, this.battle)
                    + this.rules.getAtkBonus(caster, this.battle)
-    const mitBonus = this.passive.getMitigationBonus(target, this.battle)
-                   + this.rules.getMitigationBonus(target, this.battle)
+    let mitBonus  = this.passive.getMitigationBonus(target, this.battle)
+                  + this.rules.getMitigationBonus(target, this.battle)
+    // v3 §6.3 Warrior positional DR — any active PositionalDrEffect on the
+    // target whose zone contains the target's CURRENT position contributes
+    // its fraction to mitBonus. Multiple stacks sum additively; the
+    // formula's internal MAX_MITIGATION cap (0.90) prevents runaway.
+    for (const e of target.effects) {
+      if (e instanceof PositionalDrEffect && !e.isExpired &&
+          e.isInZone({ col: target.col, row: target.row })) {
+        mitBonus += e.fraction
+      }
+    }
     // Executor Isolado trade-off: +10% damage received when isolated (v3 §4.3)
     const targetIncomingDamageBonus = this.passive.getIncomingDamageBonus(target, this.battle)
     const hpRatio = target.hp / Math.max(1, target.maxHp)
@@ -1108,6 +1119,81 @@ export class CombatEngine {
       return
     }
 
+    // v3 §6.3 Escudo do Protetor (lw_d1 / rw_d1). Apply a positional DR
+    // zone: 3×2 rectangle BEHIND the Warrior (relative to their side).
+    // Allies standing there take -50% damage for 1 turn.
+    if (skill.id === 'lw_d1' || skill.id === 'rw_d1') {
+      this.emit({
+        type: EventType.SKILL_USED, unitId: char.id, skillId: skill.id,
+        skillName: skill.name, category: 'defense', targetId: char.id,
+      })
+      this._applyPositionalDr(char, 'rect_back_6', 0.50)
+      return
+    }
+
+    // v3 §6.3 Resistência Absoluta (lw_d3 / rw_d3). Apply positional DR
+    // for self + 1 ally directly behind: -65% damage for 1 turn. We
+    // apply the DR zone to both the caster (self-cell) and the single
+    // cell behind. Actually the mechanic is simpler: apply a
+    // "behind_single" shape that covers one tile behind the Warrior,
+    // plus a self-targeted DR on the caster himself. To keep the engine
+    // uniform, we create one PositionalDrEffect with shape 'behind_single'
+    // anchored at the caster's position and ALSO give the caster a
+    // self-centered DR via a square-radius-0 equivalent — modeled here
+    // as adding two effects: one for self (applied to the Warrior) and
+    // one for the tile behind (applied via an area check). Since any
+    // ally standing directly behind will see the DR from the effect
+    // attached to THEM only if we apply it to them. Simpler: scan for
+    // the ally behind at cast time and attach the effect to BOTH the
+    // Warrior and that ally.
+    if (skill.id === 'lw_d3' || skill.id === 'rw_d3') {
+      this.emit({
+        type: EventType.SKILL_USED, unitId: char.id, skillId: skill.id,
+        skillName: skill.name, category: 'defense', targetId: char.id,
+      })
+      // Self-DR: apply a square_3x3 zone centered on caster, but with
+      // radius 0 semantics isn't one of our shapes. Instead: attach a
+      // PositionalDrEffect with shape 'behind_single' anchored at the
+      // caster's CURRENT position — that covers the cell behind. For the
+      // Warrior himself, we attach a separate DR effect with origin
+      // equal to self (square_3x3 containing the self cell).
+      const behindDc = char.side === 'left' ? -1 : +1
+      const behindPos = { col: char.col + behindDc, row: char.row }
+      // Self gets the DR (anchored at the Warrior's tile, square_3x3
+      // captures the self cell at origin).
+      char.addEffect(new PositionalDrEffect(
+        'square_3x3',
+        { col: char.col, row: char.row },
+        char.side,
+        0.65,
+        1,
+      ))
+      // Ally directly behind (if any) also gets the DR.
+      const allyBehind = this.battle.teamOf(char.side).living
+        .find((c) => c.col === behindPos.col && c.row === behindPos.row)
+      if (allyBehind) {
+        allyBehind.addEffect(new PositionalDrEffect(
+          'square_3x3',
+          { col: allyBehind.col, row: allyBehind.row },
+          char.side,
+          0.65,
+          1,
+        ))
+      }
+      return
+    }
+
+    // v3 §6.3 Postura Defensiva (lw_d6 / rw_d6). Apply 3×3 positional
+    // DR around the Warrior: -25% damage for allies in the square.
+    if (skill.id === 'lw_d6' || skill.id === 'rw_d6') {
+      this.emit({
+        type: EventType.SKILL_USED, unitId: char.id, skillId: skill.id,
+        skillName: skill.name, category: 'defense', targetId: char.id,
+      })
+      this._applyPositionalDr(char, 'square_3x3', 0.25)
+      return
+    }
+
     // v3 §6.2 Proteção (ls_d4 / rs_d4). Cleanse debuffs on allies in
     // area + grant 1-turn debuff immunity. The cleanse part fires
     // through the normal resolver path; we ADD the immunity flag to
@@ -1228,6 +1314,27 @@ export class CombatEngine {
           status: 'shield' as const,
           value:  shieldAmount,
         })
+      }
+    }
+  }
+
+  /**
+   * v3 §6.3 Warrior positional DR — attach a PositionalDrEffect to every
+   * ally whose current position falls inside the zone. The effect carries
+   * the origin (caster's position at cast time), so if the caster moves
+   * later the zone stays anchored. Re-evaluation happens inside
+   * `computeRawDamage` via `isInZone(target.col, target.row)`.
+   */
+  private _applyPositionalDr(
+    caster: Character,
+    shape: PositionalDrShape,
+    fraction: number,
+  ): void {
+    const origin = { col: caster.col, row: caster.row }
+    const probe  = new PositionalDrEffect(shape, origin, caster.side, fraction, 1)
+    for (const ally of this.battle.teamOf(caster.side).living) {
+      if (probe.isInZone({ col: ally.col, row: ally.row })) {
+        ally.addEffect(new PositionalDrEffect(shape, origin, caster.side, fraction, 1))
       }
     }
   }

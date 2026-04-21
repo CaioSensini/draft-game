@@ -40,6 +40,7 @@ export type EffectType =
   // ── Special ──
   | 'mark'
   | 'revive'
+  | 'positional_dr'
 
 /** Stat targeted by a stat-modifier effect. */
 export type ModifiableStat = 'defense' | 'attack' | 'mobility'
@@ -165,6 +166,86 @@ export class PoisonEffect extends Effect {
 /**
  * Restores `healPerTick` HP to the bearer each round.
  */
+/**
+ * v3 §6.3 Warrior positional damage reduction.
+ *
+ * Three Warrior defensive skills reduce incoming damage for targets in a
+ * specific SPATIAL relationship with the caster at the moment of cast:
+ *
+ *   'rect_back_6'   — Escudo do Protetor: 3×2 rectangle one tile behind
+ *                     the caster (away from enemy side). Covers allies
+ *                     standing in that area.
+ *   'square_3x3'    — Postura Defensiva: Chebyshev-1 ring around origin
+ *                     (9 cells including the origin). Covers nearby allies.
+ *   'behind_single' — Resistência Absoluta: the exact tile directly behind
+ *                     the caster. Covers one ally standing there.
+ *
+ * The effect records the ORIGIN position at cast time (caster may move
+ * later; the DR zone stays where it was) + the caster's side (to decide
+ * which direction "behind" means) + the DR fraction + duration.
+ *
+ * `isInZone(targetPos)` is a pure geometry predicate; no Battle / Grid
+ * dependency, so unit tests stay trivial.
+ */
+export type PositionalDrShape = 'rect_back_6' | 'square_3x3' | 'behind_single'
+
+export class PositionalDrEffect extends Effect {
+  readonly type = 'positional_dr' as const
+  readonly kind = 'buff' as const
+  private _ticks: number
+
+  constructor(
+    readonly shape: PositionalDrShape,
+    readonly origin: { col: number; row: number },
+    readonly casterSide: 'left' | 'right',
+    /** Mitigation fraction in (0, 1). 0.50 = -50% damage taken. */
+    readonly fraction: number,
+    ticks = 1,
+  ) {
+    super()
+    this._ticks = ticks
+  }
+
+  get isExpired(): boolean { return this._ticks <= 0 }
+
+  tick(): TickResult {
+    this._ticks = Math.max(0, this._ticks - 1)
+    return { effectType: 'positional_dr' as const as EffectType, value: 0, expired: this.isExpired }
+  }
+
+  /**
+   * True when a character at `targetPos` is inside the DR zone.
+   * Direction "behind" is relative to `casterSide`:
+   *   left-side caster → behind = lower col (west).
+   *   right-side caster → behind = higher col (east).
+   */
+  isInZone(targetPos: { col: number; row: number }): boolean {
+    // "Behind" direction offset (dCol).
+    const behindDc = this.casterSide === 'left' ? -1 : +1
+
+    switch (this.shape) {
+      case 'square_3x3': {
+        // Chebyshev 1 ring (including origin).
+        const dc = Math.abs(targetPos.col - this.origin.col)
+        const dr = Math.abs(targetPos.row - this.origin.row)
+        return dc <= 1 && dr <= 1
+      }
+      case 'behind_single': {
+        return targetPos.col === this.origin.col + behindDc
+            && targetPos.row === this.origin.row
+      }
+      case 'rect_back_6': {
+        // 3 tiles deep behind the caster × 2 rows wide (row ±1 around origin).
+        // offsetCol ∈ [1, 3] toward "behind" direction; row ∈ origin.row ± 1.
+        const offCol = (targetPos.col - this.origin.col) * behindDc
+        if (offCol < 1 || offCol > 3) return false
+        const dr = Math.abs(targetPos.row - this.origin.row)
+        return dr <= 1
+      }
+    }
+  }
+}
+
 export class RegenEffect extends Effect {
   readonly type = 'regen' as const
   readonly kind = 'buff' as const
@@ -629,5 +710,10 @@ export function createEffect(type: EffectType, value: number, ticks?: number): E
     case 'snare':         return new SnareEffect(ticks ?? 2)
     case 'mark':          return new MarkEffect('', value)    // sourceId must be set externally
     case 'revive':        return new ReviveEffect(value)
+    case 'positional_dr':
+      // Positional DR requires origin + side + shape; can't be built from the
+      // generic (type, value, ticks) factory. Callers must instantiate
+      // PositionalDrEffect directly.
+      throw new Error('positional_dr cannot be created via createEffect(); instantiate PositionalDrEffect directly')
   }
 }
