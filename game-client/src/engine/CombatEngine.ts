@@ -1618,10 +1618,29 @@ export class CombatEngine {
         }
 
         // Aggregate damage dealt for skill-specific post-hooks (e.g. Domínio Real).
+        // Also track blocked hits for v3 conditional follow-ups (lw_a1 snare).
         let totalDamageDealt = 0
+        const blockedHits: Character[] = []
         for (const hit of hits) {
           if (this.battle.isOver) break
-          totalDamageDealt += this._applyOffensiveSkill(caster, hit, skill)
+          const res = this._applyOffensiveSkill(caster, hit, skill)
+          totalDamageDealt += res.hpDamage
+          if (res.blocked) blockedHits.push(hit)
+        }
+
+        // v3 §6.3 Colisão Titânica (lw_a1 / rw_a1): if any target blocked
+        // the damage (evade or full shield absorption), apply snare 1t to
+        // that specific target. Non-blocked targets get only the primary
+        // push from secondaryEffects.
+        if (skill.id === 'lw_a1' || skill.id === 'rw_a1') {
+          for (const blocked of blockedHits) {
+            if (!blocked.alive) continue
+            const snareCtx: EffectContext = {
+              caster, target: blocked, power: 0, rawDamage: 0, ticks: 1, round: this.battle.round,
+            }
+            const snareRes = this.resolver.resolve('snare', snareCtx)
+            this._processResult(caster, blocked, snareRes)
+          }
         }
 
         // Marca da Morte — apply heal after damage phase.
@@ -1696,12 +1715,15 @@ export class CombatEngine {
    * Computes raw damage, calls the resolver, then delegates meta-logic to
    * `_processResult` (stats, reflect, kill/victory).
    *
-   * @returns the HP damage actually dealt to `target` (0 if evaded, dead,
-   *          or the effect was non-damage). Callers aggregate this for
-   *          skill-specific post-hooks such as Domínio Real's dynamic shield.
+   * @returns `{ hpDamage, blocked }` where `hpDamage` is the HP change
+   *          actually dealt (0 if evaded, dead, or non-damage), and
+   *          `blocked === true` when the attack was neutralised by an
+   *          evade or fully absorbed by a shield — the distinguishing
+   *          signal that v3 skills like Colisão Titânica (lw_a1) key
+   *          off to apply conditional follow-ups (snare, retaliation).
    */
-  private _applyOffensiveSkill(caster: Character, target: Character, skill: Skill): number {
-    if (!target.alive) return 0
+  private _applyOffensiveSkill(caster: Character, target: Character, skill: Skill): { hpDamage: number; blocked: boolean } {
+    if (!target.alive) return { hpDamage: 0, blocked: false }
 
     // Signal to Phaser: this attack is now executing against this target.
     // Suppressed for area skills — the top-level area announcement in
@@ -1766,7 +1788,7 @@ export class CombatEngine {
         })
         this._checkAndEmitVictory()
       }
-      return dealt
+      return { hpDamage: dealt, blocked: false }
     }
 
     const ctx: EffectContext = {
@@ -1775,7 +1797,14 @@ export class CombatEngine {
     const result = this.resolver.resolve(skill.effectType, ctx)
     this._processResult(caster, target, result)
 
-    if (this.battle.isOver || result.killed) return result.hpDamage
+    // v3 — "blocked" semantics for skills that react to neutralised hits
+    // (e.g. lw_a1 Colisão Titânica's conditional snare): the hit landed
+    // on a damage-carrying skill but dealt 0 HP either by evade or full
+    // shield absorption.
+    const wasDamageCarrying = _isDamageCarrying(skill.effectType) || skill.effectType === 'true_damage'
+    const blocked = wasDamageCarrying && rawDamage > 0 && result.hpDamage === 0
+
+    if (this.battle.isOver || result.killed) return { hpDamage: result.hpDamage, blocked }
 
     // Post-damage passives (e.g. specialist heal-reduction, future on-hit effects)
     if (result.hpDamage > 0) {
@@ -1797,7 +1826,7 @@ export class CombatEngine {
       }
     }
 
-    return result.hpDamage
+    return { hpDamage: result.hpDamage, blocked }
   }
 
   /**

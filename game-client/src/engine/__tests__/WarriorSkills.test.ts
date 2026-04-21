@@ -90,14 +90,62 @@ describe('Warrior — Attack 1 (dano alto)', () => {
       expect(res.pushRequest?.force).toBe(1)
     })
 
-    // NOTE: v3 says "Se bloqueado: snare 1t" — conditional secondary effect
-    // based on grid collision outcome. Not represented in the generic
-    // secondaryEffect system; documented as partial implementation in
-    // BLOCO3_REPORT.md.
-    it('[PARTIAL] conditional snare-on-block rule is not yet encoded', () => {
-      const s = warriorSkill('lw_a1')
-      // Catalog only defines push as secondary — no snare.
-      expect(s.secondaryEffects?.[0]?.effectType).toBe('push')
+    // v3 §6.3 — "Se bloqueado: snare 1t". Applies only when the damage
+    // is neutralised (evade / full shield absorption).
+    it('applies snare 1t when the hit is evaded', () => {
+      const warrior = mkChar('w', 'warrior', 'left', 5, 3)
+      const target  = mkChar('t', 'specialist', 'right', 5, 2)
+      target.addEffect(new EvadeEffect(1))   // 100% evade next hit
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [warrior]),
+        rightTeam: new Team('right', [target]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(warriorSkill('lw_a1'))
+      ;(engine as unknown as {
+        _applyAttackSkill: (c: Character, s: Skill, t: unknown, side: string) => void
+      })._applyAttackSkill.bind(engine)(
+        warrior, skill, { kind: 'area', col: 5, row: 2 }, 'left',
+      )
+      expect(target.effects.some((e) => e.type === 'snare' && !e.isExpired)).toBe(true)
+    })
+
+    it('applies snare when the hit is fully absorbed by a shield', () => {
+      const warrior = mkChar('w', 'warrior', 'left', 5, 3)
+      const target  = mkChar('t', 'specialist', 'right', 5, 2)
+      target.addShield(500)  // absorbs any damage
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [warrior]),
+        rightTeam: new Team('right', [target]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(warriorSkill('lw_a1'))
+      ;(engine as unknown as {
+        _applyAttackSkill: (c: Character, s: Skill, t: unknown, side: string) => void
+      })._applyAttackSkill.bind(engine)(
+        warrior, skill, { kind: 'area', col: 5, row: 2 }, 'left',
+      )
+      expect(target.effects.some((e) => e.type === 'snare' && !e.isExpired)).toBe(true)
+    })
+
+    it('does NOT apply snare when the hit deals damage normally', () => {
+      const warrior = mkChar('w', 'warrior', 'left', 5, 3)
+      const target  = mkChar('t', 'specialist', 'right', 5, 2)
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [warrior]),
+        rightTeam: new Team('right', [target]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(warriorSkill('lw_a1'))
+      ;(engine as unknown as {
+        _applyAttackSkill: (c: Character, s: Skill, t: unknown, side: string) => void
+      })._applyAttackSkill.bind(engine)(
+        warrior, skill, { kind: 'area', col: 5, row: 2 }, 'left',
+      )
+      expect(target.effects.some((e) => e.type === 'snare')).toBe(false)
     })
   })
 
