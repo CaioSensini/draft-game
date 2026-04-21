@@ -629,6 +629,231 @@ export const UI = {
   },
 
   /**
+   * Vertical 120×160 skill card — INTEGRATION_SPEC §2 + Print 15.
+   *
+   * Shape: class band top 24px, centered icon circle 44, Cormorant title,
+   * 2-line Manrope description, category-tinted footer (crimson for attack,
+   * blue for shield/evade, green for heal, amber for other defense) with
+   * primary stat (DMG/HEAL/SHLD/EVADE) + CD in JetBrains Mono.
+   *
+   * Used by BattleScene hand. SkillUpgradeScene + PackOpenAnimation remain
+   * on the horizontal layout (deferred to ETAPA 3 with DeckBuildScene).
+   */
+  skillCardVertical(
+    scene: Phaser.Scene,
+    x: number, y: number,
+    skill: {
+      name: string; effectType: string; power: number;
+      group: string; unitClass: string; level: number;
+      progress?: number;
+      skillId?: string; description?: string;
+      cooldownTurns?: number;
+    },
+    opts?: {
+      width?: number; height?: number; depth?: number;
+      showTooltip?: boolean;
+      interactive?: boolean;
+      onPointerDown?: () => void;
+    },
+  ): Phaser.GameObjects.Container {
+    const w = opts?.width  ?? 120
+    const h = opts?.height ?? 160
+    const d = opts?.depth  ?? 0
+    const hw = w / 2
+    const hh = h / 2
+
+    // ── Class + category tokens ──
+    const CLASS_COLOR: Record<string, number> = {
+      king: 0xfbbf24, warrior: 0x8b5cf6, specialist: 0x10b981, executor: 0xdc2626,
+    }
+    const CLASS_NAME: Record<string, string> = {
+      king: 'REI', warrior: 'GUERREIRO', specialist: 'ESPECIALISTA', executor: 'EXECUTOR',
+    }
+    const classColor = CLASS_COLOR[skill.unitClass] ?? accent.primary
+    const className  = CLASS_NAME[skill.unitClass]  ?? skill.unitClass.toUpperCase()
+
+    const CAT_LABEL: Record<string, string> = {
+      attack1: 'ATAQUE', attack2: 'ATAQUE',
+      defense1: 'DEFESA', defense2: 'DEFESA',
+    }
+    const catLabel = CAT_LABEL[skill.group] ?? skill.group.toUpperCase()
+
+    // Determine primary stat line per effect type.
+    const DMG_TYPES = new Set([
+      'damage', 'true_damage', 'area', 'bleed', 'burn', 'poison', 'lifesteal', 'mark',
+    ])
+    const HEAL_TYPES   = new Set(['heal', 'regen', 'revive'])
+    const SHIELD_TYPES = new Set(['shield'])
+    const EVADE_TYPES  = new Set(['evade', 'reflect'])
+
+    type FooterKind = 'attack' | 'shield' | 'heal' | 'evade' | 'other'
+    let footerKind: FooterKind = 'other'
+    let footerLabel = 'EFF'
+    let footerValue = String(skill.power)
+    if (DMG_TYPES.has(skill.effectType)) {
+      footerKind = 'attack'; footerLabel = 'DMG'
+    } else if (HEAL_TYPES.has(skill.effectType)) {
+      footerKind = 'heal'; footerLabel = 'HEAL'
+    } else if (SHIELD_TYPES.has(skill.effectType)) {
+      footerKind = 'shield'; footerLabel = 'SHLD'
+    } else if (EVADE_TYPES.has(skill.effectType)) {
+      footerKind = 'evade'; footerLabel = 'EVADE'; footerValue = ''
+    } else {
+      // def_up / atk_up / cleanse / purge / etc.
+      footerKind = skill.group.startsWith('defense') ? 'shield' : 'attack'
+      footerLabel = skill.power > 0 ? 'PWR' : ''
+      footerValue = skill.power > 0 ? String(skill.power) : ''
+    }
+
+    const FOOTER_FILL: Record<FooterKind, number> = {
+      attack: dsState.error,
+      shield: dsState.info,
+      heal:   dsState.success,
+      evade:  dsState.info,
+      other:  border.default,
+    }
+    const footerFill = FOOTER_FILL[footerKind]
+
+    // ── Constants ──
+    const BAND_H   = 24
+    const FOOTER_H = 26
+    const R        = radii.md
+
+    // ── Layer 1: drop shadow ──
+    const g = scene.add.graphics()
+    g.fillStyle(0x000000, 0.40)
+    g.fillRoundedRect(-hw + 1, -hh + 3, w, h, R)
+
+    // ── Layer 2: body fill ──
+    g.fillStyle(surface.panel, 1)
+    g.fillRoundedRect(-hw, -hh, w, h, R)
+
+    // ── Layer 3: class band (top 24px, class color solid) ──
+    g.fillStyle(classColor, 1)
+    g.fillRoundedRect(-hw, -hh, w, BAND_H, { tl: R, tr: R, bl: 0, br: 0 })
+
+    // ── Layer 4: class-color outer stroke ──
+    g.lineStyle(1.5, classColor, 0.95)
+    g.strokeRoundedRect(-hw, -hh, w, h, R)
+
+    // Class band label — small meta text, two lines max ("ATAQUE · GUERREIRO")
+    const bandLabel = `${catLabel} · ${className}`
+    const bandText = scene.add.text(-hw + 8, -hh + 4, bandLabel, {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: fg.inverseHex, fontStyle: 'bold',
+      wordWrap: { width: w - 16 },
+    }).setOrigin(0, 0).setLetterSpacing(1.6)
+
+    // ── Layer 5: icon circle (centered upper-half) ──
+    const iconCx = 0
+    const iconCy = -hh + BAND_H + 28   // 28px below the band
+    const iconR = 22
+    const iconG = scene.add.graphics()
+    iconG.fillStyle(surface.raised, 1)
+    iconG.fillCircle(iconCx, iconCy, iconR)
+    iconG.lineStyle(1.5, classColor, 0.95)
+    iconG.strokeCircle(iconCx, iconCy, iconR)
+
+    // Skill icon — PNG if available, otherwise 2-letter abbreviation
+    let iconContent: Phaser.GameObjects.GameObject
+    const EFFECT_ABBREVS: Record<string, string> = {
+      damage: 'DA', heal: 'HE', shield: 'SH', area: 'AR', stun: 'ST',
+      bleed: 'BL', burn: 'BU', snare: 'SN', push: 'PU', mark: 'MK',
+      regen: 'RG', evade: 'EV', reflect: 'RF', lifesteal: 'LS',
+      true_damage: 'TD', cleanse: 'CL', purge: 'PG', poison: 'PO',
+      def_up: 'D+', atk_up: 'A+', def_down: 'D-', double_attack: '2A',
+      silence_defense: 'SD', advance_allies: 'AV', retreat_allies: 'RT',
+      revive: 'RV', mov_down: 'M-', atk_down: 'A-',
+    }
+    if (skill.skillId && hasSkillIcon(scene, skill.skillId)) {
+      const img = scene.add.image(iconCx, iconCy, getSkillIconKey(skill.skillId))
+      const target = iconR * 2 - 8
+      const scale = target / Math.max(img.width, img.height, 1)
+      img.setScale(scale)
+      iconContent = img
+    } else {
+      const abbrev = EFFECT_ABBREVS[skill.effectType] ?? '??'
+      iconContent = scene.add.text(iconCx, iconCy, abbrev, {
+        fontFamily: fontFamily.mono, fontSize: typeScale.statMd,
+        color: `#${classColor.toString(16).padStart(6, '0')}`, fontStyle: 'bold',
+      }).setOrigin(0.5)
+    }
+
+    // ── Layer 6: title (Cormorant) ──
+    const titleY = iconCy + iconR + 8
+    let titleFontSize = 14
+    const titleText = scene.add.text(0, titleY, skill.name, {
+      fontFamily: fontFamily.serif, fontSize: `${titleFontSize}px`,
+      color: fg.primaryHex, fontStyle: 'bold',
+      align: 'center',
+      wordWrap: { width: w - 12 },
+    }).setOrigin(0.5, 0)
+    while ((titleText.width > w - 12 || titleText.height > 34) && titleFontSize > 10) {
+      titleFontSize--
+      titleText.setFontSize(titleFontSize)
+    }
+
+    // ── Layer 7: description (Manrope) ──
+    const descElements: Phaser.GameObjects.GameObject[] = []
+    if (skill.description) {
+      const descY = titleY + titleText.height + 2
+      const desc = scene.add.text(0, descY, skill.description, {
+        fontFamily: fontFamily.body, fontSize: '10px',
+        color: fg.secondaryHex,
+        align: 'center',
+        wordWrap: { width: w - 12 },
+      }).setOrigin(0.5, 0)
+      // Clip to 2 lines visually by trimming any overflow
+      const lines = desc.getWrappedText(desc.text)
+      if (Array.isArray(lines) && lines.length > 2) {
+        desc.setText(lines.slice(0, 2).join('\n'))
+      }
+      descElements.push(desc)
+    }
+
+    // ── Layer 8: footer (category tint + primary stat + CD) ──
+    const footerG = scene.add.graphics()
+    footerG.fillStyle(footerFill, 0.85)
+    footerG.fillRoundedRect(-hw, hh - FOOTER_H, w, FOOTER_H, { tl: 0, tr: 0, bl: R, br: R })
+    // Footer separator line
+    footerG.fillStyle(0x000000, 0.25)
+    footerG.fillRect(-hw, hh - FOOTER_H, w, 1)
+
+    // Footer text — primary stat left, CD right
+    const footerFontY = hh - FOOTER_H / 2
+    const footerChildren: Phaser.GameObjects.Text[] = []
+    if (footerLabel) {
+      const leftTxt = footerValue ? `${footerLabel} ${footerValue}` : footerLabel
+      const leftText = scene.add.text(-hw + 8, footerFontY, leftTxt, {
+        fontFamily: fontFamily.mono, fontSize: typeScale.small,
+        color: fg.primaryHex, fontStyle: 'bold',
+      }).setOrigin(0, 0.5)
+      footerChildren.push(leftText)
+    }
+    const cdVal = skill.cooldownTurns ?? 0
+    const cdText = scene.add.text(hw - 8, footerFontY, `CD ${cdVal}`, {
+      fontFamily: fontFamily.mono, fontSize: typeScale.small,
+      color: fg.primaryHex, fontStyle: 'bold',
+    }).setOrigin(1, 0.5)
+    footerChildren.push(cdText)
+
+    // ── Assemble container ──
+    const children: Phaser.GameObjects.GameObject[] = [
+      g, bandText, iconG, iconContent, titleText, ...descElements, footerG, ...footerChildren,
+    ]
+    const container = scene.add.container(x, y, children).setDepth(d)
+
+    // Interactivity
+    if (opts?.interactive || opts?.onPointerDown) {
+      const hit = scene.add.rectangle(0, 0, w, h, 0, 0.001).setInteractive({ useHandCursor: true })
+      container.add(hit)
+      if (opts.onPointerDown) hit.on('pointerdown', opts.onPointerDown)
+    }
+
+    return container
+  },
+
+  /**
    * Standardized skill card — Brawl Stars mobile style.
    *
    * Big bold icon + name, high-contrast strokes, colored pill badge for group,
@@ -647,6 +872,7 @@ export const UI = {
       group: string; unitClass: string; level: number;
       progress?: number; // filled dots (new system)
       skillId?: string; description?: string;
+      cooldownTurns?: number;
     },
     opts?: {
       width?: number; height?: number; depth?: number;
@@ -656,8 +882,25 @@ export const UI = {
       animateLastDot?: boolean; // animate the last filled dot (progress gain)
       interactive?: boolean;
       onPointerDown?: () => void;
+      /**
+       * Card shape:
+       *   - 'horizontal' (default): legacy 210×105 Brawl-Stars layout.
+       *     Used by SkillUpgradeScene (deck/inventory/drag) and PackOpenAnimation.
+       *   - 'vertical': INTEGRATION_SPEC §2 + Print 15 canonical 120×160
+       *     shape — class band top, centered icon, Cormorant title, 2-line
+       *     description, category-tinted footer with DMG/HEAL/SHLD/EVADE +
+       *     CD. Used by BattleScene hand.
+       *
+       * SkillUpgradeScene / PackOpenAnimation remain 'horizontal' pending a
+       * scene redesign (ETAPA 3), consistent with DeckBuildScene which was
+       * already deferred to the same sprint.
+       */
+      orientation?: 'horizontal' | 'vertical';
     },
   ): Phaser.GameObjects.Container {
+    if (opts?.orientation === 'vertical') {
+      return UI.skillCardVertical(scene, x, y, skill, opts)
+    }
     const isBattle = opts?.battleMode ?? false
     const w = opts?.width ?? (isBattle ? 300 : 210)
     const h = opts?.height ?? (isBattle ? 150 : 105)

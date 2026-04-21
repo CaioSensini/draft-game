@@ -69,7 +69,9 @@ const W         = 1280
 const H         = 720
 const COLS      = 16
 const ROWS      = 6
-const SKILL_COL_W = 220
+// Skill column is wider to host 2×120 vertical cards with 8-px gap + side
+// padding (6px each = 260 total). INTEGRATION_SPEC §2 canonical shape.
+const SKILL_COL_W = 260
 const TOP_BAR_H2 = 44
 // Calculate tile to fill exactly from skill column to right edge
 const AVAILABLE_W = W - SKILL_COL_W - 4     // total arena width available
@@ -86,17 +88,24 @@ const STATUS_X = GRID_X
 const STATUS_W = W - STATUS_X - 4; void STATUS_W
 const TRK_X  = -200; const TRK_CX = -200; const TRK_W = 1; const TRK_Y = -200
 
-// ── Player panel layout (left column — standard cards stacked) ────────────────
+// ── Player panel layout (left column — 2×2 vertical hand) ─────────────────────
+// INTEGRATION_SPEC §2 canonical card = 120×160. Hand is 2 cols × 2 rows:
+// row 1 = atk1/atk2, row 2 = def1/def2. Gap 8.
 
-const CARD_W     = SKILL_COL_W - 10
-const CARD_H     = 105
-const CARD_GAP   = 4
-const PANEL_Y    = 2                          // cards start from very top
+const CARD_W     = 120
+const CARD_H     = 160
+const CARD_GAP   = 8
+const HAND_COLS  = 2
+const HAND_ROWS  = 2
+const HAND_PAD_X = 6                    // horizontal padding from column edge
+const PANEL_Y    = 2                    // cards start from top
 const PANEL_H    = H - 4; void PANEL_H
-const BTN_BAR_H  = 36                        // button bar BELOW cards
-const ATK_ROW_Y  = PANEL_Y + CARD_H / 2
-const DEF_ROW_Y  = ATK_ROW_Y + CARD_H + CARD_GAP; void DEF_ROW_Y
-const CARDS_X    = CARD_W / 2 + 6
+const BTN_BAR_H  = 36                   // button bar BELOW cards
+const HAND_TOTAL_H = HAND_ROWS * CARD_H + (HAND_ROWS - 1) * CARD_GAP   // 328
+const ATK_ROW_Y  = PANEL_Y + CARD_H / 2; void ATK_ROW_Y
+const DEF_ROW_Y  = PANEL_Y + CARD_H / 2 + CARD_H + CARD_GAP; void DEF_ROW_Y
+// First-column card center. Second-column shifts by CARD_W + CARD_GAP.
+const CARDS_X    = HAND_PAD_X + CARD_W / 2; void CARDS_X
 const BTN_W      = SKILL_COL_W - 20
 
 // ── Unit setup ────────────────────────────────────────────────────────────────
@@ -1399,10 +1408,10 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   private _buildActionButtons(): void {
-    // Button bar BELOW the 4 skill cards (with small gap).
+    // Button bar BELOW the 2×2 skill card hand (with small gap).
     // Confirmar = gold Primary (INTEGRATION_SPEC §1.1 — gold CTA, fbbf24 fill).
     // Pular     = ghost link (§1.3 — tertiary-fg label, no fill/border).
-    const barCenterY = PANEL_Y + 4 * (CARD_H + CARD_GAP) + BTN_BAR_H / 2 + 6
+    const barCenterY = PANEL_Y + HAND_TOTAL_H + BTN_BAR_H / 2 + 6
     const halfW = (SKILL_COL_W - 20) / 2
 
     const confirm = UI.buttonPrimary(this, 6 + halfW / 2, barCenterY, 'Confirmar', {
@@ -1427,7 +1436,7 @@ export default class BattleScene extends Phaser.Scene {
 
   private _buildEndMovementButton(): void {
     // End-movement CTA: Primary gold (§1.1).
-    const barCenterY = PANEL_Y + 4 * (CARD_H + CARD_GAP) + BTN_BAR_H / 2 + 6
+    const barCenterY = PANEL_Y + HAND_TOTAL_H + BTN_BAR_H / 2 + 6
     const end = UI.buttonPrimary(this, SKILL_COL_W / 2, barCenterY, 'Fim Movimento', {
       w: BTN_W, h: 28, depth: 8,
       onPress: () => {
@@ -1729,11 +1738,15 @@ export default class BattleScene extends Phaser.Scene {
     this._cancelBtn.setVisible(true)
     this._confirmBtn.setVisible(true).setAlpha(this._selReady ? 1 : 0.3)
 
-    // Stack all 4 cards vertically in the left column: ATK1, ATK2, DEF1, DEF2
+    // INTEGRATION_SPEC §2 + Print 15 — vertical 120×160 cards laid out as
+    // 2×2: top row atk1/atk2, bottom row def1/def2.
     const allCards = [...hand.attack, ...hand.defense]
     allCards.forEach((skill, i) => {
-      const cy = PANEL_Y + 10 + i * (CARD_H + CARD_GAP) + CARD_H / 2
-      this._makeCardBtn(CARDS_X, cy, skill, actorId)
+      const col = i % HAND_COLS
+      const row = Math.floor(i / HAND_COLS)
+      const cx = HAND_PAD_X + col * (CARD_W + CARD_GAP) + CARD_W / 2
+      const cy = PANEL_Y + row * (CARD_H + CARD_GAP) + CARD_H / 2
+      this._makeCardBtn(cx, cy, skill, actorId)
     })
   }
 
@@ -1754,14 +1767,16 @@ export default class BattleScene extends Phaser.Scene {
     const actorChar = this._ctrl.getCharacter(actorId)
     const actorRole = actorChar?.role ?? 'king'
 
-    // Use standardized UI.skillCard
+    // Vertical 120×160 shape per INTEGRATION_SPEC §2 + Print 15.
     const card = UI.skillCard(this, x, y, {
       skillId: skill.id,
       name: skill.name, effectType: skill.effectType, power: skill.power,
       group: skill.group, unitClass: actorRole, level: 1,
       description: skill.description,
+      cooldownTurns: skill.cooldownTurns ?? 0,
     }, {
       width: CARD_W, height: CARD_H,
+      orientation: 'vertical',
       showTooltip: false, // we handle tooltip ourselves
     })
     card.setDepth(7)
@@ -1770,16 +1785,24 @@ export default class BattleScene extends Phaser.Scene {
     const gfx = this.add.graphics()
     card.add(gfx)
 
-    const borderColor = skill.category === 'attack' ? 0xef5350 : 0x4fc3f7
+    // Selected: gold outer outline offset 2px (INTEGRATION_SPEC §2 "selected"
+    // state). Hovered: soft class-colored glow tuned per category.
+    const CLASS_COLOR_MAP: Record<string, number> = {
+      king: dsColors.class.king, warrior: dsColors.class.warrior,
+      specialist: dsColors.class.specialist, executor: dsColors.class.executor,
+    }
+    const classGlowColor = CLASS_COLOR_MAP[actorRole] ?? accent.primary
+    const categoryColor  = skill.category === 'attack' ? dsState.error : dsState.info
     const drawHighlight = (selected: boolean, hovered: boolean) => {
       gfx.clear()
       if (selected) {
-        gfx.lineStyle(2.5, 0xffffff, 1)
-        gfx.strokeRoundedRect(-CARD_W / 2 - 2, -CARD_H / 2 - 2, CARD_W + 4, CARD_H + 4, 9)
+        gfx.lineStyle(2, accent.primary, 1)
+        gfx.strokeRoundedRect(-CARD_W / 2 - 3, -CARD_H / 2 - 3, CARD_W + 6, CARD_H + 6, radii.md + 2)
       } else if (hovered) {
-        gfx.lineStyle(2, borderColor, 0.8)
-        gfx.strokeRoundedRect(-CARD_W / 2 - 1, -CARD_H / 2 - 1, CARD_W + 2, CARD_H + 2, 8)
+        gfx.lineStyle(2, classGlowColor, 0.85)
+        gfx.strokeRoundedRect(-CARD_W / 2 - 1, -CARD_H / 2 - 1, CARD_W + 2, CARD_H + 2, radii.md + 1)
       }
+      void categoryColor // reserved for future category-tinted hover
     }
 
     // Hit area on top of card
@@ -2109,7 +2132,7 @@ export default class BattleScene extends Phaser.Scene {
     skillBg.fillRect(SKILL_COL_W - 1, 0, 1, H)
 
     // Button + log bar below skill cards
-    const bbY = PANEL_Y + 4 * (CARD_H + CARD_GAP) + 4
+    const bbY = PANEL_Y + HAND_TOTAL_H + 4
     const bbG = this.add.graphics()
     bbG.fillStyle(0x0a0e16, 1)
     bbG.fillRect(0, bbY, SKILL_COL_W - 1, H - bbY)
@@ -2324,7 +2347,7 @@ export default class BattleScene extends Phaser.Scene {
     this._timerBarW = barW
 
     // ── MINI LOG PANEL + HISTORICO BUTTON — below action buttons ──
-    const miniLogY = PANEL_Y + 4 * (CARD_H + CARD_GAP) + BTN_BAR_H + 10
+    const miniLogY = PANEL_Y + HAND_TOTAL_H + BTN_BAR_H + 10
     const miniLogH = H - miniLogY - 4
     const miniLogW = SKILL_COL_W - 8
     this._miniLogY = miniLogY
