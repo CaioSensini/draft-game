@@ -19,6 +19,7 @@ import PvELobbyScene from '../scenes/PvELobbyScene'
 import CustomLobbyScene from '../scenes/CustomLobbyScene'
 import BracketScene from '../scenes/BracketScene'
 import BattlePassScene from '../scenes/BattlePassScene'
+import MatchmakingScene from '../scenes/MatchmakingScene'
 import { SCREEN } from '../utils/DesignTokens'
 
 /**
@@ -60,6 +61,7 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
     CustomLobbyScene,
     BracketScene,
     BattlePassScene,
+    MatchmakingScene,
   ],
   scale: {
     mode:       Phaser.Scale.FIT,

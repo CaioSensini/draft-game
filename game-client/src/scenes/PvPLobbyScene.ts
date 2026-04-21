@@ -88,9 +88,10 @@ export default class PvPLobbyScene extends Phaser.Scene {
   // Back button
   private backBtn: Phaser.GameObjects.Container | null = null
 
-  // Matchmaking
+  // Matchmaking — MatchmakingScene owns the queue UX; these fields remain
+  // as a compatibility shim for cancelSearch() (still referenced by the
+  // pointerdown handler when searching is toggled externally).
   private searching = false
-  private searchDots = 0
   private searchTimer: Phaser.Time.TimerEvent | null = null
 
   // Room owner (framework for multiplayer)
@@ -842,41 +843,17 @@ export default class PvPLobbyScene extends Phaser.Scene {
     if (!this.canSearch) return
     if (!this.isRoomOwner) return  // Only owner can start search
 
-    this.searching = true
-    this.searchDots = 0
-    this.searchLabel.setText('Buscando batalha')
-    this.searchLabel.setColor(C.warningHex)
-    // Change button to "cancel" style (red-ish)
-    this.renderSearchBtn(this.searchBg, W / 2, 618, 380, 58, false, false)
-    this.searchBg.clear()
-    this.searchBg.fillStyle(0x2a1a1a, 1)
-    this.searchBg.fillRoundedRect(W / 2 - 190, 618 - 29, 380, 58, S.borderRadius)
-    this.searchBg.lineStyle(2, C.warning, 0.6)
-    this.searchBg.strokeRoundedRect(W / 2 - 190, 618 - 29, 380, 58, S.borderRadius)
-
-    // Dim back button during search
-    if (this.backBtn) {
-      this.backBtn.setAlpha(0.3)
-      this.backBtn.each((child: Phaser.GameObjects.GameObject) => {
-        if (child.input) (child as any).disableInteractive()
-      })
-    }
-
-    // Animated search dots
-    this.searchTimer = this.time.addEvent({
-      delay: 500,
-      callback: () => {
-        this.searchDots = (this.searchDots + 1) % 4
-        const dots = '.'.repeat(this.searchDots)
-        this.searchLabel.setText(`Buscando batalha${dots}`)
-      },
-      loop: true,
+    // Hand the queue UX over to the dedicated MatchmakingScene (§S5).
+    // playerCount comes straight from the room (1/2/4); returnTo is this
+    // lobby so Cancel bounces the user back with state intact.
+    const playerCount = (this.playerCount === 1 || this.playerCount === 2 || this.playerCount === 4)
+      ? this.playerCount
+      : 1
+    transitionTo(this, 'MatchmakingScene', {
+      mode:        'casual',
+      playerCount,
+      returnTo:    'PvPLobbyScene',
     })
-
-    // Real matchmaking — stays in queue until a match is found via backend
-    // For now, keeps searching indefinitely (no fake match)
-    // The backend matchmaking service will notify when a match is found
-    // Player can cancel the search by clicking the button again
   }
 
   private cancelSearch(): void {

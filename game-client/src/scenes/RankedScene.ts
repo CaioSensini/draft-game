@@ -95,9 +95,10 @@ export default class RankedScene extends Phaser.Scene {
   // Back button
   private backBtn: Phaser.GameObjects.Container | null = null
 
-  // Matchmaking
+  // Matchmaking — MatchmakingScene owns the queue UX; these fields remain
+  // as a compatibility shim for cancelSearch() (still referenced by the
+  // pointerdown handler when searching is toggled externally).
   private searching = false
-  private searchDots = 0
   private searchTimer: Phaser.Time.TimerEvent | null = null
 
   // Room owner (framework for multiplayer)
@@ -951,37 +952,17 @@ export default class RankedScene extends Phaser.Scene {
     if (!this.canSearch) return
     if (!this.isRoomOwner) return  // Only owner can start search
 
-    this.searching = true
-    this.searchDots = 0
-    const modeLabel = this.playerCount <= 1 ? 'Solo' : this.playerCount === 2 ? 'Duo' : 'Squad'
-    this.searchLabel.setText(`Buscando batalha rankeada (${modeLabel})`)
-    this.searchLabel.setColor(C.warningHex)
-    this.searchBg.clear()
-    this.searchBg.fillStyle(0x2a1a1a, 1)
-    this.searchBg.fillRoundedRect(600 - 190, 618 - 29, 380, 58, S.borderRadius)
-    this.searchBg.lineStyle(2, C.warning, 0.6)
-    this.searchBg.strokeRoundedRect(600 - 190, 618 - 29, 380, 58, S.borderRadius)
-
-    // Dim back button during search
-    if (this.backBtn) {
-      this.backBtn.setAlpha(0.3)
-      this.backBtn.each((child: Phaser.GameObjects.GameObject) => {
-        if (child.input) (child as any).disableInteractive()
-      })
-    }
-
-    this.searchTimer = this.time.addEvent({
-      delay: 500,
-      callback: () => {
-        this.searchDots = (this.searchDots + 1) % 4
-        const dots = '.'.repeat(this.searchDots)
-        this.searchLabel.setText(`Buscando batalha rankeada (${modeLabel})${dots}`)
-      },
-      loop: true,
+    // Hand the queue UX over to the dedicated MatchmakingScene (§S5).
+    // Mode = 'ranked' so the matchmaking scene shows the royal sigil and
+    // tint; returnTo routes Cancel back here with state intact.
+    const playerCount = (this.playerCount === 1 || this.playerCount === 2 || this.playerCount === 4)
+      ? this.playerCount
+      : 1
+    transitionTo(this, 'MatchmakingScene', {
+      mode:        'ranked',
+      playerCount,
+      returnTo:    'RankedScene',
     })
-
-    // Real matchmaking — stays in queue until backend finds a match
-    // Player can cancel by clicking the button again
   }
 
   private cancelSearch(): void {
