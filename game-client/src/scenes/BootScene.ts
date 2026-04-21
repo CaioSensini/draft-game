@@ -1,8 +1,35 @@
 import Phaser from 'phaser'
 import { getAllCharacterAssets, getAllDesignSvgAssets, getAllSkillAssets } from '../utils/AssetPaths'
-import { colors, fonts, sizes } from '../utils/DesignTokens'
+import { colors, fonts, fontFamily, sizes } from '../utils/DesignTokens'
+
+/**
+ * Pre-instantiate one short Text object per design-system font family.
+ * Phaser only triggers glyph rasterization when a given family is first used
+ * inside a Scene; without this warm-up the first real render in MenuScene /
+ * LobbyScene flashes with the fallback face for ~200ms. We create the probes
+ * off-screen with alpha 0, then destroy them — the browser's font cache keeps
+ * the glyphs hot for every subsequent scene.
+ */
+function warmUpDesignSystemFonts(scene: Phaser.Scene): void {
+  const probes: Phaser.GameObjects.Text[] = []
+  const families = [fontFamily.display, fontFamily.serif, fontFamily.body, fontFamily.mono]
+  for (const family of families) {
+    const t = scene.add.text(-9999, -9999, 'Ag', {
+      fontFamily: family,
+      fontSize: '16px',
+      color: '#000000',
+    })
+    t.setAlpha(0)
+    probes.push(t)
+  }
+  // Destroy on next tick so Phaser's text-metric cache retains the family entry.
+  scene.time.delayedCall(0, () => probes.forEach((p) => p.destroy()))
+}
 
 export default class BootScene extends Phaser.Scene {
+  /** Promise resolved once browser fonts are loaded; transitions await it. */
+  private _fontsReady: Promise<void> = Promise.resolve()
+
   constructor() {
     super('BootScene')
   }
@@ -31,6 +58,21 @@ export default class BootScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale
+
+    // === FONT READINESS GATE ===
+    // Kicks off as soon as BootScene is created; the scene-transition block
+    // below awaits this promise so the next scene never renders with the
+    // fallback face. Fails open (resolves) if the API is unavailable.
+    if (typeof document !== 'undefined' && 'fonts' in document) {
+      this._fontsReady = document.fonts.ready
+        .then(() => {
+          warmUpDesignSystemFonts(this)
+          console.log('[BootScene] design fonts ready')
+        })
+        .catch((err: unknown) => {
+          console.warn('[BootScene] document.fonts.ready failed, falling back', err)
+        })
+    }
 
     // === LAYER 1: Solid dark base ===
     this.add.rectangle(width / 2, height / 2, width, height, colors.ui.bg)
@@ -152,6 +194,10 @@ export default class BootScene extends Phaser.Scene {
         alpha: 1,
         duration: 400,
         onComplete: async () => {
+          // Block transition until design-system fonts are cached. Resolves
+          // quickly in normal conditions (fonts loaded well under 1.5s intro).
+          await this._fontsReady
+
           const token = localStorage.getItem('draft_token')
           if (token) {
             try {
