@@ -341,11 +341,53 @@ describe('Executor — Attack 2 (bleeds)', () => {
       expect(s.secondaryEffects?.[0]?.power).toBe(8)
     })
 
-    it('[PARTIAL] shield-remove + heal-20% mechanic is a skill-specific stub', () => {
-      // v3 §6.4 says "remove shields (cura 20% deles como HP)". Not
-      // implemented via generic resolver. Documented in BLOCO4_REPORT.md.
-      const s = executorSkill('le_a7')
-      expect(s.secondaryEffects?.length).toBe(1)    // only bleed encoded
+    it('strips every hit target shield BEFORE damage (v3 anti-shield identity)', () => {
+      const exec   = mkChar('e', 'executor', 'left',  5, 3)
+      const target = mkChar('t', 'warrior',  'right', 5, 5)  // within vertical line
+      target.addShield(40)
+      expect(target.totalShield).toBe(40)
+      applyAttack(exec, target, 'le_a7')
+      expect(target.totalShield).toBe(0)   // fully stripped
+    })
+
+    it('heals Executor for 20% of the total shield HP stripped', () => {
+      const exec   = mkChar('e', 'executor', 'left',  5, 3)
+      const target = mkChar('t', 'warrior',  'right', 5, 5)
+      exec.applyPureDamage(50)               // give Executor headroom
+      const hpBefore = exec.hp
+      target.addShield(80)                    // 80 shield → heal 16
+
+      applyAttack(exec, target, 'le_a7')
+
+      // Executor gains 20% × 80 = 16 HP (if heal cap + heal reduction don't cut it).
+      expect(exec.hp - hpBefore).toBe(16)
+    })
+
+    it('no heal when target has no shield', () => {
+      const exec   = mkChar('e', 'executor', 'left',  5, 3)
+      const target = mkChar('t', 'warrior',  'right', 5, 5)
+      exec.applyPureDamage(30)
+      const hpBefore = exec.hp
+      applyAttack(exec, target, 'le_a7')
+      expect(exec.hp).toBe(hpBefore)  // no heal — no shield to convert
+    })
+
+    it('multi-target area: sums shield from all targets for the heal', () => {
+      const exec = mkChar('e', 'executor', 'left',  5, 3)
+      const t1 = mkChar('t1', 'warrior', 'right', 5, 4)  // within vertical line 3
+      const t2 = mkChar('t2', 'warrior', 'right', 5, 5)
+      const t3 = mkChar('t3', 'warrior', 'right', 5, 6)  // out of bounds check
+      t1.addShield(30)
+      t2.addShield(50)
+      exec.applyPureDamage(50)
+      const hpBefore = exec.hp
+
+      applyAttack(exec, mkChar('center', 'warrior', 'right', 5, 5), 'le_a7',
+                  [exec], [t1, t2, t3])
+
+      // Total shield stripped from hits in the line area: at least t1+t2 = 80.
+      // Heal = round(80 × 0.20) = 16 minimum (could be more if t3 also in line).
+      expect(exec.hp - hpBefore).toBeGreaterThanOrEqual(16)
     })
   })
 

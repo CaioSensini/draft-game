@@ -1161,11 +1161,41 @@ export class CombatEngine {
           areaCenter: { col: target.col, row: target.row },
         })
         const hits = this._targeting.resolveTargets(skill, caster, target, this.battle) as Character[]
+
+        // v3 §6.4 Marca da Morte (le_a7 / ra_a7): strip every hit target's
+        // shields BEFORE the damage loop so the 12 damage hits HP directly
+        // (matches v3 "anti-shield assassin" identity), then heal the
+        // Executor by 20% of the total shield HP stripped.
+        let totalShieldStripped = 0
+        if (skill.id === 'le_a7' || skill.id === 'ra_a7') {
+          for (const hit of hits) {
+            totalShieldStripped += hit.removeAllShields()
+          }
+        }
+
         // Aggregate damage dealt for skill-specific post-hooks (e.g. Domínio Real).
         let totalDamageDealt = 0
         for (const hit of hits) {
           if (this.battle.isOver) break
           totalDamageDealt += this._applyOffensiveSkill(caster, hit, skill)
+        }
+
+        // Marca da Morte — apply heal after damage phase.
+        if ((skill.id === 'le_a7' || skill.id === 'ra_a7') && totalShieldStripped > 0 && caster.alive) {
+          const healAmount = Math.round(totalShieldStripped * 0.20)
+          if (healAmount > 0) {
+            const res = caster.heal(healAmount)
+            if (res.actual > 0) {
+              this.emit({
+                type:    EventType.HEAL_APPLIED,
+                unitId:  caster.id,
+                amount:  res.actual,
+                newHp:   caster.hp,
+                sourceId: caster.id,
+              })
+              this._addStat(caster.id, 'healsGiven', res.actual)
+            }
+          }
         }
         // Always emit AREA_RESOLVED (even on 0 hits) so the renderer can show the blast
         this.emit({

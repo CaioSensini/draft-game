@@ -352,6 +352,25 @@ export class Character {
   get maxHpBonus(): number      { return this._maxHpBonus }
   get maxHpBonusTicks(): number { return this._maxHpBonusTicks }
 
+  /**
+   * v3 §6.4 Marca da Morte support: remove every active shield effect and
+   * return the total shield HP that was stripped. Used by Executor skills
+   * that convert enemy shields into healing for the caster.
+   */
+  removeAllShields(): number {
+    let removed = 0
+    this._effects = this._effects.filter((e) => {
+      if (e.type === 'shield' && !e.isExpired) {
+        // ShieldEffect exposes `remaining` — that's the live absorb budget.
+        const shieldEffect = e as { remaining?: number }
+        removed += shieldEffect.remaining ?? 0
+        return false
+      }
+      return true
+    })
+    return removed
+  }
+
   // ── Effects ───────────────────────────────────────────────────────────────
 
   /**
