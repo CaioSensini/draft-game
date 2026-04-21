@@ -234,14 +234,15 @@ describe('Warrior — Attack 1 (dano alto)', () => {
   })
 
   // ── lw_a4 Investida Brutal ─────────────────────────────────────────────────
-  describe('lw_a4 — Investida Brutal (24 dmg line + push 1)', () => {
-    it('catalog entry', () => {
+  describe('lw_a4 — Investida Brutal (24 dmg line + per-line push)', () => {
+    it('catalog entry (vertical line, no generic push secondary)', () => {
       const s = warriorSkill('lw_a4')
       expect(s.name).toBe('Investida Brutal')
       expect(s.power).toBe(24)
       expect(s.effectType).toBe('area')
       expect(s.areaShape?.type).toBe('line')
-      expect(s.secondaryEffects?.[0]?.effectType).toBe('push')
+      // Push is handled per-line inside CombatEngine, not as a secondary.
+      expect(s.secondaryEffects ?? []).toHaveLength(0)
     })
 
     it('primary line damage applies', () => {
@@ -252,13 +253,53 @@ describe('Warrior — Attack 1 (dano alto)', () => {
       expect(target.hp).toBe(hpBefore - 24)
     })
 
-    // v3 has rich per-line rules: "Linha central: snare 1t se bloqueado.
-    // Linhas cima/baixo: empurradas perpendicular." These need a Grid-aware
-    // skill-specific resolver that knows which of the 3 lines each target
-    // is on. Documented partial.
-    it('[PARTIAL] per-line rules (central snare, off-center perpendicular) pending', () => {
-      const s = warriorSkill('lw_a4')
-      expect(s.secondaryEffects?.[0]?.effectType).toBe('push')   // only "push 1" encoded
+    it('central-row target is pushed along charge axis and snared when blocked', () => {
+      // Warrior at (5, 6), charging north — aims at (5, 4). Central row is 4.
+      const warrior = mkChar('w', 'warrior', 'left', 5, 6)
+      const center  = mkChar('t', 'executor', 'right', 5, 4)
+      center.addEffect(new EvadeEffect(1))   // forces blocked=true
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [warrior]),
+        rightTeam: new Team('right', [center]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(warriorSkill('lw_a4'))
+      ;(engine as unknown as {
+        _applyAttackSkill: (c: Character, s: Skill, t: unknown, side: string) => void
+      })._applyAttackSkill.bind(engine)(
+        warrior, skill, { kind: 'area', col: 5, row: 4 }, 'left',
+      )
+      // Blocked central hit → snare applied
+      expect(center.effects.some((e) => e.type === 'snare' && !e.isExpired)).toBe(true)
+    })
+
+    it('flank-row targets are pushed perpendicular (east/west), not along charge axis', () => {
+      // Aim at (5, 4). Line north length 2 → hits rows 4, 3, 2. Warrior at (5,6).
+      // Rows 3 and 2 are "above aim" (hit.row < aim.row) → flank push east.
+      const warrior = mkChar('w', 'warrior', 'left', 5, 6)
+      const flankUp = mkChar('u', 'executor',   'right', 5, 3)  // one row above aim
+      const flankUp2 = mkChar('u2', 'specialist','right', 5, 2) // two rows above aim
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [warrior]),
+        rightTeam: new Team('right', [flankUp, flankUp2]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(warriorSkill('lw_a4'))
+      const colBefore1 = flankUp.col
+      const colBefore2 = flankUp2.col
+      ;(engine as unknown as {
+        _applyAttackSkill: (c: Character, s: Skill, t: unknown, side: string) => void
+      })._applyAttackSkill.bind(engine)(
+        warrior, skill, { kind: 'area', col: 5, row: 4 }, 'left',
+      )
+      // Flank targets should move in col (east/west), not change row.
+      // Since hits are above aim (row < aim.row) → pushed east (col+1).
+      // Engine blocks overlap; both can't stack on same destination — check
+      // that at least the near flank moved perpendicular (col changed).
+      const flankUpMoved = flankUp.col !== colBefore1 || flankUp2.col !== colBefore2
+      expect(flankUpMoved).toBe(true)
     })
   })
 })

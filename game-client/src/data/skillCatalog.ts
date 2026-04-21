@@ -185,10 +185,11 @@ const LEFT_WARRIOR: SkillDefinition[] = [
   {
     id: 'lw_a4', name: 'Investida Brutal', category: 'attack', group: 'attack1',
     effectType: 'area', targetType: 'area', power: 24, range: 0,
-    areaShape: { type: 'line', direction: 'east', length: 6 },
-    secondaryEffects: [{ effectType: 'push', power: 1 }],
+    areaShape: { type: 'line', direction: 'north', length: 2 },
+    // Push is handled per-line inside CombatEngine (central vs flanks)
+    // rather than as a uniform secondary — see v3 §6.3.
     description:
-      '24 dano em linha vertical 3 sqm + push 1 sqm. Linha central: snare 1t se bloqueado. ' +
+      '24 dano em linha vertical 3 sqm. Linha central: push 1 + snare 1t se bloqueado. ' +
       'Linhas cima/baixo: empurradas perpendicular.',
   },
 

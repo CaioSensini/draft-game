@@ -1643,6 +1643,38 @@ export class CombatEngine {
           }
         }
 
+        // v3 §6.3 Investida Brutal (lw_a4 / rw_a4): per-line push rules.
+        // - Central row (hit.row === aim.row): push 1 along charge axis +
+        //   snare 1t if the hit was blocked.
+        // - Flank rows (hit.row ≠ aim.row): pushed 1 perpendicular to the
+        //   charge axis (east if row above aim, west if below). Custom
+        //   handling replaces the generic `push` secondary which cannot
+        //   express direction-by-row.
+        if (skill.id === 'lw_a4' || skill.id === 'rw_a4') {
+          const axisDc = Math.sign(target.col - caster.col)
+          const axisDr = Math.sign(target.row - caster.row)
+          const chargeDir = _offsetToDir(axisDc, axisDr)
+
+          for (const hit of hits) {
+            if (!hit.alive) continue
+            const isCentral = hit.row === target.row
+            if (isCentral) {
+              this._executePush(hit.id, chargeDir, 1)
+              if (blockedHits.includes(hit)) {
+                const snareCtx: EffectContext = {
+                  caster, target: hit, power: 0, rawDamage: 0, ticks: 1, round: this.battle.round,
+                }
+                const snareRes = this.resolver.resolve('snare', snareCtx)
+                this._processResult(caster, hit, snareRes)
+              }
+            } else {
+              // Flank rows: perpendicular push (east/west for vertical charges)
+              const flankDir: Direction = hit.row < target.row ? 'east' : 'west'
+              this._executePush(hit.id, flankDir, 1)
+            }
+          }
+        }
+
         // Marca da Morte — apply heal after damage phase.
         if ((skill.id === 'le_a7' || skill.id === 'ra_a7') && totalShieldStripped > 0 && caster.alive) {
           const healAmount = Math.round(totalShieldStripped * 0.20)
@@ -2047,4 +2079,17 @@ function _isDamageCarrying(type: string): boolean {
  */
 function _hadBleedEffect(target: Character): boolean {
   return target.effects.some((e) => e.type === 'bleed' && !e.isExpired)
+}
+
+/** Resolve a cardinal push direction from (Δcol, Δrow) signs. Falls back to 'east'. */
+function _offsetToDir(dc: number, dr: number): Direction {
+  if (dc > 0 && dr === 0) return 'east'
+  if (dc < 0 && dr === 0) return 'west'
+  if (dc === 0 && dr < 0) return 'north'
+  if (dc === 0 && dr > 0) return 'south'
+  if (dc > 0 && dr < 0)   return 'northeast'
+  if (dc > 0 && dr > 0)   return 'southeast'
+  if (dc < 0 && dr < 0)   return 'northwest'
+  if (dc < 0 && dr > 0)   return 'southwest'
+  return 'east'
 }
