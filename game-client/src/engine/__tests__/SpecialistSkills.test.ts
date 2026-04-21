@@ -24,7 +24,7 @@ import { Battle } from '../../domain/Battle'
 import { Skill } from '../../domain/Skill'
 import {
   RegenEffect, AtkBoostEffect, ReviveEffect, DefReductionEffect,
-  DelayedDamageEffect,
+  DelayedDamageEffect, MarkEffect,
 } from '../../domain/Effect'
 import { CombatEngine } from '../CombatEngine'
 import { createDefaultResolver } from '../EffectResolver'
@@ -206,7 +206,7 @@ describe('Specialist — Attack 1 (dano alto)', () => {
     })
   })
 
-  describe('ls_a4 — Explosão Central [PARTIAL — 2nd-use mark mechanic pending]', () => {
+  describe('ls_a4 — Explosão Central', () => {
     it('catalog entry', () => {
       const s = specialistSkill('ls_a4')
       expect(s.name).toBe('Explosão Central')
@@ -214,18 +214,65 @@ describe('Specialist — Attack 1 (dano alto)', () => {
       expect(s.effectType).toBe('mark')
     })
 
-    it('mark applies to the target (1st use)', () => {
-      const sp = mkChar('s', 'specialist', 'left')
-      const target = mkChar('t', 'warrior', 'right')
-      resolver.resolve('mark', ctx(sp, target, 50))
+    function applyExplosao(sp: Character, target: Character) {
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [sp]),
+        rightTeam: new Team('right', [target]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(specialistSkill('ls_a4'))
+      const apply = (engine as unknown as {
+        _applyAttackSkill: (c: Character, s: Skill, t: unknown, side: string) => void
+      })._applyAttackSkill.bind(engine)
+      apply(sp, skill, { kind: 'character', characterId: target.id }, 'left')
+      return { engine, skill, apply }
+    }
+
+    it('1st use plants a non-removable mark without dealing damage', () => {
+      const sp = mkChar('s', 'specialist', 'left', 5, 6)
+      const target = mkChar('t', 'warrior', 'right', 5, 4)
+      const hpBefore = target.hp
+      applyExplosao(sp, target)
+      expect(target.hp).toBe(hpBefore)
+      const mark = target.effects.find((e) => e.type === 'mark')
+      expect(mark).toBeDefined()
+      expect(mark && 'nonRemovable' in mark && (mark as { nonRemovable: boolean }).nonRemovable).toBe(true)
+    })
+
+    it('2nd use on marked target deals 50 damage (no extra debuff)', () => {
+      const sp = mkChar('s', 'specialist', 'left', 5, 6)
+      const target = mkChar('t', 'warrior', 'right', 5, 4)
+      const { apply, skill } = applyExplosao(sp, target)  // 1st use plants mark
+      const hpAfterMark = target.hp
+      apply(sp, skill, { kind: 'character', characterId: target.id }, 'left')  // 2nd use
+      expect(target.hp).toBe(hpAfterMark - 50)
+      expect(target.effects.some((e) => e.type === 'mark' && !e.isExpired)).toBe(false)
+    })
+
+    it('2nd use deals +25 bonus (75 total) when target has another debuff', () => {
+      const sp = mkChar('s', 'specialist', 'left', 5, 6)
+      const target = mkChar('t', 'warrior', 'right', 5, 4)
+      target.addEffect(new DefReductionEffect(15, 3))  // any debuff
+      const { apply, skill } = applyExplosao(sp, target)
+      const hpAfterMark = target.hp
+      apply(sp, skill, { kind: 'character', characterId: target.id }, 'left')
+      expect(target.hp).toBe(hpAfterMark - 75)
+    })
+
+    it('non-removable mark survives cleanse and purge', () => {
+      const sp = mkChar('s', 'specialist', 'left', 5, 6)
+      const target = mkChar('t', 'warrior', 'right', 5, 4)
+      applyExplosao(sp, target)  // plant mark
+      target.removeEffectsByKind('debuff')
       expect(target.effects.some((e) => e.type === 'mark' && !e.isExpired)).toBe(true)
     })
 
-    it('[PARTIAL] 2nd-use 50-damage conditional + non-removable flag pending', () => {
-      // v3: 2nd use on marked target deals 50 damage + 50% extra if target
-      // has debuff. Mark should be non-removable (ignores cleanse/purge).
-      const s = specialistSkill('ls_a4')
-      expect(s.effectType).toBe('mark')
+    it('legacy mark (nonRemovable=false) still cleanses normally', () => {
+      const target = mkChar('t', 'warrior', 'right')
+      target.addEffect(new MarkEffect('caster', 25, false))
+      target.removeEffectsByKind('debuff')
+      expect(target.effects.some((e) => e.type === 'mark')).toBe(false)
     })
   })
 })

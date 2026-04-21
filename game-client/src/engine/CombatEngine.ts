@@ -24,6 +24,7 @@ import type { CharacterRole, CharacterSide } from '../domain/Character'
 import {
   ReflectPercentEffect, RegenEffect, PositionalDrEffect,
   DefReductionEffect, MovReductionEffect, DelayedDamageEffect,
+  MarkEffect,
 } from '../domain/Effect'
 import type { PositionalDrShape } from '../domain/Effect'
 import { EventBus } from './EventBus'
@@ -1380,6 +1381,80 @@ export class CombatEngine {
    * time does not compound. This matches the player's mental model that
    * "+15% HP" means "+15% of my CLASS's HP", not "of whatever I'm buffed to".
    */
+  /**
+   * v3 §6.2 Explosão Central (ls_a4 / rs_a4) — two-use mark mechanic.
+   *
+   * 1st use: plant a non-removable mark on the target (no damage, no
+   *          evasion check — the mark itself is the payload). Uses the
+   *          skill's own power as the bonus-damage field so callers
+   *          that inspect the mark see the intended detonation magnitude.
+   * 2nd use: consume the mark. Deal 50 damage directly + 25 bonus if the
+   *          target has any other active debuff. Bypasses evade, shields,
+   *          and debuff-immunity via Character.applyPureDamage.
+   */
+  private _applyExplosaoCentral(caster: Character, target: Character, skill: Skill): void {
+    this.emit({
+      type: EventType.SKILL_USED, unitId: caster.id, skillId: skill.id,
+      skillName: skill.name, category: 'attack', targetId: target.id,
+    })
+
+    const existing = target.effects.find(
+      (e): e is MarkEffect => e instanceof MarkEffect && !e.isExpired,
+    )
+
+    if (!existing) {
+      // 1st use — plant the non-removable mark.
+      target.addEffect(new MarkEffect(caster.id, skill.power, true))
+      this.emit({
+        type: EventType.STATUS_APPLIED,
+        unitId: target.id,
+        status: 'mark' as const,
+        value:  skill.power,
+      })
+      return
+    }
+
+    // 2nd use — detonation. Bonus when the target carries any other debuff
+    // (non-removable marks themselves are debuff-kind; exclude those so a
+    // bare Explosão chain without other debuffs gets the base 50, not 75).
+    const hasOtherDebuff = target.effects.some(
+      (e) => e.kind === 'debuff' && !e.isExpired && !(e instanceof MarkEffect),
+    )
+    const totalDamage = 50 + (hasOtherDebuff ? 25 : 0)
+
+    existing.consume()
+    const hpBefore = target.hp
+    target.applyPureDamage(totalDamage)
+    const dealt = hpBefore - target.hp
+
+    this.emit({
+      type:     EventType.MARK_CONSUMED,
+      unitId:   target.id,
+      bonusDamage: totalDamage,
+      sourceId: caster.id,
+    })
+    if (dealt > 0) {
+      this.emit({
+        type: EventType.DAMAGE_APPLIED, unitId: target.id,
+        amount: dealt, newHp: target.hp, sourceId: caster.id,
+      })
+      this._addStat(caster.id, 'damageDealt',    dealt)
+      this._addStat(target.id, 'damageReceived', dealt)
+    }
+    if (!target.alive) {
+      this._recordDeath(target.id, caster.id)
+      this._addStat(caster.id, 'kills', 1)
+      this.emit({
+        type:    EventType.CHARACTER_DIED,
+        unitId:  target.id,
+        killedBy: caster.id,
+        wasKing: target.role === 'king',
+        round:   this.battle.round,
+      })
+      this._checkAndEmitVictory()
+    }
+  }
+
   private _applyEspiritoSobrevivencia(caster: Character): void {
     if (!caster.alive) return
 
@@ -1541,6 +1616,17 @@ export class CombatEngine {
             })
           }
         }
+
+        // v3 §6.2 Explosão Central (ls_a4 / rs_a4): bespoke mark mechanic.
+        // 1st use: plant a non-removable mark on the target, no damage.
+        // 2nd use (target already marked): consume mark; deal 50 damage
+        // directly (+25 if target has any other debuff), bypassing
+        // evade/shield/immunities. Per v3 "Não bypassa por Esquiva/imunidade."
+        if (skill.id === 'ls_a4' || skill.id === 'rs_a4') {
+          this._applyExplosaoCentral(caster, targetChar, skill)
+          break
+        }
+
         this._applyOffensiveSkill(caster, targetChar, skill)
         break
       }

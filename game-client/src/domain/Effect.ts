@@ -674,11 +674,19 @@ export class MarkEffect extends Effect {
   readonly sourceId: string
   /** Bonus damage dealt when the mark is consumed. */
   readonly bonusDamage: number
+  /**
+   * When true, the mark cannot be stripped by generic cleanse/purge.
+   * Used by v3 signature skills whose mark is part of the cast's
+   * 2-use identity (Explosão Central ls_a4). Default false keeps
+   * backward compatibility with every existing mark application.
+   */
+  readonly nonRemovable: boolean
 
-  constructor(sourceId: string, bonusDamage: number) {
+  constructor(sourceId: string, bonusDamage: number, nonRemovable = false) {
     super()
     this.sourceId    = sourceId
     this.bonusDamage = bonusDamage
+    this.nonRemovable = nonRemovable
   }
 
   get isExpired(): boolean { return this._consumed }

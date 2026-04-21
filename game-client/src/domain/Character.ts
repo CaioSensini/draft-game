@@ -580,6 +580,8 @@ export class Character {
     const removed: EffectType[] = []
     this._effects = this._effects.filter((e) => {
       if (e.kind === kind && !e.isExpired) {
+        // v3 §6.2 — non-removable marks (Explosão Central) survive cleanse/purge.
+        if (e instanceof MarkEffect && e.nonRemovable) return true
         removed.push(e.type)
         return false
       }
