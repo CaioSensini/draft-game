@@ -180,3 +180,40 @@ export function getClassSigilKey(charClass: CharClass): string {
   }
   return map[charClass]
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LUCIDE UI ICONS (Sub 1.9 — 2026-04-21)
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Curated subset of Lucide SVGs copied to /public/assets/icons/ui/ by
+// `npm run assets:lucide` (scripts/copy-lucide-icons.mjs). Icons are loaded
+// at 2× their on-screen size (48 → 24 render) so Phaser's SVG rasterizer
+// produces crisp results when downscaled.
+//
+// Source: lucide-static@^1.8.0 (dev dep). Not bundled — consumed as static
+// public assets only.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/** Keys match the SVG filename stem (e.g. `arrow-left` → `icon-ui-arrow-left`). */
+export const LUCIDE_ICON_NAMES = [
+  'arrow-left', 'flag', 'x', 'settings', 'timer',
+  'swords', 'shield', 'heart-pulse', 'droplet', 'flame',
+  'snowflake', 'zap', 'wind', 'crown',
+] as const
+
+export type LucideIconName = typeof LUCIDE_ICON_NAMES[number]
+
+/** Phaser texture key for a Lucide icon (e.g. `icon-ui-swords`). */
+export function getLucideIconKey(name: LucideIconName): string {
+  return `icon-ui-${name}`
+}
+
+/** All Lucide icon descriptors ready for BootScene preload. 48×48 source. */
+export function getAllLucideIconAssets(): ReadonlyArray<DesignSvgEntry> {
+  return LUCIDE_ICON_NAMES.map((name) => ({
+    key: getLucideIconKey(name),
+    path: `/assets/icons/ui/${name}.svg${ASSET_VERSION}`,
+    width: 48,
+    height: 48,
+  }))
+}

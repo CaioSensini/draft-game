@@ -22,7 +22,8 @@ import {
   accent, border, fg, fontFamily, hpState, hpBreakpoint,
   motion, radii, state as dsState, surface, typeScale,
 } from './DesignTokens'
-import { getSkillIconKey, hasSkillIcon } from './AssetPaths'
+import { getLucideIconKey, getSkillIconKey, hasSkillIcon } from './AssetPaths'
+import type { LucideIconName } from './AssetPaths'
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DESIGN SYSTEM PHASE 1 HELPERS
@@ -124,6 +125,37 @@ function drawRichRect(
 }
 
 export const UI = {
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // LUCIDE ICON HELPER — Sub 1.9
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Create a Lucide SVG icon as a Phaser Image. Icons are preloaded at 48×48
+   * in BootScene; this helper scales them to the requested size and applies
+   * an optional tint (default fg.primary).
+   *
+   * @param scene — target Phaser scene
+   * @param name  — one of LUCIDE_ICON_NAMES (e.g. 'arrow-left', 'flag')
+   * @param x,y   — world position
+   * @param size  — render size in px (default 24). Source is 48, so any size
+   *                 up to 48 renders crisp; above 48 will blur.
+   * @param tint  — tint color as 0xRRGGBB (default fg.primary = 0xf1f5f9)
+   */
+  lucideIcon(
+    scene: Phaser.Scene,
+    name: LucideIconName,
+    x: number, y: number,
+    size: number = 24,
+    tint: number = fg.primary,
+  ): Phaser.GameObjects.Image {
+    const key = getLucideIconKey(name)
+    const img = scene.add.image(x, y, key)
+    // Source is 48×48 — compute scale for requested size.
+    const scale = size / Math.max(img.width, img.height, 48)
+    img.setScale(scale).setTintFill(tint)
+    return img
+  },
 
   // ═══════════════════════════════════════════════════════════════════════════
   // PANELS — Multi-layered depth with premium feel
@@ -2074,14 +2106,12 @@ export const UI = {
     title.setPosition(dx + pad, dy + posTitle).setDepth(992); all.push(title)
     if (body) { body.setPosition(dx + pad, dy + posBody).setDepth(992); all.push(body) }
 
-    // ── Close X (top-right, ghost) ──
-    const closeTxt = scene.add.text(dx + dialogW - 18, dy + 14, '\u2715', {
-      fontFamily: fontFamily.body, fontSize: typeScale.h3,
-      color: fg.tertiaryHex, fontStyle: 'bold',
-    }).setOrigin(1, 0).setDepth(993).setInteractive({ useHandCursor: true })
-    closeTxt.on('pointerover', () => closeTxt.setColor(fg.primaryHex))
-    closeTxt.on('pointerout',  () => closeTxt.setColor(fg.tertiaryHex))
-    all.push(closeTxt)
+    // ── Close X (top-right, ghost) — Lucide 'x' icon replaces U+2715 per Sub 1.9.
+    const closeIcon = UI.lucideIcon(scene, 'x', dx + dialogW - 24, dy + 22, 16, fg.tertiary)
+      .setDepth(993).setInteractive({ useHandCursor: true })
+    closeIcon.on('pointerover', () => closeIcon.setTintFill(fg.primary))
+    closeIcon.on('pointerout',  () => closeIcon.setTintFill(fg.tertiary))
+    all.push(closeIcon)
 
     // ── Footer buttons (right-aligned, 12px gap) ──
     const btnH = 40
@@ -2120,7 +2150,7 @@ export const UI = {
       })
     }
 
-    closeTxt.on('pointerdown', () => doClose())
+    closeIcon.on('pointerdown', () => doClose())
     if (opts?.closeOnBackdrop !== false) {
       backdrop.on('pointerdown', () => doClose())
     }

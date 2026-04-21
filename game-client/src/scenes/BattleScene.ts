@@ -3279,15 +3279,17 @@ export default class BattleScene extends Phaser.Scene {
   // ── Surrender button ─────────────────────────────────────────────────────────
 
   private _buildTrainingBackButton(): void {
-    // Top-bar back link: Ghost button (INTEGRATION_SPEC §1.3 — no fill/border,
-    // tertiary-fg label that brightens on hover). A proper arrow glyph arrives
-    // with the Lucide pass (Sub 1.9).
+    // Top-bar back link: Ghost button (INTEGRATION_SPEC §1.3) with Lucide
+    // arrow-left icon replacing the ← unicode glyph.
     const btnX = GRID_X + 108
     const btnY = TOP_BAR_H2 / 2
-    const { container } = UI.buttonGhost(this, btnX, btnY, '← Voltar', {
-      w: 84, h: 24, depth: 9,
+    const { container } = UI.buttonGhost(this, btnX, btnY, '  Voltar', {
+      w: 92, h: 24, depth: 9,
       onPress: () => transitionTo(this, 'LobbyScene'),
     })
+    // Lucide arrow-left icon overlay (left of label, tinted tertiary-fg).
+    const icon = UI.lucideIcon(this, 'arrow-left', -32, 0, 14, fg.tertiary)
+    container.add(icon)
     container.setDepth(9)
   }
 
@@ -3332,10 +3334,13 @@ export default class BattleScene extends Phaser.Scene {
       }
     }
 
-    const { container } = UI.buttonDestructive(this, btnX, btnY, 'Render-se', {
+    const { container } = UI.buttonDestructive(this, btnX, btnY, '  Render-se', {
       w: btnW, h: btnH, depth: 9,
       onPress: onClick,
     })
+    // Lucide flag icon overlay (left of label, tinted inverse for contrast).
+    const flag = UI.lucideIcon(this, 'flag', -btnW / 2 + 14, 0, 12, fg.primary)
+    container.add(flag)
     container.setDepth(9)
 
     if (!isSolo) {

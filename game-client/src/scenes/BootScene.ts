@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { getAllCharacterAssets, getAllDesignSvgAssets, getAllSkillAssets } from '../utils/AssetPaths'
+import { getAllCharacterAssets, getAllDesignSvgAssets, getAllLucideIconAssets, getAllSkillAssets } from '../utils/AssetPaths'
 import { colors, fonts, fontFamily, sizes } from '../utils/DesignTokens'
 
 /**
@@ -52,6 +52,13 @@ export default class BootScene extends Phaser.Scene {
 
     // Design-system SVGs (Phase 1) — wordmark, class sigils, currency icons
     for (const { key, path, width, height } of getAllDesignSvgAssets()) {
+      this.load.svg(key, path, { width, height })
+    }
+
+    // Lucide UI icons (Sub 1.9) — loaded at 2× target size so downscaled
+    // 24px render stays crisp. Copied from lucide-static by
+    // `npm run assets:lucide` into /public/assets/icons/ui/.
+    for (const { key, path, width, height } of getAllLucideIconAssets()) {
       this.load.svg(key, path, { width, height })
     }
   }
