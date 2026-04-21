@@ -609,11 +609,20 @@ export const hpBreakpoint = {
 } as const
 
 // ── Tactical board tile states ──
+//
+// Per-side alts (`allySideAlt` / `enemySideAlt`) intentionally read brighter
+// than the base wash so the checker pattern is visible. The spec's single
+// `defaultAlt` value (#1f2a42) is kept for non-sided contexts, but on the
+// arena it was too close to `allySide` to register as a separate stripe —
+// the explicit per-side alts fix that contrast without touching the rest
+// of the palette.
 export const tile = {
   default:         0x1b2438,
   defaultAlt:      0x1f2a42,
   allySide:        0x1a2a4a,
+  allySideAlt:     0x22385c,   // brighter navy — visible checker vs allySide
   enemySide:       0x3a1a22,
+  enemySideAlt:    0x4a1c26,   // brighter crimson — spec text value
   hover:           { color: 0xffffff, alpha: 0.08 } as TokenRgba,
   validMove:       { color: 0x10b981, alpha: 0.28 } as TokenRgba,
   validMoveBorder: 0x10b981,

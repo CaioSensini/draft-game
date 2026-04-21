@@ -1197,8 +1197,8 @@ export default class BattleScene extends Phaser.Scene {
     const char = this._ctrl.getCharacter(unitId)
     if (!char) return
 
-    const teamColor = side === 'left' ? 0x00ccaa : 0x8844cc
-    const teamHex = side === 'left' ? '#00ccaa' : '#8844cc'
+    const teamColor = side === 'left' ? dsColors.team.ally : dsColors.team.enemy
+    const teamHex = side === 'left' ? dsColors.team.allyHex : dsColors.team.enemyHex
     const ROLE_NAMES: Record<string, string> = { king: 'REI', warrior: 'GUERREIRO', executor: 'EXECUTOR', specialist: 'ESPECIALISTA' }
     const roleName = ROLE_NAMES[char.role] ?? char.role
 
@@ -1365,31 +1365,32 @@ export default class BattleScene extends Phaser.Scene {
       this._panelBg.setVisible(true)
       this._endMovementBtn.setVisible(true)
 
-      // Show "TURNO DE MOVIMENTO" in the skill column
+      // Show "TURNO DE MOVIMENTO" in the skill column. Tint follows the
+      // local player's side so the label matches their team color rather
+      // than the legacy turquoise accent.
       const labelCx = SKILL_COL_W / 2
-      const titleY = H / 2 - 60  // centered vertically in the column
+      const titleY = H / 2 - 60
+      const playerTeamHex = this._playerSide === 'left' ? dsColors.team.allyHex : dsColors.team.enemyHex
+      const playerTeam = this._playerSide === 'left' ? dsColors.team.ally : dsColors.team.enemy
 
       const movTitle = this.add.text(labelCx, titleY, 'TURNO DE', {
-        fontFamily: 'Arial Black', fontSize: '18px', color: '#00ccaa',
-        fontStyle: 'bold', align: 'center',
-        shadow: { offsetX: 0, offsetY: 2, color: '#0a2a3a', blur: 6, fill: true },
+        fontFamily: fontFamily.display, fontSize: typeScale.h3,
+        color: playerTeamHex, fontStyle: 'bold', align: 'center',
       }).setOrigin(0.5)
 
       const movTitle2 = this.add.text(labelCx, titleY + 26, 'MOVIMENTO', {
-        fontFamily: 'Arial Black', fontSize: '18px', color: '#00ccaa',
-        fontStyle: 'bold', align: 'center',
-        shadow: { offsetX: 0, offsetY: 2, color: '#0a2a3a', blur: 6, fill: true },
+        fontFamily: fontFamily.display, fontSize: typeScale.h3,
+        color: playerTeamHex, fontStyle: 'bold', align: 'center',
       }).setOrigin(0.5)
 
       const movSub = this.add.text(labelCx, titleY + 62, 'Mova seus\npersonagens', {
-        fontFamily: 'Arial', fontSize: '15px', color: '#3388aa',
-        align: 'center',
-        shadow: { offsetX: 1, offsetY: 1, color: '#000', blur: 2, fill: true },
+        fontFamily: fontFamily.body, fontSize: typeScale.small,
+        color: fg.tertiaryHex, align: 'center',
       }).setOrigin(0.5)
 
       // Subtle arrow icon below subtitle
       const movIcon = this.add.graphics()
-      movIcon.lineStyle(2, 0x00ccaa, 0.3)
+      movIcon.lineStyle(2, playerTeam, 0.3)
       const arrowY2 = titleY + 95
       movIcon.beginPath()
       movIcon.moveTo(labelCx - 10, arrowY2 - 5)
@@ -1525,23 +1526,25 @@ export default class BattleScene extends Phaser.Scene {
       label = 'Turno de ação'
     }
 
-    // Blue side (left half)
-    elements.push(this.add.rectangle(blueX, barCy, halfBarW, TOP_BAR_H2, 0x00ccaa, 0.08))
+    // Ally half (left) — blue tint + label
+    elements.push(this.add.rectangle(blueX, barCy, halfBarW, TOP_BAR_H2, dsColors.team.ally, 0.08))
     elements.push(this.add.text(blueX, barCy - 4, label, {
-      fontFamily: 'Arial Black', fontSize: '14px', color: '#00ccaa', fontStyle: 'bold', ...stk,
+      fontFamily: fontFamily.body, fontSize: typeScale.small,
+      color: dsColors.team.allyHex, fontStyle: 'bold', ...stk,
     }).setOrigin(0.5))
     const ag1 = this.add.graphics()
-    ag1.lineStyle(2, 0x00ccaa, 0.5)
+    ag1.lineStyle(2, dsColors.team.ally, 0.5)
     ag1.beginPath(); ag1.moveTo(blueX - 5, barCy + 8); ag1.lineTo(blueX, barCy + 13); ag1.lineTo(blueX + 5, barCy + 8); ag1.strokePath()
     elements.push(ag1)
 
-    // Purple side (right half)
-    elements.push(this.add.rectangle(redX, barCy, halfBarW, TOP_BAR_H2, 0x8844cc, 0.08))
+    // Enemy half (right) — red tint + label
+    elements.push(this.add.rectangle(redX, barCy, halfBarW, TOP_BAR_H2, dsColors.team.enemy, 0.08))
     elements.push(this.add.text(redX, barCy - 4, label, {
-      fontFamily: 'Arial Black', fontSize: '14px', color: '#8844cc', fontStyle: 'bold', ...stk,
+      fontFamily: fontFamily.body, fontSize: typeScale.small,
+      color: dsColors.team.enemyHex, fontStyle: 'bold', ...stk,
     }).setOrigin(0.5))
     const ag2 = this.add.graphics()
-    ag2.lineStyle(2, 0x8844cc, 0.5)
+    ag2.lineStyle(2, dsColors.team.enemy, 0.5)
     ag2.beginPath(); ag2.moveTo(redX - 5, barCy + 8); ag2.lineTo(redX, barCy + 13); ag2.lineTo(redX + 5, barCy + 8); ag2.strokePath()
     elements.push(ag2)
 
@@ -2046,10 +2049,11 @@ export default class BattleScene extends Phaser.Scene {
     // movement / target / area states live in separate overlay Rectangles.
     const g = this.add.graphics()
     const WALL_COL = 8
-    // Enemy-side alt comes from spec §4 ("alt stripe | +#1f2a42 / #4a1c26").
-    const ENEMY_SIDE_ALT = 0x4a1c26
 
     // ── Checkerboard tile pattern (ally navy / enemy crimson / wall gray) ──
+    // Alt stripes read brighter than the base wash so the grid pattern is
+    // visible even at a glance. Values live on `tile.allySideAlt` and
+    // `tile.enemySideAlt` — see DesignTokens comment for the contrast story.
     for (let col = 0; col < COLS; col++) {
       for (let row = 0; row < ROWS; row++) {
         const isEven = (col + row) % 2 === 0
@@ -2057,9 +2061,9 @@ export default class BattleScene extends Phaser.Scene {
         if (col === WALL_COL) {
           baseColor = dsTile.wall
         } else if (col < WALL_COL) {
-          baseColor = isEven ? dsTile.allySide : dsTile.defaultAlt
+          baseColor = isEven ? dsTile.allySide : dsTile.allySideAlt
         } else {
-          baseColor = isEven ? dsTile.enemySide : ENEMY_SIDE_ALT
+          baseColor = isEven ? dsTile.enemySide : dsTile.enemySideAlt
         }
         g.fillStyle(baseColor, 1)
         g.fillRect(GRID_X + col * TILE, GRID_Y + row * TILE, TILE, TILE)
@@ -2142,34 +2146,40 @@ export default class BattleScene extends Phaser.Scene {
     const topBar = this.add.graphics()
     topBar.fillStyle(0x060a12, 0.98)
     topBar.fillRoundedRect(barX, 0, barW, TOP_BAR_H2, { tl: 0, tr: 0, bl: 8, br: 8 })
-    // Gradient bottom border (blue-gold-red)
+    // Gradient bottom border (ally blue → gold centre → enemy red).
     for (let i = 0; i < barW; i++) {
       const t = i / barW
-      const isBlue = t < 0.35
-      const isRed = t > 0.65
-      const color = isBlue ? 0x00ccaa : isRed ? 0x8844cc : 0xc9a84c
-      const alpha = isBlue || isRed ? 0.15 : 0.25 * (1 - Math.abs(t - 0.5) * 4)
+      const isAlly = t < 0.35
+      const isEnemy = t > 0.65
+      const color = isAlly ? dsColors.team.ally : isEnemy ? dsColors.team.enemy : accent.primary
+      const alpha = isAlly || isEnemy ? 0.15 : 0.25 * (1 - Math.abs(t - 0.5) * 4)
       topBar.fillStyle(color, Math.max(0, alpha))
       topBar.fillRect(barX + i, TOP_BAR_H2 - 2, 1, 2)
     }
 
-    // Team indicators
+    // Team indicators — 4px vertical bar + team label + muted subtitle.
+    // Use team tokens (ally blue / enemy red) so the top bar matches the
+    // outer grid border and unit rings.
     const teamG = this.add.graphics()
-    teamG.fillStyle(0x00ccaa, 0.9)
+    teamG.fillStyle(dsColors.team.ally, 0.9)
     teamG.fillRoundedRect(barX + 8, 8, 4, 26, 2)
-    this.add.text(barX + 18, 10, 'AZUL', {
-      fontFamily: 'Arial Black', fontSize: '15px', color: '#00ccaa', fontStyle: 'bold',
-      shadow: { offsetX: 1, offsetY: 1, color: '#000', blur: 3, fill: true },
+    this.add.text(barX + 18, 10, 'ALIADO', {
+      fontFamily: fontFamily.body, fontSize: typeScale.small,
+      color: dsColors.team.allyHex, fontStyle: 'bold',
     })
-    this.add.text(barX + 18, 26, 'Voce', { fontFamily: 'Arial', fontSize: '15px', color: '#506888' })
+    this.add.text(barX + 18, 26, 'Voce', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta, color: fg.tertiaryHex,
+    })
 
-    teamG.fillStyle(0x8844cc, 0.9)
+    teamG.fillStyle(dsColors.team.enemy, 0.9)
     teamG.fillRoundedRect(W - 12, 8, 4, 26, 2)
-    this.add.text(W - 20, 10, 'ROXO', {
-      fontFamily: 'Arial Black', fontSize: '15px', color: '#8844cc', fontStyle: 'bold',
-      shadow: { offsetX: 1, offsetY: 1, color: '#000', blur: 3, fill: true },
+    this.add.text(W - 20, 10, 'INIMIGO', {
+      fontFamily: fontFamily.body, fontSize: typeScale.small,
+      color: dsColors.team.enemyHex, fontStyle: 'bold',
     }).setOrigin(1, 0)
-    this.add.text(W - 20, 26, 'Inimigo', { fontFamily: 'Arial', fontSize: '15px', color: '#886050' }).setOrigin(1, 0)
+    this.add.text(W - 20, 26, 'Adversario', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta, color: fg.tertiaryHex,
+    }).setOrigin(1, 0)
 
     // Round + Timer badge — two-section pill centered in top bar.
     // INTEGRATION_SPEC §6 + Print 17: the visible timer uses Mono tabular
@@ -2498,9 +2508,9 @@ export default class BattleScene extends Phaser.Scene {
 
       // Role abbreviation above the unit (team-coloured)
       const ROLE_ABBR: Record<string, string> = { king: 'REI', warrior: 'GUE', executor: 'EXE', specialist: 'ESP' }
-      const teamHex = u.side === 'left' ? '#00ccaa' : '#8844cc'
+      const teamHex = u.side === 'left' ? dsColors.team.allyHex : dsColors.team.enemyHex
       const roleLabel = this.add.text(0, half - 2, ROLE_ABBR[u.role] ?? u.role, {
-        fontFamily: 'Arial Black', fontSize: '11px', color: teamHex, fontStyle: 'bold',
+        fontFamily: fontFamily.body, fontSize: typeScale.meta, color: teamHex, fontStyle: 'bold',
         stroke: '#000000', strokeThickness: 3,
       }).setOrigin(0.5, 1)
 
@@ -3139,13 +3149,14 @@ export default class BattleScene extends Phaser.Scene {
 
   private _buildSurrenderButton(): void {
     // Top-bar surrender: Destructive variant (INTEGRATION_SPEC §1.4 — red fill,
-    // dark red border). In duo/squad modes, a small vote-counter chip sits to
-    // the right of the button.
+    // dark red border). Anchored to the right of the team label so it clears
+    // "AZUL / Voce" without overlapping. In duo/squad modes, a small vote-
+    // counter chip sits to the right of the button.
     const isSolo = this._surrenderRequired === 1
-    const btnX = GRID_X + (isSolo ? 98 : 110)
-    const btnY = TOP_BAR_H2 / 2
     const btnW = isSolo ? 92 : 108
     const btnH = 24
+    const btnX = GRID_X + (isSolo ? 150 : 170)
+    const btnY = TOP_BAR_H2 / 2
 
     const onClick = () => {
       if (isSolo) {
