@@ -266,6 +266,12 @@ export class Skill {
   readonly cooldownTurns: number
 
   /**
+   * Pre-activation movement window. When present, the caster may relocate
+   * up to `preMovement.maxTiles` tiles before the skill's effect resolves.
+   */
+  readonly preMovement: PreMovementSpec | null
+
+  /**
    * @deprecated Use `secondaryEffects` — returns the first secondary (or null)
    * for backward compatibility with pre-refactor callers. Will be removed once
    * all callers migrate (tracked in DECISIONS.md 2026-04-21).
@@ -298,6 +304,7 @@ export class Skill {
       this.secondaryEffects = []
     }
     this.cooldownTurns = def.cooldownTurns ?? 0
+    this.preMovement   = def.preMovement ?? null
   }
 
   // ── Targeting queries ──────────────────────────────────────────────────────
@@ -473,6 +480,40 @@ export interface SkillDefinition {
    * Minimum rounds between consecutive uses. Omit or 0 for no cooldown.
    */
   cooldownTurns?:   number
+  /**
+   * v3 — optional pre-activation movement. When present, the caster may
+   * relocate up to `maxTiles` steps (Chebyshev/Manhattan, handled by
+   * validator) before the skill's effect fires. Used by Teleport (le_d4,
+   * ignoresObstacles=true, cross-arena), Recuo Rápido (le_d5, tied to
+   * caster's own territory), Escudo do Protetor (lw_d1) and Resistência
+   * Absoluta (lw_d3). Omit for skills without a pre-movement phase.
+   */
+  preMovement?: PreMovementSpec
+}
+
+/**
+ * Declarative configuration for a skill's pre-activation movement window.
+ */
+export interface PreMovementSpec {
+  /** Maximum Chebyshev (king-move) tiles the caster can travel. */
+  maxTiles:           number
+  /**
+   * When true, the movement ignores impassable obstacles (still blocked by
+   * other occupants and OOB). Used by Teleport.
+   */
+  ignoresObstacles?:  boolean
+  /**
+   * When true, the destination tile must be within the caster's own
+   * half of the arena. Used by Recuo Rápido ("pra trás").
+   */
+  restrictToOwnSide?: boolean
+  /**
+   * When true, using the skill flags the caster's next movement phase as
+   * consumed (Teleport). Surfaces the intent via
+   * `Character.setMovementConsumedNextTurn(true)`; MovementEngine wiring
+   * is tracked as residual debt (see DECISIONS.md).
+   */
+  consumesNextMovement?: boolean
 }
 
 // Deck management has moved to domain/Deck.ts (SkillQueue, CharacterDeck, TeamDecks).

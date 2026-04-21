@@ -108,6 +108,13 @@ export class Character {
   private _doubleAttackNextTurn = false
   /** Per-skill cooldown tracker: maps skill id to the earliest round (1-based) the skill is available again. */
   private _skillCooldowns: Map<string, number> = new Map()
+  /**
+   * v3 §6.4 Teleport (le_d4): when true, the character's next scheduled
+   * movement phase is consumed. Full MovementEngine integration is
+   * tracked as residual debt — the flag is authoritative and exposed
+   * via `movementConsumedNextTurn` so external systems can honour it.
+   */
+  private _movementConsumedNextTurn = false
   /** When > 0, the character cannot use defense skills this turn. Decremented each round. */
   private _silencedDefenseTicks = 0
 
@@ -678,6 +685,12 @@ export class Character {
       this._skillCooldowns.set(skillId, usedAtRound + cooldownTurns)
     }
   }
+
+  /** True when the character's next scheduled movement phase is consumed (Teleport). */
+  get movementConsumedNextTurn(): boolean { return this._movementConsumedNextTurn }
+
+  /** Enable or clear the "next movement consumed" flag. */
+  setMovementConsumedNextTurn(value: boolean): void { this._movementConsumedNextTurn = value }
 
   /** Remaining turns where this character's defense is silenced. */
   get silencedDefenseTicks(): number { return this._silencedDefenseTicks }

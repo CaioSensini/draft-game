@@ -66,6 +66,15 @@ export interface ActionSelection {
   secondAttackSkill?: Skill | null
   /** Target for the second attack skill. */
   secondTarget?:      TargetSpec | null
+  /**
+   * v3 — destination tile for the attack skill's pre-activation movement,
+   * if the skill declares `preMovement`. Executed before the skill effect
+   * fires. Null when the skill has no preMovement spec or the caster chose
+   * to skip relocating.
+   */
+  preMoveAttack?:  { col: number; row: number } | null
+  /** Same as `preMoveAttack` but for the defense skill. */
+  preMoveDefense?: { col: number; row: number } | null
 }
 
 /** Accumulated stats for one battle. */
@@ -344,6 +353,114 @@ export class CombatEngine {
 
     this.emit({ type: EventType.CARD_SELECTED, unitId: characterId, cardId: skill.id, category: 'attack' })
     return Ok(undefined)
+  }
+
+  /**
+   * Record a pre-activation movement destination for a character's attack
+   * or defense skill. The skill must declare `preMovement` and the
+   * destination must be a valid tile (in-bounds, walkable-if-required,
+   * not occupied, within `maxTiles`). Honours `ignoresObstacles` and
+   * `restrictToOwnSide` from the skill's `PreMovementSpec`.
+   */
+  selectPreMovement(
+    characterId: string,
+    category: 'attack' | 'defense',
+    col: number, row: number,
+  ): Result<void> {
+    const char = this.battle.getCharacter(characterId)
+    if (!char)       return Err(`Character '${characterId}' not found`)
+    if (!char.alive) return Err(`${char.name} is dead`)
+
+    const sel = this.selections.get(characterId)
+    if (!sel) return Err('No action selected yet')
+
+    const skill = category === 'attack' ? sel.attackSkill : sel.defenseSkill
+    if (!skill) return Err(`No ${category} skill selected`)
+    if (!skill.preMovement) return Err(`'${skill.name}' has no pre-movement`)
+
+    const res = this._validatePreMovement(char, skill.preMovement, col, row)
+    if (!res.ok) return res
+
+    if (category === 'attack') sel.preMoveAttack  = { col, row }
+    else                       sel.preMoveDefense = { col, row }
+
+    this.emit({
+      type: EventType.AREA_TARGET_SET, unitId: characterId, col, row,
+    })
+    return Ok(undefined)
+  }
+
+  /**
+   * Validate a pre-movement request: within maxTiles (Chebyshev), not
+   * out-of-bounds, tile not occupied, respects obstacles/side flags.
+   */
+  private _validatePreMovement(
+    char: Character,
+    spec: NonNullable<Skill['preMovement']>,
+    col: number, row: number,
+  ): Result<void> {
+    if (!this._grid.isInBounds(col, row))        return Err('Destination OOB')
+    const dc = Math.abs(col - char.col)
+    const dr = Math.abs(row - char.row)
+    const chebyshev = Math.max(dc, dr)
+    if (chebyshev === 0)              return Err('Destination is current tile')
+    if (chebyshev > spec.maxTiles)    return Err(`Destination exceeds maxTiles (${spec.maxTiles})`)
+
+    // Obstacles: if not ignored, tile must be walkable (Grid.isWalkable already
+    // covers walls + occupants + obstacles).
+    if (!spec.ignoresObstacles) {
+      if (!this._grid.isWalkable(col, row))      return Err('Destination blocked')
+    } else {
+      // Even with ignoresObstacles, the destination itself cannot be occupied
+      // by a different character.
+      const occ = this._grid.occupantAt(col, row)
+      if (occ && occ !== char.id)                return Err('Destination occupied')
+      // In-bounds already checked; walls considered OK for teleport.
+    }
+
+    if (spec.restrictToOwnSide) {
+      const ownSide: GridSide = char.side
+      const allowed = this._grid.sideOf(col)
+      if (allowed !== ownSide)                   return Err('Destination outside own side')
+    }
+    return Ok(undefined)
+  }
+
+  /**
+   * Execute the queued pre-movement for `char`/`category` if any. Applies
+   * the consumesNextMovement side-effect. Returns true when the character
+   * moved, false when no movement was queued. Never throws — validation
+   * was performed at selection time.
+   */
+  private _applyPreMovement(char: Character, category: 'attack' | 'defense'): boolean {
+    const sel = this.selections.get(char.id)
+    if (!sel) return false
+    const dest = category === 'attack' ? sel.preMoveAttack : sel.preMoveDefense
+    if (!dest) return false
+    const skill = category === 'attack' ? sel.attackSkill : sel.defenseSkill
+    if (!skill?.preMovement) return false
+
+    const fromCol = char.col
+    const fromRow = char.row
+    const res = this._grid.moveCharacter(char.id, dest.col, dest.row)
+    if (!res.ok) return false
+    char.moveTo(dest.col, dest.row)
+
+    if (skill.preMovement.consumesNextMovement) {
+      char.setMovementConsumedNextTurn(true)
+    }
+
+    this.emit({
+      type:    EventType.UNIT_PUSHED,
+      unitId:  char.id,
+      fromCol, fromRow,
+      toCol:   dest.col, toRow: dest.row,
+      force:   Math.max(Math.abs(dest.col - fromCol), Math.abs(dest.row - fromRow)),
+      distanceMoved: Math.max(Math.abs(dest.col - fromCol), Math.abs(dest.row - fromRow)),
+      blocked: false,
+      collidedWith: null,
+    })
+    return true
   }
 
   /** Remove all selections for a character (used on phase reset or cancel). */
@@ -1119,6 +1236,13 @@ export class CombatEngine {
       char.noteSkillUsed(skill.id, this.battle.round, skill.cooldownTurns)
     }
 
+    // v3 §6.3/§6.4 — execute the queued pre-movement before the skill's
+    // effect fires, so positional DR / shields / teleports account for
+    // the caster's post-move tile.
+    if (skill.preMovement) {
+      this._applyPreMovement(char, 'defense')
+    }
+
     // v3 §6.5 — Espírito de Sobrevivência (lk_d4 / rk_d4): HP-conditional.
     // This skill has bespoke logic that the generic shield handler can't
     // express (conditional magnitude + shield sized from HP ratio).
@@ -1595,6 +1719,10 @@ export class CombatEngine {
 
     if (skill.cooldownTurns > 0) {
       caster.noteSkillUsed(skill.id, this.battle.round, skill.cooldownTurns)
+    }
+
+    if (skill.preMovement) {
+      this._applyPreMovement(caster, 'attack')
     }
 
     switch (skill.targetType) {

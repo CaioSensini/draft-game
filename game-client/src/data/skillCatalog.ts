@@ -249,6 +249,7 @@ const LEFT_WARRIOR: SkillDefinition[] = [
     id: 'lw_d3', name: 'Resistência Absoluta', category: 'defense', group: 'defense1',
     effectType: 'shield', targetType: 'self', power: 65,
     secondaryEffects: [{ effectType: 'def_up', power: 25, ticks: 1 }],
+    preMovement: { maxTiles: 1 },
     description: 'Guerreiro + aliado atrás: -65% dano por 1 turno. Pode mover 1 sqm antes.',
   },
   {
@@ -375,6 +376,7 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
   {
     id: 'le_d4', name: 'Teleport', category: 'defense', group: 'defense1',
     effectType: 'teleport_self', targetType: 'self', power: 5,
+    preMovement: { maxTiles: 5, ignoresObstacles: true, consumesNextMovement: true },
     description: 'Teleporta até 5 sqm. Consome próximo turno de movimento.',
   },
 
@@ -382,6 +384,7 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
   {
     id: 'le_d5', name: 'Recuo Rápido', category: 'defense', group: 'defense2',
     effectType: 'shield', targetType: 'self', power: 20,
+    preMovement: { maxTiles: 2, restrictToOwnSide: true },
     description: 'Move até 2 sqm pra trás + shield 20 por 1 turno.',
   },
   {

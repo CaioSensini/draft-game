@@ -29,7 +29,6 @@ import { getStatsForLevel } from '../../domain/Stats'
 import { SKILL_CATALOG } from '../../data/skillCatalog'
 import type { SkillDefinition } from '../../domain/Skill'
 import { PASSIVE_CATALOG } from '../../data/passiveCatalog'
-import { EventType } from '../types'
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -647,24 +646,54 @@ describe('Executor — Defense 1 (self-buffs)', () => {
   })
 
   // ── le_d4 Teleport ─────────────────────────────────────────────────────────
-  describe('le_d4 — Teleport [STUB — consume-movement pending]', () => {
-    it('catalog entry', () => {
+  describe('le_d4 — Teleport', () => {
+    it('catalog entry declares preMovement (5 sqm, ignores obstacles, consumes next move)', () => {
       const s = executorSkill('le_d4')
       expect(s.name).toBe('Teleport')
       expect(s.effectType).toBe('teleport_self')
-      expect(s.power).toBe(5)
+      expect(s.preMovement?.maxTiles).toBe(5)
+      expect(s.preMovement?.ignoresObstacles).toBe(true)
+      expect(s.preMovement?.consumesNextMovement).toBe(true)
     })
 
-    it('teleport_self handler emits STATUS_APPLIED so scene can relocate', () => {
-      const exec = mkChar('e', 'executor', 'left')
-      const res = resolver.resolve('teleport_self', ctx(exec, exec, 5))
-      expect(res.events.some((e) => e.type === EventType.STATUS_APPLIED
-        && 'status' in e && e.status === 'teleport_self')).toBe(true)
+    it('pre-movement relocates the caster and flags next movement consumed', () => {
+      const exec = mkChar('e', 'executor', 'left', 5, 3)
+      const enemy = mkChar('x', 'king', 'right', 15, 3)
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [exec]),
+        rightTeam: new Team('right', [enemy]),
+        startPhase: 'action',
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+
+      const skill = new Skill(executorSkill('le_d4'))
+      expect(engine.selectDefense(exec.id, skill).ok).toBe(true)
+      expect(engine.selectPreMovement(exec.id, 'defense', 7, 3).ok).toBe(true)
+
+      ;(engine as unknown as {
+        _applyDefenseSkill: (c: Character, s: Skill) => void
+      })._applyDefenseSkill.bind(engine)(exec, skill)
+
+      expect(exec.col).toBe(7)
+      expect(exec.movementConsumedNextTurn).toBe(true)
     })
 
-    it('[STUB] consume-next-movement rule pending Movement integration', () => {
-      const s = executorSkill('le_d4')
-      expect(s.power).toBe(5)   // 5 sqm teleport range
+    it('rejects pre-movement beyond maxTiles', () => {
+      const exec = mkChar('e', 'executor', 'left', 5, 3)
+      const enemy = mkChar('x', 'king', 'right', 15, 3)
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [exec]),
+        rightTeam: new Team('right', [enemy]),
+        startPhase: 'action',
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+
+      const skill = new Skill(executorSkill('le_d4'))
+      engine.selectDefense(exec.id, skill)
+      // 5 sqm max; (5,3) → (12,3) is 7 tiles
+      expect(engine.selectPreMovement(exec.id, 'defense', 12, 3).ok).toBe(false)
     })
   })
 })
@@ -676,12 +705,16 @@ describe('Executor — Defense 2 (leves)', () => {
   beforeEach(() => { resolver = createDefaultResolver() })
 
   // ── le_d5 Recuo Rápido ─────────────────────────────────────────────────────
-  describe('le_d5 — Recuo Rápido [PARTIAL — pre-move pending]', () => {
-    it('catalog entry', () => {
+  describe('le_d5 — Recuo Rápido', () => {
+    it('catalog entry declares preMovement (2 sqm, restricted to own side)', () => {
       const s = executorSkill('le_d5')
       expect(s.name).toBe('Recuo Rápido')
       expect(s.effectType).toBe('shield')
       expect(s.power).toBe(20)
+      expect(s.preMovement?.maxTiles).toBe(2)
+      expect(s.preMovement?.restrictToOwnSide).toBe(true)
+      // Does NOT consume next movement (unlike Teleport).
+      expect(s.preMovement?.consumesNextMovement).toBeFalsy()
     })
 
     it('shield 20 applies to executor', () => {
@@ -690,11 +723,43 @@ describe('Executor — Defense 2 (leves)', () => {
       expect(exec.totalShield).toBe(20)
     })
 
-    it('[PARTIAL] 2-sqm backward-move pre-shield requires Movement system', () => {
-      // v3 says "move até 2 sqm pra trás + shield 20". Today only the
-      // shield lands; caster position is unchanged.
-      const s = executorSkill('le_d5')
-      expect(s.effectType).toBe('shield')
+    it('rejects pre-movement to the enemy half', () => {
+      const exec = mkChar('e', 'executor', 'left', 7, 3)
+      const enemy = mkChar('x', 'king', 'right', 15, 3)
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [exec]),
+        rightTeam: new Team('right', [enemy]),
+        startPhase: 'action',
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(executorSkill('le_d5'))
+      engine.selectDefense(exec.id, skill)
+      // Trying to step into the right half of the arena should fail.
+      const r = engine.selectPreMovement(exec.id, 'defense', 9, 3)
+      expect(r.ok).toBe(false)
+    })
+
+    it('pre-movement within own side succeeds and shield still applies', () => {
+      const exec = mkChar('e', 'executor', 'left', 7, 3)
+      const enemy = mkChar('x', 'king', 'right', 15, 3)
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [exec]),
+        rightTeam: new Team('right', [enemy]),
+        startPhase: 'action',
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(executorSkill('le_d5'))
+      engine.selectDefense(exec.id, skill)
+      expect(engine.selectPreMovement(exec.id, 'defense', 6, 3).ok).toBe(true)
+
+      ;(engine as unknown as {
+        _applyDefenseSkill: (c: Character, s: Skill) => void
+      })._applyDefenseSkill.bind(engine)(exec, skill)
+
+      expect(exec.col).toBe(6)
+      expect(exec.totalShield).toBeGreaterThanOrEqual(20)
     })
   })
 

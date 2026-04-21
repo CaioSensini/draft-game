@@ -549,6 +549,11 @@ describe('Warrior — Defense 1 (forte)', () => {
       resolver.resolve('def_up', ctx(warrior, warrior, 25, 0, 1))
       expect(warrior.defense).toBe(defBefore + 25)
     })
+
+    it('preMovement spec allows a 1-sqm reposition before the skill fires', () => {
+      const s = warriorSkill('lw_d3')
+      expect(s.preMovement?.maxTiles).toBe(1)
+    })
   })
 
   // ── lw_d8 Bater em Retirada ────────────────────────────────────────────────
