@@ -4,6 +4,41 @@
 
 ---
 
+## 2026-04-21 — ETAPA 3: 5 cenas finalizadas no design system (pre/pos-partida + upgrade + deck build)
+
+**Contexto:** Etapas 1a/1b/2 deferiram 4 cenas pro pacote de shape vertical 120×160 + MatchmakingScene dedicada. Sessao unica fecha as 5 em ordem inversa de risco (3.3 → 3.5 → 3.4 → 3.2 → 3.1).
+
+**Decisoes aplicadas (A-F do audit):**
+
+- **A — Worktree:** repo principal `C:\Projetos\Draft` branch `turbo-targeting-v1`, mesmo padrao das etapas anteriores
+- **B — UPAR button:** chip externo 86×20 flutuante 14px abaixo do card em SkillUpgradeScene. Card canonico 120×160 preserva integralmente o footer DMG/CD. Chip e container interativo com seu proprio handler (`stopPropagation`-aware)
+- **C — Inventory grid:** 4 colunas × 120×160 com scroll vertical (meio-termo — 6 apertava footer, 3 desperdiçava espaco). Validado visualmente sem retrocesso
+- **D — DeckBuild layout:** 4-col preservado (1 col por grupo, cards inline 308×124 → 2×2 grid de 120×160). Spec §S3 e greenfield; o layout atual e produto real com UX clara
+- **E — Matchmaking:** cena dedicada criada (`MatchmakingScene.ts`, 293 LOC). `startSearch()` em PvP/Ranked lobbies migrado pra `transitionTo('MatchmakingScene', {mode, playerCount, returnTo, returnData})`. Backend queue intocado — a "real matchmaking" hoje e um placeholder textual, e o hook de match-found futuro fica naturalmente na cena dedicada em vez de espalhado entre 3 lobbies
+- **F — XP progress bar:** adicionado painel 480×86 em BattleResultScene (spec §S4-style). Snapshot xp-before/level-before antes de `addBattleRewards` permite animar progressao real em 1.1s Quad.Out; halo gold pulsa quando ratio atinge 1.0 (level-up cue)
+
+**Correcao de audit confirmada:** PackOpenAnimation nao tinha flip tween — a animacao existente era slide-up + fade-in. Migracao de shape foi compatival e a slide-up agora e proporcional ao card (`cardH * 0.6`). Adicionado halo accent.primary pulse atras de cada card pra compensar o "flip" inexistente.
+
+**UI.skillDetailCard tokenizado:** helper 310×380 consumido 7× pela SkillUpgradeScene. Shape preservado; todos os hex hardcoded + Arial migrados. Stat rows rearquitetadas via `pushStatLine(label, value, labelColor, valueColor)` helper com Manrope meta labels + Mono stat-md values.
+
+**Helpers compartilhados em SkillUpgradeScene:**
+- `_deckPanelHeight()` — altura unica consumida por drawLeft + drawDeck + drawInventory
+- `_deckGridGeometry()` — `gridStartX/Y` consumido por drawDeck, onDeckCardClick, showEquipHighlight (elimina 3 copias do mesmo calculo)
+- `_buildUparChip(cx, cy, cost, canAfford, skillId)` — substitui `_addUparButton` inline
+
+**Resultado numerico:**
+- 5 commits atomicos (`etapa3-sub3.3/.5/.4/.2/.1`) + relatorio em `docs/ETAPA3_REPORT.md`
+- ~+455 LOC liquidos (MatchmakingScene nova + upgrade XP bar + UPAR chip + skillDetailCard rewrite)
+- 529 tests verdes em cada checkpoint, 0 regressao
+- Tempo real ~11h vs estimativa 12h (1h de folga)
+- Stop rules acionadas: 0
+
+**Ordem inversa de risco validada:** SkillUpgrade (1234 LOC, drag-drop pixel-based, 7 sites de tooltip) ficou por ultimo. Nenhuma stop rule disparou, mas a politica de contencao se manteve — se tivesse disparado, as 4 outras cenas ja estariam commitadas.
+
+**Status:** Shape vertical 120×160 em 100% dos callers. Jornada pre/pos-partida 100% no design system. Relatorio completo em `docs/ETAPA3_REPORT.md`.
+
+---
+
 ## 2026-04-21 — Bloco Deck: contrato locked por testes; HAND_UPDATED rejeitado
 
 **Contexto:** Sprint Dupla Parte 2 pediu "completar Deck domain + integrar CombatEngine + BattleScene". Audit inicial revelou que o trabalho principal **já estava feito**: `Deck.ts` (369 LOC) cumpre v3 §2.9 integralmente, `Team` auto-constrói decks, `CombatEngine.selectAttack/Defense` validam via `deck.inHand(id)`, `_rotateUsedCards` roda após skill resolver emitindo `CARD_ROTATED`, `GameController.getHand` expõe só a mão atual, e `BattleScene._rebuildCardButtons` renderiza apenas as 4 cartas da mão (não as 8 do deck). Fechado implicitamente durante o Sprint Alfa.
