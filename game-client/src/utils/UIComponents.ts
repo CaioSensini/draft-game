@@ -1446,10 +1446,22 @@ export const UI = {
     const cardW = 310; const cardH = 380
     const hw = cardW / 2; const hh = cardH / 2
 
-    const GROUP_COLORS: Record<string, number> = { attack1: 0xdd4433, attack2: 0xdd7733, defense1: 0x3366cc, defense2: 0x33aa88 }
-    const GROUP_HEX: Record<string, string> = { attack1: '#dd4433', attack2: '#dd7733', defense1: '#3366cc', defense2: '#33aa88' }
-    const CLASS_HEX: Record<string, string> = { king: '#f0c850', warrior: '#4a90d9', specialist: '#44aacc', executor: '#7744cc' }
-    const CLASS_NAMES: Record<string, string> = { king: 'Rei', warrior: 'Guerreiro', specialist: 'Especialista', executor: 'Executor' }
+    // Class colour comes straight from the canonical tokens. We keep a small
+    // lookup from v3 `colors.class.*` re-exposed via `C` (legacy alias —
+    // same locked values). Group tint derives from the attack/defense
+    // category so the left accent reads at a glance.
+    const CLASS_COLOR: Record<string, number> = {
+      king: C.king, warrior: C.warrior, specialist: C.specialist, executor: C.executor,
+    }
+    const CLASS_NAMES: Record<string, string> = {
+      king: 'Rei', warrior: 'Guerreiro', specialist: 'Especialista', executor: 'Executor',
+    }
+    const GROUP_TINT: Record<string, number> = {
+      attack1:  dsState.error,
+      attack2:  accent.hot,
+      defense1: dsState.info,
+      defense2: dsState.success,
+    }
     const ABBREVS: Record<string, string> = {
       damage: 'DA', heal: 'HE', shield: 'SH', area: 'AR', stun: 'ST', bleed: 'BL', burn: 'BU',
       snare: 'SN', push: 'PU', mark: 'MK', regen: 'RG', evade: 'EV', reflect: 'RF', lifesteal: 'LS',
@@ -1458,49 +1470,57 @@ export const UI = {
       retreat_allies: 'RT', revive: 'RV', mov_down: 'M-', atk_down: 'A-',
     }
     const TARGET_LABELS: Record<string, string> = {
-      single: 'Alvo Unico', area: 'Area', self: 'Proprio',
-      lowest_ally: 'Aliado Fraco', all_allies: 'Todos Aliados',
+      single: 'Alvo único', area: 'Área', self: 'Próprio',
+      lowest_ally: 'Aliado fraco', all_allies: 'Todos aliados',
     }
 
-    // Determine what the skill does: damage, heal, or shield
+    // Effect-type classification for stat line rendering
     const DAMAGE_TYPES = new Set(['damage', 'true_damage', 'area', 'bleed', 'burn', 'poison', 'lifesteal', 'mark'])
     const HEAL_TYPES = new Set(['heal', 'regen', 'revive'])
     const SHIELD_TYPES = new Set(['shield'])
 
-    const bColor = GROUP_COLORS[skill.group] ?? 0xf0c850
-    const bHex = GROUP_HEX[skill.group] ?? '#f0c850'
-    const cHex = CLASS_HEX[skill.unitClass] ?? '#f0c850'
+    const bColor = GROUP_TINT[skill.group] ?? accent.primary
+    const cColor = CLASS_COLOR[skill.unitClass] ?? accent.primary
+    const cHex = '#' + cColor.toString(16).padStart(6, '0')
+    const bHex = '#' + bColor.toString(16).padStart(6, '0')
     const cName = CLASS_NAMES[skill.unitClass] ?? skill.unitClass
     const abbr = ABBREVS[skill.effectType] ?? '??'
     const tgtLabel = TARGET_LABELS[skill.targetType ?? 'single'] ?? ''
 
     const els: Phaser.GameObjects.GameObject[] = []
 
-    // ── Background ──
+    // ── Background (surface.panel + border.default + radii.xl) ──
     const g = scene.add.graphics()
-    g.fillStyle(0x000000, 0.6); g.fillRoundedRect(-hw + 3, -hh + 4, cardW, cardH, 14)
-    g.fillStyle(0x0a0e16, 1); g.fillRoundedRect(-hw, -hh, cardW, cardH, 14)
-    g.fillStyle(0xffffff, 0.02); g.fillRoundedRect(-hw + 2, -hh + 2, cardW - 4, 18, { tl: 12, tr: 12, bl: 0, br: 0 })
-    g.lineStyle(2, bColor, 0.5); g.strokeRoundedRect(-hw, -hh, cardW, cardH, 14)
-    // Left accent
-    g.fillStyle(bColor, 0.6); g.fillRoundedRect(-hw, -hh + 4, 4, cardH - 8, { tl: 14, bl: 14, tr: 0, br: 0 })
+    g.fillStyle(0x000000, 0.55)
+    g.fillRoundedRect(-hw + 3, -hh + 4, cardW, cardH, radii.xl)
+    g.fillStyle(surface.panel, 1)
+    g.fillRoundedRect(-hw, -hh, cardW, cardH, radii.xl)
+    g.fillStyle(0xffffff, 0.04)
+    g.fillRoundedRect(-hw + 2, -hh + 2, cardW - 4, 18,
+      { tl: radii.xl - 1, tr: radii.xl - 1, bl: 0, br: 0 })
+    g.lineStyle(1, border.default, 1)
+    g.strokeRoundedRect(-hw, -hh, cardW, cardH, radii.xl)
+    // Category left accent
+    g.fillStyle(bColor, 0.9)
+    g.fillRoundedRect(-hw, -hh + 4, 4, cardH - 8, { tl: radii.xl, bl: radii.xl, tr: 0, br: 0 })
     els.push(g)
 
-    // ── Top-left: Class + Level ──
-    els.push(scene.add.text(-hw + 14, -hh + 10, `${cName}  •  Lv.${skill.level}`, {
-      fontFamily: F.body, fontSize: '12px', color: cHex, fontStyle: 'bold',
-      stroke: '#000000', strokeThickness: 2,
-    }))
+    // ── Top-left: Class name + Level ──
+    els.push(scene.add.text(-hw + 14, -hh + 12, `${cName.toUpperCase()}  ·  NV ${skill.level}`, {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: cHex, fontStyle: '700',
+    }).setLetterSpacing(1.6))
 
     // ── Icon (centered, below class) ──
-    const iconSz = 72; const iconCy = -hh + 66
+    const iconSz = 72; const iconCy = -hh + 72
     const ig = scene.add.graphics()
-    ig.fillStyle(0x06090f, 1); ig.fillRoundedRect(-iconSz / 2, iconCy - iconSz / 2, iconSz, iconSz, 10)
-    ig.lineStyle(2.5, bColor, 0.85); ig.strokeRoundedRect(-iconSz / 2, iconCy - iconSz / 2, iconSz, iconSz, 10)
-    // Inner highlight top for gloss
+    ig.fillStyle(surface.deepest, 1)
+    ig.fillRoundedRect(-iconSz / 2, iconCy - iconSz / 2, iconSz, iconSz, radii.md)
+    ig.lineStyle(2, cColor, 0.95)
+    ig.strokeRoundedRect(-iconSz / 2, iconCy - iconSz / 2, iconSz, iconSz, radii.md)
     ig.fillStyle(0xffffff, 0.05)
     ig.fillRoundedRect(-iconSz / 2 + 3, iconCy - iconSz / 2 + 3,
-      iconSz - 6, iconSz / 2 - 3, { tl: 8, tr: 8, bl: 0, br: 0 })
+      iconSz - 6, iconSz / 2 - 3, { tl: radii.sm, tr: radii.sm, bl: 0, br: 0 })
     els.push(ig)
 
     // Prefer PNG icon when loaded; fall back to 2-letter abbreviation.
@@ -1513,87 +1533,93 @@ export const UI = {
       els.push(iconImg)
     } else {
       els.push(scene.add.text(0, iconCy, abbr, {
-        fontFamily: F.title, fontSize: '28px', color: bHex, fontStyle: 'bold',
-        stroke: '#000000', strokeThickness: 4,
+        fontFamily: fontFamily.mono, fontSize: typeScale.statLg,
+        color: cHex, fontStyle: '700',
       }).setOrigin(0.5))
     }
 
-    // ── Skill name (large, bold, centered) ──
-    const nameY2 = iconCy + iconSz / 2 + 14
+    // ── Skill name (Cormorant, large) ──
+    const nameY2 = iconCy + iconSz / 2 + 16
     let nfs = 22
     const nameTx = scene.add.text(0, nameY2, skill.name, {
-      fontFamily: F.title, fontSize: `${nfs}px`, color: '#ffffff', fontStyle: 'bold',
-      stroke: '#000000', strokeThickness: 3,
+      fontFamily: fontFamily.serif, fontSize: `${nfs}px`,
+      color: fg.primaryHex, fontStyle: '600',
     }).setOrigin(0.5)
     while (nameTx.width > cardW - 28 && nfs > 13) { nfs--; nameTx.setFontSize(nfs) }
     els.push(nameTx)
 
-    // ── Separator ──
-    const sep1Y = nameY2 + 18
+    // ── Separator (gradient line) ──
+    const sep1Y = nameY2 + 22
     const sg = scene.add.graphics()
     for (let i = 0; i < cardW - 30; i++) {
       const t2 = 1 - Math.abs(i - (cardW - 30) / 2) / ((cardW - 30) / 2)
-      sg.fillStyle(bColor, 0.25 * t2); sg.fillRect(-hw + 15 + i, sep1Y, 1, 1)
+      sg.fillStyle(bColor, 0.32 * t2); sg.fillRect(-hw + 15 + i, sep1Y, 1, 1)
     }
     els.push(sg)
 
-    // ── Stats: show only relevant lines (Dano/Cura/Escudo + Tipo) ──
-    let curY = sep1Y + 12
+    // ── Stats rows (Dano / Cura / Escudo + Tipo) ──
+    let curY = sep1Y + 14
     const lnH = 24
 
-    // Damage/Heal/Shield value (show only if applicable)
-    if (DAMAGE_TYPES.has(skill.effectType) && skill.power > 0) {
-      els.push(scene.add.text(-hw + 18, curY, 'Dano', { fontFamily: F.body, fontSize: '14px', color: '#cc6666', fontStyle: 'bold', stroke: '#000000', strokeThickness: 2 }))
-      els.push(scene.add.text(hw - 18, curY, `${skill.power}`, { fontFamily: F.title, fontSize: '16px', color: '#ff6666', fontStyle: 'bold', stroke: '#000000', strokeThickness: 2 }).setOrigin(1, 0))
+    const pushStatLine = (label: string, value: string, labelColor: string, valueColor: string) => {
+      els.push(scene.add.text(-hw + 18, curY, label, {
+        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+        color: labelColor, fontStyle: '700',
+      }).setLetterSpacing(1.6))
+      els.push(scene.add.text(hw - 18, curY, value, {
+        fontFamily: fontFamily.mono, fontSize: typeScale.statMd,
+        color: valueColor, fontStyle: '700',
+      }).setOrigin(1, 0))
       curY += lnH
+    }
+
+    if (DAMAGE_TYPES.has(skill.effectType) && skill.power > 0) {
+      pushStatLine('DANO', `${skill.power}`, fg.tertiaryHex, dsState.errorHex)
     }
     if (HEAL_TYPES.has(skill.effectType) && skill.power > 0) {
-      els.push(scene.add.text(-hw + 18, curY, 'Cura', { fontFamily: F.body, fontSize: '14px', color: '#44cc66', fontStyle: 'bold', stroke: '#000000', strokeThickness: 2 }))
-      els.push(scene.add.text(hw - 18, curY, `${skill.power}`, { fontFamily: F.title, fontSize: '16px', color: '#66ff88', fontStyle: 'bold', stroke: '#000000', strokeThickness: 2 }).setOrigin(1, 0))
-      curY += lnH
+      pushStatLine('CURA', `${skill.power}`, fg.tertiaryHex, dsState.successHex)
     }
     if (SHIELD_TYPES.has(skill.effectType) && skill.power > 0) {
-      els.push(scene.add.text(-hw + 18, curY, 'Escudo', { fontFamily: F.body, fontSize: '14px', color: '#4488cc', fontStyle: 'bold', stroke: '#000000', strokeThickness: 2 }))
-      els.push(scene.add.text(hw - 18, curY, `${skill.power}`, { fontFamily: F.title, fontSize: '16px', color: '#66aaff', fontStyle: 'bold', stroke: '#000000', strokeThickness: 2 }).setOrigin(1, 0))
-      curY += lnH
+      pushStatLine('ESCUDO', `${skill.power}`, fg.tertiaryHex, dsState.infoHex)
     }
 
     // Secondary effect (if exists)
     if (skill.secondaryEffect && skill.secondaryEffect.power > 0) {
       const secIsDmg = DAMAGE_TYPES.has(skill.secondaryEffect.effectType)
       const secIsHeal = HEAL_TYPES.has(skill.secondaryEffect.effectType)
-      const secLabel = secIsDmg ? 'Dano Extra' : secIsHeal ? 'Cura Extra' : 'Efeito'
-      const secColor = secIsDmg ? '#cc8844' : secIsHeal ? '#44cc66' : '#ccaa44'
+      const secLabel = secIsDmg ? 'DANO EXTRA' : secIsHeal ? 'CURA EXTRA' : 'EFEITO'
+      const secColor = secIsDmg ? dsState.warnHex
+        : secIsHeal ? dsState.successHex
+        : accent.primaryHex
       const ticks = skill.secondaryEffect.ticks ? ` (${skill.secondaryEffect.ticks}t)` : ''
-      els.push(scene.add.text(-hw + 18, curY, secLabel, { fontFamily: F.body, fontSize: '13px', color: secColor, fontStyle: 'bold', stroke: '#000000', strokeThickness: 2 }))
-      els.push(scene.add.text(hw - 18, curY, `${skill.secondaryEffect.power}${ticks}`, { fontFamily: F.title, fontSize: '14px', color: secColor, fontStyle: 'bold', stroke: '#000000', strokeThickness: 2 }).setOrigin(1, 0))
-      curY += lnH
+      pushStatLine(secLabel, `${skill.secondaryEffect.power}${ticks}`, fg.tertiaryHex, secColor)
     }
 
     // Tipo (target type)
-    els.push(scene.add.text(-hw + 18, curY, 'Tipo', { fontFamily: F.body, fontSize: '14px', color: '#aaaaaa', fontStyle: 'bold', stroke: '#000000', strokeThickness: 2 }))
-    els.push(scene.add.text(hw - 18, curY, tgtLabel, { fontFamily: F.title, fontSize: '14px', color: '#ffffff', fontStyle: 'bold', stroke: '#000000', strokeThickness: 2 }).setOrigin(1, 0))
-    curY += lnH + 4
+    pushStatLine('ALVO', tgtLabel, fg.tertiaryHex, fg.primaryHex)
+    curY += 4
 
     // ── Separator 2 ──
     const sg2 = scene.add.graphics()
     for (let i = 0; i < cardW - 30; i++) {
       const t3 = 1 - Math.abs(i - (cardW - 30) / 2) / ((cardW - 30) / 2)
-      sg2.fillStyle(bColor, 0.15 * t3); sg2.fillRect(-hw + 15 + i, curY, 1, 1)
+      sg2.fillStyle(bColor, 0.2 * t3); sg2.fillRect(-hw + 15 + i, curY, 1, 1)
     }
     els.push(sg2)
     curY += 8
 
-    // ── Description (large, bold, readable — mobile-friendly) ──
+    // ── Description (Manrope body, readable) ──
     const descMaxH = hh - (curY - (-hh)) - 10
-    let dfs = 16
+    let dfs = 14
     const descTx = scene.add.text(0, curY, skill.description ?? '', {
-      fontFamily: F.body, fontSize: `${dfs}px`, color: '#dddddd',
+      fontFamily: fontFamily.body, fontSize: `${dfs}px`,
+      color: fg.secondaryHex,
       wordWrap: { width: cardW - 30 }, align: 'center', lineSpacing: 5,
-      stroke: '#000000', strokeThickness: 3,
     }).setOrigin(0.5, 0)
-    while (descTx.height > descMaxH && dfs > 12) { dfs--; descTx.setFontSize(dfs) }
+    while (descTx.height > descMaxH && dfs > 11) { dfs--; descTx.setFontSize(dfs) }
     els.push(descTx)
+    // Silence unused-var for bHex which served only for the legacy group ref
+    void bHex
 
     return scene.add.container(x, y, els).setDepth(500)
   },

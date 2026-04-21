@@ -1,6 +1,11 @@
 import Phaser from 'phaser'
 import { UI } from '../utils/UIComponents'
-import { C, F, SHADOW, SCREEN } from '../utils/DesignTokens'
+import {
+  SCREEN,
+  colors as C2,
+  surface, border, accent, fg, state,
+  fontFamily, typeScale, radii,
+} from '../utils/DesignTokens'
 import { transitionTo } from '../utils/SceneTransition'
 import { playerData } from '../utils/PlayerDataManager'
 import type { OwnedSkill } from '../utils/PlayerDataManager'
@@ -8,41 +13,63 @@ import { SKILL_CATALOG } from '../data/skillCatalog'
 import type { SkillDefinition } from '../domain/Skill'
 import type { UnitRole } from '../engine/types'
 import { unitStatsByRole } from '../data/unitStats'
-import { getCharacterKey, hasCharacterSprite } from '../utils/AssetPaths'
+import { getCharacterKey, hasCharacterSprite, getClassSigilKey } from '../utils/AssetPaths'
 import type { CharClass } from '../utils/AssetPaths'
 
 // ── Layout ──────────────────────────────────────────────────────────────────
 
 const W = SCREEN.W
 const H = SCREEN.H
-const TOP_BAR_H = 52
+const TOP_BAR_H = 56
 const LEFT_W = 330
 const CONTENT_X = LEFT_W + 8
 const CONTENT_W = W - CONTENT_X - 8
-const DECK_GAP = 6
-const DECK_CARD_W = Math.floor((CONTENT_W - 24 - 3 * DECK_GAP) / 4)  // ~258, fits 4 per row
-const DECK_CARD_H = 110
+
+// Canonical vertical skill card — INTEGRATION_SPEC §2 / Print 15
+const DECK_CARD_W = 120
+const DECK_CARD_H = 160
+const DECK_GAP = 14
+// 4 cols x 2 rows — deck has 8 slots total (attack1/2 + defense1/2 x 2)
+const DECK_COLS = 4
+const DECK_ROWS = 2
+
+// Inventory grid — decision C: 4 cols. Fits 4x120 + 3 x 10 = 510, plenty
+// of room in the ~920 content width with scroll below to handle overflow.
 const INV_COLS = 4
-const INV_GAP = 6
-const INV_CARD_W = DECK_CARD_W    // same width as deck cards for alignment
-const INV_CARD_H = 105
+const INV_GAP = 14
+const INV_CARD_W = DECK_CARD_W
+const INV_CARD_H = DECK_CARD_H
+
 const MAX_SKILL_LEVEL = 5
 const GROUP_ORDER = ['attack1', 'attack2', 'defense1', 'defense2']
 
-interface ClassMeta { role: UnitRole; label: string; abbrev: string; prefix: string; color: number; colorHex: string }
+// UPAR chip — drawn OUTSIDE the 120x160 card to avoid squeezing the
+// canonical footer. Chip lives 4px below the card and is 80x20.
+const UPAR_CHIP_W = 86
+const UPAR_CHIP_H = 20
+const UPAR_CHIP_OFFSET_Y = DECK_CARD_H / 2 + 14
+
+interface ClassMeta {
+  role: UnitRole
+  label: string
+  abbrev: string
+  prefix: string
+  color: number
+  colorHex: string
+}
 
 const CLASSES: ClassMeta[] = [
-  { role: 'king',       label: 'Rei',          abbrev: 'REI', prefix: 'lk_', color: C.king,       colorHex: '#f0c850' },
-  { role: 'warrior',    label: 'Guerreiro',    abbrev: 'GUE', prefix: 'lw_', color: C.warrior,    colorHex: '#4a90d9' },
-  { role: 'executor',   label: 'Executor',     abbrev: 'EXE', prefix: 'le_', color: C.executor,   colorHex: '#7744cc' },
-  { role: 'specialist', label: 'Especialista', abbrev: 'ESP', prefix: 'ls_', color: C.specialist, colorHex: '#44aacc' },
+  { role: 'king',       label: 'Rei',          abbrev: 'REI', prefix: 'lk_', color: C2.class.king,       colorHex: '#' + C2.class.king.toString(16).padStart(6, '0') },
+  { role: 'warrior',    label: 'Guerreiro',    abbrev: 'GUE', prefix: 'lw_', color: C2.class.warrior,    colorHex: '#' + C2.class.warrior.toString(16).padStart(6, '0') },
+  { role: 'executor',   label: 'Executor',     abbrev: 'EXE', prefix: 'le_', color: C2.class.executor,   colorHex: '#' + C2.class.executor.toString(16).padStart(6, '0') },
+  { role: 'specialist', label: 'Especialista', abbrev: 'ESP', prefix: 'ls_', color: C2.class.specialist, colorHex: '#' + C2.class.specialist.toString(16).padStart(6, '0') },
 ]
 
 const STAT_CFG = [
-  { key: 'maxHp' as const, label: 'HP', color: 0xef5350, hex: '#ef5350', max: 200 },
-  { key: 'attack' as const, label: 'ATK', color: 0xffa726, hex: '#ffa726', max: 25 },
-  { key: 'defense' as const, label: 'DEF', color: 0x4fc3f7, hex: '#4fc3f7', max: 20 },
-  { key: 'mobility' as const, label: 'MOB', color: 0x4ade80, hex: '#4ade80', max: 4 },
+  { key: 'maxHp' as const,    label: 'HP',  color: state.error,   hex: state.errorHex,   max: 200 },
+  { key: 'attack' as const,   label: 'ATK', color: accent.primary, hex: accent.primaryHex, max: 25 },
+  { key: 'defense' as const,  label: 'DEF', color: state.info,    hex: state.infoHex,    max: 20 },
+  { key: 'mobility' as const, label: 'MOB', color: state.success, hex: state.successHex, max: 4 },
 ]
 
 // ── Scene ────────────────────────────────────────────────────────────────────
@@ -102,27 +129,25 @@ export default class SkillUpgradeScene extends Phaser.Scene {
   // ═══════════════════════════════════════════════════════════════════════════
 
   private drawTopBar() {
+    // Band (surface.panel + border.subtle rule underneath — matches Lobby)
     const bg = this.add.graphics()
-    bg.fillStyle(0x0a0f18, 0.97)
+    bg.fillStyle(surface.panel, 0.97)
     bg.fillRect(0, 0, W, TOP_BAR_H)
-    for (let i = 0; i < W; i++) {
-      const d = Math.abs(i - W / 2) / (W / 2)
-      bg.fillStyle(C.goldDim, 0.2 * (1 - d * d))
-      bg.fillRect(i, TOP_BAR_H - 1, 1, 1)
-    }
-    UI.backArrow(this, () => { this._fillEmptySlots(); transitionTo(this, 'LobbyScene') })
-    this.add.text(70, TOP_BAR_H / 2, 'GERENCIAR SKILLS', {
-      fontFamily: F.title, fontSize: '20px', color: C.goldHex, fontStyle: 'bold', shadow: SHADOW.goldGlow,
-    }).setOrigin(0, 0.5)
+    bg.fillStyle(border.subtle, 1)
+    bg.fillRect(0, TOP_BAR_H - 1, W, 1)
 
-    // Gold
-    const gx = W - 120
-    const cg = this.add.graphics()
-    cg.fillStyle(C.gold, 0.7); cg.fillCircle(gx, TOP_BAR_H / 2, 8)
-    cg.lineStyle(1.5, C.gold, 0.9); cg.strokeCircle(gx, TOP_BAR_H / 2, 8)
-    this.add.text(gx + 14, TOP_BAR_H / 2, `${this.gold}`, {
-      fontFamily: F.title, fontSize: '15px', color: C.goldHex, fontStyle: 'bold', shadow: SHADOW.goldGlow,
-    }).setOrigin(0, 0.5)
+    UI.backArrow(this, () => { this._fillEmptySlots(); transitionTo(this, 'LobbyScene') })
+
+    // Title — Cinzel h2 accent, letterSpacing 3
+    this.add.text(70, TOP_BAR_H / 2, 'GERENCIAR SKILLS', {
+      fontFamily: fontFamily.display, fontSize: typeScale.h2,
+      color: accent.primaryHex, fontStyle: '700',
+    }).setOrigin(0, 0.5).setLetterSpacing(3)
+
+    // Gold pill (UI.currencyPill canonical)
+    UI.currencyPill(this, W - 90, TOP_BAR_H / 2, {
+      kind: 'gold', amount: this.gold,
+    })
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -143,8 +168,8 @@ export default class SkillUpgradeScene extends Phaser.Scene {
 
       const hexGfx = this.add.graphics()
       const hexR = tabW / 2
-      hexGfx.fillStyle(isActive ? 0x151c2a : 0x0a0e16, 1)
-      hexGfx.lineStyle(1.5, isActive ? cls.color : C.panelBorder, isActive ? 0.8 : 0.3)
+      hexGfx.fillStyle(isActive ? surface.raised : surface.panel, 1)
+      hexGfx.lineStyle(1.5, isActive ? cls.color : border.default, isActive ? 1 : 0.7)
       const pts: Phaser.Geom.Point[] = []
       for (let h = 0; h < 6; h++) {
         const a = (Math.PI * 2 * h) / 6 - Math.PI / 2
@@ -156,7 +181,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
       if (isActive) {
         const glow = this.add.circle(0, 0, hexR + 4, cls.color, 0)
         cont.addAt(glow, 0)
-        this.tweens.add({ targets: glow, alpha: { from: 0.05, to: 0.18 }, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.InOut' })
+        this.tweens.add({ targets: glow, alpha: { from: 0.08, to: 0.22 }, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.InOut' })
       }
 
       // Character sprite — sized to match arena (~66px tall at scale used in BattleScene)
@@ -172,11 +197,13 @@ export default class SkillUpgradeScene extends Phaser.Scene {
         if (!isActive) sprite.setAlpha(0.55)
         cont.add(sprite)
       } else {
-        cont.add(UI.classIcon(this, 0, -2, cls.role, 28, isActive ? cls.color : C.panelBorder))
+        cont.add(UI.classIcon(this, 0, -2, cls.role, 28, isActive ? cls.color : border.default))
       }
       cont.add(this.add.text(0, tabW / 2 + 8, cls.abbrev, {
-        fontFamily: F.body, fontSize: '11px', fontStyle: 'bold', color: isActive ? cls.colorHex : '#555555', shadow: SHADOW.text,
-      }).setOrigin(0.5))
+        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+        fontStyle: '700',
+        color: isActive ? cls.colorHex : fg.disabledHex,
+      }).setOrigin(0.5).setLetterSpacing(1.6))
 
       const hit = this.add.circle(0, 0, hexR + 2, 0, 0.001).setInteractive({ useHandCursor: true })
       cont.add(hit)
@@ -197,78 +224,97 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     this.leftGroup.forEach(o => o.destroy()); this.leftGroup = []
     const cls = CLASSES.find(c => c.role === this.activeRole)!
     const stats = unitStatsByRole[this.activeRole]
-    const px = 4; const pw = LEFT_W - 2  // quase encostando no painel da direita
+    const px = 4; const pw = LEFT_W - 2
 
-    // ── Stats panel — aligned with SKILLS EQUIPADAS panel (same top & bottom) ──
+    // ── Stats panel — aligned with SKILLS EQUIPADAS deck panel ──
     const deckTop = TOP_BAR_H + 8
-    const deckH2 = 32 + 2 * DECK_CARD_H + DECK_GAP + 10
+    const deckH2 = this._deckPanelHeight()
     const py = TOP_BAR_H + 106      // below enlarged hex tabs
-    const statsH = (deckTop + deckH2) - py  // bottom-aligns with deck panel
+    const statsH = (deckTop + deckH2) - py
 
     const bg = this.add.graphics()
-    bg.fillStyle(0x0c1019, 0.9); bg.fillRoundedRect(px, py, pw, statsH, 10)
-    bg.lineStyle(1, cls.color, 0.25); bg.strokeRoundedRect(px, py, pw, statsH, 10)
-    // Top gloss
-    bg.fillStyle(0xffffff, 0.015); bg.fillRoundedRect(px + 2, py + 2, pw - 4, 16, { tl: 8, tr: 8, bl: 0, br: 0 })
+    bg.fillStyle(surface.panel, 0.92); bg.fillRoundedRect(px, py, pw, statsH, radii.lg)
+    bg.lineStyle(1, border.default, 1); bg.strokeRoundedRect(px, py, pw, statsH, radii.lg)
+    // Top inset highlight
+    bg.fillStyle(0xffffff, 0.04)
+    bg.fillRoundedRect(px + 2, py + 2, pw - 4, 18, { tl: radii.lg - 1, tr: radii.lg - 1, bl: 0, br: 0 })
+    // Class accent left rule (4px)
+    bg.fillStyle(cls.color, 0.85)
+    bg.fillRoundedRect(px, py + 4, 4, statsH - 8, { tl: radii.sm, bl: radii.sm, tr: 0, br: 0 })
     this.leftGroup.push(bg)
 
-    // Corner ornaments
-    this.leftGroup.push(UI.cornerOrnaments(this, px + pw / 2, py + statsH / 2, pw - 12, statsH - 12, cls.color, 0.15, 16))
-
-    // Class name
-    this.leftGroup.push(this.add.text(px + pw / 2, py + 22, cls.label, {
-      fontFamily: F.title, fontSize: '16px', color: cls.colorHex, fontStyle: 'bold', shadow: SHADOW.text,
+    // Class name — Cormorant h3 class-color
+    this.leftGroup.push(this.add.text(px + pw / 2, py + 26, cls.label, {
+      fontFamily: fontFamily.serif, fontSize: typeScale.h3,
+      color: cls.colorHex, fontStyle: '600',
     }).setOrigin(0.5))
 
-    // Decorative line under class name
-    const lineY = py + 36
+    // Class sigil tinted
+    const sigilKey = getClassSigilKey(cls.role as CharClass)
+    const sigil = this.add.image(px + 26, py + 26, sigilKey)
+      .setDisplaySize(20, 20).setTintFill(cls.color).setAlpha(0.85)
+    this.leftGroup.push(sigil)
+
+    // Decorative divider
+    const lineY = py + 48
     const lineG = this.add.graphics()
     for (let li = 0; li < pw - 30; li++) {
       const t = 1 - Math.abs(li - (pw - 30) / 2) / ((pw - 30) / 2)
-      lineG.fillStyle(cls.color, 0.2 * t); lineG.fillRect(px + 15 + li, lineY, 1, 1)
+      lineG.fillStyle(cls.color, 0.25 * t); lineG.fillRect(px + 15 + li, lineY, 1, 1)
     }
     this.leftGroup.push(lineG)
 
-    // Stat bars (centered vertically in remaining space)
-    const bx = px + 14; const bw = pw - 28; const bh = 8; const bGap = 22
+    // Stat bars centered vertically
+    const bx = px + 14; const bw = pw - 28; const bh = 8; const bGap = 24
     const statsBlockH = STAT_CFG.length * bGap
-    const bStartY = py + 50 + (statsH - 50 - 12 - statsBlockH) / 2
+    const bStartY = py + 64 + (statsH - 64 - 12 - statsBlockH) / 2
 
     STAT_CFG.forEach((s, i) => {
       const sy = bStartY + i * bGap
       const val = stats[s.key]; const ratio = val / s.max
       const barTrackW = bw - 62
 
-      // Label (left-aligned)
+      // Label — Manrope meta uppercase
       this.leftGroup.push(this.add.text(bx, sy, s.label, {
-        fontFamily: F.body, fontSize: '11px', color: s.hex, fontStyle: 'bold', shadow: SHADOW.text,
-      }).setOrigin(0, 0.5))
+        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+        color: s.hex, fontStyle: '700',
+      }).setOrigin(0, 0.5).setLetterSpacing(1.6))
 
-      // Bar (centered vertically with text)
+      // Bar track
       const barX = bx + 34
       const barY = sy - bh / 2
       const g = this.add.graphics()
-      g.fillStyle(0x080c14, 1); g.fillRoundedRect(barX, barY, barTrackW, bh, bh / 2)
+      g.fillStyle(surface.deepest, 1); g.fillRoundedRect(barX, barY, barTrackW, bh, bh / 2)
       const fw = Math.max(bh, barTrackW * ratio)
-      g.fillStyle(s.color, 0.7); g.fillRoundedRect(barX, barY, fw, bh, bh / 2)
-      g.fillStyle(0xffffff, 0.1); g.fillRoundedRect(barX, barY, fw, bh * 0.4, { tl: bh / 2, tr: bh / 2, bl: 0, br: 0 })
+      g.fillStyle(s.color, 1); g.fillRoundedRect(barX, barY, fw, bh, bh / 2)
+      g.fillStyle(0xffffff, 0.14); g.fillRoundedRect(barX, barY, fw, bh * 0.4,
+        { tl: bh / 2, tr: bh / 2, bl: 0, br: 0 })
       this.leftGroup.push(g)
 
-      // Value (right-aligned, same baseline as label)
+      // Value — Mono tabular
       this.leftGroup.push(this.add.text(bx + bw, sy, `${val}`, {
-        fontFamily: F.title, fontSize: '12px', color: '#ffffff', fontStyle: 'bold', shadow: SHADOW.text,
+        fontFamily: fontFamily.mono, fontSize: typeScale.small,
+        color: fg.primaryHex, fontStyle: '700',
       }).setOrigin(1, 0.5))
     })
 
-    // ── Character sprite panel (below stats, placeholder for future sprite) ──
-    // ── Sprite panel — aligned with INVENTARIO panel (same top & bottom) ──
-    const invTopY = TOP_BAR_H + 8 + deckH2 + 6  // same calc as drawInventory
+    // ── Character sprite panel (aligned with INVENTARIO panel below) ──
+    const invTopY = TOP_BAR_H + 8 + deckH2 + 6
     const spriteY = invTopY
     const spriteH = H - spriteY - 8
 
     const spriteBg = this.add.graphics()
-    spriteBg.fillStyle(0x0c1019, 0.85); spriteBg.fillRoundedRect(px, spriteY, pw, spriteH, 10)
-    spriteBg.lineStyle(1, cls.color, 0.15); spriteBg.strokeRoundedRect(px, spriteY, pw, spriteH, 10)
+    spriteBg.fillStyle(surface.panel, 0.88)
+    spriteBg.fillRoundedRect(px, spriteY, pw, spriteH, radii.lg)
+    spriteBg.lineStyle(1, border.default, 1)
+    spriteBg.strokeRoundedRect(px, spriteY, pw, spriteH, radii.lg)
+    // Top inset + class accent left rule
+    spriteBg.fillStyle(0xffffff, 0.03)
+    spriteBg.fillRoundedRect(px + 2, spriteY + 2, pw - 4, 16,
+      { tl: radii.lg - 1, tr: radii.lg - 1, bl: 0, br: 0 })
+    spriteBg.fillStyle(cls.color, 0.55)
+    spriteBg.fillRoundedRect(px, spriteY + 4, 4, spriteH - 8,
+      { tl: radii.sm, bl: radii.sm, tr: 0, br: 0 })
     this.leftGroup.push(spriteBg)
 
     // Character sprite large + name label
@@ -304,10 +350,29 @@ export default class SkillUpgradeScene extends Phaser.Scene {
       this.leftGroup.push(largeIcon)
     }
 
-    // Character name under sprite
+    // Character name under sprite — Cormorant h3 class-color
     this.leftGroup.push(this.add.text(spriteCx, spriteY + spriteH - 22, cls.label, {
-      fontFamily: F.title, fontSize: '16px', color: cls.colorHex, fontStyle: 'bold', shadow: SHADOW.text,
+      fontFamily: fontFamily.serif, fontSize: typeScale.h3,
+      color: cls.colorHex, fontStyle: '600',
     }).setOrigin(0.5))
+  }
+
+  /** Unified deck panel height — used by both drawLeft and drawDeck
+   *  to keep stats/sprite aligned with deck/inventory panels. */
+  private _deckPanelHeight(): number {
+    return 36 + DECK_ROWS * DECK_CARD_H + (DECK_ROWS - 1) * DECK_GAP + 28 // header + rows + UPAR chip room
+  }
+
+  /** Deck grid origin — shared source of truth for drawDeck + highlight helpers */
+  private _deckGridGeometry() {
+    const dx = CONTENT_X
+    const dy = TOP_BAR_H + 8
+    const dw = CONTENT_W
+    const gridW = DECK_COLS * DECK_CARD_W + (DECK_COLS - 1) * DECK_GAP
+    return {
+      gridStartX: dx + (dw - gridW) / 2,
+      gridStartY: dy + 36,
+    }
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -320,12 +385,19 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     const cfg = (playerData.getDeckConfig()[this.activeRole]) ?? { attackCards: [] as string[], defenseCards: [] as string[] }
     const cls = CLASSES.find(c => c.role === this.activeRole)!
     const dx = CONTENT_X; const dy = TOP_BAR_H + 8; const dw = CONTENT_W
-    const deckH = 32 + 2 * DECK_CARD_H + DECK_GAP + 10  // header + 2 rows + gap + padding
+    const deckH = this._deckPanelHeight()
 
-    // Panel
+    // Panel — surface.panel + border.default + radii.lg
     const pg = this.add.graphics()
-    pg.fillStyle(0x0c1019, 0.88); pg.fillRoundedRect(dx, dy, dw, deckH, 10)
-    pg.lineStyle(1, cls.color, 0.2); pg.strokeRoundedRect(dx, dy, dw, deckH, 10)
+    pg.fillStyle(surface.panel, 0.92); pg.fillRoundedRect(dx, dy, dw, deckH, radii.lg)
+    pg.lineStyle(1, border.default, 1); pg.strokeRoundedRect(dx, dy, dw, deckH, radii.lg)
+    // Top inset highlight
+    pg.fillStyle(0xffffff, 0.03)
+    pg.fillRoundedRect(dx + 2, dy + 2, dw - 4, 18,
+      { tl: radii.lg - 1, tr: radii.lg - 1, bl: 0, br: 0 })
+    // Class accent top rule (3px)
+    pg.fillStyle(cls.color, 0.55)
+    pg.fillRoundedRect(dx, dy, dw, 3, { tl: radii.lg, tr: radii.lg, bl: 0, br: 0 })
     this.deckGroup.push(pg)
 
     // Click on deck panel background → deselect
@@ -347,30 +419,30 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     // Deck card hover tooltip uses the global showTooltipAt (defined in drawInventory)
     // We handle it via the deck card hit areas below
 
-    // Corner ornaments
-    this.deckGroup.push(UI.cornerOrnaments(this, dx + dw / 2, dy + deckH / 2, dw - 20, deckH - 16, cls.color, 0.15, 18))
-
-    // Title
+    // Title — Manrope meta letterSpacing 1.6, accent.primary
     const eq = cfg.attackCards.filter(Boolean).length + cfg.defenseCards.filter(Boolean).length
-    this.deckGroup.push(this.add.text(dx + 16, dy + 14, 'SKILLS EQUIPADAS', {
-      fontFamily: F.title, fontSize: '14px', color: C.goldHex, fontStyle: 'bold', shadow: SHADOW.goldGlow,
-    }).setOrigin(0, 0.5))
-    this.deckGroup.push(this.add.text(dx + dw - 16, dy + 14, `${eq}/8`, {
-      fontFamily: F.body, fontSize: '12px', color: C.mutedHex, fontStyle: 'bold', shadow: SHADOW.text,
+    this.deckGroup.push(this.add.text(dx + 16, dy + 18, 'SKILLS EQUIPADAS', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: accent.primaryHex, fontStyle: '700',
+    }).setOrigin(0, 0.5).setLetterSpacing(1.8))
+    this.deckGroup.push(this.add.text(dx + dw - 16, dy + 18, `${eq} / 8`, {
+      fontFamily: fontFamily.mono, fontSize: typeScale.small,
+      color: eq === 8 ? state.successHex : fg.tertiaryHex,
+      fontStyle: '700',
     }).setOrigin(1, 0.5))
 
-    // 2x4 grid of equipped cards
-    const gridStartX = dx + 12
-    const gridStartY = dy + 32
+    // 2x4 grid of equipped cards — canonical 120x160 vertical cards
+    const gridStartX = dx + (dw - (DECK_COLS * DECK_CARD_W + (DECK_COLS - 1) * DECK_GAP)) / 2
+    const gridStartY = dy + 36
     const groups = [
-      { label: 'ATK 1', color: '#cc3333', ids: cfg.attackCards, start: 0, end: 2, cat: 'attack' },
-      { label: 'ATK 2', color: '#dd6633', ids: cfg.attackCards, start: 2, end: 4, cat: 'attack' },
-      { label: 'DEF 1', color: '#3366cc', ids: cfg.defenseCards, start: 0, end: 2, cat: 'defense' },
-      { label: 'DEF 2', color: '#33aa88', ids: cfg.defenseCards, start: 2, end: 4, cat: 'defense' },
+      { label: 'ATK 1', ids: cfg.attackCards, start: 0, end: 2, cat: 'attack' },
+      { label: 'ATK 2', ids: cfg.attackCards, start: 2, end: 4, cat: 'attack' },
+      { label: 'DEF 1', ids: cfg.defenseCards, start: 0, end: 2, cat: 'defense' },
+      { label: 'DEF 2', ids: cfg.defenseCards, start: 2, end: 4, cat: 'defense' },
     ]
 
     groups.forEach((grp, gi) => {
-      const col = gi % 4
+      const col = gi % DECK_COLS
       const cardX = gridStartX + col * (DECK_CARD_W + DECK_GAP)
       const cardY = gridStartY
 
@@ -387,7 +459,11 @@ export default class SkillUpgradeScene extends Phaser.Scene {
               name: def.name, effectType: def.effectType, power: def.power,
               group: def.group, unitClass: owned.unitClass, level: owned.level,
               progress: owned.progress, skillId: sid, description: def.description,
-            }, { width: DECK_CARD_W, height: DECK_CARD_H, equipped: true, showTooltip: false })
+            }, {
+              orientation: 'vertical',
+              width: DECK_CARD_W, height: DECK_CARD_H,
+              equipped: true, showTooltip: false,
+            })
             this.deckGroup.push(card)
 
             // Register deck card position for click/tooltip/swap
@@ -395,12 +471,16 @@ export default class SkillUpgradeScene extends Phaser.Scene {
               x: cardX, y: cy, skillId: sid, slotIdx: si, category: grp.cat, group: def.group,
             })
 
-            // UPAR button
+            // UPAR chip — floats BELOW the card (Decision B)
             const canUp = owned.progress >= owned.level && owned.level < MAX_SKILL_LEVEL
             if (canUp) {
               const costDeck = playerData.getUpgradeCost(owned.level)
               const affordDeck = this.gold >= costDeck
-              this._addUparButton(card, DECK_CARD_W, DECK_CARD_H, costDeck, affordDeck)
+              const chipCx = cardX + DECK_CARD_W / 2
+              const chipCy = cy + DECK_CARD_H / 2 + UPAR_CHIP_OFFSET_Y
+              const chip = this._buildUparChip(chipCx, chipCy, costDeck, affordDeck, sid)
+              chip.setDepth(4)
+              this.deckGroup.push(chip)
             }
 
             // Click on deck card → select for swap + drag + tooltip
@@ -436,18 +516,12 @@ export default class SkillUpgradeScene extends Phaser.Scene {
               tt?.destroy(true); deckCardHit.setData('tooltip', null)
             })
 
-            deckCardHit.on('pointerdown', (p: Phaser.Input.Pointer) => {
+            deckCardHit.on('pointerdown', (_p: Phaser.Input.Pointer) => {
               this._deckCardClicked = true
               // Destroy tooltip
               const tt = deckCardHit.getData('tooltip') as Phaser.GameObjects.Container | undefined
               tt?.destroy(true); deckCardHit.setData('tooltip', null)
-
-              // Check UPAR button area first
-              const ubRight = cardX + DECK_CARD_W; const ubBottom = cy + DECK_CARD_H
-              if (canUp && this.gold >= playerData.getUpgradeCost(capturedOwned.level) &&
-                  p.x >= ubRight - 72 && p.y >= ubBottom - 30) {
-                this.performUpgrade(capturedSid); return
-              }
+              // UPAR chip handles its own click — no in-card area to guard
 
               // Click-select with highlight + show detail (no drag from deck)
               this.onDeckCardClick(capturedSid, capturedSlot, capturedCat, capturedGroup)
@@ -455,7 +529,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
               const clickDef = this.getSkillDef(capturedSid)
               if (clickDef) {
                 this._clickTooltip?.destroy(true)
-                const dkH2 = 32 + 2 * DECK_CARD_H + DECK_GAP + 10
+                const dkH2 = this._deckPanelHeight()
                 const spY2 = TOP_BAR_H + 8 + dkH2 + 6
                 const spH2 = H - spY2 - 8
                 this._clickTooltip = UI.skillDetailCard(this, LEFT_W / 2, spY2 + spH2 / 2, {
@@ -470,18 +544,26 @@ export default class SkillUpgradeScene extends Phaser.Scene {
             })
           }
         } else {
-          // Empty slot
+          // Empty slot — dashed border in accent dim + "Vazio" placeholder
           const eg = this.add.graphics()
+          eg.fillStyle(surface.deepest, 0.55)
+          eg.fillRoundedRect(cardX, cy, DECK_CARD_W, DECK_CARD_H, radii.md)
+          // Dashed border (drawn as a series of short segments)
           for (let di = 0; di < DECK_CARD_W; di += 6) {
-            eg.fillStyle(C.goldDim, 0.12); eg.fillRect(cardX + di, cy, 3, 1); eg.fillRect(cardX + di, cy + DECK_CARD_H, 3, 1)
+            eg.fillStyle(accent.dim, 0.55)
+            eg.fillRect(cardX + di, cy, 3, 1)
+            eg.fillRect(cardX + di, cy + DECK_CARD_H - 1, 3, 1)
           }
           for (let di = 0; di < DECK_CARD_H; di += 6) {
-            eg.fillStyle(C.goldDim, 0.12); eg.fillRect(cardX, cy + di, 1, 3); eg.fillRect(cardX + DECK_CARD_W, cy + di, 1, 3)
+            eg.fillStyle(accent.dim, 0.55)
+            eg.fillRect(cardX, cy + di, 1, 3)
+            eg.fillRect(cardX + DECK_CARD_W - 1, cy + di, 1, 3)
           }
           this.deckGroup.push(eg)
           this.deckGroup.push(this.add.text(cardX + DECK_CARD_W / 2, cy + DECK_CARD_H / 2, 'Vazio', {
-            fontFamily: F.body, fontSize: '10px', color: '#333333', shadow: SHADOW.text,
-          }).setOrigin(0.5))
+            fontFamily: fontFamily.body, fontSize: typeScale.meta,
+            color: fg.disabledHex, fontStyle: '700',
+          }).setOrigin(0.5).setLetterSpacing(1.6))
         }
       }
     })
@@ -496,26 +578,34 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     this.invContainer?.destroy(true); this.invContainer = null
 
     const cls = CLASSES.find(c => c.role === this.activeRole)!
-    const deckH = 32 + 2 * DECK_CARD_H + DECK_GAP + 10
+    const deckH = this._deckPanelHeight()
     const ix = CONTENT_X; const iy = TOP_BAR_H + 8 + deckH + 6; const iw = CONTENT_W; const ih = H - iy - 8
 
-    // Panel
+    // Panel — surface.panel + border.default + radii.lg + top inset
     const pg = this.add.graphics()
-    pg.fillStyle(0x0c1019, 0.85); pg.fillRoundedRect(ix, iy, iw, ih, 10)
-    pg.lineStyle(1, cls.color, 0.12); pg.strokeRoundedRect(ix, iy, iw, ih, 10)
+    pg.fillStyle(surface.panel, 0.92); pg.fillRoundedRect(ix, iy, iw, ih, radii.lg)
+    pg.lineStyle(1, border.default, 1); pg.strokeRoundedRect(ix, iy, iw, ih, radii.lg)
+    pg.fillStyle(0xffffff, 0.03)
+    pg.fillRoundedRect(ix + 2, iy + 2, iw - 4, 18,
+      { tl: radii.lg - 1, tr: radii.lg - 1, bl: 0, br: 0 })
+    // Subtle class-tinted top rule
+    pg.fillStyle(cls.color, 0.3)
+    pg.fillRoundedRect(ix, iy, iw, 2, { tl: radii.lg, tr: radii.lg, bl: 0, br: 0 })
     this.invGroup.push(pg)
 
-    // Title
-    this.invGroup.push(this.add.text(ix + 16, iy + 14, 'INVENTARIO', {
-      fontFamily: F.title, fontSize: '13px', color: C.goldHex, fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0, 0.5))
-    this.invGroup.push(this.add.text(ix + iw - 16, iy + 14, 'Clique para equipar', {
-      fontFamily: F.body, fontSize: '13px', color: '#444444', shadow: SHADOW.text,
+    // Title — Manrope meta + hint on the right
+    this.invGroup.push(this.add.text(ix + 16, iy + 18, 'INVENTÁRIO', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: accent.primaryHex, fontStyle: '700',
+    }).setOrigin(0, 0.5).setLetterSpacing(1.8))
+    this.invGroup.push(this.add.text(ix + iw - 16, iy + 18, 'Clique ou arraste para equipar', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: fg.tertiaryHex, fontStyle: '500',
     }).setOrigin(1, 0.5))
 
     const filtered = this.getFilteredSkills()
     const equippedSet = this.getEquippedIds()
-    const contentX = ix + 8; const contentY = iy + 30; const contentW = iw - 16; const contentH = ih - 38
+    const contentX = ix + 8; const contentY = iy + 36; const contentW = iw - 16; const contentH = ih - 44
 
     const container = this.add.container(contentX, contentY - this.scrollY)
     this.invContainer = container
@@ -527,8 +617,17 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     container.setMask(maskG.createGeometryMask())
     this.invGroup.push(maskG)
 
-    const groupLabels: Record<string, string> = { attack1: 'ATAQUE 1', attack2: 'ATAQUE 2', defense1: 'DEFESA 1', defense2: 'DEFESA 2' }
-    const groupColors: Record<string, string> = { attack1: '#cc3333', attack2: '#dd6633', defense1: '#3366cc', defense2: '#33aa88' }
+    const groupLabels: Record<string, string> = {
+      attack1: 'ATAQUE · DANO', attack2: 'ATAQUE · CONTROLE',
+      defense1: 'DEFESA · FORTE', defense2: 'DEFESA · LEVE',
+    }
+    // Group header tint aligned with DeckBuildScene (state-based semantic)
+    const groupTint: Record<string, string> = {
+      attack1: state.errorHex,
+      attack2: accent.hotHex,
+      defense1: state.infoHex,
+      defense2: state.successHex,
+    }
 
     let cursorY = 0
 
@@ -540,28 +639,36 @@ export default class SkillUpgradeScene extends Phaser.Scene {
       const totalOwned = allGroupSkills.length
       const maxPerGroup = 4 // each group has 4 possible skills
 
-      // Group header with count: "2/4 ATAQUE 1"
-      const countText = `${totalOwned}/${maxPerGroup}`
-      const headerLabel = `${countText}  ${groupLabels[group] ?? group}`
-      container.add(this.add.text(4, cursorY, headerLabel, {
-        fontFamily: F.title, fontSize: '10px', color: groupColors[group] ?? C.goldHex,
-        fontStyle: 'bold', shadow: SHADOW.text,
-      }))
-      cursorY += 18
+      // Group header: "ATAQUE · DANO   2/4"
+      container.add(this.add.text(4, cursorY, groupLabels[group] ?? group, {
+        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+        color: groupTint[group] ?? accent.primaryHex,
+        fontStyle: '700',
+      }).setLetterSpacing(1.6))
+      container.add(this.add.text(contentW - 8, cursorY, `${totalOwned} / ${maxPerGroup}`, {
+        fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+        color: fg.tertiaryHex, fontStyle: '700',
+      }).setOrigin(1, 0))
+      cursorY += 20
 
       if (skills.length === 0) {
         // No unequipped skills in this group
         container.add(this.add.text(4, cursorY + 6, 'Todas equipadas', {
-          fontFamily: F.body, fontSize: '13px', color: '#333333', shadow: SHADOW.text,
+          fontFamily: fontFamily.body, fontSize: typeScale.small,
+          color: fg.disabledHex, fontStyle: '500',
         }))
         cursorY += 26
         return
       }
 
+      // Stride per row = card + chip space below (so chip never overlaps next row)
+      const ROW_STRIDE = INV_CARD_H + INV_GAP + 18
+      const COL_STRIDE = INV_CARD_W + INV_GAP
+
       skills.forEach((item, gi) => {
         const col = gi % INV_COLS; const row = Math.floor(gi / INV_COLS)
-        const cx = col * (INV_CARD_W + INV_GAP) + INV_CARD_W / 2
-        const cy = cursorY + row * (INV_CARD_H + INV_GAP) + INV_CARD_H / 2
+        const cx = col * COL_STRIDE + INV_CARD_W / 2
+        const cy = cursorY + row * ROW_STRIDE + INV_CARD_H / 2
         const isSelected = this.fusionSlot1?.idx === item.origIdx
         const def = this.getSkillDef(item.skill.skillId)
         if (!def) return
@@ -570,26 +677,34 @@ export default class SkillUpgradeScene extends Phaser.Scene {
         const cost = playerData.getUpgradeCost(item.skill.level)
         const canAfford = this.gold >= cost
 
-        // Standard skill card (NO interactive — we handle clicks separately below)
+        // Canonical 120x160 vertical skill card
         const card = UI.skillCard(this, cx, cy, {
           name: def.name, effectType: def.effectType, power: def.power,
           group: def.group, unitClass: item.skill.unitClass, level: item.skill.level,
           progress: item.skill.progress, skillId: item.skill.skillId, description: def.description,
-        }, { width: INV_CARD_W, height: INV_CARD_H, showTooltip: false })
+        }, {
+          orientation: 'vertical',
+          width: INV_CARD_W, height: INV_CARD_H,
+          showTooltip: false,
+        })
 
         if (isSelected) {
           const glow = this.add.graphics()
-          glow.lineStyle(2, C.gold, 0.7)
-          glow.strokeRoundedRect(-INV_CARD_W / 2 - 2, -INV_CARD_H / 2 - 2, INV_CARD_W + 4, INV_CARD_H + 4, 9)
+          glow.lineStyle(2, accent.primary, 0.85)
+          glow.strokeRoundedRect(-INV_CARD_W / 2 - 2, -INV_CARD_H / 2 - 2,
+            INV_CARD_W + 4, INV_CARD_H + 4, radii.md)
           card.add(glow)
         }
 
-        // UPAR button overlay — shows on ANY skill with full progress (equipped OR not)
-        if (canUpgrade) {
-          this._addUparButton(card, INV_CARD_W, INV_CARD_H, cost, canAfford, item.skill.skillId)
-        }
-
         container.add(card)
+
+        // UPAR chip below the card (kept OUTSIDE the card container so it
+        // scrolls with the inventory mask and can receive its own clicks).
+        if (canUpgrade) {
+          const chipCy = cy + INV_CARD_H / 2 + 14
+          const chip = this._buildUparChip(cx, chipCy, cost, canAfford, item.skill.skillId)
+          container.add(chip)
+        }
 
         // Register position for click detection
         this.invCardPositions.push({
@@ -600,7 +715,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
       })
 
       const rows = Math.ceil(skills.length / INV_COLS)
-      cursorY += rows * (INV_CARD_H + INV_GAP) + 8
+      cursorY += rows * ROW_STRIDE + 10
     })
 
     // Scroll — use scene-level wheel event so it doesn't block card clicks
@@ -685,12 +800,9 @@ export default class SkillUpgradeScene extends Phaser.Scene {
       const pos = findInvCard(pointer.x, pointer.y)
 
       if (pos) {
-        // UPAR button area check
-        const hw = INV_CARD_W / 2; const hh = INV_CARD_H / 2
-        const ay = pos.cy - this.scrollY
-        if (pos.canUpgrade && pos.canAfford && pointer.x >= pos.cx + hw - 72 && pointer.y >= ay + hh - 30) {
-          this.performUpgrade(pos.skill.skillId); return
-        }
+        // UPAR chip handles its own click below each card — no in-card guard
+        // needed. The chip's hit area stopPropagation prevents the event
+        // from bubbling into this zone when the user clicks it directly.
 
         // Deck-selecting mode: replace deck slot
         if (this.deckSelecting && !pos.isEquipped) {
@@ -803,13 +915,13 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     this.fusionSlot1 = { skill, idx }
     this.redrawAll()
 
-    // White glow on selected inventory card
+    // Accent glow on selected inventory card
     const pos = this.invCardPositions.find(p => p.origIdx === idx)
     if (pos) {
       const ay = pos.cy - this.scrollY
       const selGlow = this.add.graphics().setDepth(10)
-      selGlow.lineStyle(3, 0xffffff, 0.9)
-      selGlow.strokeRoundedRect(pos.cx - INV_CARD_W / 2 - 3, ay - INV_CARD_H / 2 - 3, INV_CARD_W + 6, INV_CARD_H + 6, 10)
+      selGlow.lineStyle(3, accent.primary, 1)
+      selGlow.strokeRoundedRect(pos.cx - INV_CARD_W / 2 - 3, ay - INV_CARD_H / 2 - 3, INV_CARD_W + 6, INV_CARD_H + 6, radii.md)
       this.highlightObjs.push(selGlow)
       this.highlightTweens.push(this.tweens.add({ targets: selGlow, alpha: { from: 0.6, to: 1 }, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.InOut' }))
     }
@@ -823,8 +935,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     this.clearHighlights()
     this.fusionSlot1 = null
 
-    const gridStartX = CONTENT_X + 12
-    const gridStartY = TOP_BAR_H + 8 + 32
+    const { gridStartX, gridStartY } = this._deckGridGeometry()
     const groupToCol: Record<string, number> = { attack1: 0, attack2: 1, defense1: 2, defense2: 3 }
     const col = groupToCol[group] ?? 0
     const baseX = gridStartX + col * (DECK_CARD_W + DECK_GAP)
@@ -833,24 +944,24 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     if (group === 'attack1' || group === 'defense1') { startSlot = 0; endSlot = 2 }
     else { startSlot = 2; endSlot = 4 }
 
-    // ── WHITE glow on SELECTED deck card (different from gold slots) ──
+    // ── ACCENT glow on SELECTED deck card (different from swap target) ──
     const selRow = slotIdx - startSlot
     const selY = gridStartY + selRow * (DECK_CARD_H + DECK_GAP)
     const selGlow = this.add.graphics().setDepth(10)
-    selGlow.lineStyle(3, 0xffffff, 0.9)
-    selGlow.strokeRoundedRect(baseX - 3, selY - 3, DECK_CARD_W + 6, DECK_CARD_H + 6, 10)
+    selGlow.lineStyle(3, accent.primary, 1)
+    selGlow.strokeRoundedRect(baseX - 3, selY - 3, DECK_CARD_W + 6, DECK_CARD_H + 6, radii.md)
     this.highlightObjs.push(selGlow)
     this.highlightTweens.push(this.tweens.add({ targets: selGlow, alpha: { from: 0.6, to: 1 }, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.InOut' }))
 
-    // ── CYAN glow on OTHER deck slot (swap within deck) ──
+    // ── INFO glow on OTHER deck slot (swap within deck) ──
     for (let si = startSlot; si < endSlot; si++) {
       if (si === slotIdx) continue
       const row = si - startSlot
       const cardY = gridStartY + row * (DECK_CARD_H + DECK_GAP)
 
       const glow = this.add.graphics().setDepth(10)
-      glow.lineStyle(2.5, C.info, 0.8)
-      glow.strokeRoundedRect(baseX - 3, cardY - 3, DECK_CARD_W + 6, DECK_CARD_H + 6, 10)
+      glow.lineStyle(2.5, state.info, 0.9)
+      glow.strokeRoundedRect(baseX - 3, cardY - 3, DECK_CARD_W + 6, DECK_CARD_H + 6, radii.md)
       this.highlightObjs.push(glow)
       this.highlightTweens.push(this.tweens.add({ targets: glow, alpha: { from: 0.4, to: 1 }, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.InOut' }))
 
@@ -913,9 +1024,8 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     if (def.group === 'attack1' || def.group === 'defense1') { startSlot = 0; endSlot = 2 }
     else { startSlot = 2; endSlot = 4 }
 
-    // Match exact positions from drawDeck
-    const gridStartX = CONTENT_X + 12
-    const gridStartY = TOP_BAR_H + 8 + 32
+    // Match exact positions from drawDeck via the shared geometry helper
+    const { gridStartX, gridStartY } = this._deckGridGeometry()
     const baseX = gridStartX + targetCol * (DECK_CARD_W + DECK_GAP)
 
     for (let si = startSlot; si < endSlot; si++) {
@@ -923,8 +1033,8 @@ export default class SkillUpgradeScene extends Phaser.Scene {
       const cardY = gridStartY + row * (DECK_CARD_H + DECK_GAP)
 
       const glow = this.add.graphics().setDepth(10)
-      glow.lineStyle(2.5, C.gold, 0.8)
-      glow.strokeRoundedRect(baseX - 3, cardY - 3, DECK_CARD_W + 6, DECK_CARD_H + 6, 10)
+      glow.lineStyle(2.5, accent.primary, 0.9)
+      glow.strokeRoundedRect(baseX - 3, cardY - 3, DECK_CARD_W + 6, DECK_CARD_H + 6, radii.md)
       this.highlightObjs.push(glow)
       const tw = this.tweens.add({ targets: glow, alpha: { from: 0.4, to: 1 }, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.InOut' })
       this.highlightTweens.push(tw)
@@ -1007,12 +1117,12 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     const flash = this.add.rectangle(cx, cy, W, H, 0xffffff, 0).setDepth(200)
     this.tweens.add({ targets: flash, alpha: 0.15, duration: 100, yoyo: true, onComplete: () => flash.destroy() })
 
-    // Central burst — gold particles exploding outward
+    // Central burst — gold + success particles exploding outward
     for (let i = 0; i < 30; i++) {
       const angle = Math.random() * Math.PI * 2
       const dist = 40 + Math.random() * 80
       const size = 1.5 + Math.random() * 2.5
-      const color = Math.random() > 0.3 ? C.gold : C.success
+      const color = Math.random() > 0.3 ? accent.primary : state.success
       const p = this.add.circle(cx, cy, size, color, 0.9).setDepth(201)
       this.tweens.add({
         targets: p,
@@ -1025,10 +1135,10 @@ export default class SkillUpgradeScene extends Phaser.Scene {
       })
     }
 
-    // Rising stars
+    // Rising gold stars
     for (let i = 0; i < 8; i++) {
       const sx = cx - 60 + Math.random() * 120
-      const star = this.add.circle(sx, cy + 20, 2, C.gold, 0.8).setDepth(201)
+      const star = this.add.circle(sx, cy + 20, 2, accent.primary, 0.85).setDepth(201)
       this.tweens.add({
         targets: star,
         y: cy - 80 - Math.random() * 40,
@@ -1040,11 +1150,11 @@ export default class SkillUpgradeScene extends Phaser.Scene {
       })
     }
 
-    // "LEVEL UP!" text flash
+    // "LEVEL UP!" text flash — Cinzel display, success-green
     const lvUpText = this.add.text(cx, cy - 20, 'LEVEL UP!', {
-      fontFamily: F.title, fontSize: '28px', color: '#5ae890', fontStyle: 'bold',
-      shadow: { offsetX: 0, offsetY: 3, color: '#0a2a0a', blur: 12, fill: true },
-    }).setOrigin(0.5).setDepth(202).setAlpha(0).setScale(0.5)
+      fontFamily: fontFamily.display, fontSize: typeScale.displayMd,
+      color: state.successHex, fontStyle: '900',
+    }).setOrigin(0.5).setDepth(202).setAlpha(0).setScale(0.5).setLetterSpacing(4)
     this.tweens.add({
       targets: lvUpText,
       alpha: 1, scaleX: 1.2, scaleY: 1.2,
@@ -1091,83 +1201,96 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     this.highlightObjs.forEach(o => o.destroy()); this.highlightObjs = []
   }
 
-  /** Premium UPAR button added to a card container (bottom-right) */
-  private _addUparButton(card: Phaser.GameObjects.Container, cardW: number, cardH: number,
-    cost: number, canAfford: boolean, _skillId?: string) {
-    const ubW = 72; const ubH = 22
-    const ubX = cardW / 2 - ubW / 2 - 6
-    const ubY = cardH / 2 - ubH / 2 - 5
+  /**
+   * UPAR chip — floats BELOW the canonical 120x160 card so the card's own
+   * footer (DMG/CD per INTEGRATION_SPEC §2) stays untouched. Self-contained
+   * interactive container; click invokes performUpgrade(skillId) directly.
+   *
+   * @returns Container at (cx, cy) sized UPAR_CHIP_W x UPAR_CHIP_H.
+   */
+  private _buildUparChip(
+    cx: number, cy: number, cost: number, canAfford: boolean, skillId?: string,
+  ): Phaser.GameObjects.Container {
+    const w = UPAR_CHIP_W; const h = UPAR_CHIP_H
+    const hw = w / 2; const hh = h / 2
+    const els: Phaser.GameObjects.GameObject[] = []
 
-    const ug = this.add.graphics()
-
+    // Background
+    const g = this.add.graphics()
     if (canAfford) {
-      // ── Premium affordable button ──
-      // Outer glow ring
-      ug.fillStyle(C.success, 0.06)
-      ug.fillRoundedRect(ubX - ubW / 2 - 2, ubY - ubH / 2 - 2, ubW + 4, ubH + 4, 8)
-      // Shadow
-      ug.fillStyle(0x000000, 0.4)
-      ug.fillRoundedRect(ubX - ubW / 2 + 1, ubY - ubH / 2 + 2, ubW, ubH, 6)
-      // Base dark green
-      ug.fillStyle(0x0e2a12, 1)
-      ug.fillRoundedRect(ubX - ubW / 2, ubY - ubH / 2, ubW, ubH, 6)
-      // Inner bright gradient
-      ug.fillStyle(0x1a5a24, 0.6)
-      ug.fillRoundedRect(ubX - ubW / 2 + 3, ubY - ubH / 2 + 2, ubW - 6, ubH - 4, 4)
-      // Top glass highlight
-      ug.fillStyle(0xffffff, 0.08)
-      ug.fillRoundedRect(ubX - ubW / 2 + 3, ubY - ubH / 2 + 1, ubW - 6, ubH * 0.35,
-        { tl: 4, tr: 4, bl: 0, br: 0 })
-      // Green border
-      ug.lineStyle(1.5, C.success, 0.8)
-      ug.strokeRoundedRect(ubX - ubW / 2, ubY - ubH / 2, ubW, ubH, 6)
+      // Soft success-tinted halo
+      g.fillStyle(state.success, 0.10)
+      g.fillRoundedRect(-hw - 2, -hh - 2, w + 4, h + 4, radii.md)
+      // Drop shadow
+      g.fillStyle(0x000000, 0.35)
+      g.fillRoundedRect(-hw + 1, -hh + 2, w, h, radii.md)
+      // Base dark surface
+      g.fillStyle(surface.deepest, 1)
+      g.fillRoundedRect(-hw, -hh, w, h, radii.md)
+      // Inner gradient — success dim glow
+      g.fillStyle(state.successDim, 0.85)
+      g.fillRoundedRect(-hw + 2, -hh + 1, w - 4, h - 2, radii.sm)
+      // Top gloss
+      g.fillStyle(0xffffff, 0.10)
+      g.fillRoundedRect(-hw + 3, -hh + 1, w - 6, h * 0.4,
+        { tl: radii.sm, tr: radii.sm, bl: 0, br: 0 })
+      // Border
+      g.lineStyle(1, state.success, 1)
+      g.strokeRoundedRect(-hw, -hh, w, h, radii.md)
     } else {
-      // ── Disabled button ──
-      ug.fillStyle(0x151515, 1)
-      ug.fillRoundedRect(ubX - ubW / 2, ubY - ubH / 2, ubW, ubH, 6)
-      ug.lineStyle(1, 0x333333, 0.3)
-      ug.strokeRoundedRect(ubX - ubW / 2, ubY - ubH / 2, ubW, ubH, 6)
+      g.fillStyle(surface.panel, 1)
+      g.fillRoundedRect(-hw, -hh, w, h, radii.md)
+      g.lineStyle(1, border.subtle, 0.7)
+      g.strokeRoundedRect(-hw, -hh, w, h, radii.md)
     }
-    card.add(ug)
+    els.push(g)
 
-    // ── Arrow ↑ icon (drawn, not text) ──
+    // Arrow ↑ icon (only when affordable)
     if (canAfford) {
-      const arrowG = this.add.graphics()
-      const arrowX = ubX - ubW / 2 + 12
-      const arrowCy = ubY
-      arrowG.fillStyle(0x5ae890, 0.9)
-      // Arrow head (triangle pointing up)
-      arrowG.beginPath()
-      arrowG.moveTo(arrowX, arrowCy - 5)
-      arrowG.lineTo(arrowX + 4, arrowCy - 1)
-      arrowG.lineTo(arrowX - 4, arrowCy - 1)
-      arrowG.closePath()
-      arrowG.fillPath()
-      // Arrow body (small rect)
-      arrowG.fillRect(arrowX - 1.5, arrowCy - 1, 3, 5)
-      card.add(arrowG)
+      const arrow = this.add.graphics()
+      const arrowX = -hw + 14
+      arrow.fillStyle(0xffffff, 0.95)
+      arrow.beginPath()
+      arrow.moveTo(arrowX, -5)
+      arrow.lineTo(arrowX + 4, -1)
+      arrow.lineTo(arrowX - 4, -1)
+      arrow.closePath()
+      arrow.fillPath()
+      arrow.fillRect(arrowX - 1.5, -1, 3, 5)
+      els.push(arrow)
     }
 
-    // ── Text ──
-    const textX = canAfford ? ubX + 6 : ubX
+    // Label — Mono tabular, white when affordable / disabled when not
     const label = canAfford ? `UPAR ${cost}g` : `${cost}g`
-    card.add(this.add.text(textX, ubY, label, {
-      fontFamily: F.title, fontSize: '11px',
-      color: canAfford ? '#5ae890' : '#444444',
-      fontStyle: 'bold',
-      stroke: '#000000', strokeThickness: 2,
+    els.push(this.add.text(canAfford ? 8 : 0, 0, label, {
+      fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+      color: canAfford ? fg.primaryHex : fg.disabledHex, fontStyle: '700',
     }).setOrigin(0.5))
 
-    // ── Pulsing glow when affordable ──
+    const container = this.add.container(cx, cy, els)
+
+    // Pulsing halo when affordable
     if (canAfford) {
-      const pulse = this.add.rectangle(ubX, ubY, ubW + 4, ubH + 4, C.success, 0)
-      card.addAt(pulse, 0)
+      const pulse = this.add.rectangle(0, 0, w + 6, h + 6, state.success, 0)
+      container.addAt(pulse, 0)
       this.tweens.add({
-        targets: pulse,
-        alpha: { from: 0.02, to: 0.12 },
+        targets: pulse, alpha: { from: 0.04, to: 0.18 },
         duration: 1000, yoyo: true, repeat: -1, ease: 'Sine.InOut',
       })
     }
+
+    // Hit area only when affordable — chip handles its own click
+    if (canAfford && skillId) {
+      const hit = this.add.rectangle(0, 0, w + 6, h + 6, 0x000000, 0.001)
+        .setInteractive({ useHandCursor: true })
+      hit.on('pointerdown', (_p: Phaser.Input.Pointer, _x: number, _y: number, ev: Phaser.Types.Input.EventData) => {
+        ev.stopPropagation()
+        this.performUpgrade(skillId)
+      })
+      container.add(hit)
+    }
+
+    return container
   }
 
   /** Destroy any floating hover tooltips (from deck highlights or inv hover) */
