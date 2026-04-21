@@ -1045,9 +1045,10 @@ export class CombatEngine {
       const result = this.resolver.resolve(skill.effectType, ctx)
       this._processResult(char, target, result)
 
-      // Optional second effect (e.g. shield + regen, heal + shield)
-      if (skill.secondaryEffect && target.alive) {
-        const sec = skill.secondaryEffect
+      // Follow-up effects applied in array order (e.g. shield + regen, heal + shield).
+      // Each entry is dispatched independently. Stops if the target dies mid-sequence.
+      for (const sec of skill.secondaryEffects) {
+        if (!target.alive) break
         const secCtx: EffectContext = { ...ctx, power: sec.power, ticks: sec.ticks }
         const secResult = this.resolver.resolve(sec.effectType, secCtx)
         this._processResult(char, target, secResult)
@@ -1260,14 +1261,17 @@ export class CombatEngine {
       }
     }
 
-    // Secondary effect (only when the hit was not evaded, target still alive)
-    if (skill.secondaryEffect && !result.evaded && target.alive) {
-      const sec = skill.secondaryEffect
-      const secCtx: EffectContext = {
-        caster, target, power: sec.power, rawDamage: 0, ticks: sec.ticks, round: this.battle.round,
+    // Follow-up effects (skipped when hit was evaded). Each applies in
+    // array order; stops if target dies before all resolve.
+    if (!result.evaded) {
+      for (const sec of skill.secondaryEffects) {
+        if (!target.alive) break
+        const secCtx: EffectContext = {
+          caster, target, power: sec.power, rawDamage: 0, ticks: sec.ticks, round: this.battle.round,
+        }
+        const secResult = this.resolver.resolve(sec.effectType, secCtx)
+        this._processResult(caster, target, secResult)
       }
-      const secResult = this.resolver.resolve(sec.effectType, secCtx)
-      this._processResult(caster, target, secResult)
     }
 
     return result.hpDamage

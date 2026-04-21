@@ -69,8 +69,8 @@ describe('Warrior — Attack 1 (dano alto)', () => {
       expect(s.power).toBe(22)
       expect(s.effectType).toBe('area')
       expect(s.areaShape?.type).toBe('line')
-      expect(s.secondaryEffect?.effectType).toBe('push')
-      expect(s.secondaryEffect?.power).toBe(1)
+      expect(s.secondaryEffects?.[0]?.effectType).toBe('push')
+      expect(s.secondaryEffects?.[0]?.power).toBe(1)
     })
 
     it('primary area damage applies', () => {
@@ -97,20 +97,23 @@ describe('Warrior — Attack 1 (dano alto)', () => {
     it('[PARTIAL] conditional snare-on-block rule is not yet encoded', () => {
       const s = warriorSkill('lw_a1')
       // Catalog only defines push as secondary — no snare.
-      expect(s.secondaryEffect?.effectType).toBe('push')
+      expect(s.secondaryEffects?.[0]?.effectType).toBe('push')
     })
   })
 
   // ── lw_a2 Impacto ──────────────────────────────────────────────────────────
-  describe('lw_a2 — Impacto (28 dmg 3x3 + def_down 18%)', () => {
-    it('catalog entry', () => {
+  describe('lw_a2 — Impacto (28 dmg 3x3 + def_down 18% + mov_down 1)', () => {
+    it('catalog entry has both secondaries (def_down + mov_down)', () => {
       const s = warriorSkill('lw_a2')
       expect(s.name).toBe('Impacto')
       expect(s.power).toBe(28)
       expect(s.effectType).toBe('area')
       expect(s.areaShape?.type).toBe('square')
-      expect(s.secondaryEffect?.effectType).toBe('def_down')
-      expect(s.secondaryEffect?.power).toBe(18)
+      expect(s.secondaryEffects?.length).toBe(2)
+      expect(s.secondaryEffects?.[0]?.effectType).toBe('def_down')
+      expect(s.secondaryEffects?.[0]?.power).toBe(18)
+      expect(s.secondaryEffects?.[1]?.effectType).toBe('mov_down')
+      expect(s.secondaryEffects?.[1]?.power).toBe(1)
     })
 
     it('primary area damage applies', () => {
@@ -129,11 +132,27 @@ describe('Warrior — Attack 1 (dano alto)', () => {
       expect(target.defense).toBe(defBefore - 18)
     })
 
-    // v3 extra rule: mov_down 1 alongside def_down. Not carried in the
-    // catalog's secondaryEffect (it supports only ONE secondary type).
-    it('[PARTIAL] v3 mov_down extra effect is not carried in secondaryEffect', () => {
-      const s = warriorSkill('lw_a2')
-      expect(s.secondaryEffect?.effectType).not.toBe('mov_down')
+    it('BOTH secondaries apply through CombatEngine (def_down AND mov_down)', () => {
+      const warrior = mkChar('w', 'warrior', 'left', 5, 3)
+      const target  = mkChar('t', 'warrior', 'right', 8, 3)   // DEF 20, MOB 2
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [warrior]),
+        rightTeam: new Team('right', [target]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(warriorSkill('lw_a2'))
+      const applyFn = (engine as unknown as {
+        _applyAttackSkill: (c: Character, s: Skill, t: { kind: string; col: number; row: number }, side: string) => void
+      })._applyAttackSkill.bind(engine)
+
+      const defBefore = target.defense    // 20
+      const movBefore = target.mobility   // 2
+      applyFn(warrior, skill, { kind: 'area', col: 8, row: 3 }, 'left')
+
+      // def_down 18 → DEF drops to 2, mov_down 1 → MOB drops to 1.
+      expect(target.defense).toBe(defBefore - 18)
+      expect(target.mobility).toBe(movBefore - 1)
     })
   })
 
@@ -144,7 +163,7 @@ describe('Warrior — Attack 1 (dano alto)', () => {
       expect(s.name).toBe('Golpe Devastador')
       expect(s.power).toBe(30)
       expect(s.effectType).toBe('area')
-      expect(s.secondaryEffect?.effectType).toBe('purge')
+      expect(s.secondaryEffects?.[0]?.effectType).toBe('purge')
     })
 
     it('primary area damage applies', () => {
@@ -174,7 +193,7 @@ describe('Warrior — Attack 1 (dano alto)', () => {
       expect(s.power).toBe(24)
       expect(s.effectType).toBe('area')
       expect(s.areaShape?.type).toBe('line')
-      expect(s.secondaryEffect?.effectType).toBe('push')
+      expect(s.secondaryEffects?.[0]?.effectType).toBe('push')
     })
 
     it('primary line damage applies', () => {
@@ -191,7 +210,7 @@ describe('Warrior — Attack 1 (dano alto)', () => {
     // is on. Documented partial.
     it('[PARTIAL] per-line rules (central snare, off-center perpendicular) pending', () => {
       const s = warriorSkill('lw_a4')
-      expect(s.secondaryEffect?.effectType).toBe('push')   // only "push 1" encoded
+      expect(s.secondaryEffects?.[0]?.effectType).toBe('push')   // only "push 1" encoded
     })
   })
 })
@@ -203,13 +222,16 @@ describe('Warrior — Attack 2 (controle)', () => {
   beforeEach(() => { resolver = createDefaultResolver() })
 
   // ── lw_a5 Provocação ───────────────────────────────────────────────────────
-  describe('lw_a5 — Provocação (10 dmg + silence_defense)', () => {
-    it('catalog entry', () => {
+  describe('lw_a5 — Provocação (10 dmg + silence_defense + def_down 15%)', () => {
+    it('catalog entry has both secondaries (silence_defense + def_down)', () => {
       const s = warriorSkill('lw_a5')
       expect(s.name).toBe('Provocação')
       expect(s.power).toBe(10)
       expect(s.effectType).toBe('damage')
-      expect(s.secondaryEffect?.effectType).toBe('silence_defense')
+      expect(s.secondaryEffects?.length).toBe(2)
+      expect(s.secondaryEffects?.[0]?.effectType).toBe('silence_defense')
+      expect(s.secondaryEffects?.[1]?.effectType).toBe('def_down')
+      expect(s.secondaryEffects?.[1]?.power).toBe(15)
     })
 
     it('primary damage applies', () => {
@@ -228,11 +250,25 @@ describe('Warrior — Attack 2 (controle)', () => {
       expect(target.isDefenseSilenced).toBe(true)
     })
 
-    // v3 description also says "+def_down 15%". The catalog carries only
-    // silence_defense as secondary — def_down third effect is a known gap.
-    it('[PARTIAL] v3 def_down 15% third effect is not carried', () => {
-      const s = warriorSkill('lw_a5')
-      expect(s.secondaryEffect?.effectType).toBe('silence_defense')
+    it('BOTH secondaries apply through CombatEngine (silence_defense AND def_down)', () => {
+      const warrior = mkChar('w', 'warrior', 'left', 5, 3)
+      const target  = mkChar('t', 'warrior', 'right', 6, 3)    // DEF 20
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [warrior]),
+        rightTeam: new Team('right', [target]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(warriorSkill('lw_a5'))
+      const applyFn = (engine as unknown as {
+        _applyAttackSkill: (c: Character, s: Skill, t: { kind: string; characterId: string }, side: string) => void
+      })._applyAttackSkill.bind(engine)
+
+      const defBefore = target.defense
+      applyFn(warrior, skill, { kind: 'character', characterId: target.id }, 'left')
+
+      expect(target.isDefenseSilenced).toBe(true)
+      expect(target.defense).toBe(defBefore - 15)
     })
   })
 
@@ -242,7 +278,7 @@ describe('Warrior — Attack 2 (controle)', () => {
       const s = warriorSkill('lw_a6')
       expect(s.name).toBe('Muralha Viva')
       expect(s.effectType).toBe('summon_wall')
-      expect(s.secondaryEffect?.effectType).toBe('def_down')
+      expect(s.secondaryEffects?.[0]?.effectType).toBe('def_down')
     })
 
     it('summon_wall handler emits STATUS_APPLIED so UI can animate', () => {
@@ -265,13 +301,15 @@ describe('Warrior — Attack 2 (controle)', () => {
   })
 
   // ── lw_a7 Investida ────────────────────────────────────────────────────────
-  describe('lw_a7 — Investida (12 dmg line + def_down 15%)', () => {
-    it('catalog entry', () => {
+  describe('lw_a7 — Investida (12 dmg line + def_down 15% + mov_down 1)', () => {
+    it('catalog entry has both secondaries (def_down + mov_down)', () => {
       const s = warriorSkill('lw_a7')
       expect(s.name).toBe('Investida')
       expect(s.power).toBe(12)
       expect(s.effectType).toBe('area')
-      expect(s.secondaryEffect?.effectType).toBe('def_down')
+      expect(s.secondaryEffects?.length).toBe(2)
+      expect(s.secondaryEffects?.[0]?.effectType).toBe('def_down')
+      expect(s.secondaryEffects?.[1]?.effectType).toBe('mov_down')
     })
 
     it('primary line damage applies', () => {
@@ -282,12 +320,26 @@ describe('Warrior — Attack 2 (controle)', () => {
       expect(target.hp).toBe(hpBefore - 12)
     })
 
-    it('def_down 15% secondary reduces target defense', () => {
-      const warrior = mkChar('w', 'warrior', 'left')
-      const target  = mkChar('t', 'warrior', 'right')
+    it('BOTH secondaries apply through CombatEngine (def_down AND mov_down)', () => {
+      const warrior = mkChar('w', 'warrior', 'left', 5, 3)
+      const target  = mkChar('t', 'warrior', 'right', 8, 3)
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [warrior]),
+        rightTeam: new Team('right', [target]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(warriorSkill('lw_a7'))
+      const applyFn = (engine as unknown as {
+        _applyAttackSkill: (c: Character, s: Skill, t: { kind: string; col: number; row: number }, side: string) => void
+      })._applyAttackSkill.bind(engine)
+
       const defBefore = target.defense
-      resolver.resolve('def_down', ctx(warrior, target, 15, 0, 1))
+      const movBefore = target.mobility
+      applyFn(warrior, skill, { kind: 'area', col: 8, row: 3 }, 'left')
+
       expect(target.defense).toBe(defBefore - 15)
+      expect(target.mobility).toBe(movBefore - 1)
     })
   })
 
@@ -297,7 +349,7 @@ describe('Warrior — Attack 2 (controle)', () => {
       const s = warriorSkill('lw_a8')
       expect(s.name).toBe('Prisão de Muralha Morta')
       expect(s.effectType).toBe('summon_wall')
-      expect(s.secondaryEffect?.effectType).toBe('snare')
+      expect(s.secondaryEffects?.[0]?.effectType).toBe('snare')
     })
 
     it('summon_wall with damage applies the 12 center damage via _applyRawDamage', () => {
@@ -392,8 +444,8 @@ describe('Warrior — Defense 1 (forte)', () => {
       expect(s.name).toBe('Resistência Absoluta')
       expect(s.effectType).toBe('shield')
       expect(s.power).toBe(65)
-      expect(s.secondaryEffect?.effectType).toBe('def_up')
-      expect(s.secondaryEffect?.power).toBe(25)
+      expect(s.secondaryEffects?.[0]?.effectType).toBe('def_up')
+      expect(s.secondaryEffects?.[0]?.power).toBe(25)
     })
 
     it('applies a 65 shield to the warrior', () => {
@@ -453,7 +505,7 @@ describe('Warrior — Defense 2 (leve)', () => {
       expect(king).toBeDefined()
       expect(warrior.name).toBe(king!.name)
       expect(warrior.effectType).toBe(king!.effectType)
-      expect(warrior.secondaryEffect?.effectType).toBe(king!.secondaryEffect?.effectType)
+      expect(warrior.secondaryEffects?.[0]?.effectType).toBe(king!.secondaryEffects?.[0]?.effectType)
     })
 
     it('self-stun secondary applies via resolver', () => {
@@ -530,8 +582,8 @@ describe('Warrior — Defense 2 (leve)', () => {
       expect(s.name).toBe('Avançar')
       expect(s.effectType).toBe('advance_allies')
       expect(s.power).toBe(10)
-      expect(s.secondaryEffect?.effectType).toBe('atk_up')
-      expect(s.secondaryEffect?.power).toBe(10)
+      expect(s.secondaryEffects?.[0]?.effectType).toBe('atk_up')
+      expect(s.secondaryEffects?.[0]?.power).toBe(10)
     })
 
     it('advance_allies buffs ally defense and returns a forward push', () => {

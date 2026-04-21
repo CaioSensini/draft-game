@@ -245,7 +245,26 @@ export class Skill {
    * Null for single-target and self-targeting skills.
    */
   readonly areaShape:       AreaShape | null
-  readonly secondaryEffect: SecondaryEffectDef | null  // optional follow-up effect
+
+  /**
+   * Optional follow-up effects applied after the primary effect resolves.
+   * Executed in array order. Empty array means "no secondary".
+   *
+   * v3+ schema (replaces the legacy single `secondaryEffect` field). Enables
+   * multi-effect skills like Warrior's Impacto (damage + def_down + mov_down)
+   * or Executor's Golpe Envenenado (damage + poison + atk_down) without
+   * bespoke skill-specific handlers.
+   */
+  readonly secondaryEffects: ReadonlyArray<SecondaryEffectDef>
+
+  /**
+   * @deprecated Use `secondaryEffects` — returns the first secondary (or null)
+   * for backward compatibility with pre-refactor callers. Will be removed once
+   * all callers migrate (tracked in DECISIONS.md 2026-04-21).
+   */
+  get secondaryEffect(): SecondaryEffectDef | null {
+    return this.secondaryEffects[0] ?? null
+  }
 
   constructor(def: SkillDefinition) {
     this.id              = def.id
@@ -259,7 +278,17 @@ export class Skill {
     this.range           = def.range       ?? 0
     this.areaRadius      = def.areaRadius  ?? 0
     this.areaShape       = def.areaShape   ?? null
-    this.secondaryEffect = def.secondaryEffect ?? null
+    // Normalize secondary-effect input: accept either the array form
+    // (secondaryEffects) or the legacy single-entry form (secondaryEffect).
+    // If both are present, secondaryEffects wins and the legacy field is
+    // ignored — loud but non-breaking.
+    if (def.secondaryEffects && def.secondaryEffects.length > 0) {
+      this.secondaryEffects = [...def.secondaryEffects]
+    } else if (def.secondaryEffect) {
+      this.secondaryEffects = [def.secondaryEffect]
+    } else {
+      this.secondaryEffects = []
+    }
   }
 
   // ── Targeting queries ──────────────────────────────────────────────────────
@@ -417,8 +446,18 @@ export interface SkillDefinition {
    */
   areaShape?:       AreaShape
   /**
-   * Optional second effect applied to the same target after the primary effect.
-   * Enables data-driven combo skills without adding new engine switch cases.
+   * Optional follow-up effects applied after the primary effect resolves.
+   * Each entry is dispatched independently through the EffectResolver.
+   *
+   * This is the current shape (v3+ schema, see DECISIONS.md 2026-04-21).
+   * When both `secondaryEffects` and `secondaryEffect` are provided, the
+   * array wins.
+   */
+  secondaryEffects?: SecondaryEffectDef[]
+  /**
+   * @deprecated Use `secondaryEffects: [X]` instead.
+   * Legacy single-effect field kept for backward compatibility during the
+   * refactor — ignored when `secondaryEffects` is present.
    */
   secondaryEffect?: SecondaryEffectDef
 }

@@ -212,8 +212,8 @@ describe('Skill — construction and basic invariants', () => {
       secondaryEffect: { effectType: 'bleed', power: 4, ticks: 3 },
     })
     expect(s.secondaryEffect).not.toBeNull()
-    expect(s.secondaryEffect?.effectType).toBe('bleed')
-    expect(s.secondaryEffect?.ticks).toBe(3)
+    expect(s.secondaryEffects?.[0]?.effectType).toBe('bleed')
+    expect(s.secondaryEffects?.[0]?.ticks).toBe(3)
   })
 })
 

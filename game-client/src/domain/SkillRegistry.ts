@@ -36,6 +36,22 @@ function _validateDef(def: SkillDefinition): void {
   if (def.range !== undefined && (typeof def.range !== 'number' || def.range < 0)) {
     throw new Error(`SkillRegistry: skill "${def.id}" has invalid range (${def.range})`)
   }
+  // Validate the secondaryEffects array (v3+ schema).
+  if (def.secondaryEffects !== undefined) {
+    if (!Array.isArray(def.secondaryEffects)) {
+      throw new Error(`SkillRegistry: skill "${def.id}" secondaryEffects must be an array`)
+    }
+    for (let i = 0; i < def.secondaryEffects.length; i++) {
+      const sec = def.secondaryEffects[i]
+      if (!sec.effectType) {
+        throw new Error(`SkillRegistry: skill "${def.id}" secondaryEffects[${i}] is missing effectType`)
+      }
+      if (typeof sec.power !== 'number') {
+        throw new Error(`SkillRegistry: skill "${def.id}" secondaryEffects[${i}] has invalid power`)
+      }
+    }
+  }
+  // Validate the legacy single-secondary shape (still accepted, normalized at construction).
   if (def.secondaryEffect !== undefined) {
     if (!def.secondaryEffect.effectType) {
       throw new Error(`SkillRegistry: skill "${def.id}" secondaryEffect is missing effectType`)

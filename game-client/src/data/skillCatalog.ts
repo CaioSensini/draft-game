@@ -38,7 +38,7 @@ const LEFT_SPECIALIST: SkillDefinition[] = [
     id: 'ls_a1', name: 'Bola de Fogo', category: 'attack', group: 'attack1',
     effectType: 'area', targetType: 'area', power: 28, range: 0,
     areaShape: { type: 'square', radius: 1 }, // 2x2 campo inimigo (aprox 3x3 no grid atual)
-    secondaryEffect: { effectType: 'burn', power: 6, ticks: 2 },
+    secondaryEffects: [{ effectType: 'burn', power: 6, ticks: 2 }],
     description: '28 dano em área 2x2 no campo inimigo. Aplica queimação 6/turno por 2 turnos.',
   },
   {
@@ -51,7 +51,7 @@ const LEFT_SPECIALIST: SkillDefinition[] = [
     id: 'ls_a3', name: 'Raio Purificador', category: 'attack', group: 'attack1',
     effectType: 'area', targetType: 'area', power: 25, range: 0,
     areaShape: { type: 'line', direction: 'east', length: 6 },
-    secondaryEffect: { effectType: 'purge', power: 0 },
+    secondaryEffects: [{ effectType: 'purge', power: 0 }],
     description: '25 dano + purge em inimigos na linha. Aliados atingidos ganham shield 10.',
   },
   {
@@ -67,7 +67,7 @@ const LEFT_SPECIALIST: SkillDefinition[] = [
     id: 'ls_a5', name: 'Orbe de Lentidão', category: 'attack', group: 'attack2',
     effectType: 'area', targetType: 'area', power: 12, range: 0,
     areaShape: { type: 'square', radius: 1 },
-    secondaryEffect: { effectType: 'def_down', power: 25, ticks: 1 },
+    secondaryEffects: [{ effectType: 'def_down', power: 25, ticks: 1 }],
     description: '12 dano em área 3x3. def_down 25% + mov_down 1 por 1 turno.',
   },
   {
@@ -80,14 +80,14 @@ const LEFT_SPECIALIST: SkillDefinition[] = [
     id: 'ls_a7', name: 'Névoa', category: 'attack', group: 'attack2',
     effectType: 'area', targetType: 'area', power: 0, range: 0,
     areaShape: { type: 'square', radius: 7 },
-    secondaryEffect: { effectType: 'def_down', power: 15, ticks: 2 },
+    secondaryEffects: [{ effectType: 'def_down', power: 15, ticks: 2 }],
     description:
       'Toda arena inimiga. Aliados: def_up 15%. Inimigos: def_down 15% + cura recebida -30% por 2 turnos.',
   },
   {
     id: 'ls_a8', name: 'Congelamento', category: 'attack', group: 'attack2',
     effectType: 'stun', targetType: 'single', power: 18, range: 0,
-    secondaryEffect: { effectType: 'def_down', power: 20, ticks: 1 },
+    secondaryEffects: [{ effectType: 'def_down', power: 20, ticks: 1 }],
     description: '18 dano + stun 1t + def_down 20% por 1 turno.',
   },
 
@@ -108,7 +108,7 @@ const LEFT_SPECIALIST: SkillDefinition[] = [
     id: 'ls_d3', name: 'Campo de Cura', category: 'defense', group: 'defense1',
     effectType: 'heal', targetType: 'area', power: 12, range: 0,
     areaShape: { type: 'square', radius: 1 },
-    secondaryEffect: { effectType: 'shield', power: 10, ticks: 1 },
+    secondaryEffects: [{ effectType: 'shield', power: 10, ticks: 1 }],
     description: 'Cura 12 HP + shield 10 (1t) em área 3x3. Rei só recebe shield.',
   },
   {
@@ -141,7 +141,7 @@ const LEFT_SPECIALIST: SkillDefinition[] = [
     id: 'ls_d8', name: 'Aura de Proteção', category: 'defense', group: 'defense2',
     effectType: 'shield', targetType: 'area', power: 12, range: 0,
     areaShape: { type: 'diamond', radius: 2 },
-    secondaryEffect: { effectType: 'atk_up', power: 10, ticks: 1 },
+    secondaryEffects: [{ effectType: 'atk_up', power: 10, ticks: 1 }],
     description: 'Shield 12 + atk_up 10% por 1 turno em área diamante r2.',
   },
 ]
@@ -159,28 +159,31 @@ const LEFT_WARRIOR: SkillDefinition[] = [
     id: 'lw_a1', name: 'Colisão Titânica', category: 'attack', group: 'attack1',
     effectType: 'area', targetType: 'area', power: 22, range: 0,
     areaShape: { type: 'line', direction: 'north', length: 5 },
-    secondaryEffect: { effectType: 'push', power: 1 },
+    secondaryEffects: [{ effectType: 'push', power: 1 }],
     description: '22 dano em retângulo 6x2 vertical + push 1 sqm. Se bloqueado: snare 1t.',
   },
   {
     id: 'lw_a2', name: 'Impacto', category: 'attack', group: 'attack1',
     effectType: 'area', targetType: 'area', power: 28, range: 0,
     areaShape: { type: 'square', radius: 1 },
-    secondaryEffect: { effectType: 'def_down', power: 18, ticks: 1 },
+    secondaryEffects: [
+      { effectType: 'def_down', power: 18, ticks: 1 },
+      { effectType: 'mov_down', power: 1,  ticks: 1 },
+    ],
     description: '28 dano em área 3x3. def_down 18% + mov_down 1 por 1 turno.',
   },
   {
     id: 'lw_a3', name: 'Golpe Devastador', category: 'attack', group: 'attack1',
     effectType: 'area', targetType: 'area', power: 30, range: 0,
     areaShape: { type: 'square', radius: 1 },
-    secondaryEffect: { effectType: 'purge', power: 0 },
+    secondaryEffects: [{ effectType: 'purge', power: 0 }],
     description: '30 dano em área 2x2. Remove buffs e quebra shields dos atingidos.',
   },
   {
     id: 'lw_a4', name: 'Investida Brutal', category: 'attack', group: 'attack1',
     effectType: 'area', targetType: 'area', power: 24, range: 0,
     areaShape: { type: 'line', direction: 'east', length: 6 },
-    secondaryEffect: { effectType: 'push', power: 1 },
+    secondaryEffects: [{ effectType: 'push', power: 1 }],
     description:
       '24 dano em linha vertical 3 sqm + push 1 sqm. Linha central: snare 1t se bloqueado. ' +
       'Linhas cima/baixo: empurradas perpendicular.',
@@ -190,14 +193,17 @@ const LEFT_WARRIOR: SkillDefinition[] = [
   {
     id: 'lw_a5', name: 'Provocação', category: 'attack', group: 'attack2',
     effectType: 'damage', targetType: 'single', power: 10, range: 0,
-    secondaryEffect: { effectType: 'silence_defense', power: 0, ticks: 1 },
+    secondaryEffects: [
+      { effectType: 'silence_defense', power: 0,  ticks: 1 },
+      { effectType: 'def_down',        power: 15, ticks: 1 },
+    ],
     description: '10 dano + def_down 15% + silence_defense 1t em 1 inimigo.',
   },
   {
     id: 'lw_a6', name: 'Muralha Viva', category: 'attack', group: 'attack2',
     effectType: 'summon_wall', targetType: 'area', power: 0, range: 0,
     areaShape: { type: 'line', direction: 'north', length: 1 },
-    secondaryEffect: { effectType: 'def_down', power: 15, ticks: 2 },
+    secondaryEffects: [{ effectType: 'def_down', power: 15, ticks: 2 }],
     description:
       'Parede de 2 sqm vertical no campo inimigo dura 2t. Inimigos adjacentes: def_down 15%, mov_down 1, 3 dano/turno.',
   },
@@ -205,14 +211,17 @@ const LEFT_WARRIOR: SkillDefinition[] = [
     id: 'lw_a7', name: 'Investida', category: 'attack', group: 'attack2',
     effectType: 'area', targetType: 'area', power: 12, range: 0,
     areaShape: { type: 'line', direction: 'east', length: 6 },
-    secondaryEffect: { effectType: 'def_down', power: 15, ticks: 1 },
+    secondaryEffects: [
+      { effectType: 'def_down', power: 15, ticks: 1 },
+      { effectType: 'mov_down', power: 1,  ticks: 1 },
+    ],
     description: '12 dano em linha vertical 3 sqm. def_down 15% + mov_down 1 por 1 turno.',
   },
   {
     id: 'lw_a8', name: 'Prisão de Muralha Morta', category: 'attack', group: 'attack2',
     effectType: 'summon_wall', targetType: 'area', power: 12, range: 0,
     areaShape: { type: 'ring', radius: 1 },
-    secondaryEffect: { effectType: 'snare', power: 0, ticks: 2 },
+    secondaryEffects: [{ effectType: 'snare', power: 0, ticks: 2 }],
     description:
       '12 dano no centro + 8 paredes temporárias ao redor. Inimigos dentro: snare 2t. ' +
       'Paredes quebram com qualquer atk1.',
@@ -235,7 +244,7 @@ const LEFT_WARRIOR: SkillDefinition[] = [
   {
     id: 'lw_d3', name: 'Resistência Absoluta', category: 'defense', group: 'defense1',
     effectType: 'shield', targetType: 'self', power: 65,
-    secondaryEffect: { effectType: 'def_up', power: 25, ticks: 1 },
+    secondaryEffects: [{ effectType: 'def_up', power: 25, ticks: 1 }],
     description: 'Guerreiro + aliado atrás: -65% dano por 1 turno. Pode mover 1 sqm antes.',
   },
   {
@@ -249,7 +258,7 @@ const LEFT_WARRIOR: SkillDefinition[] = [
   {
     id: 'lw_d4', name: 'Fortaleza Inabalável', category: 'defense', group: 'defense2',
     effectType: 'shield', targetType: 'self', power: 0,
-    secondaryEffect: { effectType: 'stun', power: 0, ticks: 1 },
+    secondaryEffects: [{ effectType: 'stun', power: 0, ticks: 1 }],
     description: '-80% dano recebido por 1 turno. Não pode mover no próximo turno de movimento.',
   },
   {
@@ -266,7 +275,7 @@ const LEFT_WARRIOR: SkillDefinition[] = [
   {
     id: 'lw_d7', name: 'Avançar', category: 'defense', group: 'defense2',
     effectType: 'advance_allies', targetType: 'all_allies', power: 10,
-    secondaryEffect: { effectType: 'atk_up', power: 10, ticks: 1 },
+    secondaryEffects: [{ effectType: 'atk_up', power: 10, ticks: 1 }],
     description:
       'Move aliados em 4x4 1 casa à frente. +1 mov + -10% dano + +10% ATK por 1 turno.',
   },
@@ -284,7 +293,7 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
   {
     id: 'le_a1', name: 'Corte Mortal', category: 'attack', group: 'attack1',
     effectType: 'damage', targetType: 'single', power: 45, range: 0,
-    secondaryEffect: { effectType: 'cleanse', power: 0 },
+    secondaryEffects: [{ effectType: 'cleanse', power: 0 }],
     description:
       '45 dano + remove debuffs do alvo. Se alvo tinha bleed: +50% dano (67 total).',
   },
@@ -304,7 +313,7 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
     id: 'le_a4', name: 'Corte Preciso', category: 'attack', group: 'attack1',
     effectType: 'damage', targetType: 'area', power: 22, range: 0,
     areaShape: { type: 'line', direction: 'east', length: 1 },
-    secondaryEffect: { effectType: 'purge', power: 0 },
+    secondaryEffects: [{ effectType: 'purge', power: 0 }],
     description: '22 dano em 2 sqm horizontal + purge.',
   },
 
@@ -313,21 +322,21 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
     id: 'le_a5', name: 'Corte Hemorragia', category: 'attack', group: 'attack2',
     effectType: 'bleed', targetType: 'area', power: 8, range: 0,
     areaShape: { type: 'line', direction: 'east', length: 1 },
-    secondaryEffect: { effectType: 'bleed', power: 4, ticks: 3 },
+    secondaryEffects: [{ effectType: 'bleed', power: 4, ticks: 3 }],
     description: '8 dano + bleed 4/turno por 3t em 2 sqm horizontal. Acumulativo se re-aplicado.',
   },
   {
     id: 'le_a6', name: 'Bomba de Espinhos', category: 'attack', group: 'attack2',
     effectType: 'bleed', targetType: 'area', power: 10, range: 0,
     areaShape: { type: 'diamond', radius: 2 },
-    secondaryEffect: { effectType: 'bleed', power: 5, ticks: 2 },
+    secondaryEffects: [{ effectType: 'bleed', power: 5, ticks: 2 }],
     description: '10 dano + bleed 5/turno por 2t em diamante r2.',
   },
   {
     id: 'le_a7', name: 'Marca da Morte', category: 'attack', group: 'attack2',
     effectType: 'area', targetType: 'area', power: 12, range: 0,
     areaShape: { type: 'line', direction: 'north', length: 3 },
-    secondaryEffect: { effectType: 'bleed', power: 8, ticks: 2 },
+    secondaryEffects: [{ effectType: 'bleed', power: 8, ticks: 2 }],
     description:
       '12 dano em 8 sqm vertical (4 de baixo, 2 grossura). Remove shields (cura 20% deles como HP). ' +
       'Bleed 8/turno por 2t.',
@@ -335,7 +344,7 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
   {
     id: 'le_a8', name: 'Armadilha Oculta', category: 'attack', group: 'attack2',
     effectType: 'damage', targetType: 'single', power: 15, range: 0,
-    secondaryEffect: { effectType: 'bleed', power: 4, ticks: 3 },
+    secondaryEffects: [{ effectType: 'bleed', power: 4, ticks: 3 }],
     description:
       'Arma tile (não em casa ocupada). Ao pisar: 15 dano + snare 1t + bleed 4/turno por 3t.',
   },
@@ -401,14 +410,14 @@ const LEFT_KING: SkillDefinition[] = [
     id: 'lk_a1', name: 'Soco Real', category: 'attack', group: 'attack1',
     effectType: 'damage', targetType: 'area', power: 25, range: 0,
     areaShape: { type: 'line', direction: 'east', length: 1 },
-    secondaryEffect: { effectType: 'shield', power: 15, ticks: 2 },
+    secondaryEffects: [{ effectType: 'shield', power: 15, ticks: 2 }],
     description: '25 dano em 2 sqm horizontal + self shield 15 por 2 turnos.',
   },
   {
     id: 'lk_a2', name: 'Chute Real', category: 'attack', group: 'attack1',
     effectType: 'damage', targetType: 'area', power: 27, range: 0,
     areaShape: { type: 'line', direction: 'north', length: 1 },
-    secondaryEffect: { effectType: 'shield', power: 15, ticks: 2 },
+    secondaryEffects: [{ effectType: 'shield', power: 15, ticks: 2 }],
     description: '27 dano em 2 sqm vertical + self shield 15 por 2 turnos.',
   },
   {
@@ -436,13 +445,13 @@ const LEFT_KING: SkillDefinition[] = [
     id: 'lk_a6', name: 'Contra-ataque', category: 'attack', group: 'attack2',
     effectType: 'area', targetType: 'area', power: 15, range: 0,
     areaShape: { type: 'square', radius: 1 },
-    secondaryEffect: { effectType: 'push', power: 1 },
+    secondaryEffects: [{ effectType: 'push', power: 1 }],
     description: '15 dano em 3x3 + push 1 sqm afastando do centro. Centro não move.',
   },
   {
     id: 'lk_a7', name: 'Intimidação', category: 'attack', group: 'attack2',
     effectType: 'damage', targetType: 'single', power: 10, range: 0,
-    secondaryEffect: { effectType: 'teleport_target', power: 0 },
+    secondaryEffects: [{ effectType: 'teleport_target', power: 0 }],
     description:
       '10 dano + teleporta alvo e adjacentes pra local escolhido. Não pode colocar em bordas.',
   },
@@ -491,7 +500,7 @@ const LEFT_KING: SkillDefinition[] = [
   {
     id: 'lk_d6', name: 'Fortaleza Inabalável', category: 'defense', group: 'defense2',
     effectType: 'shield', targetType: 'self', power: 0,
-    secondaryEffect: { effectType: 'stun', power: 0, ticks: 1 },
+    secondaryEffects: [{ effectType: 'stun', power: 0, ticks: 1 }],
     description: '-80% dano recebido por 1 turno. Não pode mover no próximo turno de movimento.',
   },
   {
@@ -502,7 +511,7 @@ const LEFT_KING: SkillDefinition[] = [
   {
     id: 'lk_d8', name: 'Ordem Real', category: 'defense', group: 'defense2',
     effectType: 'teleport_target', targetType: 'all_allies', power: 0,
-    secondaryEffect: { effectType: 'def_up', power: 15, ticks: 1 },
+    secondaryEffects: [{ effectType: 'def_up', power: 15, ticks: 1 }],
     description:
       'Rei volta pra posição inicial, aliados teleportados pra posições adjacentes. ' +
       'Aliados adjacentes: -15% dano. Rei: -15% por aliado adjacente (máx -45%) por 1 turno.',

@@ -4,6 +4,43 @@
 
 ---
 
+## 2026-04-21 — Bloco 3 Parte 1: secondaryEffect → secondaryEffects[] (Opção B)
+
+**Contexto:** Bloco 3 identificou que o schema `secondaryEffect: T | null` limita skills a um efeito follow-up. v3 tem pelo menos 4 Warrior skills com 3 efeitos (Impacto, Provocação, Investida + Colisão Titânica com conditional). Sem array, o 3º efeito não cabe.
+
+**Decisão:** Migrar para `secondaryEffects: ReadonlyArray<SecondaryEffectDef>` como campo primário. Manter `secondaryEffect` como **getter deprecated** retornando `secondaryEffects[0] ?? null` para não quebrar callers que ainda não migraram. Catálogo 100% migrado (30 entries). Consumers do engine (CombatEngine 2 sites, SkillRegistry validação) migrados para iterar array.
+
+**Escopo entregue (Opção B):**
+- `domain/Skill.ts`: novo campo `secondaryEffects`, getter `secondaryEffect` deprecated, construtor normaliza ambas as formas (array ou single) do `SkillDefinition`
+- `domain/SkillRegistry.ts`: valida ambos os shapes
+- `engine/CombatEngine.ts`: 2 sites (defense path e attack path) agora iteram `secondaryEffects` com early-break se target morre mid-sequence
+- `data/skillCatalog.ts`: 30 entries migradas; 3 Warrior skills PARTIAL agora com 2 secondaries (Impacto +mov_down, Provocação +def_down, Investida +mov_down)
+- Tests: assertions migradas para `secondaryEffects?.[0]?.*`; 3 novos tests de integração validam que AMBOS secondaries aplicam via CombatEngine
+
+**Escopo adiado (fora do Opção B, documentado como pendência):**
+- **UI tooltip (UIComponents.ts):** continua renderizando apenas o 1º secondary. TODO comment aponta para esta entrada. Polish visual fica para a Fase 2 de integração do design system (sessão futura que vai redesenhar tooltip do zero de qualquer forma — não vale polir agora pra refazer depois).
+- **SkillUpgradeScene / BattleScene forwarding:** 5 cópias defensivas continuam lendo `secondaryEffect` via getter legacy. Backward-compat funciona; migração completa pode ser feita quando esses arquivos forem tocados por outra razão.
+
+**4 skills PARTIAL permanentes (razão ≠ schema):**
+Estas 4 Warrior skills continuam com implementação parcial mas **não são resolvíveis por array** — precisam de Grid-aware handlers dedicados:
+- **Colisão Titânica** (lw_a1): "se bloqueado → snare 1t" é lógica condicional em colisão de push
+- **Investida Brutal** (lw_a4): per-line push rules (central vs perpendicular) depende de posição no grid
+- **Escudo do Protetor** (lw_d1): "retângulo 6 sqm atrás: -50% dano" é damage reduction posicional
+- **Resistência Absoluta** (lw_d3): "Guerreiro + aliado atrás: -65% dano" idem posicional
+- **Postura Defensiva** (lw_d6): "-25% dano em 3x3" é DR em vez de shield flat
+
+Ficam backlog para "Grid-aware handlers sprint" futuro.
+
+**Resultado numérico:**
+- Antes: 5 PARTIAL schema-gap + 4 PARTIAL Grid-gap = 9 totais
+- Depois: 0 PARTIAL schema-gap + 4 PARTIAL Grid-gap = 4 totais
+- 5 skills fecham completas (Impacto, Provocação, Investida — schema fix; + 2 que já estavam corretas na tabela de referência que eu contei errado)
+- Build passa, 283 tests verdes, 0 regressão
+
+**Status:** Concluído. Bloco 3 report atualizado.
+
+---
+
 ## 2026-04-21 — Bloco 3: Warrior skills — 3 sistemas novos como stub
 
 **Contexto:** Bloco 3 implementa as 16 skills do Guerreiro. Três skills dependem de sistemas que não existem hoje no engine. Ao invés de "fingir implementação" ou construir 3 sistemas grandes em um único bloco, registro como stubs explícitos.

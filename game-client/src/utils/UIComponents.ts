@@ -1114,6 +1114,12 @@ export const UI = {
       progress?: number; description?: string;
       targetType?: string; range?: number;
       skillId?: string;
+      // TODO(design-system Fase 2) — Bloco 3 Parte 1 schema refactor (2026-04-21):
+      // skillCatalog now uses `secondaryEffects: T[]` with 2+ entries on some
+      // skills (Impacto, Provocação, Investida). This tooltip only renders the
+      // first secondary for now — a deliberate partial to avoid polishing UI
+      // that will be redesigned in the design-system integration pass. See
+      // docs/DECISIONS.md 2026-04-21 "Bloco 3 Parte 1".
       secondaryEffect?: { effectType: string; power: number; ticks?: number } | null;
     },
   ): Phaser.GameObjects.Container {

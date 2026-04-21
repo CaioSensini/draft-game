@@ -74,8 +74,8 @@ describe('King — Attack 1 (sustain)', () => {
       expect(s.power).toBe(25)
       expect(s.effectType).toBe('damage')
       expect(s.areaShape?.type).toBe('line')
-      expect(s.secondaryEffect?.effectType).toBe('shield')
-      expect(s.secondaryEffect?.power).toBe(15)
+      expect(s.secondaryEffects?.[0]?.effectType).toBe('shield')
+      expect(s.secondaryEffects?.[0]?.power).toBe(15)
     })
 
     it('primary damage applies to enemy', () => {
@@ -103,7 +103,7 @@ describe('King — Attack 1 (sustain)', () => {
       expect(s.name).toBe('Chute Real')
       expect(s.power).toBe(27)
       expect(s.areaShape?.type).toBe('line')
-      expect(s.secondaryEffect?.power).toBe(15)
+      expect(s.secondaryEffects?.[0]?.power).toBe(15)
     })
 
     it('power is higher than Soco Real (vertical is slightly heavier)', () => {
@@ -248,7 +248,7 @@ describe('King — Attack 2 (control)', () => {
       expect(s.name).toBe('Contra-ataque')
       expect(s.power).toBe(15)
       expect(s.areaShape?.type).toBe('square')
-      expect(s.secondaryEffect?.effectType).toBe('push')
+      expect(s.secondaryEffects?.[0]?.effectType).toBe('push')
     })
 
     it('primary area damage applies', () => {
@@ -266,7 +266,7 @@ describe('King — Attack 2 (control)', () => {
       expect(s.name).toBe('Intimidação')
       expect(s.power).toBe(10)
       expect(s.targetType).toBe('single')
-      expect(s.secondaryEffect?.effectType).toBe('teleport_target')
+      expect(s.secondaryEffects?.[0]?.effectType).toBe('teleport_target')
     })
 
     it('primary damage lands on target', () => {
@@ -506,7 +506,7 @@ describe('King — Defense 2 (light)', () => {
       const warriorVersion = SKILL_CATALOG.find((x) => x.id === 'lw_d4')
       expect(warriorVersion?.name).toBe('Fortaleza Inabalável')
       expect(warriorVersion?.effectType).toBe(s.effectType)
-      expect(warriorVersion?.secondaryEffect?.effectType).toBe('stun')
+      expect(warriorVersion?.secondaryEffects?.[0]?.effectType).toBe('stun')
     })
 
     it('self-stun secondary applies via resolver', () => {
@@ -544,8 +544,8 @@ describe('King — Defense 2 (light)', () => {
       expect(s.name).toBe('Ordem Real')
       expect(s.effectType).toBe('teleport_target')
       expect(s.targetType).toBe('all_allies')
-      expect(s.secondaryEffect?.effectType).toBe('def_up')
-      expect(s.secondaryEffect?.power).toBe(15)
+      expect(s.secondaryEffects?.[0]?.effectType).toBe('def_up')
+      expect(s.secondaryEffects?.[0]?.power).toBe(15)
     })
 
     it('teleport_target emits status event on each ally', () => {
@@ -586,8 +586,8 @@ describe('Shared skills — v3 §6.1 consistency check', () => {
     const lwd4 = SKILL_CATALOG.find((x) => x.id === 'lw_d4')!
     expect(lkd6.name).toBe(lwd4.name)
     expect(lkd6.effectType).toBe(lwd4.effectType)
-    expect(lkd6.secondaryEffect?.effectType).toBe(lwd4.secondaryEffect?.effectType)
-    expect(lkd6.secondaryEffect?.ticks).toBe(lwd4.secondaryEffect?.ticks)
+    expect(lkd6.secondaryEffects?.[0]?.effectType).toBe(lwd4.secondaryEffects?.[0]?.effectType)
+    expect(lkd6.secondaryEffects?.[0]?.ticks).toBe(lwd4.secondaryEffects?.[0]?.ticks)
   })
 })
 

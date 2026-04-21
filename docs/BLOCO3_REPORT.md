@@ -9,28 +9,44 @@
 
 ---
 
-## Status das 16 skills do Guerreiro (v3 §6.3) — **13/16 completas**
+## Status das 16 skills do Guerreiro (v3 §6.3) — **13/16 completas, atualizado pós-Parte-1**
 
 | ID | Nome | Estado | Tests |
 |----|------|--------|-------|
-| lw_a1 | Colisão Titânica | ✅ Completo (push encodado; conditional snare é partial) | 4 |
-| lw_a2 | Impacto | ✅ Primary + def_down; mov_down 3º efeito é gap do schema | 4 |
+| lw_a1 | Colisão Titânica | 🟠 PARTIAL Grid-gap (conditional snare-on-block) | 4 |
+| lw_a2 | Impacto | ✅ **Completo** (damage + def_down + mov_down via array) | 4 |
 | lw_a3 | Golpe Devastador | ✅ Completo (area + purge) | 3 |
-| lw_a4 | Investida Brutal | ✅ Primary + push; regras por linha são partial | 3 |
-| lw_a5 | Provocação | ✅ damage + silence_defense; def_down 3º efeito é gap | 4 |
+| lw_a4 | Investida Brutal | 🟠 PARTIAL Grid-gap (per-line push rules) | 3 |
+| lw_a5 | Provocação | ✅ **Completo** (damage + silence_defense + def_down via array) | 4 |
 | lw_a6 | Muralha Viva | 🟡 **STUB** — summon_wall dispatcha, tile-obstacle system pendente | 3 |
-| lw_a7 | Investida | ✅ Primary + def_down; mov_down 3º efeito é gap | 3 |
+| lw_a7 | Investida | ✅ **Completo** (damage + def_down + mov_down via array) | 4 |
 | lw_a8 | Prisão de Muralha Morta | 🟡 **STUB** — summon_wall + 12 center damage + snare; paredes pendentes | 3 |
-| lw_d1 | Escudo do Protetor | ✅ shield 50 (positional DR é aproximação) | 3 |
+| lw_d1 | Escudo do Protetor | 🟠 PARTIAL Grid-gap (positional 6-sqm-atrás DR) | 3 |
 | lw_d2 | Guardião | 🟡 **STUB** — damage_redirect dispatcha; interceptor pendente | 3 |
-| lw_d3 | Resistência Absoluta | ✅ shield 65 + def_up 25; "aliado atrás" positional é partial | 3 |
+| lw_d3 | Resistência Absoluta | 🟠 PARTIAL Grid-gap ("aliado atrás" positional) | 3 |
 | lw_d4 | Fortaleza Inabalável | ✅ Compartilhada com lk_d6, validada | 2 |
 | lw_d5 | Escudo de Grupo | ✅ shield 15 em cada aliado; respeita cap 100 | 3 |
-| lw_d6 | Postura Defensiva | ✅ shield 25 em 3x3 (proxy de -25% DR) | 3 |
+| lw_d6 | Postura Defensiva | 🟠 PARTIAL Grid-gap (-25% DR em vez de shield proxy) | 3 |
 | lw_d7 | Avançar | ✅ advance + atk_up 10 | 3 |
 | lw_d8 | Bater em Retirada | ✅ retreat + def_up + push-west | 3 |
 
-**13 completas / 3 stubs documentados.**
+**9 completas / 3 stubs sistema novo / 4 PARTIAL Grid-gap.**
+
+### Nota sobre as 4 PARTIAL Grid-gap
+
+Estas 4 skills **não são resolvíveis via `secondaryEffects[]`** — precisam de sistema Grid-aware (posicionamento, dano redirecionado posicional, DR vs shield). Ficam backlog para sprint dedicado futuro. Registradas em DECISIONS.md.
+
+### Parte 1 (schema refactor) — entregue
+
+Migrada a base de `secondaryEffect: T | null` para `secondaryEffects: T[]`:
+- **30 catalog entries** convertidas para array
+- **3 Warrior skills** (Impacto, Provocação, Investida) ganharam 2º secondary, fechando o gap de schema
+- **CombatEngine 2 sites** migrados para iterar array (defense + attack path)
+- **SkillRegistry** valida ambos os shapes (new + legacy)
+- **Backward compat** via getter `@deprecated secondaryEffect` retornando `secondaryEffects[0] ?? null` — nenhum consumer externo quebrou
+- **Tooltip UI** continua renderizando 1º secondary (TODO comment aponta pra redesign na Fase 2 do design system)
+
+Tests novos (3) validam que AMBOS secondaries aplicam via `_applyAttackSkill` no CombatEngine.
 
 ---
 
