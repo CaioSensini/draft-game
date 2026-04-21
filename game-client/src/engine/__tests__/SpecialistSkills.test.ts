@@ -342,25 +342,51 @@ describe('Specialist — Attack 2 (controle)', () => {
     })
   })
 
-  describe('ls_a7 — Névoa [STUB — arena-wide mixed-side pending]', () => {
+  describe('ls_a7 — Névoa', () => {
     it('catalog entry', () => {
       const s = specialistSkill('ls_a7')
       expect(s.name).toBe('Névoa')
       expect(s.effectType).toBe('area')
-      expect(s.secondaryEffects?.[0]?.effectType).toBe('def_down')
     })
 
-    it('def_down applies via resolver on enemies', () => {
-      const sp = mkChar('s', 'specialist', 'left')
-      const target = mkChar('t', 'warrior', 'right')
-      const defBefore = target.defense
-      resolver.resolve('def_down', ctx(sp, target, 15, 0, 2))
-      expect(target.defense).toBe(defBefore - 15)
+    function applyNevoa() {
+      const sp    = mkChar('s',  'specialist', 'left', 3, 3)
+      const ally  = mkChar('a',  'warrior',    'left', 4, 3)
+      const en1   = mkChar('e1', 'king',       'right', 10, 3)
+      const en2   = mkChar('e2', 'executor',   'right', 11, 4)
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [sp, ally]),
+        rightTeam: new Team('right', [en1, en2]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(specialistSkill('ls_a7'))
+      ;(engine as unknown as {
+        _applyAttackSkill: (c: Character, s: Skill, t: unknown, side: string) => void
+      })._applyAttackSkill.bind(engine)(
+        sp, skill, { kind: 'area', col: 10, row: 3 }, 'left',
+      )
+      return { sp, ally, en1, en2 }
+    }
+
+    it('allies receive def_up 15% anywhere on the arena', () => {
+      const { sp, ally } = applyNevoa()
+      expect(sp.effects.some((e) => e.type === 'def_up' && !e.isExpired)).toBe(true)
+      expect(ally.effects.some((e) => e.type === 'def_up' && !e.isExpired)).toBe(true)
     })
 
-    it('[STUB] arena-wide ally def_up + enemy cura recebida -30% pending', () => {
-      const s = specialistSkill('ls_a7')
-      expect(s.secondaryEffects?.length).toBe(1)
+    it('enemies receive def_down 15% AND heal_reduction 30% anywhere', () => {
+      const { en1, en2 } = applyNevoa()
+      expect(en1.effects.some((e) => e.type === 'def_down' && !e.isExpired)).toBe(true)
+      expect(en1.effects.some((e) => e.type === 'heal_reduction' && !e.isExpired)).toBe(true)
+      expect(en2.effects.some((e) => e.type === 'def_down' && !e.isExpired)).toBe(true)
+      expect(en2.effects.some((e) => e.type === 'heal_reduction' && !e.isExpired)).toBe(true)
+    })
+
+    it('caster counts as an ally and also gets def_up (not def_down)', () => {
+      const { sp } = applyNevoa()
+      expect(sp.effects.some((e) => e.type === 'def_down')).toBe(false)
+      expect(sp.effects.some((e) => e.type === 'def_up')).toBe(true)
     })
   })
 

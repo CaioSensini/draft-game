@@ -24,7 +24,7 @@ import type { CharacterRole, CharacterSide } from '../domain/Character'
 import {
   ReflectPercentEffect, RegenEffect, PositionalDrEffect,
   DefReductionEffect, MovReductionEffect, DelayedDamageEffect,
-  MarkEffect,
+  MarkEffect, DefBoostEffect, HealReductionEffect,
 } from '../domain/Effect'
 import type { PositionalDrShape } from '../domain/Effect'
 import { EventBus } from './EventBus'
@@ -1675,6 +1675,40 @@ export class CombatEngine {
               ticksRemaining: 2, sourceId: caster.id,
             })
           }
+        }
+
+        // v3 §6.2 Névoa (ls_a7 / rs_a7): arena-wide dual-side effect.
+        // Allies (anywhere) gain def_up 15% (2t); enemies (anywhere) gain
+        // def_down 15% + heal_reduction 30% (2t). Bypasses the normal
+        // damage loop — no hits are resolved and no per-target damage.
+        if (skill.id === 'ls_a7' || skill.id === 'rs_a7') {
+          for (const unit of this.battle.allCharacters) {
+            if (!unit.alive) continue
+            if (unit.side === caster.side) {
+              unit.addEffect(new DefBoostEffect(15, 2))
+              this.emit({
+                type: EventType.STATUS_APPLIED, unitId: unit.id,
+                status: 'def_up' as const, value: 15,
+              })
+            } else {
+              unit.addEffect(new DefReductionEffect(15, 2))
+              unit.addEffect(new HealReductionEffect(30, 2))
+              this.emit({
+                type: EventType.STATUS_APPLIED, unitId: unit.id,
+                status: 'def_down' as const, value: 15,
+              })
+              this.emit({
+                type: EventType.STATUS_APPLIED, unitId: unit.id,
+                status: 'heal_reduction' as const, value: 30,
+              })
+            }
+          }
+          this.emit({
+            type: EventType.AREA_RESOLVED,
+            centerCol: target.col, centerRow: target.row,
+            hitIds: [],
+          })
+          break
         }
 
         const hits = this._targeting.resolveTargets(skill, caster, target, this.battle) as Character[]
