@@ -147,6 +147,12 @@ export const UI = {
 
   // ═══════════════════════════════════════════════════════════════════════════
   // BUTTONS — 3D with shadow, gloss, accent bar, hover/press micro-anims
+  //
+  // @deprecated Use `UI.buttonPrimary / buttonSecondary / buttonGhost /
+  // buttonDestructive` instead — they implement INTEGRATION_SPEC §1 with the
+  // 5 states the design system requires. All in-app call sites migrated
+  // during ETAPA 1a (2026-04-21); `UI.button` is kept only as a temporary
+  // shim for out-of-tree scenes and will be removed in a later etapa.
   // ═══════════════════════════════════════════════════════════════════════════
 
   button(

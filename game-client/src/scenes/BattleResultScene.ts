@@ -346,11 +346,11 @@ export default class BattleResultScene extends Phaser.Scene {
     const btnY = panelY + panelH / 2 - 50
     const btnDelay = rewardDelay + 200
 
-    // "Jogar Novamente" button — AAA UI.button with pulse
-    const { container: playAgainC } = UI.button(
-      this, panelX - 120, btnY, 200, S.buttonH, 'Jogar Novamente',
+    // "Jogar Novamente" — Primary gold CTA (INTEGRATION_SPEC §1.1).
+    const { container: playAgainC } = UI.buttonPrimary(
+      this, panelX - 120, btnY, 'Jogar Novamente',
       {
-        accent: C.info, accentHex: C.infoHex,
+        w: 200, h: S.buttonH,
         onPress: () => {
           if (data.pveMode && data.npcTeam) {
             transitionTo(this, 'DeckBuildScene', { pveMode: true, npcTeam: data.npcTeam })
@@ -371,11 +371,11 @@ export default class BattleResultScene extends Phaser.Scene {
       },
     })
 
-    // "Menu Principal" button — muted accent
-    const { container: menuC } = UI.button(
-      this, panelX + 120, btnY, 200, S.buttonH, 'Menu Principal',
+    // "Menu Principal" — Secondary outline (§1.2).
+    const { container: menuC } = UI.buttonSecondary(
+      this, panelX + 120, btnY, 'Menu Principal',
       {
-        accent: C.panelBorder, accentHex: C.mutedHex,
+        w: 200, h: S.buttonH,
         onPress: () => transitionTo(this, 'LobbyScene'),
       },
     )

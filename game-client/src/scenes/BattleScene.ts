@@ -52,6 +52,9 @@ import { GLOBAL_RULES }       from '../data/globalRules'
 import { GameState, GameStateManager } from '../core/GameState'
 import { soundManager } from '../utils/SoundManager'
 import { UI, hpStatusColor } from '../utils/UIComponents'
+import {
+  state as dsState, fg, fontFamily, typeScale,
+} from '../utils/DesignTokens'
 import { VFXManager } from '../utils/VFXManager'
 import { drawCharacterSprite } from '../utils/SpriteFactory'
 import type { SpriteRole, SpriteSide } from '../utils/SpriteFactory'
@@ -1303,64 +1306,43 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   private _buildActionButtons(): void {
-    // Button bar BELOW the 4 skill cards (with small gap)
+    // Button bar BELOW the 4 skill cards (with small gap).
+    // Confirmar = gold Primary (INTEGRATION_SPEC §1.1 — gold CTA, fbbf24 fill).
+    // Pular     = ghost link (§1.3 — tertiary-fg label, no fill/border).
     const barCenterY = PANEL_Y + 4 * (CARD_H + CARD_GAP) + BTN_BAR_H / 2 + 6
     const halfW = (SKILL_COL_W - 20) / 2
 
-    // Confirmar — always visible when panel is open, but dimmed until ready
-    this._confirmBtn = this._makeActionBtn(
-      6 + halfW / 2, barCenterY, halfW, 28,
-      'Confirmar', 0x0d2211, 0x22cc44, '#44ff88',
-      () => {
+    const confirm = UI.buttonPrimary(this, 6 + halfW / 2, barCenterY, 'Confirmar', {
+      w: halfW, h: 28, depth: 8,
+      onPress: () => {
         if (!this._selReady) return
         this._showCommitConfirm()
       },
-    ).setVisible(false).setDepth(8)
+    })
+    this._confirmBtn = confirm.container.setVisible(false)
 
-    // Pular — skip this character's turn (with confirmation)
-    this._cancelBtn = this._makeActionBtn(
-      6 + halfW + 8 + halfW / 2, barCenterY, halfW, 28,
-      'Pular', 0x1a1008, 0xcc8822, '#ffaa44',
-      () => {
+    const skip = UI.buttonGhost(this, 6 + halfW + 8 + halfW / 2, barCenterY, 'Pular', {
+      w: halfW, h: 28, depth: 8,
+      onPress: () => {
         if (this._currentActorId) {
           this._showSkipConfirm()
         }
       },
-    ).setVisible(false).setDepth(8)
-  }
-
-  /** Build a button container with a rect bg + text child. */
-  private _makeActionBtn(
-    x: number, y: number, w: number, h: number,
-    label: string,
-    fill: number, stroke: number, textColor: string,
-    onDown: () => void,
-  ): Phaser.GameObjects.Container {
-    const bg = this.add.rectangle(0, 0, w, h, fill)
-      .setStrokeStyle(2, stroke)
-      .setInteractive({ useHandCursor: true })
-
-    const txt = this.add.text(0, 0, label, {
-      fontFamily: 'Arial', fontSize: '15px', color: textColor, fontStyle: 'bold',
-    }).setOrigin(0.5)
-
-    bg.on('pointerover', () => bg.setFillStyle(fill | 0x0a0a0a))
-    bg.on('pointerout',  () => bg.setFillStyle(fill))
-    bg.on('pointerdown', onDown)
-
-    return this.add.container(x, y, [bg, txt])
+    })
+    this._cancelBtn = skip.container.setVisible(false)
   }
 
   private _buildEndMovementButton(): void {
+    // End-movement CTA: Primary gold (§1.1).
     const barCenterY = PANEL_Y + 4 * (CARD_H + CARD_GAP) + BTN_BAR_H / 2 + 6
-    this._endMovementBtn = this._makeActionBtn(
-      SKILL_COL_W / 2, barCenterY, BTN_W, 28,
-      'Fim Movimento', 0x0a1a0a, 0x22aa44, '#44ff88',
-      () => {
+    const end = UI.buttonPrimary(this, SKILL_COL_W / 2, barCenterY, 'Fim Movimento', {
+      w: BTN_W, h: 28, depth: 8,
+      onPress: () => {
         this._ctrl.clearMoveSelection()
         this._ctrl.advancePhase()
       },
-    ).setVisible(false).setDepth(8)
+    })
+    this._endMovementBtn = end.container.setVisible(false)
   }
 
   // ── Movement phase UI ────────────────────────────────────────────────────────
@@ -3034,105 +3016,65 @@ export default class BattleScene extends Phaser.Scene {
   // ── Surrender button ─────────────────────────────────────────────────────────
 
   private _buildTrainingBackButton(): void {
-    const btnW = 70; const btnH = 20
+    // Top-bar back link: Ghost button (INTEGRATION_SPEC §1.3 — no fill/border,
+    // tertiary-fg label that brightens on hover). A proper arrow glyph arrives
+    // with the Lucide pass (Sub 1.9).
     const btnX = GRID_X + 108
     const btnY = TOP_BAR_H2 / 2
-
-    const bg = this.add.graphics().setDepth(8)
-    const drawBg = (hover: boolean) => {
-      bg.clear()
-      bg.fillStyle(hover ? 0x2a1010 : 0x140808, hover ? 0.95 : 0.7)
-      bg.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 3)
-      if (hover) { bg.lineStyle(1, 0xcc4444, 0.5); bg.strokeRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 3) }
-    }
-    drawBg(false)
-
-    // Arrow icon (←)
-    const fx = btnX - btnW / 2 + 14; const fy = btnY
-    const arrowG = this.add.graphics().setDepth(9)
-    arrowG.lineStyle(1.5, 0xcc6666, 0.8)
-    arrowG.beginPath()
-    arrowG.moveTo(fx + 3, fy - 4)
-    arrowG.lineTo(fx - 3, fy)
-    arrowG.lineTo(fx + 3, fy + 4)
-    arrowG.strokePath()
-    arrowG.lineBetween(fx - 3, fy, fx + 6, fy)
-
-    // Label
-    const label = this.add.text(fx + 14, fy, 'Voltar', {
-      fontFamily: 'Arial', fontSize: '11px', color: '#aa6666', fontStyle: 'bold',
-      stroke: '#000000', strokeThickness: 2,
-    }).setOrigin(0, 0.5).setDepth(9).setAlpha(0.8)
-
-    const hit = this.add.rectangle(btnX, btnY, btnW, btnH, 0, 0.001)
-      .setInteractive({ useHandCursor: true }).setDepth(10)
-
-    hit.on('pointerover', () => { drawBg(true); arrowG.setAlpha(1); label.setAlpha(1).setColor('#dd6666') })
-    hit.on('pointerout',  () => { drawBg(false); arrowG.setAlpha(0.8); label.setAlpha(0.8).setColor('#aa6666') })
-
-    hit.on('pointerdown', () => {
-      transitionTo(this, 'LobbyScene')
+    const { container } = UI.buttonGhost(this, btnX, btnY, '← Voltar', {
+      w: 84, h: 24, depth: 9,
+      onPress: () => transitionTo(this, 'LobbyScene'),
     })
+    container.setDepth(9)
   }
 
   private _buildSurrenderButton(): void {
+    // Top-bar surrender: Destructive variant (INTEGRATION_SPEC §1.4 — red fill,
+    // dark red border). In duo/squad modes, a small vote-counter chip sits to
+    // the right of the button.
     const isSolo = this._surrenderRequired === 1
-    const btnW = isSolo ? 24 : 50; const btnH = 20
-    const btnX = GRID_X + (isSolo ? 94 : 106)
+    const btnX = GRID_X + (isSolo ? 98 : 110)
     const btnY = TOP_BAR_H2 / 2
-    const stk = { stroke: '#000000', strokeThickness: 2 }
+    const btnW = isSolo ? 92 : 108
+    const btnH = 24
 
-    const bg = this.add.graphics().setDepth(8)
-    const drawBg = (hover: boolean) => {
-      bg.clear()
-      bg.fillStyle(hover ? 0x2a1010 : 0x140808, hover ? 0.95 : 0.7)
-      bg.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 3)
-      if (hover) { bg.lineStyle(1, 0xcc4444, 0.5); bg.strokeRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 3) }
-    }
-    drawBg(false)
-
-    // Flag icon
-    const flagG = this.add.graphics().setDepth(9)
-    const fx = isSolo ? btnX : btnX - btnW / 2 + 14; const fy = btnY
-    flagG.lineStyle(1.5, 0x777777, 0.8)
-    flagG.lineBetween(fx - 4, fy - 6, fx - 4, fy + 6)
-    flagG.fillStyle(0xcccccc, 0.6)
-    flagG.beginPath(); flagG.moveTo(fx - 4, fy - 6); flagG.lineTo(fx + 6, fy - 4)
-    flagG.lineTo(fx + 5, fy - 1); flagG.lineTo(fx - 4, fy); flagG.closePath(); flagG.fillPath()
-    flagG.setAlpha(0.7)
-
-    // Vote counter (duo/squad only)
-    if (!isSolo) {
-      this._surrenderCountText = this.add.text(btnX + btnW / 2 - 8, btnY, `${this._surrenderVotes}/${this._surrenderRequired}`, {
-        fontFamily: 'Arial', fontSize: '10px', color: '#aa6666', fontStyle: 'bold', ...stk,
-      }).setOrigin(1, 0.5).setDepth(9)
-    }
-
-    const hit = this.add.rectangle(btnX, btnY, btnW, btnH, 0, 0.001)
-      .setInteractive({ useHandCursor: true }).setDepth(10)
-    hit.on('pointerover', () => { drawBg(true); flagG.setAlpha(1) })
-    hit.on('pointerout',  () => { drawBg(false); flagG.setAlpha(0.7) })
-
-    hit.on('pointerdown', () => {
+    const onClick = () => {
       if (isSolo) {
-        // Solo: direct forfeit with confirmation
         this._showConfirmPopup('Desistir da partida?', '#dd6666', 0xcc4444, () => {
           this._ctrl.forfeit(this._playerSide as 'left' | 'right')
         })
       } else {
-        // Duo/Squad: cast vote
         this._showConfirmPopup('Votar para desistir?', '#dd6666', 0xcc4444, () => {
           this._surrenderVotes++
           if (this._surrenderCountText) {
             this._surrenderCountText.setText(`${this._surrenderVotes}/${this._surrenderRequired}`)
-            this._surrenderCountText.setColor(this._surrenderVotes >= this._surrenderRequired ? '#ff4444' : '#aa6666')
+            this._surrenderCountText.setColor(this._surrenderVotes >= this._surrenderRequired
+              ? dsState.errorHex : fg.tertiaryHex)
           }
           if (this._surrenderVotes >= this._surrenderRequired) {
             this._ctrl.forfeit(this._playerSide as 'left' | 'right')
           }
         })
       }
+    }
+
+    const { container } = UI.buttonDestructive(this, btnX, btnY, 'Render-se', {
+      w: btnW, h: btnH, depth: 9,
+      onPress: onClick,
     })
+    container.setDepth(9)
+
+    if (!isSolo) {
+      // Vote counter chip to the right of the destructive button.
+      this._surrenderCountText = this.add.text(
+        btnX + btnW / 2 + 10, btnY,
+        `${this._surrenderVotes}/${this._surrenderRequired}`,
+        {
+          fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+          color: fg.tertiaryHex, fontStyle: 'bold',
+        },
+      ).setOrigin(0, 0.5).setDepth(9)
+    }
   }
 
   // ── Confirmation popup (reusable for Pular and Confirmar) ────────────────────

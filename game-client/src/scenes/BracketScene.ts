@@ -677,9 +677,9 @@ export default class BracketScene extends Phaser.Scene {
       }).setOrigin(0.5)
       this.bottomBarContainer.add(simText)
 
-      // Spectate button
-      const { container: specBtn } = UI.button(this, W / 2 + 140, barY, 140, 34, 'ASSISTIR', {
-        accent: C.info, accentHex: C.infoHex, fontSize: S.bodySmall,
+      // Spectate button — Secondary outline (§1.2).
+      const { container: specBtn } = UI.buttonSecondary(this, W / 2 + 140, barY, 'Assistir', {
+        w: 140, h: 34,
         onPress: () => this.showSpectateOverlay(match),
       })
       this.bottomBarContainer.add(specBtn)
@@ -695,9 +695,9 @@ export default class BracketScene extends Phaser.Scene {
       }).setOrigin(0.5)
       this.bottomBarContainer.add(vsText)
 
-      // JOGAR button (pulsing green)
-      const { container: playBtn } = UI.button(this, W / 2 + 120, barY, 160, 38, 'JOGAR', {
-        accent: C.success, accentHex: C.successHex, fontSize: S.titleSmall,
+      // JOGAR button — Primary gold CTA with pulse (§1.1).
+      const { container: playBtn } = UI.buttonPrimary(this, W / 2 + 120, barY, 'Jogar', {
+        w: 160, h: 38,
         onPress: () => {
           if (onPlayPress) onPlayPress()
         },
@@ -713,8 +713,9 @@ export default class BracketScene extends Phaser.Scene {
       })
 
     } else if (this.phase === 'complete') {
-      const { container: resultBtn } = UI.button(this, W / 2, barY, 240, 38, 'RESULTADOS', {
-        accent: C.gold, accentHex: C.goldHex, fontSize: S.titleSmall,
+      // Final "Resultados" — Primary gold (§1.1).
+      const { container: resultBtn } = UI.buttonPrimary(this, W / 2, barY, 'Resultados', {
+        w: 240, h: 38,
         onPress: () => {
           transitionTo(this, 'PvELobbyScene', { pveType: 'tournament' })
         },
@@ -821,9 +822,9 @@ export default class BracketScene extends Phaser.Scene {
     }
     this.time.delayedCall(500, addLine)
 
-    // Close button
-    const { container: closeBtn } = UI.button(this, W / 2, H / 2 + panelH / 2 - 30, 120, 32, 'FECHAR', {
-      accent: C.panelBorder, accentHex: C.mutedHex, fontSize: S.bodySmall, depth: 51,
+    // Close button — Secondary outline (§1.2).
+    const { container: closeBtn } = UI.buttonSecondary(this, W / 2, H / 2 + panelH / 2 - 30, 'Fechar', {
+      w: 120, h: 32, depth: 51,
       onPress: () => this.closeSpectateOverlay(),
     })
     this.spectateOverlay.add(closeBtn)
