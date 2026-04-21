@@ -4,7 +4,10 @@ import { playerData } from '../utils/PlayerDataManager'
 import { transitionTo } from '../utils/SceneTransition'
 import { soundManager } from '../utils/SoundManager'
 import { UI } from '../utils/UIComponents'
-import { C, F, S, SHADOW, SCREEN } from '../utils/DesignTokens'
+import {
+  C, S, SHADOW, SCREEN,
+  accent, border, fg, fontFamily, motion, radii, surface, typeScale,
+} from '../utils/DesignTokens'
 import { PASS_XP_PER_TIER, PASS_MAX_TIER } from '../data/battlePass'
 import { showPlayModesOverlay, type PlayModesOverlayHandle } from '../utils/PlayModesOverlay'
 
@@ -13,15 +16,14 @@ import { showPlayModesOverlay, type PlayModesOverlayHandle } from '../utils/Play
 const W = SCREEN.W
 const H = SCREEN.H
 
-const PANEL_BG     = 0x0c1019
-const PANEL_BORDER = C.panelBorder
-const GOLD_ACCENT  = C.goldHex
-const GOLD_HEX     = C.gold
-const GOLD_DIM     = C.goldDimHex
+const PANEL_BORDER = border.default
+const GOLD_ACCENT  = accent.primaryHex
+const GOLD_HEX     = accent.primary
+const GOLD_DIM     = accent.dimHex
 const ICE_BLUE     = C.infoHex
 const ICE_BLUE_HEX = C.info
-const TEXT_MUTED   = C.mutedHex
-const BTN_FILL     = 0x10151e
+const TEXT_MUTED   = fg.tertiaryHex
+const BTN_FILL     = surface.raised
 
 // ---- Bottom icons data ------------------------------------------------------
 
@@ -123,159 +125,88 @@ export default class LobbyScene extends Phaser.Scene {
 
   private drawTopBar() {
     const p = playerData.get()
-    const barH = 65
+    const barH = 56
 
-    // Gradient background
+    // ── Background: surface.panel + 1px border-subtle bottom (per §S2 spec) ──
     const bg = this.add.graphics()
-    bg.fillStyle(0x0a0f18, 0.97)
+    bg.fillStyle(surface.panel, 0.98)
     bg.fillRect(0, 0, W, barH)
-    // Lighter center strip
-    bg.fillStyle(0xffffff, 0.015)
-    bg.fillRect(W * 0.2, 0, W * 0.6, barH)
-    // Bottom decorative line (gold gradient)
-    for (let i = 0; i < W; i++) {
-      const distFromCenter = Math.abs(i - W / 2) / (W / 2)
-      const a = 0.25 * (1 - distFromCenter * distFromCenter)
-      bg.fillStyle(C.goldDim, a)
-      bg.fillRect(i, barH - 1, 1, 1)
-    }
+    bg.fillStyle(border.subtle, 1)
+    bg.fillRect(0, barH - 1, W, 1)
 
-    // -- LEFT: Avatar + name + level + XP bar --
-    const avatarX = 42
+    // ── LEFT: Avatar badge + username + XP bar ──
+    const avatarX = 36
     const avatarY = barH / 2
-    const avatarR = 20
 
-    // Avatar circle: dark fill + gold ring
-    const avatarGfx = this.add.graphics()
-    avatarGfx.fillStyle(0x1a1f2a, 1)
-    avatarGfx.fillCircle(avatarX, avatarY, avatarR)
-    avatarGfx.lineStyle(2.5, GOLD_HEX, 1)
-    avatarGfx.strokeCircle(avatarX, avatarY, avatarR)
-
-    // Animated glow ring around avatar
-    const avatarGlow = this.add.circle(avatarX, avatarY, avatarR + 4, C.gold, 0)
-    this.tweens.add({
-      targets: avatarGlow,
-      alpha: { from: 0.04, to: 0.15 },
-      duration: 2000,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.InOut',
+    const avatar = UI.avatarBadge(this, avatarX, avatarY, {
+      initial: p.username ? p.username.charAt(0) : 'P',
+      level:   p.level,
+      size:    40,
+      onClick: () => transitionTo(this, 'ProfileScene'),
     })
 
-    // Player initial
-    const initial = p.username ? p.username.charAt(0).toUpperCase() : 'P'
-    this.add.text(avatarX, avatarY, initial, {
-      fontFamily: F.title, fontSize: '20px', color: GOLD_ACCENT, fontStyle: 'bold',
-      shadow: { offsetX: 0, offsetY: 1, color: '#000000', blur: 4, fill: true },
-    }).setOrigin(0.5)
-
-    // Avatar click area -> ProfileScene
-    const avatarHit = this.add.circle(avatarX, avatarY, avatarR + 6, 0x000000, 0.001)
-      .setInteractive({ useHandCursor: true })
-    avatarHit.on('pointerdown', () => transitionTo(this, 'ProfileScene'))
-
-    // Username
-    const nameX = avatarX + avatarR + 16
-    this.add.text(nameX, avatarY - 10, p.username, {
-      fontFamily: F.title, fontSize: '16px', color: GOLD_ACCENT, fontStyle: 'bold',
-      shadow: SHADOW.text,
+    // Username (Cormorant h3)
+    const nameX = avatarX + 28
+    this.add.text(nameX, avatarY - 8, p.username, {
+      fontFamily: fontFamily.serif, fontSize: typeScale.h3,
+      color:      fg.primaryHex,
+      fontStyle:  '600',
     }).setOrigin(0, 0.5)
 
-    // Level badge
-    this.add.text(nameX, avatarY + 6, `Lv.${p.level}`, {
-      fontFamily: F.body, fontSize: S.bodySmall, color: ICE_BLUE, fontStyle: 'bold',
-      shadow: SHADOW.text,
-    }).setOrigin(0, 0.5)
-
-    // XP progress bar (compact, below level)
+    // XP progress bar (thin, under name)
     const xpRatio = p.xp / (50 * Math.pow(p.level + 1, 1.8))
-    const xpBarW = 80
+    const xpBarW = 110
     const xpBarH = 4
     const xpBarX = nameX
-    const xpBarY = avatarY + 20
+    const xpBarY = avatarY + 12
     const xpBg = this.add.graphics()
-    xpBg.fillStyle(0x0a0e18, 1)
+    xpBg.fillStyle(surface.deepest, 1)
     xpBg.fillRoundedRect(xpBarX, xpBarY - xpBarH / 2, xpBarW, xpBarH, 2)
     const xpFillW = Math.max(3, xpBarW * Math.min(xpRatio, 1))
-    this.add.rectangle(xpBarX + xpFillW / 2, xpBarY, xpFillW, xpBarH - 1, C.info, 0.7)
+    this.add.rectangle(xpBarX + xpFillW / 2, xpBarY, xpFillW, xpBarH - 1, C.info, 0.8)
 
-    // -- RIGHT: Currencies + Settings gear --
-    const rightEdge = W - 22
+    // ── RIGHT: Currency pills + Lucide settings gear ──
+    const rightEdge = W - 20
 
-    // Settings gear -> SettingsScene
+    // Settings gear (Lucide)
     const gearX = rightEdge
     const gearY = avatarY
-    const gearGfx = this.drawGearIcon(gearX, gearY, 13, C.goldDim)
-    const gearHit = this.add.circle(gearX, gearY, 18, 0x000000, 0.001)
+    const gearIcon = UI.lucideIcon(this, 'settings', gearX, gearY, 20, fg.tertiary)
+    const gearHit = this.add.circle(gearX, gearY, 20, 0x000000, 0.001)
       .setInteractive({ useHandCursor: true })
-    // Gear glow on hover
-    const gearGlow = this.add.circle(gearX, gearY, 16, C.gold, 0)
-    gearHit.on('pointerover', () => {
-      gearGfx.setAlpha(1)
-      gearGlow.setAlpha(0.08)
-    })
-    gearHit.on('pointerout', () => {
-      gearGfx.setAlpha(0.7)
-      gearGlow.setAlpha(0)
-    })
+    gearHit.on('pointerover', () => gearIcon.setTintFill(fg.primary))
+    gearHit.on('pointerout',  () => gearIcon.setTintFill(fg.tertiary))
     gearHit.on('pointerdown', () => transitionTo(this, 'SettingsScene'))
-    gearGfx.setAlpha(0.7)
 
-    // DG display — CLICKABLE → Shop DG tab
-    const dgIconX = gearX - 55
-    const dgIcon = this.drawDiamondIcon(dgIconX, gearY, 7, ICE_BLUE_HEX)
-    // Subtle shimmer on DG icon
-    const dgGlow = this.add.circle(dgIconX, gearY, 10, ICE_BLUE_HEX, 0)
-    this.tweens.add({
-      targets: dgGlow,
-      alpha: { from: 0, to: 0.06 },
-      duration: 2500,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.InOut',
+    // DG pill (clickable → Shop DG tab)
+    const dgPill = UI.currencyPill(this, 0, avatarY, {
+      kind: 'dg', amount: p.dg,
+      onClick: () => transitionTo(this, 'ShopScene', { tab: 'dg' }),
     })
-    this.add.text(dgIconX + 15, gearY, `${p.dg}`, {
-      fontFamily: F.title, fontSize: '14px', color: ICE_BLUE, fontStyle: 'bold',
-      shadow: SHADOW.text,
-    }).setOrigin(0, 0.5)
-    const dgHit = this.add.rectangle(dgIconX + 14, gearY, 60, 30, 0x000000, 0.001)
-      .setInteractive({ useHandCursor: true })
-    dgHit.on('pointerover', () => dgHit.setFillStyle(C.info, 0.06))
-    dgHit.on('pointerout', () => dgHit.setFillStyle(0x000000, 0.001))
-    dgHit.on('pointerdown', () => transitionTo(this, 'ShopScene', { tab: 'dg' }))
+    // Place relative to gear
+    const dgBounds = dgPill.getBounds()
+    dgPill.setX(gearX - 24 - dgBounds.width / 2)
 
-    // Gold display
-    const goldIconX = dgIconX - 75
-    this.drawCoinIcon(goldIconX, gearY, 8, GOLD_HEX)
-    // Subtle gold glow
-    const goldGlow = this.add.circle(goldIconX, gearY, 11, C.gold, 0)
-    this.tweens.add({
-      targets: goldGlow,
-      alpha: { from: 0, to: 0.06 },
-      duration: 2800,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.InOut',
-      delay: 400,
+    // Gold pill
+    const goldPill = UI.currencyPill(this, 0, avatarY, {
+      kind: 'gold', amount: p.gold,
+      onClick: () => transitionTo(this, 'ShopScene', { tab: 'gold' }),
     })
-    this.add.text(goldIconX + 15, gearY, `${p.gold}`, {
-      fontFamily: F.title, fontSize: '14px', color: GOLD_ACCENT, fontStyle: 'bold',
-      shadow: SHADOW.goldGlow,
-    }).setOrigin(0, 0.5)
+    const goldBounds = goldPill.getBounds()
+    goldPill.setX(dgPill.x - dgBounds.width / 2 - 12 - goldBounds.width / 2)
 
-    // Entrance: top bar slides down
-    const topBarElements = [bg, avatarGfx, avatarGlow, avatarHit, gearGfx, gearGlow, gearHit, dgIcon, dgGlow, dgHit, goldGlow, xpBg]
+    // ── Entrance: top bar fades + slides down ──
+    const topBarElements = [bg, avatar, xpBg, gearIcon, gearHit, dgPill, goldPill]
     topBarElements.forEach(el => {
       if ('setAlpha' in el) (el as unknown as Phaser.GameObjects.Components.Alpha).setAlpha(0)
     })
     this.tweens.add({
       targets: topBarElements.filter(el => 'alpha' in el),
       alpha: 1,
-      duration: 350,
-      delay: 100,
-      ease: 'Quad.Out',
+      duration: motion.durBase, delay: 100, ease: motion.easeOut,
     })
+    // Silence legacy identifiers kept for backward compat (icon, hit zones).
+    void GOLD_ACCENT; void GOLD_HEX; void GOLD_DIM; void ICE_BLUE; void ICE_BLUE_HEX
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -291,43 +222,32 @@ export default class LobbyScene extends Phaser.Scene {
     const container = this.add.container(panelX, panelY).setAlpha(0).setScale(0.85)
     this.centralPlayContainer = container
 
-    // Multi-layer panel background
+    // ── Panel background: surface.panel + border.default + radii.xl (spec §12) ──
     const panelGfx = this.add.graphics()
-    // Outer soft glow
-    panelGfx.fillStyle(C.goldDark, 0.04)
-    panelGfx.fillRoundedRect(-panelW / 2 - 5, -panelH / 2 - 5, panelW + 10, panelH + 10, S.borderRadiusLarge + 3)
+    // Outer soft gold glow halo
+    panelGfx.fillStyle(accent.primary, 0.05)
+    panelGfx.fillRoundedRect(-panelW / 2 - 6, -panelH / 2 - 6, panelW + 12, panelH + 12, radii.xl + 3)
     // Main fill
-    panelGfx.fillStyle(0x0e1420, 1)
-    panelGfx.fillRoundedRect(-panelW / 2, -panelH / 2, panelW, panelH, S.borderRadiusLarge)
-    // Darker bottom half
-    panelGfx.fillStyle(C.black, 0.12)
-    panelGfx.fillRoundedRect(
-      -panelW / 2 + 2, 0,
-      panelW - 4, panelH / 2 - 2,
-      { tl: 0, tr: 0, bl: S.borderRadiusLarge - 1, br: S.borderRadiusLarge - 1 },
-    )
-    // Lighter top edge
-    panelGfx.fillStyle(0xffffff, 0.025)
-    panelGfx.fillRoundedRect(
-      -panelW / 2 + 2, -panelH / 2 + 2,
-      panelW - 4, 25,
-      { tl: S.borderRadiusLarge - 1, tr: S.borderRadiusLarge - 1, bl: 0, br: 0 },
-    )
-    // Inner white border
-    panelGfx.lineStyle(1, 0xffffff, 0.03)
-    panelGfx.strokeRoundedRect(-panelW / 2 + 3, -panelH / 2 + 3, panelW - 6, panelH - 6, S.borderRadiusLarge - 2)
-    // Outer gold border
-    panelGfx.lineStyle(2, GOLD_HEX, 0.7)
-    panelGfx.strokeRoundedRect(-panelW / 2, -panelH / 2, panelW, panelH, S.borderRadiusLarge)
+    panelGfx.fillStyle(surface.panel, 1)
+    panelGfx.fillRoundedRect(-panelW / 2, -panelH / 2, panelW, panelH, radii.xl)
+    // Top inset highlight (1px)
+    panelGfx.fillStyle(0xffffff, 0.05)
+    panelGfx.fillRoundedRect(-panelW / 2 + 2, -panelH / 2 + 2, panelW - 4, 1,
+      { tl: radii.xl - 2, tr: radii.xl - 2, bl: 0, br: 0 })
+    // Default border (design-system subtle) + outer gold accent
+    panelGfx.lineStyle(1, border.default, 1)
+    panelGfx.strokeRoundedRect(-panelW / 2, -panelH / 2, panelW, panelH, radii.xl)
+    panelGfx.lineStyle(2, accent.primary, 0.55)
+    panelGfx.strokeRoundedRect(-panelW / 2 - 2, -panelH / 2 - 2, panelW + 4, panelH + 4, radii.xl + 1)
     container.add(panelGfx)
 
-    // Corner ornaments
-    const corners = UI.cornerOrnaments(this, 0, 0, panelW - 20, panelH - 20, C.goldDim, 0.25, 26)
+    // Corner ornaments (kept for premium feel)
+    const corners = UI.cornerOrnaments(this, 0, 0, panelW - 20, panelH - 20, accent.primary, 0.22, 26)
     container.add(corners)
 
-    // Internal battle grid (very subtle)
+    // Internal battle grid (very subtle accent lines)
     const gridGfx = this.add.graphics()
-    gridGfx.lineStyle(1, C.goldDim, 0.02)
+    gridGfx.lineStyle(1, accent.primary, 0.03)
     const gridCols = 12
     const gridRows = 5
     const gridW = panelW - 80
@@ -346,8 +266,8 @@ export default class LobbyScene extends Phaser.Scene {
 
     // Pulsing outer glow
     const outerGlow = this.add.graphics()
-    outerGlow.lineStyle(4, GOLD_HEX, 0.1)
-    outerGlow.strokeRoundedRect(-panelW / 2 - 4, -panelH / 2 - 4, panelW + 8, panelH + 8, S.borderRadiusLarge + 2)
+    outerGlow.lineStyle(4, accent.primary, 0.1)
+    outerGlow.strokeRoundedRect(-panelW / 2 - 4, -panelH / 2 - 4, panelW + 8, panelH + 8, radii.xl + 2)
     container.add(outerGlow)
     this.tweens.add({
       targets: outerGlow,
@@ -358,36 +278,41 @@ export default class LobbyScene extends Phaser.Scene {
       ease: 'Sine.InOut',
     })
 
-    // "JOGAR" title with shimmer
+    // "JOGAR" title — Cinzel h1 via typeScale, accent.primary + letter-spacing
     const title = this.add.text(0, -panelH / 2 + 52, 'JOGAR', {
-      fontFamily: F.title, fontSize: '44px', color: GOLD_ACCENT, fontStyle: 'bold',
-      shadow: SHADOW.goldGlow,
+      fontFamily: fontFamily.display, fontSize: '44px',
+      color:      accent.primaryHex,
+      fontStyle:  '900',
+      shadow:     SHADOW.goldGlow,
     }).setOrigin(0.5)
+    const anyTitle = title as unknown as { setLetterSpacing?: (n: number) => void }
+    if (typeof anyTitle.setLetterSpacing === 'function') anyTitle.setLetterSpacing(3.5)
     container.add(title)
 
     const titleShimmer = UI.shimmer(this, panelX, panelY - panelH / 2 + 52, 220, 50, 4500)
     titleShimmer.setDepth(5)
 
-    // Crossed swords icon with glow
-    const swordsGfx = this.drawCrossedSwords(0, 22, 42, GOLD_HEX)
-    container.add(swordsGfx)
+    // Crossed swords → Lucide 'swords' icon, gold tint, large
+    const swordsIcon = UI.lucideIcon(this, 'swords', 0, 22, 48, accent.primary)
+    container.add(swordsIcon)
 
     // Swords glow pulse
-    const swordsGlow = this.add.circle(0, 22, 50, C.gold, 0)
-    container.add(swordsGlow)
+    const swordsGlow = this.add.circle(0, 22, 50, accent.primary, 0)
+    container.addAt(swordsGlow, container.list.indexOf(swordsIcon))
     this.tweens.add({
       targets: swordsGlow,
-      alpha: { from: 0.02, to: 0.08 },
+      alpha: { from: 0.05, to: 0.18 },
       duration: 2200,
       yoyo: true,
       repeat: -1,
       ease: 'Sine.InOut',
     })
 
-    // Subtitle
+    // Subtitle (Manrope body, fg.secondary)
     const subtitle = this.add.text(0, 92, 'Escolha seu modo de batalha', {
-      fontFamily: F.body, fontSize: '16px', color: TEXT_MUTED,
-      shadow: SHADOW.text,
+      fontFamily: fontFamily.body, fontSize: typeScale.body,
+      color:      fg.secondaryHex,
+      fontStyle:  '500',
     }).setOrigin(0.5)
     container.add(subtitle)
 
@@ -531,13 +456,13 @@ export default class LobbyScene extends Phaser.Scene {
     }
     container.add(jewelGfx)
 
-    // ── Header strip: "PASSE DE BATALHA" ──
+    // ── Header strip: "PASSE DE BATALHA" — Cinzel display ──
     container.add(this.add.text(0, -btnH / 2 + 16, 'PASSE', {
-      fontFamily: F.title, fontSize: '13px', color: '#ffffff', fontStyle: 'bold',
+      fontFamily: fontFamily.display, fontSize: '13px', color: '#ffffff', fontStyle: '700',
       shadow: { offsetX: 0, offsetY: 1, color: '#2a0a4a', blur: 6, fill: true },
     }).setOrigin(0.5))
     container.add(this.add.text(0, -btnH / 2 + 30, 'DE BATALHA', {
-      fontFamily: F.title, fontSize: '10px', color: '#cc88ff', fontStyle: 'bold',
+      fontFamily: fontFamily.display, fontSize: '10px', color: '#cc88ff', fontStyle: '700',
       shadow: { offsetX: 0, offsetY: 1, color: '#2a0a4a', blur: 4, fill: true },
     }).setOrigin(0.5))
 
@@ -590,10 +515,11 @@ export default class LobbyScene extends Phaser.Scene {
       duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.InOut',
     })
 
-    // ── Tier badge (right side of emblem) ──
+    // ── Tier badge (right side of emblem) — Mono tabular (Nv) / Cinzel (MAX) ──
     const tierLabel = bp.tier >= PASS_MAX_TIER ? 'MAX' : `Nv${bp.tier}`
     container.add(this.add.text(0, 18, tierLabel, {
-      fontFamily: F.title, fontSize: '13px', color: '#ffffff', fontStyle: 'bold',
+      fontFamily: bp.tier >= PASS_MAX_TIER ? fontFamily.display : fontFamily.mono,
+      fontSize: '13px', color: '#ffffff', fontStyle: '700',
       shadow: { offsetX: 0, offsetY: 1, color: '#2a0a4a', blur: 5, fill: true },
     }).setOrigin(0.5))
 
@@ -622,7 +548,8 @@ export default class LobbyScene extends Phaser.Scene {
     } else {
       // MAX label replaces bar
       container.add(this.add.text(0, btnH / 2 - 13, 'RECOMPENSAS MAX', {
-        fontFamily: F.body, fontSize: '9px', color: '#f0c850', fontStyle: 'bold', shadow: SHADOW.text,
+        fontFamily: fontFamily.body, fontSize: '9px', color: accent.primaryHex,
+        fontStyle: '700', shadow: SHADOW.text,
       }).setOrigin(0.5))
     }
 
@@ -648,7 +575,7 @@ export default class LobbyScene extends Phaser.Scene {
       container.add(badgeGfx)
 
       container.add(this.add.text(badgeX, badgeY, '!', {
-        fontFamily: F.title, fontSize: '10px', color: '#ffffff', fontStyle: 'bold',
+        fontFamily: fontFamily.display, fontSize: '10px', color: '#ffffff', fontStyle: '900',
       }).setOrigin(0.5))
     }
 
@@ -749,19 +676,20 @@ export default class LobbyScene extends Phaser.Scene {
     iconGfx.fillRect(cX - 2, 1, 4, 5)
     container.add(iconGfx)
 
-    // Label
+    // Label (Cormorant h3)
     const label = this.add.text(10, available ? -5 : -5, 'Ataque Equipes', {
-      fontFamily: F.title, fontSize: '14px',
-      color: accentHex,
-      fontStyle: 'bold', shadow: SHADOW.text,
+      fontFamily: fontFamily.serif, fontSize: '14px',
+      color:      accentHex,
+      fontStyle:  '600',
+      shadow:     SHADOW.text,
     }).setOrigin(0, 0.5)
     container.add(label)
 
-    // Description
+    // Description (Manrope body)
     const desc = this.add.text(10, 10, available ? 'Ataque bases inimigas' : 'Desafie equipes rivais', {
-      fontFamily: F.body, fontSize: '10px',
-      color: available ? TEXT_MUTED : C.dimHex,
-      shadow: SHADOW.text,
+      fontFamily: fontFamily.body, fontSize: '11px',
+      color:      available ? fg.tertiaryHex : fg.disabledHex,
+      shadow:     SHADOW.text,
     }).setOrigin(0, 0.5)
     container.add(desc)
 
@@ -793,10 +721,11 @@ export default class LobbyScene extends Phaser.Scene {
       lockGfx.fillCircle(lkX, lkY - 2, 1)
       container.add(lockGfx)
 
-      // "Lv.30" text (right side of pill)
+      // "Lv.30" text (right side of pill) — Mono tabular for stat feel
       container.add(this.add.text(pillCx + 3, pillCy, 'Lv.30', {
-        fontFamily: F.body, fontSize: '13px', color: '#999999', fontStyle: 'bold',
-        shadow: SHADOW.text,
+        fontFamily: fontFamily.mono, fontSize: '12px',
+        color:      fg.disabledHex, fontStyle: '700',
+        shadow:     SHADOW.text,
       }).setOrigin(0, 0.5))
     }
 
@@ -885,31 +814,34 @@ export default class LobbyScene extends Phaser.Scene {
     this.overlayElements.push(popupContainer)
 
     const popW = 380
-    const popH = 120
+    const popH = 140
     const bg = this.add.graphics()
-    bg.fillStyle(PANEL_BG, 0.98)
-    bg.fillRoundedRect(-popW / 2, -popH / 2, popW, popH, 10)
-    bg.lineStyle(1.5, 0xffa726, 0.5)
-    bg.strokeRoundedRect(-popW / 2, -popH / 2, popW, popH, 10)
+    bg.fillStyle(surface.panel, 0.98)
+    bg.fillRoundedRect(-popW / 2, -popH / 2, popW, popH, radii.xl)
+    bg.fillStyle(0xffffff, 0.04)
+    bg.fillRoundedRect(-popW / 2 + 2, -popH / 2 + 2, popW - 4, 1,
+      { tl: radii.xl - 2, tr: radii.xl - 2, bl: 0, br: 0 })
+    bg.lineStyle(1, border.default, 1)
+    bg.strokeRoundedRect(-popW / 2, -popH / 2, popW, popH, radii.xl)
     popupContainer.add(bg)
 
-    popupContainer.add(this.add.text(0, -15, 'Em breve', {
-      fontFamily: F.title, fontSize: S.titleSmall, color: '#ffa726', fontStyle: 'bold',
-      shadow: SHADOW.goldGlow,
+    popupContainer.add(this.add.text(0, -26, 'EM BREVE', {
+      fontFamily: fontFamily.display, fontSize: typeScale.h2,
+      color:      accent.primaryHex, fontStyle: '700',
+      shadow:     SHADOW.goldGlow,
     }).setOrigin(0.5))
 
-    popupContainer.add(this.add.text(0, 12, 'Sistema de ataque equipes', {
-      fontFamily: F.body, fontSize: S.body, color: TEXT_MUTED, shadow: SHADOW.text,
+    popupContainer.add(this.add.text(0, 4, 'Sistema de ataque equipes', {
+      fontFamily: fontFamily.body, fontSize: typeScale.small,
+      color:      fg.secondaryHex,
     }).setOrigin(0.5))
 
-    const okHit = this.add.rectangle(0, popH / 2 - 20, 80, 26, 0x000000, 0.001)
-      .setInteractive({ useHandCursor: true })
-    popupContainer.add(okHit)
-    popupContainer.add(this.add.text(0, popH / 2 - 20, 'OK', {
-      fontFamily: F.body, fontSize: S.body, color: GOLD_ACCENT, fontStyle: 'bold',
-      shadow: SHADOW.text,
-    }).setOrigin(0.5))
-    okHit.on('pointerdown', () => this.closePlayModes())
+    // Confirm via UI.buttonPrimary (size sm)
+    const okBtn = UI.buttonPrimary(this, 0, popH / 2 - 28, 'OK', {
+      size: 'sm', w: 100, h: 32, depth: 102,
+      onPress: () => this.closePlayModes(),
+    })
+    popupContainer.add(okBtn.container)
 
     this.tweens.add({
       targets: popupContainer,
@@ -981,33 +913,32 @@ export default class LobbyScene extends Phaser.Scene {
     BOTTOM_ICONS.forEach((cfg, i) => {
       const x = startX + i * (iconW + gap)
       const y = centerY
-      const accentHex = '#' + cfg.color.toString(16).padStart(6, '0')
 
       const container = this.add.container(x, y).setAlpha(0).setScale(0.9)
       this.bottomIconContainers.push(container)
 
-      // Dark panel with depth
+      // Dark panel with depth — design-system surface.panel + border.default
       const bgGfx = this.add.graphics()
       // Shadow
-      bgGfx.fillStyle(0x000000, 0.25)
-      bgGfx.fillRoundedRect(-iconW / 2 + 2, -iconH / 2 + 3, iconW, iconH, S.borderRadiusLarge)
+      bgGfx.fillStyle(0x000000, 0.30)
+      bgGfx.fillRoundedRect(-iconW / 2 + 2, -iconH / 2 + 4, iconW, iconH, radii.lg)
       // Main fill
-      bgGfx.fillStyle(0x111825, 0.95)
-      bgGfx.fillRoundedRect(-iconW / 2, -iconH / 2, iconW, iconH, S.borderRadiusLarge)
-      // Top gloss
-      bgGfx.fillStyle(0xffffff, 0.02)
-      bgGfx.fillRoundedRect(-iconW / 2 + 2, -iconH / 2 + 2, iconW - 4, 18,
-        { tl: S.borderRadiusLarge - 1, tr: S.borderRadiusLarge - 1, bl: 0, br: 0 })
-      // Border
-      bgGfx.lineStyle(1, PANEL_BORDER, 0.45)
-      bgGfx.strokeRoundedRect(-iconW / 2, -iconH / 2, iconW, iconH, S.borderRadiusLarge)
+      bgGfx.fillStyle(surface.panel, 0.98)
+      bgGfx.fillRoundedRect(-iconW / 2, -iconH / 2, iconW, iconH, radii.lg)
+      // Top gloss inset highlight
+      bgGfx.fillStyle(0xffffff, 0.04)
+      bgGfx.fillRoundedRect(-iconW / 2 + 2, -iconH / 2 + 2, iconW - 4, 1,
+        { tl: radii.lg - 1, tr: radii.lg - 1, bl: 0, br: 0 })
+      // Border (default, with subtle state)
+      bgGfx.lineStyle(1, border.default, 1)
+      bgGfx.strokeRoundedRect(-iconW / 2, -iconH / 2, iconW, iconH, radii.lg)
       container.add(bgGfx)
 
       // Top accent bar (color of the section)
       const accentGfx = this.add.graphics()
-      accentGfx.fillStyle(cfg.color, 0.7)
+      accentGfx.fillStyle(cfg.color, 0.85)
       accentGfx.fillRoundedRect(-iconW / 2 + 4, -iconH / 2, iconW - 8, 3,
-        { tl: S.borderRadiusLarge, tr: S.borderRadiusLarge, bl: 0, br: 0 })
+        { tl: radii.lg, tr: radii.lg, bl: 0, br: 0 })
       container.add(accentGfx)
 
       // Subtle glow behind icon
@@ -1018,11 +949,14 @@ export default class LobbyScene extends Phaser.Scene {
       const iconGfx = this.drawBottomNavIcon(cfg.label, 0, -8, 16, cfg.color)
       container.add(iconGfx)
 
-      // Label (14px)
-      const label = this.add.text(0, iconH / 2 - 20, cfg.label, {
-        fontFamily: F.body, fontSize: '13px', color: TEXT_MUTED, fontStyle: 'bold',
-        shadow: SHADOW.text,
+      // Label — Manrope meta (11/700 uppercase)
+      const label = this.add.text(0, iconH / 2 - 18, cfg.label, {
+        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+        color:      fg.tertiaryHex, fontStyle: '700',
+        shadow:     SHADOW.text,
       }).setOrigin(0.5)
+      const anyLbl = label as unknown as { setLetterSpacing?: (n: number) => void }
+      if (typeof anyLbl.setLetterSpacing === 'function') anyLbl.setLetterSpacing(1.6)
       container.add(label)
 
       // Hit area
@@ -1032,8 +966,8 @@ export default class LobbyScene extends Phaser.Scene {
 
       // Hover glow border
       const hoverGlow = this.add.graphics()
-      hoverGlow.lineStyle(2, cfg.color, 0.6)
-      hoverGlow.strokeRoundedRect(-iconW / 2, -iconH / 2, iconW, iconH, S.borderRadiusLarge)
+      hoverGlow.lineStyle(2, cfg.color, 0.75)
+      hoverGlow.strokeRoundedRect(-iconW / 2, -iconH / 2, iconW, iconH, radii.lg)
       hoverGlow.setAlpha(0)
       container.add(hoverGlow)
 
@@ -1041,13 +975,13 @@ export default class LobbyScene extends Phaser.Scene {
         this.tweens.add({ targets: container, scaleX: 1.08, scaleY: 1.08, duration: 120, ease: 'Sine.Out' })
         hoverGlow.setAlpha(1)
         iconGlow.setAlpha(0.12)
-        label.setColor(accentHex)
+        label.setColor(fg.primaryHex)
       })
       hitZone.on('pointerout', () => {
         this.tweens.add({ targets: container, scaleX: 1, scaleY: 1, duration: 120, ease: 'Sine.Out' })
         hoverGlow.setAlpha(0)
         iconGlow.setAlpha(0.04)
-        label.setColor(TEXT_MUTED)
+        label.setColor(fg.tertiaryHex)
       })
       hitZone.on('pointerdown', () => {
         this.tweens.add({
@@ -1082,26 +1016,27 @@ export default class LobbyScene extends Phaser.Scene {
   // ═══════════════════════════════════════════════════════════════════════════
 
   private drawFooter() {
-    // Decorative separator line
+    // Decorative separator line — accent.primary gradient
     const sepY = 650
     const sepGfx = this.add.graphics()
     for (let i = 0; i < W; i++) {
       const distFromCenter = Math.abs(i - W / 2) / (W / 2)
-      const a = 0.1 * (1 - distFromCenter * distFromCenter)
-      sepGfx.fillStyle(C.goldDim, a)
+      const a = 0.08 * (1 - distFromCenter * distFromCenter)
+      sepGfx.fillStyle(accent.primary, a)
       sepGfx.fillRect(i, sepY, 1, 1)
     }
 
     // Sound toggle
     this.drawSoundToggle()
 
-    // Version text
-    this.add.text(W - 16, H - 16, 'Codeforje VIO v1.0', {
-      fontFamily: F.body, fontSize: '10px', color: TEXT_MUTED,
-      shadow: SHADOW.text,
-    }).setOrigin(1, 1).setAlpha(0.5)
+    // Version text — Manrope meta, fg.disabled
+    this.add.text(W - 16, H - 16, 'Codeforje VIO · v1.0', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color:      fg.disabledHex, fontStyle: '700',
+      shadow:     SHADOW.text,
+    }).setOrigin(1, 1)
 
-    // News ticker with subtle background
+    // News ticker
     this.drawNewsTicker()
   }
 
@@ -1125,7 +1060,9 @@ export default class LobbyScene extends Phaser.Scene {
     renderBg(false)
 
     const label = this.add.text(bx + 4, by, muted ? 'Mudo' : 'Som', {
-      fontFamily: F.body, fontSize: S.small, color: TEXT_MUTED, shadow: SHADOW.text,
+      fontFamily: fontFamily.body, fontSize: typeScale.small,
+      color:      fg.tertiaryHex, fontStyle: '500',
+      shadow:     SHADOW.text,
     }).setOrigin(0.5)
 
     const speakerGfx = this.drawSpeakerIcon(bx - 22, by, 7, muted)
@@ -1135,11 +1072,11 @@ export default class LobbyScene extends Phaser.Scene {
 
     hitZone.on('pointerover', () => {
       renderBg(true)
-      label.setColor(GOLD_DIM)
+      label.setColor(accent.primaryHex)
     })
     hitZone.on('pointerout', () => {
       renderBg(false)
-      label.setColor(TEXT_MUTED)
+      label.setColor(fg.tertiaryHex)
     })
     hitZone.on('pointerdown', () => {
       muted = !soundManager.toggle()
@@ -1158,9 +1095,10 @@ export default class LobbyScene extends Phaser.Scene {
     this.add.rectangle(W / 2, tickerY, W, 16, 0x000000, 0.2)
 
     const tickerText = this.add.text(W + 20, tickerY, message, {
-      fontFamily: F.body, fontSize: '11px', color: GOLD_DIM,
-      shadow: SHADOW.text,
-    }).setOrigin(0, 0.5).setAlpha(0.6)
+      fontFamily: fontFamily.body, fontSize: '11px',
+      color:      accent.dimHex, fontStyle: '500',
+      shadow:     SHADOW.text,
+    }).setOrigin(0, 0.5).setAlpha(0.65)
 
     const textWidth = tickerText.width
 
@@ -1175,97 +1113,10 @@ export default class LobbyScene extends Phaser.Scene {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // DRAWN ICONS (no emojis)
+  // DRAWN ICONS (speaker + bottom-nav custom icons preserved for scene identity;
+  // crossed-swords/gear/coin/diamond deprecated in Sub 2.4 — replaced by Lucide
+  // 'swords'/'settings' and UI.currencyPill SVGs.)
   // ═══════════════════════════════════════════════════════════════════════════
-
-  private drawCrossedSwords(x: number, y: number, size: number, color: number): Phaser.GameObjects.Graphics {
-    const g = this.add.graphics()
-    const s = size
-
-    g.lineStyle(3, color, 0.9)
-    g.lineBetween(x - s, y - s, x + s, y + s)
-    g.lineStyle(5, color, 0.5)
-    g.lineBetween(x - s * 0.3, y - s * 0.3, x + s * 0.3, y + s * 0.3)
-    g.lineStyle(3, color, 0.9)
-    g.lineBetween(x - s * 0.5, y + s * 0.2, x + s * 0.2, y - s * 0.5)
-    g.fillStyle(color, 0.8)
-    g.fillCircle(x - s * 0.85, y - s * 0.85, 3)
-
-    g.lineStyle(3, color, 0.9)
-    g.lineBetween(x + s, y - s, x - s, y + s)
-    g.lineStyle(5, color, 0.5)
-    g.lineBetween(x + s * 0.3, y - s * 0.3, x - s * 0.3, y + s * 0.3)
-    g.lineStyle(3, color, 0.9)
-    g.lineBetween(x + s * 0.5, y + s * 0.2, x - s * 0.2, y - s * 0.5)
-    g.fillStyle(color, 0.8)
-    g.fillCircle(x + s * 0.85, y - s * 0.85, 3)
-
-    g.fillStyle(0xffffff, 0.15)
-    g.fillCircle(x, y, 5)
-
-    return g
-  }
-
-  private drawGearIcon(x: number, y: number, size: number, color: number): Phaser.GameObjects.Graphics {
-    const g = this.add.graphics()
-    const teeth = 8
-    const outerR = size
-    const innerR = size * 0.65
-    const toothW = 0.2
-
-    g.lineStyle(2, color, 0.8)
-    g.beginPath()
-    for (let i = 0; i < teeth; i++) {
-      const a1 = (Math.PI * 2 * i) / teeth - toothW
-      const a2 = (Math.PI * 2 * i) / teeth + toothW
-      const a3 = (Math.PI * 2 * (i + 0.5)) / teeth - toothW
-      const a4 = (Math.PI * 2 * (i + 0.5)) / teeth + toothW
-      if (i === 0) g.moveTo(x + Math.cos(a1) * outerR, y + Math.sin(a1) * outerR)
-      g.lineTo(x + Math.cos(a2) * outerR, y + Math.sin(a2) * outerR)
-      g.lineTo(x + Math.cos(a3) * innerR, y + Math.sin(a3) * innerR)
-      g.lineTo(x + Math.cos(a4) * innerR, y + Math.sin(a4) * innerR)
-      const nextA1 = (Math.PI * 2 * (i + 1)) / teeth - toothW
-      g.lineTo(x + Math.cos(nextA1) * outerR, y + Math.sin(nextA1) * outerR)
-    }
-    g.closePath()
-    g.strokePath()
-    g.lineStyle(2, color, 0.8)
-    g.strokeCircle(x, y, size * 0.3)
-
-    return g
-  }
-
-  private drawCoinIcon(x: number, y: number, r: number, color: number): Phaser.GameObjects.Graphics {
-    const g = this.add.graphics()
-    g.fillStyle(color, 0.7)
-    g.fillCircle(x, y, r)
-    g.lineStyle(1.5, color, 0.9)
-    g.strokeCircle(x, y, r)
-    g.lineStyle(1, 0xffffff, 0.15)
-    g.strokeCircle(x, y, r * 0.55)
-    return g
-  }
-
-  /** DG currency icon — blue diamond coin */
-  private drawDiamondIcon(x: number, y: number, size: number, color: number): Phaser.GameObjects.Graphics {
-    const g = this.add.graphics()
-    const r = size
-    // Outer coin
-    g.fillStyle(color, 0.6)
-    g.fillCircle(x, y, r)
-    g.lineStyle(1.5, color, 0.9)
-    g.strokeCircle(x, y, r)
-    // Inner diamond shape
-    const ds = r * 0.55
-    g.fillStyle(0xffffff, 0.25)
-    g.fillPoints([
-      new Phaser.Geom.Point(x, y - ds),
-      new Phaser.Geom.Point(x + ds * 0.7, y),
-      new Phaser.Geom.Point(x, y + ds),
-      new Phaser.Geom.Point(x - ds * 0.7, y),
-    ], true)
-    return g
-  }
 
   private drawSpeakerIcon(x: number, y: number, size: number, muted: boolean): Phaser.GameObjects.Graphics {
     const g = this.add.graphics()
