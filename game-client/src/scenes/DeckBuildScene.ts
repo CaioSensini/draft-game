@@ -4,16 +4,29 @@ import type { CardGroup, TeamDeckConfig, UnitRole } from '../types'
 import { GameState, GameStateManager } from '../core/GameState'
 import { UI } from '../utils/UIComponents'
 import { playerData } from '../utils/PlayerDataManager'
+import {
+  surface, border, accent, fg, state,
+  fontFamily, typeScale, radii,
+  colors as C2,
+} from '../utils/DesignTokens'
+import { getClassSigilKey } from '../utils/AssetPaths'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const ROLES: UnitRole[] = ['king', 'warrior', 'specialist', 'executor']
 
 const ROLE_LABELS: Record<UnitRole, string> = {
-  king:       '👑 Rei',
-  warrior:    '🛡 Guerreiro',
-  specialist: '🔮 Especialista',
-  executor:   '🗡️ Executor',
+  king:       'Rei',
+  warrior:    'Guerreiro',
+  specialist: 'Especialista',
+  executor:   'Executor',
+}
+
+const ROLE_CLASS_COLOR: Record<UnitRole, number> = {
+  king:       C2.class.king,
+  warrior:    C2.class.warrior,
+  specialist: C2.class.specialist,
+  executor:   C2.class.executor,
 }
 
 const ROLE_PASSIVES: Record<UnitRole, string> = {
@@ -26,31 +39,18 @@ const ROLE_PASSIVES: Record<UnitRole, string> = {
 const GROUPS: CardGroup[] = ['attack1', 'attack2', 'defense1', 'defense2']
 
 const GROUP_LABELS: Record<CardGroup, string> = {
-  attack1:  'Ataque Tipo 1 — dano',
-  attack2:  'Ataque Tipo 2 — controle',
-  defense1: 'Defesa Tipo 1 — forte',
-  defense2: 'Defesa Tipo 2 — leve',
+  attack1:  'ATAQUE · DANO',
+  attack2:  'ATAQUE · CONTROLE',
+  defense1: 'DEFESA · FORTE',
+  defense2: 'DEFESA · LEVE',
 }
 
-const GROUP_HEADER_COLOR: Record<CardGroup, number> = {
-  attack1:  0x3a1a1a,
-  attack2:  0x3a2a10,
-  defense1: 0x0e2a3a,
-  defense2: 0x12203a,
-}
-
-const CARD_SELECTED_FILL: Record<CardGroup, number> = {
-  attack1:  0x2a1212,
-  attack2:  0x2a1f0e,
-  defense1: 0x0c1e2e,
-  defense2: 0x0e1a30,
-}
-
-const CARD_SELECTED_STROKE: Record<CardGroup, number> = {
-  attack1:  0xef5350,
-  attack2:  0xffa726,
-  defense1: 0x4fc3f7,
-  defense2: 0x4fc3f7,
+// Header tint by group — translucent wash over the column header bar.
+const GROUP_HEADER_TINT: Record<CardGroup, number> = {
+  attack1:  state.error,         // crimson for damage
+  attack2:  accent.hot,          // amber for control
+  defense1: state.info,          // blue for strong defense
+  defense2: state.success,       // green for light defense
 }
 
 // ─── Layout (1280 × 720) ─────────────────────────────────────────────────────
@@ -60,6 +60,7 @@ const CARD_SELECTED_STROKE: Record<CardGroup, number> = {
 //  y  98–118  Passive description
 //  y 118–122  Divider
 //  y 122–660  4 columns (one per group), each with header + 4 cards
+//             in a 2x2 grid of canonical 120x160 vertical skill cards
 //  y 660–720  Footer (progress, deck buttons, start button)
 
 const W             = 1280
@@ -67,11 +68,14 @@ const SECTION_Y_START = 122
 const SECTION_Y_END   = 660
 const SECTION_H       = SECTION_Y_END - SECTION_Y_START          // 538
 const COL_W           = Math.floor(W / 4)                        // 320
-const SEC_HEADER_H    = 26
-const CARD_AREA_H     = SECTION_H - SEC_HEADER_H                 // 512
-const CARD_H          = Math.floor((CARD_AREA_H - 4 * 4) / 4)   // ~124
-const CARD_W          = COL_W - 12                               // 308
-const CARD_GAP        = 4
+const SEC_HEADER_H    = 28
+
+// Canonical vertical skill card — INTEGRATION_SPEC §2 / Print 15
+const CARD_W   = 120
+const CARD_H   = 160
+const CARD_GAP = 10
+// 2 cols × 2 rows inside each group column. Total grid width = 250, height = 330.
+const CARDS_PER_ROW = 2
 
 // ─── Scene ───────────────────────────────────────────────────────────────────
 
@@ -120,8 +124,7 @@ export default class DeckBuildScene extends Phaser.Scene {
 
   private passiveText!: Phaser.GameObjects.Text
   private progressText!: Phaser.GameObjects.Text
-  private startBtn!: Phaser.GameObjects.Rectangle
-  private startBtnLabel!: Phaser.GameObjects.Text
+  private startBtnSetDisabled: ((v: boolean) => void) | null = null
 
   /** Skill tooltip container shown on hover */
   private tooltip: Phaser.GameObjects.Container | null = null
@@ -220,48 +223,63 @@ export default class DeckBuildScene extends Phaser.Scene {
   private drawBackground() {
     UI.background(this)
     UI.particles(this, 10)
+    // Subtle column dividers
     for (let i = 1; i < 4; i++) {
-      this.add.rectangle(i * COL_W, 360, 1, 720, 0x3d2e14, 0.15)
+      this.add.rectangle(i * COL_W, 360, 1, 720, border.subtle, 0.35)
     }
-    this.add.rectangle(W / 2, SECTION_Y_START, W, 1, 0x3d2e14, 0.3)
-    this.add.rectangle(W / 2, SECTION_Y_END,   W, 1, 0x3d2e14, 0.3)
+    this.add.rectangle(W / 2, SECTION_Y_START, W, 1, border.default, 0.4)
+    this.add.rectangle(W / 2, SECTION_Y_END,   W, 1, border.default, 0.4)
   }
 
   private drawHeader() {
-    this.add.rectangle(W / 2, 28, W, 56, 0x0e1118)
+    // Top band — surface.panel with accent.primary thin rule underneath
+    this.add.rectangle(W / 2, 28, W, 56, surface.panel)
+    this.add.rectangle(W / 2, 56, W, 1, border.subtle)
 
-    // Title + subtitle (left-aligned to leave room for controls)
-    this.add.text(200, 18, 'DRAFT \u2014 Montagem de Deck', {
-      fontFamily: 'Arial', fontSize: '22px', color: '#f0c850', fontStyle: 'bold',
-    }).setOrigin(0.5)
-    this.add.text(200, 41, 'Selecione 2 cartas por grupo para cada unidade.', {
-      fontFamily: 'Arial', fontSize: '11px', color: '#7a7062',
-    }).setOrigin(0.5)
+    // Title (Cinzel h2) left-aligned; subtitle (Cormorant italic small)
+    this.add.text(24, 18, 'MONTAGEM DE DECK', {
+      fontFamily: fontFamily.display, fontSize: typeScale.h2,
+      color: accent.primaryHex, fontStyle: '700',
+    }).setOrigin(0, 0.5).setLetterSpacing(3)
+    this.add.text(24, 41, 'Escolha 2 cartas por grupo para cada classe.', {
+      fontFamily: fontFamily.serif, fontSize: typeScale.small,
+      color: fg.tertiaryHex, fontStyle: 'italic',
+    }).setOrigin(0, 0.5)
 
     // ── Difficulty buttons ───────────────────────────────────────────────────
     const diffs: Difficulty[] = ['easy', 'normal', 'hard']
-    const dBtnW = 82
-    const dStartX = W - 3 * (dBtnW + 6) - 10 + dBtnW / 2
-    const dBtnColors: Record<Difficulty, number> = { easy: 0x1b3a1e, normal: 0x12203a, hard: 0x3a1515 }
-    const dBtnStroke: Record<Difficulty, number> = { easy: 0x4caf50, normal: 0x4fc3f7, hard: 0xef5350 }
+    const dBtnW = 92
+    const dStartX = W - 3 * (dBtnW + 8) - 16 + dBtnW / 2
+    const dBtnActive: Record<Difficulty, number> = {
+      easy:   state.success,
+      normal: state.info,
+      hard:   state.error,
+    }
 
-    this.add.text(dStartX - dBtnW / 2 - 12, 18, 'DIFICULDADE', {
-      fontFamily: 'Arial', fontSize: '9px', color: '#7a7062', fontStyle: 'bold',
-    }).setOrigin(1, 0.5)
+    this.add.text(dStartX - dBtnW / 2 - 16, 28, 'DIFICULDADE', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: fg.tertiaryHex, fontStyle: '700',
+    }).setOrigin(1, 0.5).setLetterSpacing(1.6)
 
     diffs.forEach((d, i) => {
-      const x = dStartX + i * (dBtnW + 6)
+      const x = dStartX + i * (dBtnW + 8)
       const isActive = d === this.difficulty
-      const bg = this.add.rectangle(x, 28, dBtnW, 36, isActive ? dBtnColors[d] : 0x141a24)
-        .setStrokeStyle(2, isActive ? dBtnStroke[d] : 0x3d2e14, isActive ? 1 : 0.3)
+      const bg = this.add.rectangle(x, 28, dBtnW, 34,
+        isActive ? surface.raised : surface.panel, 1)
+        .setStrokeStyle(isActive ? 2 : 1,
+          isActive ? dBtnActive[d] : border.default,
+          isActive ? 1 : 0.7)
         .setInteractive({ useHandCursor: true })
       const label = this.add.text(x, 28, DIFFICULTY_LABELS[d], {
-        fontFamily: 'Arial', fontSize: '13px',
-        color: isActive ? '#e8e0d0' : '#7a7062', fontStyle: 'bold',
+        fontFamily: fontFamily.body, fontSize: typeScale.small,
+        color: isActive
+          ? '#' + dBtnActive[d].toString(16).padStart(6, '0')
+          : fg.secondaryHex,
+        fontStyle: '700',
       }).setOrigin(0.5)
 
-      bg.on('pointerover', () => { if (this.difficulty !== d) bg.setFillStyle(0x1a2230) })
-      bg.on('pointerout',  () => { if (this.difficulty !== d) bg.setFillStyle(0x141a24) })
+      bg.on('pointerover', () => { if (this.difficulty !== d) bg.setFillStyle(surface.raised) })
+      bg.on('pointerout',  () => { if (this.difficulty !== d) bg.setFillStyle(surface.panel) })
       bg.on('pointerdown', () => this.setDifficulty(d))
 
       this.diffBtns.set(d, { bg, label })
@@ -269,37 +287,50 @@ export default class DeckBuildScene extends Phaser.Scene {
   }
 
   private drawTabs() {
-    this.add.rectangle(W / 2, 77, W, 42, 0x0a0e16)
+    this.add.rectangle(W / 2, 77, W, 42, surface.deepest)
 
-    const tabW = 294
-    const gap  = 6
+    const tabW = 280
+    const gap  = 8
     const total = ROLES.length * tabW + (ROLES.length - 1) * gap
     let x = (W - total) / 2 + tabW / 2
 
     ROLES.forEach((role) => {
+      const classColor = ROLE_CLASS_COLOR[role]
       const bg = this.add
-        .rectangle(x, 77, tabW, 36, 0x141a24)
-        .setStrokeStyle(1, 0x3d2e14, 0.3)
+        .rectangle(x, 77, tabW, 34, surface.panel, 1)
+        .setStrokeStyle(1, border.default, 0.7)
         .setInteractive({ useHandCursor: true })
 
-      const txt = this.add.text(x, 77, ROLE_LABELS[role], {
-        fontFamily: 'Arial', fontSize: '15px', color: '#7a7062', fontStyle: 'bold',
-      }).setOrigin(0.5)
+      // Class sigil 18×18 to the left of the label — tinted class color
+      const sigilX = x - tabW / 2 + 18
+      const sigil = this.add.image(sigilX, 77, getClassSigilKey(role))
+        .setDisplaySize(18, 18)
+        .setTintFill(classColor)
+        .setAlpha(0.85)
 
-      bg.on('pointerover', () => { if (this.activeRole !== role) bg.setFillStyle(0x1a2230) })
-      bg.on('pointerout',  () => { if (this.activeRole !== role) bg.setFillStyle(0x141a24) })
+      const txt = this.add.text(sigilX + 16, 77, ROLE_LABELS[role], {
+        fontFamily: fontFamily.serif, fontSize: typeScale.h3,
+        color: fg.secondaryHex, fontStyle: '600',
+      }).setOrigin(0, 0.5)
+
+      bg.on('pointerover', () => { if (this.activeRole !== role) bg.setFillStyle(surface.raised) })
+      bg.on('pointerout',  () => { if (this.activeRole !== role) bg.setFillStyle(surface.panel) })
       bg.on('pointerdown', () => this.showRole(role))
 
       this.tabBgs.set(role, bg)
       this.tabTexts.set(role, txt)
+      this.tabTexts.set(role, txt)
+      // stash sigil on the bg's data for toggle
+      bg.setData('sigil', sigil)
       x += tabW + gap
     })
   }
 
   private drawPassiveLine() {
-    this.add.rectangle(W / 2, 108, W, 28, 0x0e1118)
+    this.add.rectangle(W / 2, 108, W, 28, surface.primary)
     this.passiveText = this.add.text(W / 2, 108, '', {
-      fontFamily: 'Arial', fontSize: '12px', color: '#4fc3f7',
+      fontFamily: fontFamily.serif, fontSize: typeScale.small,
+      color: fg.secondaryHex, fontStyle: 'italic',
     }).setOrigin(0.5)
   }
 
@@ -323,78 +354,99 @@ export default class DeckBuildScene extends Phaser.Scene {
     group: CardGroup,
     sx: number,
   ) {
-    const cards    = getRoleCards(role).filter((c) => c.group === group)
-    const hdrColor = GROUP_HEADER_COLOR[group]
-    const sy       = SECTION_Y_START
+    const cards   = getRoleCards(role).filter((c) => c.group === group)
+    const tint    = GROUP_HEADER_TINT[group]
+    const tintHex = '#' + tint.toString(16).padStart(6, '0')
+    const sy      = SECTION_Y_START
 
-    // Column bg (subtle)
-    const colBg = this.add.rectangle(
-      sx + CARD_W / 2, sy + SECTION_H / 2, CARD_W, SECTION_H, 0x0a0e16
-    )
-    container.add(colBg)
+    // Column background — surface.panel with a soft tinted glow at top
+    const colW = COL_W - 8
+    const colX = sx + (COL_W - colW) / 2
+    const colBgG = this.add.graphics()
+    colBgG.fillStyle(surface.panel, 0.92)
+    colBgG.fillRoundedRect(colX, sy, colW, SECTION_H, radii.lg)
+    colBgG.lineStyle(1, border.default, 0.8)
+    colBgG.strokeRoundedRect(colX, sy, colW, SECTION_H, radii.lg)
+    // Tinted top band (2px) signaling the group category
+    colBgG.fillStyle(tint, 0.55)
+    colBgG.fillRoundedRect(colX, sy, colW, 3, { tl: radii.lg, tr: radii.lg, bl: 0, br: 0 })
+    container.add(colBgG)
 
-    // Section header bar
-    const hdrBg = this.add.rectangle(
-      sx + CARD_W / 2, sy + SEC_HEADER_H / 2, CARD_W, SEC_HEADER_H, hdrColor, 0.85
-    )
-    container.add(hdrBg)
-
-    const hdrTxt = this.add.text(sx + 8, sy + SEC_HEADER_H / 2, GROUP_LABELS[group], {
-      fontFamily: 'Arial', fontSize: '12px', color: '#ffffff', fontStyle: 'bold',
-    }).setOrigin(0, 0.5)
+    // Section header (group label + count counter)
+    const hdrTxt = this.add.text(colX + 12, sy + SEC_HEADER_H / 2, GROUP_LABELS[group], {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: tintHex, fontStyle: '700',
+    }).setOrigin(0, 0.5).setLetterSpacing(1.6)
     container.add(hdrTxt)
 
-    // Counter top-right
-    const counterTxt = this.add.text(sx + CARD_W - 6, sy + SEC_HEADER_H / 2, '0 / 2', {
-      fontFamily: 'Arial', fontSize: '12px', color: '#c9a84c', fontStyle: 'bold',
+    const counterTxt = this.add.text(colX + colW - 12, sy + SEC_HEADER_H / 2, '0 / 2', {
+      fontFamily: fontFamily.mono, fontSize: typeScale.small,
+      color: fg.tertiaryHex, fontStyle: '700',
     }).setOrigin(1, 0.5).setName(`counter_${role}_${group}`)
     container.add(counterTxt)
 
-    // Cards
-    const cardsStartY = sy + SEC_HEADER_H + CARD_GAP
+    // 2 × 2 grid of canonical 120 × 160 vertical skill cards centered in col
+    const gridW = CARDS_PER_ROW * CARD_W + (CARDS_PER_ROW - 1) * CARD_GAP
+    const gridStartX = sx + (COL_W - gridW) / 2 + CARD_W / 2
+    const cardsStartY = sy + SEC_HEADER_H + 12 + CARD_H / 2
+
     cards.forEach((card, i) => {
-      const cy = cardsStartY + i * (CARD_H + CARD_GAP) + CARD_H / 2
-      const cx = sx + CARD_W / 2
-      const isAtk = group.startsWith('attack')
+      const col = i % CARDS_PER_ROW
+      const row = Math.floor(i / CARDS_PER_ROW)
+      const cx = gridStartX + col * (CARD_W + CARD_GAP)
+      const cy = cardsStartY + row * (CARD_H + CARD_GAP)
 
-      const cardBg = this.add
-        .rectangle(cx, cy, CARD_W, CARD_H, 0x12161f)
-        .setStrokeStyle(1, 0x3d2e14, 0.2)
+      // Selection highlight (drawn first, behind the card) — invisible by default
+      const classColor = ROLE_CLASS_COLOR[role]
+      const highlightG = this.add.graphics()
+      highlightG.fillStyle(classColor, 0.18)
+      highlightG.fillRoundedRect(cx - CARD_W / 2 - 4, cy - CARD_H / 2 - 4,
+        CARD_W + 8, CARD_H + 8, radii.lg)
+      highlightG.lineStyle(2, classColor, 0.95)
+      highlightG.strokeRoundedRect(cx - CARD_W / 2 - 4, cy - CARD_H / 2 - 4,
+        CARD_W + 8, CARD_H + 8, radii.lg)
+      highlightG.setVisible(false)
+      highlightG.setName(`hl_${card.id}`)
+      container.add(highlightG)
+
+      // Canonical vertical card (UI.skillCard delegates to skillCardVertical
+      // when orientation === 'vertical').
+      const skillCard = UI.skillCard(this, cx, cy, {
+        name:        card.name,
+        effectType:  card.effect as string,
+        power:       card.power,
+        group:       card.group,
+        unitClass:   role,           // UnitRole == unitClass key
+        level:       1,              // mock data — no level progression here
+        skillId:     card.id,
+        description: card.shortDescription,
+      }, {
+        orientation: 'vertical',
+        width:  CARD_W,
+        height: CARD_H,
+        showTooltip: false,
+      })
+      skillCard.setName(`cardbg_${card.id}`)
+      container.add(skillCard)
+
+      // Hit area covering the card — absolute coords (matches the cx/cy)
+      const hit = this.add.rectangle(cx, cy, CARD_W + 6, CARD_H + 6, 0x000000, 0.001)
         .setInteractive({ useHandCursor: true })
-        .setName(`cardbg_${card.id}`)
-      container.add(cardBg)
+      container.add(hit)
 
-      // Card name
-      const nameTxt = this.add.text(sx + 8, cy - CARD_H / 2 + 9, card.name, {
-        fontFamily: 'Arial', fontSize: '12px', color: '#e8e0d0', fontStyle: 'bold',
-      }).setOrigin(0, 0)
-      container.add(nameTxt)
-
-      // Effect badge top-right
-      const effectColor = isAtk ? '#ef5350' : '#4fc3f7'
-      const effectLabel = card.power > 0 ? `${card.effect.toUpperCase()} ${card.power}` : card.effect.toUpperCase()
-      const effectTxt = this.add.text(sx + CARD_W - 6, cy - CARD_H / 2 + 9, effectLabel, {
-        fontFamily: 'Arial', fontSize: '10px', color: effectColor, fontStyle: 'bold',
-      }).setOrigin(1, 0)
-      container.add(effectTxt)
-
-      // Description — wraps inside the card
-      const descTxt = this.add.text(sx + 8, cy - CARD_H / 2 + 26, card.shortDescription, {
-        fontFamily: 'Arial', fontSize: '10px', color: '#7a7062',
-        wordWrap: { width: CARD_W - 16 },
-      }).setOrigin(0, 0)
-      container.add(descTxt)
-
-      // Interactions
-      cardBg.on('pointerover', () => {
-        if (!this.isCardSelected(role, group, card.id)) cardBg.setFillStyle(0x1a2230)
+      hit.on('pointerover', () => {
+        if (!this.isCardSelected(role, group, card.id)) {
+          this.tweens.add({ targets: skillCard, y: cy - 4, duration: 140, ease: 'Quad.Out' })
+        }
         this.showTooltip(card, cx, cy - CARD_H / 2)
       })
-      cardBg.on('pointerout', () => {
-        if (!this.isCardSelected(role, group, card.id)) cardBg.setFillStyle(0x12161f)
+      hit.on('pointerout', () => {
+        if (!this.isCardSelected(role, group, card.id)) {
+          this.tweens.add({ targets: skillCard, y: cy, duration: 140, ease: 'Quad.Out' })
+        }
         this.hideTooltip()
       })
-      cardBg.on('pointerdown', () => this.toggleCard(role, group, card.id, container, counterTxt))
+      hit.on('pointerdown', () => this.toggleCard(role, group, card.id, container, counterTxt))
     })
   }
 
@@ -403,42 +455,57 @@ export default class DeckBuildScene extends Phaser.Scene {
   private showTooltip(card: import('../types').CardData, worldX: number, worldY: number) {
     this.hideTooltip()
 
-    const TOOLTIP_W = 280
-    const PAD = 10
+    const TOOLTIP_W = 260
+    const PAD = 12
     const typeLabel = GROUP_TYPE_LABELS[card.group] ?? card.category
     const targetLabel = TARGET_LABELS[card.targetType] ?? card.targetType
+    const classColor = ROLE_CLASS_COLOR[this.activeRole]
+    const classHex = '#' + classColor.toString(16).padStart(6, '0')
 
     const nameText = this.add.text(PAD, PAD, card.name, {
-      fontFamily: 'Arial', fontSize: '15px', color: '#f0c850', fontStyle: 'bold',
+      fontFamily: fontFamily.serif, fontSize: typeScale.h3,
+      color: classHex, fontStyle: '600',
       wordWrap: { width: TOOLTIP_W - PAD * 2 },
     })
 
-    const typeText = this.add.text(PAD, nameText.y + nameText.height + 4, typeLabel, {
-      fontFamily: 'Arial', fontSize: '11px', color: '#4fc3f7', fontStyle: 'bold',
-    })
+    const typeText = this.add.text(PAD, nameText.y + nameText.height + 6, typeLabel.toUpperCase(), {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: fg.tertiaryHex, fontStyle: '700',
+    }).setLetterSpacing(1.6)
 
-    const powerStr = card.power > 0 ? `Poder: ${card.power}` : 'Poder: --'
+    const powerStr = card.power > 0 ? `Poder ${card.power}` : 'Poder —'
     const powerText = this.add.text(TOOLTIP_W - PAD, typeText.y, powerStr, {
-      fontFamily: 'Arial', fontSize: '11px', color: '#c9a84c', fontStyle: 'bold',
+      fontFamily: fontFamily.mono, fontSize: typeScale.small,
+      color: accent.primaryHex, fontStyle: '700',
     }).setOrigin(1, 0)
 
-    const dividerY = typeText.y + typeText.height + 6
-    const divider = this.add.rectangle(TOOLTIP_W / 2, dividerY, TOOLTIP_W - PAD * 2, 1, 0x3d2e14, 0.5)
+    const dividerY = typeText.y + typeText.height + 8
+    const divider = this.add.rectangle(TOOLTIP_W / 2, dividerY,
+      TOOLTIP_W - PAD * 2, 1, border.subtle, 1)
 
-    const descText = this.add.text(PAD, dividerY + 6, card.shortDescription, {
-      fontFamily: 'Arial', fontSize: '11px', color: '#e8e0d0',
+    const descText = this.add.text(PAD, dividerY + 8, card.shortDescription, {
+      fontFamily: fontFamily.body, fontSize: typeScale.small,
+      color: fg.secondaryHex,
       wordWrap: { width: TOOLTIP_W - PAD * 2 },
     })
 
-    const targetText = this.add.text(PAD, descText.y + descText.height + 6, targetLabel, {
-      fontFamily: 'Arial', fontSize: '11px', color: '#c9a84c', fontStyle: 'bold',
-    })
+    const targetText = this.add.text(PAD, descText.y + descText.height + 8,
+      `ALVO · ${targetLabel.toUpperCase()}`, {
+        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+        color: fg.tertiaryHex, fontStyle: '700',
+    }).setLetterSpacing(1.6)
 
     const totalH = targetText.y + targetText.height + PAD
-    const bg = this.add.rectangle(TOOLTIP_W / 2, totalH / 2, TOOLTIP_W, totalH, 0x12161f)
-      .setStrokeStyle(2, 0x3d2e14)
+    const bg = this.add.graphics()
+    bg.fillStyle(0x000000, 0.55)
+    bg.fillRoundedRect(2, 4, TOOLTIP_W, totalH, radii.md)
+    bg.fillStyle(surface.raised, 1)
+    bg.fillRoundedRect(0, 0, TOOLTIP_W, totalH, radii.md)
+    bg.lineStyle(1, border.strong, 1)
+    bg.strokeRoundedRect(0, 0, TOOLTIP_W, totalH, radii.md)
 
-    const container = this.add.container(0, 0, [bg, nameText, typeText, powerText, divider, descText, targetText])
+    const container = this.add.container(0, 0,
+      [bg, nameText, typeText, powerText, divider, descText, targetText])
     container.setDepth(1000)
 
     // Position: prefer above the card, fall back to below if off-screen
@@ -483,24 +550,17 @@ export default class DeckBuildScene extends Phaser.Scene {
       sel.push(cardId)
     }
 
-    // Refresh all card backgrounds for this group
+    // Refresh all highlight overlays for this group
     getRoleCards(role)
       .filter((c) => c.group === group)
       .forEach((c) => {
-        const bg = container.getByName(`cardbg_${c.id}`) as Phaser.GameObjects.Rectangle | null
-        if (!bg) return
-        const selected = sel.includes(c.id)
-        if (selected) {
-          bg.setFillStyle(CARD_SELECTED_FILL[group])
-          bg.setStrokeStyle(2, CARD_SELECTED_STROKE[group], 1)
-        } else {
-          bg.setFillStyle(0x12161f)
-          bg.setStrokeStyle(1, 0x3d2e14, 0.2)
-        }
+        const hl = container.getByName(`hl_${c.id}`) as Phaser.GameObjects.Graphics | null
+        if (hl) hl.setVisible(sel.includes(c.id))
       })
 
     const done = sel.length === 2
-    counterTxt.setText(`${sel.length} / 2`).setColor(done ? '#4caf50' : '#c9a84c')
+    counterTxt.setText(`${sel.length} / 2`)
+      .setColor(done ? state.successHex : fg.tertiaryHex)
     this.updateFooter()
   }
 
@@ -509,37 +569,40 @@ export default class DeckBuildScene extends Phaser.Scene {
   private showRole(role: UnitRole) {
     this.roleContainers.forEach((c, r) => c.setVisible(r === role))
 
+    const classColor = ROLE_CLASS_COLOR[role]
+    const classHex = '#' + classColor.toString(16).padStart(6, '0')
+
     this.tabBgs.forEach((bg, r) => {
       const active = r === role
-      bg.setFillStyle(active ? 0x1a2230 : 0x141a24)
-      bg.setStrokeStyle(active ? 2 : 1, active ? 0xf0c850 : 0x3d2e14, active ? 0.8 : 0.3)
+      const rColor = ROLE_CLASS_COLOR[r]
+      bg.setFillStyle(active ? surface.raised : surface.panel)
+      bg.setStrokeStyle(active ? 2 : 1,
+        active ? rColor : border.default,
+        active ? 1 : 0.7)
     })
-    this.tabTexts.forEach((t, r) => t.setColor(r === role ? '#f0c850' : '#7a7062'))
+    this.tabTexts.forEach((t, r) => {
+      const active = r === role
+      t.setColor(active ? classHex : fg.secondaryHex)
+    })
 
     this.activeRole = role
     this.passiveText.setText(ROLE_PASSIVES[role])
+    this.passiveText.setColor(classHex)
 
-    // Refresh card backgrounds and counters for the newly visible container
+    // Refresh highlights + counters for the newly visible container
     const container = this.roleContainers.get(role)
     if (container) {
       GROUPS.forEach((group) => {
         const sel = this.selections.get(role)?.get(group) ?? []
         const cTxt = container.getByName(`counter_${role}_${group}`) as Phaser.GameObjects.Text | null
-        if (cTxt) cTxt.setText(`${sel.length} / 2`).setColor(sel.length === 2 ? '#4caf50' : '#c9a84c')
+        if (cTxt) cTxt.setText(`${sel.length} / 2`)
+          .setColor(sel.length === 2 ? state.successHex : fg.tertiaryHex)
 
         getRoleCards(role)
           .filter((c) => c.group === group)
           .forEach((c) => {
-            const bg = container.getByName(`cardbg_${c.id}`) as Phaser.GameObjects.Rectangle | null
-            if (!bg) return
-            const selected = sel.includes(c.id)
-            if (selected) {
-              bg.setFillStyle(CARD_SELECTED_FILL[group])
-              bg.setStrokeStyle(2, CARD_SELECTED_STROKE[group], 1)
-            } else {
-              bg.setFillStyle(0x12161f)
-              bg.setStrokeStyle(1, 0x3d2e14, 0.2)
-            }
+            const hl = container.getByName(`hl_${c.id}`) as Phaser.GameObjects.Graphics | null
+            if (hl) hl.setVisible(sel.includes(c.id))
           })
       })
     }
@@ -551,76 +614,77 @@ export default class DeckBuildScene extends Phaser.Scene {
   // ─── Footer ────────────────────────────────────────────────────────────────
 
   private drawFooter() {
-    // Expand footer area: 660-720 original -> now we use a deck preview row at 660-700, buttons at 700-740
-    // Instead, let's use the existing space more cleverly: deck preview on the left half, buttons on the right
-    this.add.rectangle(W / 2, 690, W, 60, 0x0a0e16)
-    this.add.rectangle(W / 2, 660, W, 1, 0x3d2e14, 0.3)
+    // Footer band + top rule
+    this.add.rectangle(W / 2, 690, W, 60, surface.panel)
+    this.add.rectangle(W / 2, 660, W, 1, border.default, 0.7)
 
-    // Progress counter (top-left of footer)
-    this.progressText = this.add.text(16, 670, '', {
-      fontFamily: 'Arial', fontSize: '11px', color: '#7a7062',
-    }).setOrigin(0, 0.5)
+    // Progress counter (top-left)
+    this.progressText = this.add.text(20, 672, '', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: fg.tertiaryHex, fontStyle: '700',
+    }).setOrigin(0, 0.5).setLetterSpacing(1.4)
 
-    // ── Deck preview (below progress text) ───────────────────────────────────
-    const previewY = 686
-    this.add.text(16, previewY, 'Deck Atual:', {
-      fontFamily: 'Arial', fontSize: '10px', color: '#7a7062', fontStyle: 'bold',
-    }).setOrigin(0, 0)
+    // ── Deck preview (compact row) ────────────────────────────────────────
+    const previewY = 692
+    this.add.text(20, previewY, 'DECK', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: fg.tertiaryHex, fontStyle: '700',
+    }).setOrigin(0, 0).setLetterSpacing(1.6)
 
-    // Attack slots (4)
-    const atkLabel = this.add.text(90, previewY, 'ATK:', {
-      fontFamily: 'Arial', fontSize: '10px', color: '#ef5350', fontStyle: 'bold',
+    const atkLabel = this.add.text(70, previewY, 'ATK', {
+      fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+      color: state.errorHex, fontStyle: '700',
     }).setOrigin(0, 0)
     const atkSlots: Phaser.GameObjects.Text[] = []
     for (let i = 0; i < 4; i++) {
-      const t = this.add.text(90 + atkLabel.width + 4 + i * 68, previewY, '---', {
-        fontFamily: 'Arial', fontSize: '9px', color: '#7a7062',
+      const t = this.add.text(70 + atkLabel.width + 6 + i * 70, previewY, '—', {
+        fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+        color: fg.tertiaryHex,
       }).setOrigin(0, 0)
       atkSlots.push(t)
     }
 
-    // Defense slots (4)
-    const defStartX = 90 + atkLabel.width + 4 + 4 * 68 + 8
-    const defLabel = this.add.text(defStartX, previewY, 'DEF:', {
-      fontFamily: 'Arial', fontSize: '10px', color: '#4fc3f7', fontStyle: 'bold',
+    const defStartX = 70 + atkLabel.width + 6 + 4 * 70 + 8
+    const defLabel = this.add.text(defStartX, previewY, 'DEF', {
+      fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+      color: state.infoHex, fontStyle: '700',
     }).setOrigin(0, 0)
     const defSlots: Phaser.GameObjects.Text[] = []
     for (let i = 0; i < 4; i++) {
-      const t = this.add.text(defStartX + defLabel.width + 4 + i * 68, previewY, '---', {
-        fontFamily: 'Arial', fontSize: '9px', color: '#7a7062',
+      const t = this.add.text(defStartX + defLabel.width + 6 + i * 70, previewY, '—', {
+        fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+        color: fg.tertiaryHex,
       }).setOrigin(0, 0)
       defSlots.push(t)
     }
 
     this.deckPreviewTexts = [...atkSlots, ...defSlots]
 
-    // Total power text (at the end of the row)
-    this.deckPowerText = this.add.text(defStartX + defLabel.width + 4 + 4 * 68 + 12, previewY, 'Poder: 0', {
-      fontFamily: 'Arial', fontSize: '10px', color: '#c9a84c', fontStyle: 'bold',
+    // Power total
+    const powerX = defStartX + defLabel.width + 6 + 4 * 70 + 12
+    this.deckPowerText = this.add.text(powerX, previewY, 'PWR 0', {
+      fontFamily: fontFamily.mono, fontSize: typeScale.small,
+      color: accent.primaryHex, fontStyle: '700',
     }).setOrigin(0, 0)
 
-    // ── Shortcut hint (very bottom of footer) ────────────────────────────────
-    this.add.text(16, 706, 'Atalhos: 1-4 selecionar, Tab trocar classe, Enter jogar', {
-      fontFamily: 'Arial', fontSize: '9px', color: '#7a7062',
+    // Shortcut hint
+    this.add.text(20, 710, 'Atalhos · 1-4 selecionar · Tab trocar classe · Enter jogar', {
+      fontFamily: fontFamily.body, fontSize: '10px',
+      color: fg.disabledHex, fontStyle: '500',
     }).setOrigin(0, 0.5)
 
-    // ── Deck utility buttons ─────────────────────────────────────────────────
+    // ── Deck utility buttons (right side) ─────────────────────────────────
     const btnY = 690
-    const mkBtn = (x: number, label: string, stroke: number, onClick: () => void) => {
-      const bg = this.add.rectangle(x, btnY, 120, 30, 0x141a24)
-        .setStrokeStyle(1, stroke, 0.5)
-        .setInteractive({ useHandCursor: true })
-      const txt = this.add.text(x, btnY, label, {
-        fontFamily: 'Arial', fontSize: '11px', color: '#7a7062', fontStyle: 'bold',
-      }).setOrigin(0.5)
-      bg.on('pointerover', () => { bg.setFillStyle(0x1a2230); txt.setColor('#e8e0d0') })
-      bg.on('pointerout',  () => { bg.setFillStyle(0x141a24); txt.setColor('#7a7062') })
-      bg.on('pointerdown', onClick)
+    const mkBtn = (x: number, label: string, onClick: () => void) => {
+      const { container } = UI.buttonSecondary(this, x, btnY, label, {
+        w: 124, h: 36, onPress: onClick,
+      })
+      return container
     }
 
-    mkBtn(W - 460, 'Aleatorio', 0x4fc3f7, () => this.randomizeDeck())
-    mkBtn(W - 330, 'Padrao',    0xc9a84c, () => this.fillDefaultDeck())
-    mkBtn(W - 200, 'Restaurar', 0xffa726, () => {
+    mkBtn(W - 462, 'Aleatório',  () => this.randomizeDeck())
+    mkBtn(W - 332, 'Padrão',     () => this.fillDefaultDeck())
+    mkBtn(W - 202, 'Restaurar',  () => {
       if (this.loadFromStorage()) {
         ROLES.forEach((role) => this.refreshRoleVisuals(role))
         this.updateFooter()
@@ -628,25 +692,17 @@ export default class DeckBuildScene extends Phaser.Scene {
       }
     })
 
-    // ── Start button (right) ─────────────────────────────────────────────────
-    this.startBtn = this.add
-      .rectangle(W - 70, btnY, 120, 34, 0x141a24)
-      .setStrokeStyle(2, 0x3d2e14, 0.3)
-      .setInteractive({ useHandCursor: true })
-
-    this.startBtnLabel = this.add.text(W - 70, btnY, 'Iniciar', {
-      fontFamily: 'Arial', fontSize: '15px', color: '#7a7062', fontStyle: 'bold',
-    }).setOrigin(0.5)
-
-    this.startBtn.on('pointerover', () => {
-      if (this.isAllComplete()) this.startBtn.setFillStyle(0x1b3a1e)
-    })
-    this.startBtn.on('pointerout', () => {
-      this.startBtn.setFillStyle(this.isAllComplete() ? 0x162d1a : 0x141a24)
-    })
-    this.startBtn.on('pointerdown', () => {
-      if (this.isAllComplete()) this.startBattle()
-    })
+    // ── Start button (primary gold, canonical CTA) ───────────────────────
+    const { setDisabled } = UI.buttonPrimary(
+      this, W - 72, btnY, 'INICIAR',
+      {
+        w: 128, h: 40,
+        onPress: () => {
+          if (this.isAllComplete()) this.startBattle()
+        },
+      },
+    )
+    this.startBtnSetDisabled = setDisabled
 
     this.updateFooter()
   }
@@ -656,20 +712,23 @@ export default class DeckBuildScene extends Phaser.Scene {
       GROUPS.every((g) => (this.selections.get(role)?.get(g)?.length ?? 0) === 2)
     ).length
 
-    this.progressText.setText(`Unidades prontas: ${completedCount} / 4  |  Selecione 2 cartas por coluna para cada unidade`)
+    this.progressText.setText(
+      `UNIDADES PRONTAS · ${completedCount} / 4    SELECIONE 2 CARTAS POR COLUNA`,
+    )
 
     const allDone = completedCount === 4
-    this.startBtn.setFillStyle(allDone ? 0x162d1a : 0x141a24)
-    this.startBtn.setStrokeStyle(2, allDone ? 0x4caf50 : 0x3d2e14, allDone ? 0.9 : 0.3)
-    this.startBtnLabel.setColor(allDone ? '#4caf50' : '#7a7062')
+    this.startBtnSetDisabled?.(!allDone)
 
-    // Colored checkmarks on tabs
+    // Tab "ready" indicator — class color when done, secondary otherwise
     ROLES.forEach((role) => {
       const done = GROUPS.every((g) => (this.selections.get(role)?.get(g)?.length ?? 0) === 2)
       const tabTxt = this.tabTexts.get(role)
       if (!tabTxt) return
-      tabTxt.setText(done ? `${ROLE_LABELS[role]} \u2713` : ROLE_LABELS[role])
-      if (this.activeRole !== role) tabTxt.setColor(done ? '#4caf50' : '#7a7062')
+      tabTxt.setText(done ? `${ROLE_LABELS[role]} ✓` : ROLE_LABELS[role])
+      if (this.activeRole !== role) {
+        const rHex = '#' + ROLE_CLASS_COLOR[role].toString(16).padStart(6, '0')
+        tabTxt.setColor(done ? rHex : fg.secondaryHex)
+      }
     })
 
     // Update deck preview for active role
@@ -690,11 +749,11 @@ export default class DeckBuildScene extends Phaser.Scene {
       if (!txt) continue
       if (i < atkIds.length) {
         const card = allCards.find((c) => c.id === atkIds[i])
-        txt.setText(card ? this.truncateName(card.name, 10) : '---')
-        txt.setColor(card ? '#ef5350' : '#7a7062')
+        txt.setText(card ? this.truncateName(card.name, 10) : '—')
+        txt.setColor(card ? state.errorHex : fg.tertiaryHex)
         if (card) totalPower += card.power
       } else {
-        txt.setText('---').setColor('#7a7062')
+        txt.setText('—').setColor(fg.tertiaryHex)
       }
     }
 
@@ -704,16 +763,16 @@ export default class DeckBuildScene extends Phaser.Scene {
       if (!txt) continue
       if (i < defIds.length) {
         const card = allCards.find((c) => c.id === defIds[i])
-        txt.setText(card ? this.truncateName(card.name, 10) : '---')
-        txt.setColor(card ? '#4fc3f7' : '#7a7062')
+        txt.setText(card ? this.truncateName(card.name, 10) : '—')
+        txt.setColor(card ? state.infoHex : fg.tertiaryHex)
         if (card) totalPower += card.power
       } else {
-        txt.setText('---').setColor('#7a7062')
+        txt.setText('—').setColor(fg.tertiaryHex)
       }
     }
 
     if (this.deckPowerText) {
-      this.deckPowerText.setText(`Poder: ${totalPower}`)
+      this.deckPowerText.setText(`PWR ${totalPower}`)
     }
   }
 
@@ -781,13 +840,11 @@ export default class DeckBuildScene extends Phaser.Scene {
     GROUPS.forEach((group) => {
       const sel = this.selections.get(role)?.get(group) ?? []
       const cTxt = container.getByName(`counter_${role}_${group}`) as Phaser.GameObjects.Text | null
-      if (cTxt) cTxt.setText(`${sel.length} / 2`).setColor(sel.length === 2 ? '#4caf50' : '#c9a84c')
+      if (cTxt) cTxt.setText(`${sel.length} / 2`)
+        .setColor(sel.length === 2 ? state.successHex : fg.tertiaryHex)
       getRoleCards(role).filter((c) => c.group === group).forEach((c) => {
-        const bg = container.getByName(`cardbg_${c.id}`) as Phaser.GameObjects.Rectangle | null
-        if (!bg) return
-        const selected = sel.includes(c.id)
-        bg.setFillStyle(selected ? CARD_SELECTED_FILL[group] : 0x12161f)
-        bg.setStrokeStyle(selected ? 2 : 1, selected ? CARD_SELECTED_STROKE[group] : 0x3d2e14, selected ? 1 : 0.2)
+        const hl = container.getByName(`hl_${c.id}`) as Phaser.GameObjects.Graphics | null
+        if (hl) hl.setVisible(sel.includes(c.id))
       })
     })
   }
