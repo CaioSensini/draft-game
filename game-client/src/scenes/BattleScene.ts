@@ -51,7 +51,7 @@ import { PASSIVE_CATALOG }    from '../data/passiveCatalog'
 import { GLOBAL_RULES }       from '../data/globalRules'
 import { GameState, GameStateManager } from '../core/GameState'
 import { soundManager } from '../utils/SoundManager'
-import { UI } from '../utils/UIComponents'
+import { UI, hpStatusColor } from '../utils/UIComponents'
 import { VFXManager } from '../utils/VFXManager'
 import { drawCharacterSprite } from '../utils/SpriteFactory'
 import type { SpriteRole, SpriteSide } from '../utils/SpriteFactory'
@@ -1227,17 +1227,17 @@ export default class BattleScene extends Phaser.Scene {
     sep1.fillStyle(teamColor, 0.15)
     sep1.fillRect(lx, cy, w - 8, 1)
 
-    // HP
+    // HP (design-system color per CSS hp-full/wounded/critical thresholds)
     const hpRatio = char.hp / char.maxHp
-    const hpColor = hpRatio > 0.5 ? '#88cc88' : hpRatio > 0.25 ? '#ccaa44' : '#cc4444'
+    const hpStyle = hpStatusColor(hpRatio)
     this.add.text(x, cy + 5, `${char.hp}/${char.maxHp}`, {
-      fontFamily: 'Arial', fontSize: fsSmall, color: hpColor, fontStyle: 'bold', ...stk,
+      fontFamily: 'Arial', fontSize: fsSmall, color: hpStyle.fillHex, fontStyle: 'bold', ...stk,
     }).setOrigin(0.5).setDepth(6)
     // HP bar
     const barW2 = w - 8; const barH2 = 5
     const bg2 = this.add.graphics()
     bg2.fillStyle(0x331111, 1); bg2.fillRoundedRect(lx, cy + 18, barW2, barH2, 2)
-    bg2.fillStyle(hpRatio > 0.5 ? 0x44dd44 : hpRatio > 0.25 ? 0xddaa22 : 0xdd3322, 0.8)
+    bg2.fillStyle(hpStyle.fill, 0.9)
     bg2.fillRoundedRect(lx, cy + 18, Math.max(2, barW2 * hpRatio), barH2, 2)
     cy += 26
 
@@ -2429,10 +2429,12 @@ export default class BattleScene extends Phaser.Scene {
       // Flash overlay — colour-filled rectangle tweened to alpha=0 on damage/heal
       const flashRect = this.add.rectangle(0, 0, CHAR_SIZE, CHAR_SIZE, 0xff2222).setAlpha(0)
 
-      // HP bar only (no numbers) — compact below the sprite
+      // HP bar only (no numbers) — compact below the sprite. Initial fill color
+      // uses the design-system "full" hp state (#22c55e); subsequent updates
+      // run through hpStatusColor() to pick full/wounded/critical per ratio.
       const hpBarBg = this.add.rectangle(0, half + 4, barW, barH, 0x331111)
         .setStrokeStyle(1, 0x111111, 0.9)
-      const hpBar   = this.add.rectangle(-barW / 2, half + 4, barW, barH, 0x44dd44).setOrigin(0, 0.5)
+      const hpBar   = this.add.rectangle(-barW / 2, half + 4, barW, barH, hpStatusColor(1).fill).setOrigin(0, 0.5)
       const shieldBar = this.add.rectangle(-barW / 2, half + 4, 0, barH, 0x4488ff, 0.7).setOrigin(0, 0.5)
 
       // Hidden hpText — kept for interface compatibility
@@ -2507,7 +2509,7 @@ export default class BattleScene extends Phaser.Scene {
       duration: 400,
       ease: 'Quad.Out',
     })
-    sprite.hpBar.setFillStyle(ratio > 0.5 ? 0x44dd44 : ratio > 0.25 ? 0xddaa22 : 0xdd3322)
+    sprite.hpBar.setFillStyle(hpStatusColor(ratio).fill)
   }
 
   private _floatingText(
@@ -3001,7 +3003,7 @@ export default class BattleScene extends Phaser.Scene {
       if (sprite) {
         // Reset HP bar
         const barW = CHAR_SIZE + 4
-        sprite.hpBar.setDisplaySize(barW, 8).setFillStyle(0x44dd44)
+        sprite.hpBar.setDisplaySize(barW, 8).setFillStyle(hpStatusColor(1).fill)
         // Reset shield bar
         sprite.shieldBar.setDisplaySize(0, 8)
         // Move sprite back to original position (dummies are 2 tiles closer)

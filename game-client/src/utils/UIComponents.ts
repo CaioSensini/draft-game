@@ -16,8 +16,40 @@
  */
 
 import Phaser from 'phaser'
-import { C, F, S, SHADOW, SCREEN, STROKE } from './DesignTokens'
+import {
+  C, F, S, SHADOW, SCREEN, STROKE,
+  // Design System Phase 1 tokens (parallel namespaces — prefer for new UI)
+  accent, border, fg, fontFamily, hpState, hpBreakpoint,
+  motion, radii, state as dsState, surface, typeScale,
+} from './DesignTokens'
 import { getSkillIconKey, hasSkillIcon } from './AssetPaths'
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DESIGN SYSTEM PHASE 1 HELPERS
+// Classification, not one-off — consumers pick a variant + size, get all 5 states.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/** Button size tokens derived from INTEGRATION_SPEC §1.1. */
+export const BUTTON_SIZES = {
+  sm: { w: 140, h: 36, padX: 16, padY: 10, fontSize: typeScale.meta },
+  md: { w: 200, h: 48, padX: 24, padY: 16, fontSize: typeScale.meta },
+  lg: { w: 280, h: 56, padX: 28, padY: 18, fontSize: typeScale.meta },
+} as const
+export type ButtonSize = keyof typeof BUTTON_SIZES
+
+/**
+ * Returns the design-system HP bar color for a given `hp/max` ratio.
+ * Uses CSS-aligned thresholds (hpBreakpoint) and colors (hpState).
+ *
+ *   ratio > 0.55          → full    (#22c55e)
+ *   0.25 < ratio ≤ 0.55   → wounded (#f59e0b)
+ *   ratio ≤ 0.25          → critical(#ef4444)
+ */
+export function hpStatusColor(ratio: number): { fill: number; fillHex: string } {
+  if (ratio > hpBreakpoint.wounded)  return { fill: hpState.full,     fillHex: hpState.fullHex }
+  if (ratio > hpBreakpoint.critical) return { fill: hpState.wounded,  fillHex: hpState.woundedHex }
+  return { fill: hpState.critical, fillHex: hpState.criticalHex }
+}
 
 // ── Touch-first constants (Sprint 0.7) ──────────────────────────────────────
 //
@@ -634,8 +666,12 @@ export const UI = {
       attack1: '#ef4444', attack2: '#f59e0b',
       defense1: '#3b82f6', defense2: '#10b981',
     }
+    // Class hex values come from the design-system tokens (DECISIONS 2026-04-20,
+    // reaffirmed by INTEGRATION_SPEC §2 class-band color). Prior hardcoded values
+    // here (`#4a90d9` blue for warrior, `#a366ff` purple for executor) were
+    // inconsistent with the rest of the app; this alignment is the Phase 1 fix.
     const CLASS_COLORS_HEX: Record<string, string> = {
-      king: '#f0c850', warrior: '#4a90d9', specialist: '#44aacc', executor: '#a366ff',
+      king: '#fbbf24', warrior: '#8b5cf6', specialist: '#10b981', executor: '#dc2626',
     }
     const CLASS_FULL_NAMES: Record<string, string> = {
       king: 'Rei', warrior: 'Guerreiro', specialist: 'Especialista', executor: 'Executor',
@@ -735,9 +771,12 @@ export const UI = {
     const abbrevText = iconContent
 
     // ── Skill name (big, bold, aligned with the top of the icon) ──
+    // Design System Phase 1: card names render in Cormorant Garamond (CSS `h3`
+    // style) with the current shape retained. Full 120×160 layout redesign is
+    // deferred to Phase 2.
     let nameFontSize = isBattle ? 20 : 18
     const nameText = scene.add.text(textX, iconCenterY - iconSize / 2 - 2, skill.name, {
-      fontFamily: F.title, fontSize: `${nameFontSize}px`, color: '#ffffff',
+      fontFamily: fontFamily.serif, fontSize: `${nameFontSize}px`, color: '#ffffff',
       fontStyle: 'bold',
       stroke: '#000000', strokeThickness: 4,
       shadow: { offsetX: 0, offsetY: 2, color: '#000000', blur: 4, fill: true },
@@ -881,7 +920,7 @@ export const UI = {
     if (isBattle && skill.description) {
       const descY2 = lvY + 20
       const descText = scene.add.text(textX, descY2, skill.description, {
-        fontFamily: F.body, fontSize: '13px', color: '#c4c0b6',
+        fontFamily: fontFamily.body, fontSize: '13px', color: fg.secondaryHex,
         fontStyle: 'bold',
         stroke: '#000000', strokeThickness: 2,
         wordWrap: { width: textW },
@@ -1408,4 +1447,259 @@ export const UI = {
 
     return g
   },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DESIGN-SYSTEM BUTTON VARIANTS (INTEGRATION_SPEC §1)
+  // Added parallel to `UI.button` — legacy callers untouched.
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Gold "Primary" CTA button — §1.1.
+   * Fills, borders, typography, and hover/press/disabled states match the spec.
+   * Label renders in Manrope 11/700 letter-spacing 0.14em UPPERCASE.
+   */
+  buttonPrimary(
+    scene: Phaser.Scene, x: number, y: number, label: string,
+    opts?: {
+      size?: ButtonSize; w?: number; h?: number; depth?: number; disabled?: boolean;
+      minTouchSize?: number; onPress?: () => void;
+    },
+  ): { container: Phaser.GameObjects.Container; hitArea: Phaser.GameObjects.Rectangle; setDisabled: (v: boolean) => void } {
+    return _buildVariantButton(scene, x, y, label, {
+      size: opts?.size ?? 'md',
+      w: opts?.w, h: opts?.h, depth: opts?.depth ?? 0,
+      disabled: opts?.disabled ?? false,
+      minTouchSize: opts?.minTouchSize,
+      onPress: opts?.onPress,
+      variant: 'primary',
+    })
+  },
+
+  /** Outline "Secondary" button — §1.2. Transparent fill, gray border, white text. */
+  buttonSecondary(
+    scene: Phaser.Scene, x: number, y: number, label: string,
+    opts?: {
+      size?: ButtonSize; w?: number; h?: number; depth?: number; disabled?: boolean;
+      minTouchSize?: number; onPress?: () => void;
+    },
+  ): { container: Phaser.GameObjects.Container; hitArea: Phaser.GameObjects.Rectangle; setDisabled: (v: boolean) => void } {
+    return _buildVariantButton(scene, x, y, label, {
+      size: opts?.size ?? 'md',
+      w: opts?.w, h: opts?.h, depth: opts?.depth ?? 0,
+      disabled: opts?.disabled ?? false,
+      minTouchSize: opts?.minTouchSize,
+      onPress: opts?.onPress,
+      variant: 'secondary',
+    })
+  },
+
+  /** Link-style ghost button — §1.3. No fill, no border, tertiary-fg label. */
+  buttonGhost(
+    scene: Phaser.Scene, x: number, y: number, label: string,
+    opts?: {
+      w?: number; h?: number; depth?: number; disabled?: boolean;
+      minTouchSize?: number; onPress?: () => void;
+    },
+  ): { container: Phaser.GameObjects.Container; hitArea: Phaser.GameObjects.Rectangle; setDisabled: (v: boolean) => void } {
+    return _buildVariantButton(scene, x, y, label, {
+      size: 'sm',
+      w: opts?.w, h: opts?.h ?? 40, depth: opts?.depth ?? 0,
+      disabled: opts?.disabled ?? false,
+      minTouchSize: opts?.minTouchSize,
+      onPress: opts?.onPress,
+      variant: 'ghost',
+    })
+  },
+
+  /** Destructive (red) button — §1.4. Red fill, dark red border. */
+  buttonDestructive(
+    scene: Phaser.Scene, x: number, y: number, label: string,
+    opts?: {
+      size?: ButtonSize; w?: number; h?: number; depth?: number; disabled?: boolean;
+      minTouchSize?: number; onPress?: () => void;
+    },
+  ): { container: Phaser.GameObjects.Container; hitArea: Phaser.GameObjects.Rectangle; setDisabled: (v: boolean) => void } {
+    return _buildVariantButton(scene, x, y, label, {
+      size: opts?.size ?? 'md',
+      w: opts?.w, h: opts?.h, depth: opts?.depth ?? 0,
+      disabled: opts?.disabled ?? false,
+      minTouchSize: opts?.minTouchSize,
+      onPress: opts?.onPress,
+      variant: 'destructive',
+    })
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DESIGN-SYSTEM TOOLTIP (INTEGRATION_SPEC §7)
+  // Fixed styling: bg-3 (surface.raised), border-strong, shadow-md equivalent,
+  // 12px padding, 220..320px wide, optional heading + body.
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  tooltip(
+    scene: Phaser.Scene, x: number, y: number,
+    content: { heading?: string; headingColor?: string; body: string },
+    opts?: { maxW?: number; minW?: number; depth?: number; anchor?: 'top' | 'bottom' },
+  ): Phaser.GameObjects.Container {
+    const pad = 12
+    const maxW = opts?.maxW ?? 320
+    const minW = opts?.minW ?? 220
+    const depth = opts?.depth ?? 1000
+
+    // Body text first — it drives the box width.
+    const bodyText = scene.add.text(pad, 0, content.body, {
+      fontFamily: fontFamily.body, fontSize: typeScale.small, color: fg.secondaryHex,
+      wordWrap: { width: maxW - pad * 2 },
+    })
+    const contentW = Math.max(minW, Math.min(maxW, bodyText.width + pad * 2))
+
+    let cursorY = pad
+    const children: Phaser.GameObjects.GameObject[] = []
+
+    if (content.heading) {
+      const h = scene.add.text(pad, cursorY, content.heading, {
+        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+        color: content.headingColor ?? fg.primaryHex, fontStyle: 'bold',
+      })
+      children.push(h)
+      cursorY += h.height + 6
+    }
+    bodyText.setPosition(pad, cursorY)
+    children.push(bodyText)
+    cursorY += bodyText.height + pad
+
+    const totalH = cursorY
+
+    // Background panel: bg-3 fill, border-strong, shadow-md equivalent.
+    const g = scene.add.graphics()
+    // Shadow (offset + alpha to fake Phaser box-shadow)
+    g.fillStyle(0x000000, 0.45)
+    g.fillRoundedRect(2, 4, contentW, totalH, radii.md)
+    // Fill
+    g.fillStyle(surface.raised, 0.98)
+    g.fillRoundedRect(0, 0, contentW, totalH, radii.md)
+    // Inset highlight (top 1px)
+    g.fillStyle(0xffffff, 0.04)
+    g.fillRoundedRect(1, 1, contentW - 2, 1, { tl: radii.md - 1, tr: radii.md - 1, bl: 0, br: 0 })
+    // Border
+    g.lineStyle(1, border.strong, 1)
+    g.strokeRoundedRect(0, 0, contentW, totalH, radii.md)
+
+    // Anchor: by default, place above the given y. `bottom` drops it below.
+    const offsetY = opts?.anchor === 'bottom' ? 0 : -totalH
+
+    return scene.add.container(x, y + offsetY, [g, ...children]).setDepth(depth)
+  },
+}
+
+// ── Internal variant-button builder ─────────────────────────────────────────
+
+type _ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive'
+
+function _buildVariantButton(
+  scene: Phaser.Scene, x: number, y: number, label: string,
+  args: {
+    size: ButtonSize
+    w?: number; h?: number; depth: number; disabled: boolean
+    minTouchSize?: number
+    onPress?: () => void
+    variant: _ButtonVariant
+  },
+): { container: Phaser.GameObjects.Container; hitArea: Phaser.GameObjects.Rectangle; setDisabled: (v: boolean) => void } {
+  const sz = BUTTON_SIZES[args.size]
+  const w = args.w ?? sz.w
+  const h = args.h ?? sz.h
+
+  // Variant palette table. Values come straight from INTEGRATION_SPEC §1.
+  type PaletteState = 'default' | 'hover' | 'pressed' | 'disabled'
+  const V: Record<_ButtonVariant, Record<PaletteState, { fill: number; fillA: number; border: number; borderA: number; text: string }>> = {
+    primary: {
+      default:  { fill: accent.primary, fillA: 1,    border: border.royal,    borderA: 1,    text: fg.inverseHex },
+      hover:    { fill: 0xfcd34d,       fillA: 1,    border: border.royalLit, borderA: 1,    text: fg.inverseHex },
+      pressed:  { fill: accent.hot,     fillA: 1,    border: border.royal,    borderA: 1,    text: fg.inverseHex },
+      disabled: { fill: accent.primary, fillA: 0.40, border: border.royal,    borderA: 0.40, text: fg.inverseHex },
+    },
+    secondary: {
+      default:  { fill: 0x000000, fillA: 0,    border: border.strong, borderA: 1,    text: fg.primaryHex },
+      hover:    { fill: 0xffffff, fillA: 0.04, border: 0x64748b,      borderA: 1,    text: fg.primaryHex },
+      pressed:  { fill: 0x000000, fillA: 0.25, border: border.strong, borderA: 1,    text: fg.secondaryHex },
+      disabled: { fill: 0x000000, fillA: 0,    border: border.strong, borderA: 0.40, text: fg.disabledHex },
+    },
+    ghost: {
+      default:  { fill: 0x000000, fillA: 0,    border: 0x000000, borderA: 0,    text: fg.tertiaryHex },
+      hover:    { fill: 0xffffff, fillA: 0.04, border: 0x000000, borderA: 0,    text: fg.primaryHex },
+      pressed:  { fill: 0x000000, fillA: 0.20, border: 0x000000, borderA: 0,    text: fg.secondaryHex },
+      disabled: { fill: 0x000000, fillA: 0,    border: 0x000000, borderA: 0,    text: fg.disabledHex },
+    },
+    destructive: {
+      default:  { fill: dsState.error, fillA: 1,    border: dsState.errorDim, borderA: 1,    text: fg.primaryHex },
+      hover:    { fill: 0xf87171,      fillA: 1,    border: dsState.errorDim, borderA: 1,    text: fg.primaryHex },
+      pressed:  { fill: 0xdc2626,      fillA: 1,    border: dsState.errorDim, borderA: 1,    text: fg.primaryHex },
+      disabled: { fill: dsState.error, fillA: 0.40, border: dsState.errorDim, borderA: 0.40, text: fg.disabledHex },
+    },
+  }
+
+  const palette = V[args.variant]
+
+  const g = scene.add.graphics()
+  let isDisabled = args.disabled
+
+  const drawBg = (s: PaletteState) => {
+    g.clear()
+    const p = palette[s]
+    // Gold-glow shadow on primary only
+    if (args.variant === 'primary' && s !== 'disabled') {
+      g.fillStyle(accent.primary, s === 'pressed' ? 0.10 : 0.18)
+      g.fillRoundedRect(-w / 2 - 2, -h / 2 + (s === 'pressed' ? 3 : 6), w + 4, h, radii.md)
+    }
+    if (p.fillA > 0) {
+      g.fillStyle(p.fill, p.fillA)
+      g.fillRoundedRect(-w / 2, -h / 2 + (s === 'pressed' ? 1 : 0), w, h, radii.md)
+    }
+    if (p.borderA > 0) {
+      g.lineStyle(1, p.border, p.borderA)
+      g.strokeRoundedRect(-w / 2, -h / 2 + (s === 'pressed' ? 1 : 0), w, h, radii.md)
+    }
+  }
+  drawBg(isDisabled ? 'disabled' : 'default')
+
+  const labelObj = scene.add.text(0, 0, label.toUpperCase(), {
+    fontFamily: fontFamily.body,
+    fontSize: sz.fontSize,
+    color: (isDisabled ? palette.disabled.text : palette.default.text),
+    fontStyle: '700',
+  }).setOrigin(0.5)
+  // Letter spacing is approximated by Phaser setLetterSpacing; available since 3.50.
+  // Guard because some platforms/types may not expose it.
+  const anyLabel = labelObj as unknown as { setLetterSpacing?: (n: number) => void }
+  if (typeof anyLabel.setLetterSpacing === 'function') {
+    anyLabel.setLetterSpacing(1.5) // ≈ 0.14em of 11px
+  }
+
+  const { hitW, hitH } = touchHitSize(w, h, args.minTouchSize)
+  const hitArea = scene.add.rectangle(0, 0, hitW, hitH, 0x000000, 0.001)
+    .setInteractive({ useHandCursor: !isDisabled })
+
+  const apply = (s: PaletteState) => {
+    drawBg(s)
+    labelObj.setColor(palette[s].text)
+  }
+
+  hitArea.on('pointerover', () => { if (!isDisabled) apply('hover') })
+  hitArea.on('pointerout',  () => { apply(isDisabled ? 'disabled' : 'default') })
+  hitArea.on('pointerdown', () => {
+    if (isDisabled) return
+    apply('pressed')
+    if (args.onPress) scene.time.delayedCall(motion.durFast, () => args.onPress!())
+  })
+  hitArea.on('pointerup',   () => { if (!isDisabled) apply('hover') })
+
+  const container = scene.add.container(x, y, [g, labelObj, hitArea]).setDepth(args.depth)
+
+  const setDisabled = (v: boolean) => {
+    isDisabled = v
+    apply(v ? 'disabled' : 'default')
+    hitArea.input!.cursor = v ? 'default' : 'pointer'
+  }
+
+  return { container, hitArea, setDisabled }
 }
