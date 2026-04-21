@@ -19,7 +19,7 @@ import Phaser from 'phaser'
 import {
   C, F, S, SHADOW, SCREEN, STROKE,
   // Design System Phase 1 tokens (parallel namespaces — prefer for new UI)
-  accent, border, fg, fontFamily, hpState, hpBreakpoint,
+  accent, border, currency, fg, fontFamily, hpState, hpBreakpoint,
   motion, radii, state as dsState, surface, typeScale,
 } from './DesignTokens'
 import { getLucideIconKey, getSkillIconKey, hasSkillIcon } from './AssetPaths'
@@ -2166,6 +2166,337 @@ export const UI = {
     scene.tweens.add({ targets: scalable, scale: 1, duration: motion.durBase, ease: motion.easeOut })
 
     return { close: doClose }
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // FORM INPUT — Sub 2.1 (ETAPA 2)
+  // Per INTEGRATION_SPEC §8 (Form input) + Print 13.
+  //
+  // DOM-hybrid: Phaser renders the label (meta style), frame (surface.raised +
+  // border.default + radii.md) and optional error helper text; a transparent
+  // <input> sits centered inside the frame for keyboard input. This gives us
+  // the token-driven visual shell while preserving real form validation.
+  //
+  // Returns { container, input, domEl, setError, focus, blur, destroy }.
+  //   - container: label + bg + error, parented at (x,y).
+  //   - input:     HTMLInputElement (read .value, attach handlers externally).
+  //   - domEl:     Phaser.GameObjects.DOMElement wrapping the input.
+  //   - setError:  pass a string to display helper error text & toggle red border,
+  //                pass null to clear.
+  //   - focus/blur: programmatic control of the native input.
+  //   - destroy:   tears down all 4 layers + DOM element cleanly.
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  inputField(
+    scene: Phaser.Scene,
+    x: number, y: number,
+    opts: {
+      label?:       string           // meta label ABOVE the field (empty = no label)
+      placeholder?: string
+      value?:       string
+      error?:       string | null
+      type?:        'text' | 'password' | 'email' | 'tel'
+      maxLength?:   number
+      width?:       number           // default 352 (spec §S1 panel-interior width)
+      name?:        string           // form-field name (for autofill)
+      onInput?:    (v: string) => void
+      onSubmit?:   (v: string) => void
+      onEnter?:    () => void
+    },
+  ): {
+    container: Phaser.GameObjects.Container
+    input:     HTMLInputElement
+    domEl:     Phaser.GameObjects.DOMElement
+    setError:  (msg: string | null) => void
+    setValue:  (v: string) => void
+    focus:     () => void
+    blur:      () => void
+    destroy:   () => void
+  } {
+    const w = opts.width ?? 352
+    const h = 44
+    const labelH = opts.label ? 18 : 0
+    const hasError = typeof opts.error === 'string' && opts.error.length > 0
+
+    const container = scene.add.container(x, y)
+
+    // ── Meta label (above field) ──
+    let labelObj: Phaser.GameObjects.Text | null = null
+    if (opts.label) {
+      labelObj = scene.add.text(-w / 2, -h / 2 - labelH + 2, opts.label.toUpperCase(), {
+        fontFamily: fontFamily.body,
+        fontSize:   typeScale.meta,
+        color:      fg.tertiaryHex,
+        fontStyle:  '700',
+      })
+      const anyLbl = labelObj as unknown as { setLetterSpacing?: (n: number) => void }
+      if (typeof anyLbl.setLetterSpacing === 'function') anyLbl.setLetterSpacing(1.6)
+      container.add(labelObj)
+    }
+
+    // ── Frame (surface.raised + border.default + radii.md 6) ──
+    const frame = scene.add.graphics()
+    const drawFrame = (st: 'default' | 'focus' | 'error') => {
+      frame.clear()
+      const fill   = st === 'focus' ? surface.raised : surface.panel
+      const stroke = st === 'error' ? dsState.error
+                   : st === 'focus' ? accent.primary
+                                    : border.default
+      const strokeA = 1
+      frame.fillStyle(fill, 1)
+      frame.fillRoundedRect(-w / 2, -h / 2, w, h, radii.md)
+      frame.lineStyle(1, stroke, strokeA)
+      frame.strokeRoundedRect(-w / 2, -h / 2, w, h, radii.md)
+    }
+    drawFrame(hasError ? 'error' : 'default')
+    container.add(frame)
+
+    // ── DOM <input> (transparent, positioned centered inside frame) ──
+    const inputHtml =
+      `<input type="${opts.type ?? 'text'}"` +
+      (opts.name ? ` name="${opts.name}"` : '') +
+      ` placeholder="${(opts.placeholder ?? '').replace(/"/g, '&quot;')}"` +
+      ` value="${(opts.value ?? '').replace(/"/g, '&quot;')}"` +
+      (opts.maxLength ? ` maxlength="${opts.maxLength}"` : '') +
+      ` style="
+        width: ${w - 24}px;
+        height: ${h - 2}px;
+        padding: 0 12px;
+        background: transparent;
+        border: 0;
+        outline: none;
+        color: ${fg.primaryHex};
+        font-family: ${fontFamily.body};
+        font-size: 15px;
+        font-weight: 500;
+        letter-spacing: 0;
+        caret-color: ${accent.primaryHex};
+        box-sizing: border-box;
+      " />`
+    const domEl = scene.add.dom(0, 0).createFromHTML(inputHtml)
+    container.add(domEl)
+    const input = domEl.node.querySelector('input') as HTMLInputElement
+    // Placeholder color via injected style tag (scoped to this input):
+    const styleTag = document.createElement('style')
+    const uniqId = `inputfld-${Math.random().toString(36).slice(2, 8)}`
+    input.classList.add(uniqId)
+    styleTag.textContent = `.${uniqId}::placeholder { color: ${fg.tertiaryHex}; opacity: 1; }`
+    document.head.appendChild(styleTag)
+
+    input.addEventListener('focus', () => drawFrame('error' in (current as object) && current.error ? 'error' : 'focus'))
+    input.addEventListener('blur',  () => drawFrame(current.error ? 'error' : 'default'))
+    if (opts.onInput)  input.addEventListener('input',  () => opts.onInput!(input.value))
+    if (opts.onEnter || opts.onSubmit) {
+      input.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          if (opts.onEnter)  opts.onEnter()
+          if (opts.onSubmit) opts.onSubmit(input.value)
+        }
+      })
+    }
+
+    // ── Error helper text (below field) ──
+    const errorObj = scene.add.text(-w / 2, h / 2 + 6, opts.error ?? '', {
+      fontFamily: fontFamily.body,
+      fontSize:   typeScale.small,
+      color:      dsState.errorHex,
+    }).setVisible(hasError)
+    container.add(errorObj)
+
+    // ── State tracking so focus/blur knows the current error state ──
+    const current: { error: string | null } = { error: hasError ? (opts.error as string) : null }
+
+    const setError = (msg: string | null) => {
+      current.error = msg && msg.length > 0 ? msg : null
+      errorObj.setText(current.error ?? '').setVisible(!!current.error)
+      // Re-paint frame respecting whether input is focused (document.activeElement).
+      const isFocused = document.activeElement === input
+      drawFrame(current.error ? 'error' : (isFocused ? 'focus' : 'default'))
+    }
+
+    const setValue = (v: string) => { input.value = v }
+    const focus    = () => input.focus()
+    const blur     = () => input.blur()
+
+    const destroy = () => {
+      try { document.head.removeChild(styleTag) } catch { /* noop */ }
+      container.destroy()
+    }
+
+    return { container, input, domEl, setError, setValue, focus, blur, destroy }
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // AVATAR BADGE — Sub 2.1 (ETAPA 2)
+  // Per INTEGRATION_SPEC §S2 (Lobby top bar "[Avatar 40] PlayerName · NV 23").
+  //
+  // Circle disc tinted with class color + initial letter in Cormorant bold, with
+  // an optional level pill chip at bottom-right. Caller passes `classKey` to pick
+  // the fill; team border can be overridden for battle contexts via `borderColor`.
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  avatarBadge(
+    scene: Phaser.Scene,
+    x: number, y: number,
+    opts: {
+      initial:     string
+      level?:      number
+      size?:       number                // diameter (default 40)
+      classKey?:   'king' | 'warrior' | 'specialist' | 'executor'
+      borderColor?: number               // override for explicit team/accent border
+      onClick?:    () => void
+    },
+  ): Phaser.GameObjects.Container {
+    const size = opts.size ?? 40
+    const r    = size / 2
+    const classColor = opts.classKey ? C[opts.classKey] : accent.primary
+    const strokeColor = opts.borderColor ?? accent.primary
+
+    const container = scene.add.container(x, y)
+
+    // Disc fill (class color slightly dimmed — 80% alpha)
+    const disc = scene.add.graphics()
+    disc.fillStyle(classColor, 0.92)
+    disc.fillCircle(0, 0, r)
+    // 2px border (accent or team override)
+    disc.lineStyle(2, strokeColor, 1)
+    disc.strokeCircle(0, 0, r)
+    container.add(disc)
+
+    // Initial letter (Cormorant Garamond bold, centered)
+    const initialSize = Math.round(size * 0.48)
+    const initial = scene.add.text(0, 0, (opts.initial || '?').slice(0, 1).toUpperCase(), {
+      fontFamily: fontFamily.serif,
+      fontSize:   `${initialSize}px`,
+      color:      fg.inverseHex,
+      fontStyle:  '700',
+    }).setOrigin(0.5, 0.55)
+    container.add(initial)
+
+    // Level chip (bottom-right)
+    if (typeof opts.level === 'number') {
+      const chipW = Math.max(28, size * 0.68)
+      const chipH = 16
+      const chipX = r - 4
+      const chipY = r - 2
+      const chip = scene.add.graphics()
+      chip.fillStyle(surface.deepest, 0.98)
+      chip.fillRoundedRect(chipX - chipW, chipY - chipH / 2, chipW, chipH, chipH / 2)
+      chip.lineStyle(1, accent.primary, 1)
+      chip.strokeRoundedRect(chipX - chipW, chipY - chipH / 2, chipW, chipH, chipH / 2)
+      container.add(chip)
+
+      const lvlText = scene.add.text(chipX - chipW / 2, chipY, `NV ${opts.level}`, {
+        fontFamily: fontFamily.body,
+        fontSize:   '10px',
+        color:      accent.primaryHex,
+        fontStyle:  '700',
+      }).setOrigin(0.5)
+      const anyLvl = lvlText as unknown as { setLetterSpacing?: (n: number) => void }
+      if (typeof anyLvl.setLetterSpacing === 'function') anyLvl.setLetterSpacing(0.8)
+      container.add(lvlText)
+    }
+
+    // Optional click target
+    if (opts.onClick) {
+      const { hitW, hitH } = touchHitSize(size, size)
+      const hit = scene.add.rectangle(0, 0, hitW, hitH, 0x000000, 0.001)
+        .setInteractive({ useHandCursor: true })
+      hit.on('pointerdown', () => opts.onClick!())
+      container.add(hit)
+    }
+
+    return container
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CURRENCY PILL — Sub 2.1 (ETAPA 2)
+  // Per INTEGRATION_SPEC §9 (Gold + DG) + Print 6.
+  //
+  // Auto-sizes width to contents: icon 22×22 (SVG from preload: currency-gold /
+  // currency-dg) + tabular Mono value. DG pill uses purple border + " DG" suffix;
+  // Gold pill uses default navy surface + gold accent border.
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  currencyPill(
+    scene: Phaser.Scene,
+    x: number, y: number,
+    opts: {
+      kind:   'gold' | 'dg'
+      amount: number
+      onClick?: () => void
+    },
+  ): Phaser.GameObjects.Container {
+    const isGold = opts.kind === 'gold'
+    const h = 32
+    const iconSize = 22
+    const valueStr = opts.amount.toLocaleString('pt-BR')
+
+    const container = scene.add.container(x, y)
+
+    // Measure the value text first so we can size the pill
+    const valueText = scene.add.text(0, 0, valueStr, {
+      fontFamily: fontFamily.mono,
+      fontSize:   '14px',
+      color:      fg.primaryHex,
+      fontStyle:  '700',
+    })
+    const suffixText = !isGold
+      ? scene.add.text(0, 0, ' DG', {
+          fontFamily: fontFamily.mono,
+          fontSize:   '14px',
+          color:      fg.tertiaryHex,
+          fontStyle:  '700',
+        })
+      : null
+
+    const valueW  = valueText.width
+    const suffixW = suffixText ? suffixText.width : 0
+    const padL = 6
+    const padR = 12
+    const gap  = 8
+    const w = padL + iconSize + gap + valueW + suffixW + padR
+
+    // Pill bg (navy for Gold, navy→purple for DG — we approximate gradient with
+    // a 2nd fill rect on top of the base; single flat fill avoids Graphics overhead).
+    const bg = scene.add.graphics()
+    bg.fillStyle(surface.panel, 1)
+    bg.fillRoundedRect(-w / 2, -h / 2, w, h, radii.md)
+    if (!isGold) {
+      // Subtle purple tint top→bottom
+      bg.fillStyle(0x2e1065, 0.55)
+      bg.fillRoundedRect(-w / 2 + 1, -h / 2 + 1, w - 2, h - 2, radii.md - 1)
+    }
+    bg.lineStyle(1, isGold ? border.default : currency.dgGemEdge, 1)
+    bg.strokeRoundedRect(-w / 2, -h / 2, w, h, radii.md)
+    container.add(bg)
+
+    // Icon (SVG preloaded)
+    const iconKey = isGold ? 'currency-gold' : 'currency-dg'
+    const icon = scene.add.image(-w / 2 + padL + iconSize / 2, 0, iconKey)
+    // SVGs are 32×32 by preload config; scale to 22×22 target.
+    icon.setDisplaySize(iconSize, iconSize)
+    if (!isGold) icon.setTintFill(currency.dgGem)
+    container.add(icon)
+
+    // Position value + suffix
+    const valueX = -w / 2 + padL + iconSize + gap
+    valueText.setPosition(valueX, -valueText.height / 2)
+    container.add(valueText)
+    if (suffixText) {
+      suffixText.setPosition(valueX + valueW, -suffixText.height / 2)
+      container.add(suffixText)
+    }
+
+    if (opts.onClick) {
+      const { hitW, hitH } = touchHitSize(w, h)
+      const hit = scene.add.rectangle(0, 0, hitW, hitH, 0x000000, 0.001)
+        .setInteractive({ useHandCursor: true })
+      hit.on('pointerdown', () => opts.onClick!())
+      container.add(hit)
+    }
+
+    return container
   },
 
 }
