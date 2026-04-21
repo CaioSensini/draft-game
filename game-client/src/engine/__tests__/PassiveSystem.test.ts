@@ -243,6 +243,76 @@ describe('Passive — Isolado (Executor, dual +20%/+10%)', () => {
     const r = dealDamage(ps, exec, king, battle, 30)
     expect(r).toBe(25)
   })
+
+  // ── Stack tests (Bloco 4 additions) ──────────────────────────────────────
+
+  it('Isolado +20% stacks with Execute +25% at ≤30% HP (1.20 × 1.25 = 1.50)', () => {
+    // Isolated Executor attacks a Warrior at ≤ 30% HP.
+    // Base 60 × 100/120 × 1.20 (Isolado) × 1.25 (Execute) = 74.99... → 75
+    const exec     = mkChar('e',   'executor', 'left',  5, 3)
+    const target   = mkChar('t',   'warrior',  'right', 10, 3)
+    const battle   = mkBattle([exec], [target])
+
+    // Push target HP to exactly 30% (Warrior maxHp 200 → 60 HP).
+    target.applyPureDamage(140)
+    expect(target.hp).toBe(60)
+
+    const r = dealDamage(ps, exec, target, battle, 60)
+    expect(r).toBe(75)
+  })
+
+  it('Isolado +20% combines with Isolado trade-off when Executor attacks Executor', () => {
+    // Both Executors isolated — attacker +20% out, defender +10% in.
+    // Base 60 × 100/108 × 1.20 × 1.10 = 73.33 → 73
+    const execA    = mkChar('a', 'executor', 'left',  5, 3)
+    const allyA    = mkChar('f', 'king',     'left',  0, 0)  // faraway (executor A isolated)
+    const execB    = mkChar('b', 'executor', 'right', 10, 3)
+    const allyB    = mkChar('g', 'king',     'right', 15, 5) // faraway (executor B isolated)
+    const battle   = mkBattle([execA, allyA], [execB, allyB])
+
+    const r = dealDamage(ps, execA, execB, battle, 60)
+    expect(r).toBe(73)
+  })
+
+  it('Warrior Protetor adjacent to Executor DISABLES trade-off (not isolated anymore)', () => {
+    // When Warrior stands next to Executor:
+    //   - Executor is NO LONGER isolated → +10% dmg-received trade-off INACTIVE
+    //   - Warrior's Protetor passive ACTIVATES → -15% dmg on adjacent allies
+    // Net: target Executor receives LESS damage, not more.
+    const attacker = mkChar('att', 'warrior',  'right', 10, 3)
+    const exec     = mkChar('e',   'executor', 'left',  5, 3)
+    const warrior  = mkChar('w',   'warrior',  'left',  4, 3)  // adjacent to executor
+    const battle   = mkBattle([exec, warrior], [attacker])
+
+    // No trade-off (not isolated). Protetor applies -15% mit.
+    // Executor DEF 8 → 60 × 100/108 × (1 - 0.15) = 47.22 → 47
+    const r = dealDamage(ps, attacker, exec, battle, 60)
+    expect(r).toBe(47)
+  })
+
+  it('8-adjacency completeness: all 8 directions prevent Isolado activation', () => {
+    // Sweep every cardinal + diagonal neighbor; verify none of them leave
+    // the Executor "isolated" (in the 8-cell sense).
+    const positions = [
+      { col: 4, row: 3, dir: 'W' },
+      { col: 6, row: 3, dir: 'E' },
+      { col: 5, row: 2, dir: 'N' },
+      { col: 5, row: 4, dir: 'S' },
+      { col: 4, row: 2, dir: 'NW' },
+      { col: 6, row: 2, dir: 'NE' },
+      { col: 4, row: 4, dir: 'SW' },
+      { col: 6, row: 4, dir: 'SE' },
+    ]
+    for (const p of positions) {
+      const exec   = mkChar('e', 'executor', 'left', 5, 3)
+      const ally   = mkChar('a', 'king',     'left', p.col, p.row)
+      const target = mkChar('t', 'warrior',  'right', 10, 3)
+      const battle = mkBattle([exec, ally], [target])
+      // Without Isolado: Warrior DEF 20 → 60 × 100/120 = 50 (not 60).
+      const r = dealDamage(ps, exec, target, battle, 60)
+      expect(r, `failed at dir ${p.dir}`).toBe(50)
+    }
+  })
 })
 
 // ── Queimação (Specialist) ────────────────────────────────────────────────────
