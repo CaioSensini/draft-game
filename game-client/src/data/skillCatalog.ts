@@ -349,7 +349,8 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
   },
   {
     id: 'le_a8', name: 'Armadilha Oculta', category: 'attack', group: 'attack2',
-    effectType: 'damage', targetType: 'single', power: 15, range: 0,
+    effectType: 'damage', targetType: 'area', power: 15, range: 0,
+    areaShape: { type: 'single' },
     secondaryEffects: [{ effectType: 'bleed', power: 4, ticks: 3 }],
     description:
       'Arma tile (não em casa ocupada). Ao pisar: 15 dano + snare 1t + bleed 4/turno por 3t.',

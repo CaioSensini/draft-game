@@ -391,29 +391,88 @@ describe('Executor — Attack 2 (bleeds)', () => {
   })
 
   // ── le_a8 Armadilha Oculta ─────────────────────────────────────────────────
-  describe('le_a8 — Armadilha Oculta [PARTIAL — tile-trap system pending]', () => {
-    it('catalog entry', () => {
+  describe('le_a8 — Armadilha Oculta', () => {
+    it('catalog entry targets a tile (area w/ single shape) with bleed secondary', () => {
       const s = executorSkill('le_a8')
       expect(s.name).toBe('Armadilha Oculta')
       expect(s.power).toBe(15)
+      expect(s.targetType).toBe('area')
+      expect(s.areaShape?.type).toBe('single')
       expect(s.secondaryEffects?.[0]?.effectType).toBe('bleed')
     })
 
-    it('primary damage + bleed secondary apply on direct hit (not tile trap)', () => {
-      const exec   = mkChar('e', 'executor', 'left')
-      const target = mkChar('t', 'warrior',  'right')
-      const hpBefore = target.hp
-      resolver.resolve('damage', ctx(exec, target, 15, 15))
-      resolver.resolve('bleed',  ctx(exec, target, 4, 0, 3))
-      expect(target.hp).toBe(hpBefore - 15)
-      expect(target.effects.some((e) => e.type === 'bleed')).toBe(true)
+    it('cast places a trap obstacle at the aim tile and deals no damage', () => {
+      const exec = mkChar('e', 'executor', 'left', 3, 3)
+      const enemy = mkChar('x', 'warrior', 'right', 15, 3)
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [exec]),
+        rightTeam: new Team('right', [enemy]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(executorSkill('le_a8'))
+      const enemyHp = enemy.hp
+      ;(engine as unknown as {
+        _applyAttackSkill: (c: Character, s: Skill, t: unknown, side: string) => void
+      })._applyAttackSkill.bind(engine)(
+        exec, skill, { kind: 'area', col: 10, row: 3 }, 'left',
+      )
+      const grid = (engine as unknown as { _grid: { obstacleAt: (c: number, r: number) => { kind: string; sourceId: string } | null } })._grid
+      const trap = grid.obstacleAt(10, 3)
+      expect(trap?.kind).toBe('trap')
+      expect(trap?.sourceId).toBe(exec.id)
+      expect(enemy.hp).toBe(enemyHp)   // no direct damage at cast
     })
 
-    it('[PARTIAL] tile-trap "ao pisar" activation requires Grid obstacle system', () => {
-      // v3 says the skill deposits a trap on an empty tile; the trap
-      // triggers when an enemy steps on it. No Grid-obstacle system today.
-      const s = executorSkill('le_a8')
-      expect(s.targetType).toBe('single')   // today: direct hit, not trap
+    it('trap does NOT spawn on an occupied tile', () => {
+      const exec = mkChar('e', 'executor', 'left', 3, 3)
+      const enemy = mkChar('x', 'warrior', 'right', 10, 3)
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [exec]),
+        rightTeam: new Team('right', [enemy]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(executorSkill('le_a8'))
+      ;(engine as unknown as {
+        _applyAttackSkill: (c: Character, s: Skill, t: unknown, side: string) => void
+      })._applyAttackSkill.bind(engine)(
+        exec, skill, { kind: 'area', col: 10, row: 3 }, 'left',
+      )
+      const grid = (engine as unknown as { _grid: { obstacleAt: (c: number, r: number) => { kind: string } | null } })._grid
+      expect(grid.obstacleAt(10, 3)).toBeNull()
+    })
+
+    it('trap triggers on push — 15 damage + bleed + snare applied', () => {
+      const exec = mkChar('e', 'executor', 'left', 3, 3)
+      const warrior = mkChar('w', 'warrior', 'left', 5, 3)   // will push
+      const enemy = mkChar('x', 'king', 'right', 10, 3)
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [exec, warrior]),
+        rightTeam: new Team('right', [enemy]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+
+      // Place trap at (11, 3) (one tile east of enemy).
+      const trapSkill = new Skill(executorSkill('le_a8'))
+      ;(engine as unknown as {
+        _applyAttackSkill: (c: Character, s: Skill, t: unknown, side: string) => void
+      })._applyAttackSkill.bind(engine)(
+        exec, trapSkill, { kind: 'area', col: 11, row: 3 }, 'left',
+      )
+
+      const hpBefore = enemy.hp
+      // Push the enemy east by 1 so they land on the trap tile.
+      ;(engine as unknown as {
+        _executePush: (id: string, dir: string, force: number) => void
+      })._executePush.bind(engine)(enemy.id, 'east', 1)
+
+      expect(enemy.hp).toBe(hpBefore - 15)
+      expect(enemy.effects.some((e) => e.type === 'bleed'  && !e.isExpired)).toBe(true)
+      expect(enemy.effects.some((e) => e.type === 'snare'  && !e.isExpired)).toBe(true)
+      const grid = (engine as unknown as { _grid: { obstacleAt: (c: number, r: number) => unknown } })._grid
+      expect(grid.obstacleAt(11, 3)).toBeNull()   // trap consumed
     })
   })
 })

@@ -460,6 +460,9 @@ export class CombatEngine {
       blocked: false,
       collidedWith: null,
     })
+
+    // v3 §6.4 — pre-skill movement also triggers traps on arrival.
+    this._checkTrapTrigger(char)
     return true
   }
 
@@ -1821,6 +1824,33 @@ export class CombatEngine {
           }
         }
 
+        // v3 §6.4 Armadilha Oculta (le_a8 / ra_a8): drop a single-tile
+        // trap at the aim, provided the tile is empty (no occupant, no
+        // existing obstacle). Triggers on-step via _checkTrapTrigger when
+        // an enemy is pushed or pre-skill-moved onto the tile. No damage
+        // is dealt at cast time.
+        if (skill.id === 'le_a8' || skill.id === 'ra_a8') {
+          this.emit({
+            type: EventType.SKILL_USED, unitId: caster.id, skillId: skill.id,
+            skillName: skill.name, category: 'attack',
+            areaCenter: { col: target.col, row: target.row },
+          })
+          const occupant = this._grid.occupantAt(target.col, target.row)
+          const existingObstacle = this._grid.obstacleAt(target.col, target.row)
+          if (!occupant && !existingObstacle && this._grid.isInBounds(target.col, target.row)) {
+            this._grid.placeObstacle({
+              col: target.col, row: target.row,
+              kind: 'trap', side: caster.side,
+              ticksRemaining: 3, sourceId: caster.id,
+            })
+            this.emit({
+              type: EventType.STATUS_APPLIED, unitId: caster.id,
+              status: 'summon_wall' as const, value: 1,
+            })
+          }
+          break
+        }
+
         // v3 §6.2 Névoa (ls_a7 / rs_a7): arena-wide dual-side effect.
         // Allies (anywhere) gain def_up 15% (2t); enemies (anywhere) gain
         // def_down 15% + heal_reduction 30% (2t). Bypasses the normal
@@ -2226,6 +2256,64 @@ export class CombatEngine {
     }
   }
 
+  /**
+   * v3 §6.4 Armadilha Oculta — if `char` has just moved onto a tile that
+   * contains a trap placed by the opposing side, trigger the trap: apply
+   * 15 damage + snare 1t + bleed 4/3t (bypass shields — matches v3 trap
+   * semantics as an environmental hazard). Trap is consumed after trigger.
+   *
+   * Called from `_executePush` and `_applyPreMovement` (push + pre-skill
+   * movement paths). Movement-phase voluntary movement is out of scope
+   * for this sprint (documented as residual debt in DECISIONS.md).
+   */
+  private _checkTrapTrigger(char: Character): void {
+    if (!char.alive) return
+    const obstacle = this._grid.obstacleAt(char.col, char.row)
+    if (!obstacle || obstacle.kind !== 'trap') return
+    if (obstacle.side === char.side) return   // allies don't trigger own-side traps
+
+    // Remove the trap FIRST so re-entrant state changes don't double-fire.
+    this._grid.breakObstacle(char.col, char.row)
+
+    // 15 damage — applied as pure damage (v3: environmental hazard bypasses
+    // standard intercepts like evade). Still respects alive checks.
+    const hpBefore = char.hp
+    char.applyPureDamage(15)
+    const dealt = hpBefore - char.hp
+    if (dealt > 0) {
+      this.emit({
+        type: EventType.DAMAGE_APPLIED, unitId: char.id,
+        amount: dealt, newHp: char.hp, sourceId: obstacle.sourceId,
+      })
+      this._addStat(obstacle.sourceId, 'damageDealt',    dealt)
+      this._addStat(char.id,           'damageReceived', dealt)
+    }
+    if (!char.alive) {
+      this._recordDeath(char.id, obstacle.sourceId)
+      this._addStat(obstacle.sourceId, 'kills', 1)
+      this.emit({
+        type: EventType.CHARACTER_DIED, unitId: char.id,
+        killedBy: obstacle.sourceId, wasKing: char.role === 'king',
+        round: this.battle.round,
+      })
+      this._checkAndEmitVictory()
+      return
+    }
+
+    // Snare 1t + Bleed 4/3t via resolver so the standard event/effect
+    // path fires uniformly.
+    const source = this.battle.getCharacter(obstacle.sourceId) ?? char
+    const snareCtx: EffectContext = {
+      caster: source, target: char, power: 0, rawDamage: 0, ticks: 1, round: this.battle.round,
+    }
+    this._processResult(source, char, this.resolver.resolve('snare', snareCtx))
+    if (!char.alive) return
+    const bleedCtx: EffectContext = {
+      caster: source, target: char, power: 4, rawDamage: 0, ticks: 3, round: this.battle.round,
+    }
+    this._processResult(source, char, this.resolver.resolve('bleed', bleedCtx))
+  }
+
   /** Execute a push on the grid and sync the Character's domain position. */
   private _executePush(targetId: string, direction: Direction, force: number): void {
     const target = this.battle.getCharacter(targetId)
@@ -2248,6 +2336,9 @@ export class CombatEngine {
         blocked:       pushResult.blocked,
         collidedWith:  pushResult.collidedWith,
       })
+
+      // v3 §6.4 Armadilha Oculta — landing on a trap fires its payload.
+      this._checkTrapTrigger(target)
 
       if (pushResult.collidedWith) {
         this.emit({
