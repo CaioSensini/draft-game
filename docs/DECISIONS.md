@@ -4,6 +4,37 @@
 
 ---
 
+## 2026-04-21 — Design System Fase 1: namespaces paralelos + aplicação piloto
+
+**Contexto:** Sprint Dupla pede integrar o `design-system-handoff/` no projeto (tokens CSS, fontes Google Fonts, SVGs) sem quebrar nenhum dos ~21 arquivos que importam `DesignTokens.ts`. Auditoria revelou múltiplos conflitos entre CSS handoff e TS atual.
+
+**Decisão core:** **namespaces paralelos**. Novos tokens (`surface.*`, `border.*`, `fg.*`, `accent.*`, `state.*`, `hpState.*`, `tile.*`, `fontFamily.*`, `typeScale.*`, `radii.*`, `motion.*`, `elevation.*`, `classGlow.*`, `currency.*`, `spacingScale.*`) convivem com os legacy (`C`, `F`, `S`, `SHADOW`, `colors.ui.*`, `colors.semantic.*`, `fonts`, `sizes.radius.*`, etc.). Zero valor legacy é alterado; callers antigos continuam funcionais. Novo código prefere tokens novos; migração é orgânica.
+
+**Conflitos notáveis catalogados (valores do legacy NÃO mudam):**
+
+1. **HP semântica invertida:** `colors.hp.medium=0xef4444` (legacy) é o `hp-critical` do CSS; `colors.hp.low=0xf59e0b` (legacy) é o `hp-wounded`. Resolvido com namespaces `hpState.{full,wounded,critical,shield}` alinhado ao CSS.
+2. **Surfaces conflitam:** CSS navy `#0a0f1c..#334155` vs legacy deep-black `0x04070d, 0x12161f, 0x0e1420`. Consequência: componentes novos serão mais "navy/clear", legacy continua deep-black. **Dupla paleta aceitável como estado intermediário** até Fase 2 alinhar as cenas.
+3. **State colors:** CSS `--success #10b981` ≠ legacy `semantic.success 0x4ade80`. Novo `state.*` usa valores CSS.
+4. **Class colors em skillCard:** hardcoded table `CLASS_COLORS_HEX` usava valores divergentes (warrior azul, executor roxo). Substituído por `colors.class.*` locked (warrior violet, executor red, specialist green, king gold).
+5. **Radii numericamente diferentes:** CSS sm/md/lg = 4/6/8; legacy = 5/8/12. Novo `radii.*` paralelo.
+6. **Fonts:** legacy Arial; novo stack Cinzel/Cormorant Garamond/Manrope/JetBrains Mono via Google Fonts.
+
+**Font readiness strategy:** `BootScene.create()` inicia `document.fonts.ready` como promessa privada; `onComplete` da transição aguarda antes de `scene.start(...)`. Helper `warmUpDesignSystemFonts()` instancia 1 Text off-screen por família para forçar o cache do Phaser antes do primeiro render real. **Sem dependência nova** (API nativa, dispensa WebFontLoader).
+
+**Skill Card shape 120×160:** spec CSS pede vertical; shape atual 210×105 (ou 300×150 em battle) é usado em DeckBuildScene, SkillUpgradeScene, PackOpenAnimation, BattleScene. **Mudança de shape fica Fase 2** — Fase 1 aplica só tokens de cor e fonte. Scope creep se mudar shape agora.
+
+**4 componentes aplicados na Fase 1:**
+- `UI.buttonPrimary/Secondary/Ghost/Destructive` — novos, paralelos ao `UI.button` legacy. INTEGRATION_SPEC §1 com 5 estados.
+- `UI.tooltip` — novo helper §7. Tooltip inline enriquecido do skillCard NÃO migrado.
+- `UI.skillCard` — tokens only, sem mudar shape.
+- HP Bar em BattleScene — 4 sites migrados via `hpStatusColor(ratio)`.
+
+**Cenas secundárias (Lobby, Shop, BattlePass, Settings, Ranked, Ranking, Tournament, Bracket) ficam Fase 2.**
+
+**Status:** 4 commits atômicos (`design-p1: import assets + integrate CSS tokens`, `design-p1: load Google Fonts + configure WebFont loader`, `design-p1: apply design system to Button + HP Bar + Skill Card + Tooltip`, `design-p1: phase 1 report + DECISIONS update`). 473 tests verdes, zero regressão. Relatório em `docs/DESIGN_PHASE1_REPORT.md`.
+
+---
+
 ## 2026-04-21 — Bloco 5: Specialist — 3 Character-level flags para skill-specifics
 
 **Contexto:** v3 §6.2 define 3 mecânicas defensivas do Specialist que exigem state persistente no Character (não encodável via Effect único):
