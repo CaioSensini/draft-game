@@ -521,12 +521,72 @@ describe('Executor — Defense 1 (self-buffs)', () => {
       expect(exec.attack).toBe(atkBefore + 25)
     })
 
-    it('[PARTIAL] "perde 15% HP máximo ao expirar" post-expire hook pending', () => {
-      // v3 says on expiration: caster loses 15% of max HP (blockable by
-      // shield). Requires per-effect onExpire hook or skill-specific
-      // tick integration. Documented in BLOCO4_REPORT.md.
-      const s = executorSkill('le_d2')
-      expect(s.effectType).toBe('atk_up')   // single-effect catalog entry
+    // v3 §6.4 Adrenalina post-expire HP cost — implemented via
+    // Character.setAdrenalinePenalty + tickEffects decrement.
+
+    function applyAdrenalina(exec: Character): CombatEngine {
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [exec]),
+        rightTeam: new Team('right', [mkChar('enemy', 'warrior', 'right', 10, 3)]),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(executorSkill('le_d2'))
+      const applyFn = (engine as unknown as {
+        _applyDefenseSkill: (c: Character, s: Skill) => void
+      })._applyDefenseSkill.bind(engine)
+      applyFn(exec, skill)
+      return engine
+    }
+
+    it('grants atk_up and queues the HP penalty', () => {
+      const exec = mkChar('e', 'executor', 'left', 5, 3)
+      const atkBefore = exec.attack
+      applyAdrenalina(exec)
+      expect(exec.attack).toBeGreaterThan(atkBefore)  // buff active
+      // Executor base HP 120 → 15% = 18 HP cost queued.
+      expect(exec.adrenalinePenaltyHp).toBe(18)
+      expect(exec.adrenalinePenaltyTicks).toBe(2)
+    })
+
+    it('penalty fires when the buff expires (after 2 ticks)', () => {
+      const exec = mkChar('e', 'executor', 'left', 5, 3)
+      applyAdrenalina(exec)
+      const hpBefore = exec.hp
+
+      exec.tickEffects()   // tick 1: buff still active, penalty counter → 1
+      expect(exec.adrenalinePenaltyTicks).toBe(1)
+      expect(exec.hp).toBe(hpBefore)   // no damage yet
+
+      exec.tickEffects()   // tick 2: buff expires, penalty fires
+      // 15% of 120 = 18 HP damage (no shield to absorb in this test).
+      expect(exec.hp).toBe(hpBefore - 18)
+      expect(exec.adrenalinePenaltyHp).toBe(0)
+    })
+
+    it('shield absorbs the expiration cost (v3 "bloqueável por shield")', () => {
+      const exec = mkChar('e', 'executor', 'left', 5, 3)
+      applyAdrenalina(exec)
+      exec.addShield(30)               // enough to absorb the full 18 cost
+      const hpBefore = exec.hp
+
+      exec.tickEffects()
+      exec.tickEffects()               // penalty triggers
+
+      // Shield absorbed 18, HP untouched.
+      expect(exec.hp).toBe(hpBefore)
+      expect(exec.totalShield).toBe(30 - 18)
+    })
+
+    it('lethal penalty can kill the Executor if HP ≤ cost and no shield', () => {
+      const exec = mkChar('e', 'executor', 'left', 5, 3)
+      exec.applyPureDamage(exec.hp - 10)  // leave 10 HP
+      applyAdrenalina(exec)
+
+      exec.tickEffects()
+      exec.tickEffects()   // 18 damage > 10 HP → death
+
+      expect(exec.alive).toBe(false)
     })
   })
 

@@ -1046,6 +1046,30 @@ export class CombatEngine {
       return
     }
 
+    // v3 §6.4 Adrenalina (le_d2 / re_d2). Apply atk_up normally (via
+    // resolver) AND queue the 15%-of-max-HP cost to fire when the buff
+    // expires. We use the same duration as the atk_up (2 turns default),
+    // so both counters run in lockstep.
+    if (skill.id === 'le_d2' || skill.id === 're_d2') {
+      this.emit({
+        type: EventType.SKILL_USED, unitId: char.id, skillId: skill.id,
+        skillName: skill.name, category: 'defense', targetId: char.id,
+      })
+      const buffTicks = 2   // v3: "+25% ATK por 2t"
+      // Apply atk_up via the resolver so the buff integrates with stat mods.
+      const ctx: EffectContext = {
+        caster: char, target: char,
+        power: skill.power, rawDamage: 0, ticks: buffTicks,
+        round: this.battle.round,
+      }
+      const res = this.resolver.resolve('atk_up', ctx)
+      this._processResult(char, char, res)
+      // Queue the post-expire HP cost: 15% of base max HP, rounded.
+      const hpCost = Math.round(char.baseStats.maxHp * 0.15)
+      char.setAdrenalinePenalty(hpCost, buffTicks)
+      return
+    }
+
     // Collect the list of targets based on targetType
     const targets = this._resolveDefenseTargets(char, skill)
 

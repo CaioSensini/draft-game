@@ -125,6 +125,16 @@ export class Character {
   private _maxHpBonus      = 0
   private _maxHpBonusTicks = 0
 
+  /**
+   * v3 §6.4 Adrenalina (le_d2) — queued HP penalty applied when the
+   * Executor's Adrenalina buff expires. Value is the HP cost (typically
+   * 15% of max HP at cast time); ticks count down with the atk_up buff.
+   * On expiration the cost is applied through takeDamage so existing
+   * shields can absorb it (v3 "bloqueável por shield").
+   */
+  private _adrenalinePenaltyHp    = 0
+  private _adrenalinePenaltyTicks = 0
+
   // ── Lifecycle ─────────────────────────────────────────────────────────────
   private _alive = true
 
@@ -351,6 +361,25 @@ export class Character {
   /** Current temporary max-HP bonus (read-only). */
   get maxHpBonus(): number      { return this._maxHpBonus }
   get maxHpBonusTicks(): number { return this._maxHpBonusTicks }
+
+  /**
+   * v3 §6.4 Adrenalina (le_d2) penalty setup.
+   *
+   * Queue an HP cost to be applied when the penalty ticks hit zero
+   * (matches the duration of the atk_up Adrenalina grants — 2 turns by
+   * default). If called while a pending penalty already exists, the
+   * larger cost and longer duration win (same max-stacking policy as
+   * debuff re-application §2.6).
+   */
+  setAdrenalinePenalty(hpCost: number, ticks: number): void {
+    if (!this._alive || hpCost <= 0 || ticks <= 0) return
+    this._adrenalinePenaltyHp    = Math.max(this._adrenalinePenaltyHp,    Math.round(hpCost))
+    this._adrenalinePenaltyTicks = Math.max(this._adrenalinePenaltyTicks, ticks)
+  }
+
+  /** Read-only access to the queued Adrenalina penalty (for tests / UI). */
+  get adrenalinePenaltyHp(): number    { return this._adrenalinePenaltyHp }
+  get adrenalinePenaltyTicks(): number { return this._adrenalinePenaltyTicks }
 
   /**
    * v3 §6.4 Marca da Morte support: remove every active shield effect and
@@ -631,6 +660,22 @@ export class Character {
         if (this._hp > this.baseStats.maxHp) {
           this._hp = this.baseStats.maxHp
         }
+      }
+    }
+
+    // v3 §6.4 Adrenalina penalty. When the queued counter reaches zero,
+    // apply the stored HP cost via takeDamage so active shields can absorb
+    // it first (v3: "bloqueável por shield"). If the cost kills the
+    // Executor, death is registered through the normal takeDamage path.
+    if (this._adrenalinePenaltyTicks > 0) {
+      this._adrenalinePenaltyTicks--
+      if (this._adrenalinePenaltyTicks === 0 && this._adrenalinePenaltyHp > 0) {
+        const cost = this._adrenalinePenaltyHp
+        this._adrenalinePenaltyHp = 0
+        // Use takeDamage so existing shields apply; no reflect/evade can
+        // intervene because we aren't emitting a hit event, just direct
+        // damage attributed to self.
+        this.takeDamage(cost)
       }
     }
 
