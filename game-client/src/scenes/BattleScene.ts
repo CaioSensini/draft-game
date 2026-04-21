@@ -53,7 +53,7 @@ import { GameState, GameStateManager } from '../core/GameState'
 import { soundManager } from '../utils/SoundManager'
 import { UI, hpStatusColor } from '../utils/UIComponents'
 import {
-  state as dsState, fg, fontFamily, hpState, typeScale,
+  accent, border, state as dsState, fg, fontFamily, hpState, radii, surface, typeScale,
 } from '../utils/DesignTokens'
 import { VFXManager } from '../utils/VFXManager'
 import { drawCharacterSprite } from '../utils/SpriteFactory'
@@ -290,9 +290,12 @@ export default class BattleScene extends Phaser.Scene {
   // ── Timer display ───────────────────────────────────────────────────────────
   private _timerText!:  Phaser.GameObjects.Text
   private _timerBar!:   Phaser.GameObjects.Rectangle
+  private _timerBarW    = 0  // cached total width of the bar (set in _drawHUD)
   private _timerTotal   = 15
   private _timerEvent:  Phaser.Time.TimerEvent | null = null
   private _timerSecs    = 0
+  /** Pulse tween on the timer label, active only when ≤5s remain (critical). */
+  private _timerPulseTween: Phaser.Tweens.Tween | null = null
 
   // ── HUD team indicator dot ─────────────────────────────────────────────────
   /** Team phase dot (hidden in new layout) */
@@ -2155,51 +2158,58 @@ export default class BattleScene extends Phaser.Scene {
     }).setOrigin(1, 0)
     this.add.text(W - 20, 26, 'Inimigo', { fontFamily: 'Arial', fontSize: '15px', color: '#886050' }).setOrigin(1, 0)
 
-    // Round + Timer badge — two-section pill centered in top bar
+    // Round + Timer badge — two-section pill centered in top bar.
+    // INTEGRATION_SPEC §6 + Print 17: the visible timer uses Mono tabular
+    // numerals; state threshold colors are resolved in _updateTimerDisplay.
     const badgeCy = TOP_BAR_H2 / 2
-    const timerW = 52; const roundW = 80; const badgeH = 28; const badgeR = 6
+    const timerW = 64; const roundW = 84; const badgeH = 28; const badgeR = radii.md
     const totalW = timerW + roundW + 2
     const badgeX = barCx - totalW / 2
     const badgeG = this.add.graphics()
 
     // Timer section (left, darker)
-    badgeG.fillStyle(0x080c14, 1)
+    badgeG.fillStyle(surface.primary, 1)
     badgeG.fillRoundedRect(badgeX, badgeCy - badgeH / 2, timerW, badgeH,
       { tl: badgeR, bl: badgeR, tr: 0, br: 0 })
-    // Round section (right, slightly lighter)
-    badgeG.fillStyle(0x10161f, 1)
+    // Round section (right, slightly lighter panel tint)
+    badgeG.fillStyle(surface.panel, 1)
     badgeG.fillRoundedRect(badgeX + timerW + 2, badgeCy - badgeH / 2, roundW, badgeH,
       { tl: 0, bl: 0, tr: badgeR, br: badgeR })
-    // Outer border (gold)
-    badgeG.lineStyle(1.5, 0xc9a84c, 0.35)
+    // Outer border (royal gold)
+    badgeG.lineStyle(1, border.royal, 0.55)
     badgeG.strokeRoundedRect(badgeX, badgeCy - badgeH / 2, totalW, badgeH, badgeR)
     // Divider line between timer and round
-    badgeG.fillStyle(0xc9a84c, 0.2)
+    badgeG.fillStyle(border.royal, 0.3)
     badgeG.fillRect(badgeX + timerW, badgeCy - badgeH / 2 + 4, 2, badgeH - 8)
 
-    // Timer text (left section, centered)
+    // Timer text (left section, centered). JetBrains Mono tabular — value colored
+    // per 3-state rule (normal green / warning amber / critical red pulsing).
     this._timerText = this.add.text(badgeX + timerW / 2, badgeCy, '', {
-      fontFamily: 'Arial Black', fontSize: '13px', color: '#ffffff', fontStyle: 'bold',
-      stroke: '#000000', strokeThickness: 2,
+      fontFamily: fontFamily.mono, fontSize: typeScale.statMd,
+      color: dsState.successHex, fontStyle: 'bold',
     }).setOrigin(0.5).setDepth(10)
 
     // Round text (right section, centered)
     this._roundText = this.add.text(badgeX + timerW + 2 + roundW / 2, badgeCy, 'Round 1', {
-      fontFamily: 'Arial Black', fontSize: '13px', color: '#f0c850', fontStyle: 'bold',
-      stroke: '#000000', strokeThickness: 2,
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: accent.primaryHex, fontStyle: 'bold',
     }).setOrigin(0.5)
 
-    // Phase text (hidden — replaced by map overlay banners)
+    // Phase text — kept hidden; map overlay banners carry phase transitions.
+    // ETAPA 1b (Sub 1.5 status panel) revisits phase labelling; for now the
+    // node exists only for typing parity with the rest of the scene.
     this._phaseText = this.add.text(-999, -999, '', {
-      fontFamily: 'Arial', fontSize: '1px', color: '#8a9ab4',
+      fontFamily: fontFamily.body, fontSize: '1px', color: fg.tertiaryHex,
     }).setVisible(false)
 
-    // Team dot (hidden)
-    this._teamDot = this.add.circle(-999, -999, 1, 0x00ccaa).setVisible(false)
+    // Team dot (hidden, retained for legacy API parity)
+    this._teamDot = this.add.circle(-999, -999, 1, 0x3b82f6).setVisible(false)
 
-    // Timer bar below top bar
-    this._timerBar = this.add.rectangle(barX, TOP_BAR_H2, barW, 3, 0x44dd44)
+    // Timer bar below top bar. Fill color resolved dynamically in
+    // _updateTimerDisplay via the same 3-state rule as the label.
+    this._timerBar = this.add.rectangle(barX, TOP_BAR_H2, barW, 4, dsState.success)
       .setOrigin(0, 0).setDepth(10).setAlpha(0)
+    this._timerBarW = barW
 
     // ── MINI LOG PANEL + HISTORICO BUTTON — below action buttons ──
     const miniLogY = PANEL_Y + 4 * (CARD_H + CARD_GAP) + BTN_BAR_H + 10
@@ -2915,15 +2925,59 @@ export default class BattleScene extends Phaser.Scene {
 
   // ── Timer helpers ──────────────────────────────────────────────────────────
 
+  /**
+   * Paint the timer label + fill bar per INTEGRATION_SPEC §6 and Print 17.
+   *
+   *   > 10s  → normal   (state.success   — green)
+   *   5..10s → warning  (state.warn      — amber)
+   *   ≤ 5s   → critical (state.warnCritical — red, label pulses via Sine.InOut)
+   *
+   * Uses `MM:SS` tabular format in JetBrains Mono so digits don't jitter as
+   * the value ticks down.
+   */
   private _updateTimerDisplay(): void {
     const s = this._timerSecs
-    const color = s > 5 ? '#ffffff' : s >= 3 ? '#ffdd44' : '#ff4444'
-    this._timerText.setText(`⏱ ${s}s`).setColor(color)
-    // Update timer bar
+
+    let labelHex: string
+    let fillColor: number
+    let critical: boolean
+    if (s > 10) {
+      labelHex = dsState.successHex
+      fillColor = dsState.success
+      critical = false
+    } else if (s > 5) {
+      labelHex = dsState.warnHex
+      fillColor = dsState.warn
+      critical = false
+    } else {
+      labelHex = dsState.errorHex
+      fillColor = dsState.warnCritical
+      critical = true
+    }
+
+    const mins = Math.floor(s / 60)
+    const secs = s % 60
+    const timeLabel = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+    this._timerText.setText(timeLabel).setColor(labelHex)
+
+    // Critical pulse — start/stop the Sine yoyo depending on threshold.
+    if (critical && !this._timerPulseTween) {
+      this._timerPulseTween = this.tweens.add({
+        targets: this._timerText,
+        alpha: { from: 1, to: 0.55 },
+        duration: 500, yoyo: true, repeat: -1, ease: 'Sine.InOut',
+      })
+    } else if (!critical && this._timerPulseTween) {
+      this._timerPulseTween.stop()
+      this._timerPulseTween = null
+      this._timerText.setAlpha(1)
+    }
+
     if (this._timerBar && this._timerTotal > 0) {
       const ratio = s / this._timerTotal
-      this._timerBar.setDisplaySize(W * ratio, 3).setAlpha(1)
-      this._timerBar.setFillStyle(ratio > 0.5 ? 0x44dd44 : ratio > 0.2 ? 0xddaa22 : 0xdd3322)
+      const barW = this._timerBarW > 0 ? this._timerBarW : W
+      this._timerBar.setDisplaySize(barW * Math.max(0, Math.min(1, ratio)), 4).setAlpha(1)
+      this._timerBar.setFillStyle(fillColor)
     }
   }
 
@@ -2932,8 +2986,13 @@ export default class BattleScene extends Phaser.Scene {
       this._timerEvent.destroy()
       this._timerEvent = null
     }
+    if (this._timerPulseTween) {
+      this._timerPulseTween.stop()
+      this._timerPulseTween = null
+    }
     this._timerSecs = 0
-    this._timerText.setText('')
+    this._timerText.setText('').setAlpha(1)
+    if (this._timerBar) this._timerBar.setAlpha(0)
   }
 
   private _showVictoryOverlay(winText: string, reason: string, round: number) {
