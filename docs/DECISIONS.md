@@ -4,6 +4,45 @@
 
 ---
 
+## 2026-04-22 — ETAPA 5a: Profile + Ranking + PvE/PvP Lobby + Bracket + cleanup de 3 cenas mortas
+
+**Contexto:** ETAPA 5a fecha as 5 cenas essenciais do loop principal do jogador (Profile + Ranking + PvE Lobby + PvP Lobby + Bracket) e deleta 3 cenas órfãs descobertas no audit (PvESelectScene, TournamentScene, TutorialScene). Sessão única entrega 6 commits atômicos em ~2h (vs estimativa 8-10h).
+
+**Decisões aplicadas (audit inicial):**
+
+- **A — Spec §S10-S14 referenciados no prompt NÃO existem em INTEGRATION_SPEC.md:** spec só vai até §S10 Tournament Bracket. Derivei as 5 cenas de §S9 Ranked Ladder (Ranking) + §S10 Bracket + kit components + convenções das etapas anteriores. Princípio: alinhamento com o jogo existente > spec greenfield incompleto
+- **B — BracketScene risco alto confirmado no audit:** 1050 LOC + phase machine (5 states) + saved state + reveal animation + connector lines. Stop rule de 3h negociada. **Fechou em ~20min** porque a preservação cirúrgica (geometria byte-a-byte, só tokens trocados) reduziu massivamente a superfície de erro
+- **C — Cleanup de 3 cenas órfãs:** PvESelectScene (303 LOC), TournamentScene (159 LOC), TutorialScene (358 LOC). Validado via `grep` — único caller externo era back-arrow TournamentScene→PvESelectScene, ambas mortas juntas. TutorialScene sequer estava registrada em gameConfig. Deleção total segura + 2 imports/registrations removidos + 1 comentário órfão em DeckBuildScene:143 atualizado
+- **D — PvP/PvE team layout 1×4 preservado:** audit levantou se deveria virar 2×2. Decisão: preservar 1×4 horizontal. Razões: (1) swap button canto superior direito do card já cria leitura "time da esquerda → direita"; (2) 2×2 quebraria a assimetria "team à esquerda + sidebar à direita" consistente em PvP/PvE/Custom; (3) mobile landscape (target) favorece 1×4 em área 880×300 vs cards quadrados menores do 2×2
+- **E — Ranking: scene.restart pattern preservado:** lógica de sortKey/regionFilter continua via `this.scene.restart({ sortKey, regionFilter })`. 2 UI.segmentedControl paralelos (sort 360×32 + region 344×32) substituem 7 hit boxes + 7 graphics + 7 text manuais inline — ~70 LOC removidas
+- **F — BracketScene CARD_W 150 → 170:** única mudança de geometria da etapa inteira. Motivo: nomes Cormorant Garamond (serif) ocupam mais horizontal que Arial e estavam truncando. Feeders + columns (ROUND_GAP_X 180) recalibram naturalmente; champion position (`glowX = getColumnX(2) + ROUND_GAP_X`) permanece intacto
+
+**Correção importante durante o cleanup:** `git add -A` pegou worktrees como submodules embedded (mode 160000) no primeiro tentativa do commit 5a.0. Corrigido via `git reset --soft HEAD~1 + git reset HEAD .claude/worktrees/` + recommit seletivo com paths explícitos. **Lesson learned:** usar `git add -- <paths explícitos>` em vez de `git add -A` quando há worktrees registrados como submodules no projeto.
+
+**UI kit consumido (já consolidado de etapas anteriores):**
+
+- `UI.buttonPrimary/Secondary/Ghost/Destructive` — 4 sites novos (start, invite, spectate close, championa actions)
+- `UI.modal` — 2 sites novos (invite popup PvE + invite popup PvP)
+- `UI.segmentedControl` — 2 sites no Ranking (sort + region)
+- `UI.progressBarV2` — 3 sites no Profile (XP bar + ATK mastery + DEF mastery)
+- `UI.avatarBadge` — 1 site no Profile (hero panel)
+- `UI.backArrow` — 5 sites (1 por cena)
+- `UI.tierIcon` — preservado em Ranking + room logs do PvE/PvP
+
+**Currency family consistente:** gold (`currency.goldCoinHex`) + DG (`0xa78bfa` violet via `currency.dgGem`) aplicados consistentemente em Ranking footer, Profile stats grid, BracketScene rewards popup, PvE/PvP room logs. Mesma família visual entre Shop, BattlePass, Lobby, Settings, e agora as 5 cenas novas — identidade coerente de economia.
+
+**Resultado numérico:**
+
+- 6 commits atômicos (`etapa5a-sub5a.0` a `5a.5`) + relatório em `docs/ETAPA5A_REPORT.md`
+- ~−1.463 LOC no src/scenes (−825 das 3 cenas deletadas + −638 das 5 migrações apesar de novo código tokenizado)
+- 529 tests verdes em cada checkpoint, 0 regressão
+- Tempo real ~2h vs estimativa 8-10h (5-8h de folga)
+- Stop rules acionadas: 0 (incluindo a especial de 3h para BracketScene)
+
+**Status:** 15 de 17 cenas no design system. Restam pra ETAPA 5b (última): `CustomLobbyScene` (~990 LOC) + `RankedScene` (~1000 LOC) + polish final. Relatório completo em `docs/ETAPA5A_REPORT.md`.
+
+---
+
 ## 2026-04-22 — ETAPA 4: Loja, Passe de Batalha, Configuracoes + 4 helpers UI
 
 **Contexto:** 3 cenas de servico (ShopScene, BattlePassScene, SettingsScene) eram as ultimas pendencias de tokens legacy alem dos lobbies de PvP/Ranked/etc. Sessao unica fecha as 3 + adiciona 4 helpers UI tokenizados ao kit.
