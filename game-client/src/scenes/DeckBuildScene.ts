@@ -140,7 +140,7 @@ export default class DeckBuildScene extends Phaser.Scene {
   create(data?: { pveMode?: boolean; npcTeam?: { name: string; levelMin: number; levelMax: number; goldReward: number; xpReward: number } }) {
     GameStateManager.set(GameState.MENU)
 
-    // Capture PvE data if coming from PvESelectScene
+    // Capture PvE data if coming from PvE flow (PvELobby battle or bracket).
     this.pveMode = data?.pveMode ?? false
     this.npcTeam = data?.npcTeam ?? null
 

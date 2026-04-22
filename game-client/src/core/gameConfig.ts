@@ -4,14 +4,12 @@ import LoginScene from '../scenes/LoginScene'
 import MenuScene from '../scenes/MenuScene'
 import LobbyScene from '../scenes/LobbyScene'
 import DeckBuildScene from '../scenes/DeckBuildScene'
-import PvESelectScene from '../scenes/PvESelectScene'
 import ShopScene from '../scenes/ShopScene'
 import ProfileScene from '../scenes/ProfileScene'
 import BattleScene from '../scenes/BattleScene'
 import BattleResultScene from '../scenes/BattleResultScene'
 import SkillUpgradeScene from '../scenes/SkillUpgradeScene'
 import SettingsScene from '../scenes/SettingsScene'
-import TournamentScene from '../scenes/TournamentScene'
 import RankedScene from '../scenes/RankedScene'
 import RankingScene from '../scenes/RankingScene'
 import PvPLobbyScene from '../scenes/PvPLobbyScene'
@@ -46,14 +44,12 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
     MenuScene,
     LobbyScene,
     DeckBuildScene,
-    PvESelectScene,
     ShopScene,
     ProfileScene,
     BattleScene,
     BattleResultScene,
     SkillUpgradeScene,
     SettingsScene,
-    TournamentScene,
     RankedScene,
     RankingScene,
     PvPLobbyScene,
