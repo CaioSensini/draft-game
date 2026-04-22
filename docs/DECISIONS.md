@@ -4,6 +4,40 @@
 
 ---
 
+## 2026-04-22 — ETAPA 4: Loja, Passe de Batalha, Configuracoes + 4 helpers UI
+
+**Contexto:** 3 cenas de servico (ShopScene, BattlePassScene, SettingsScene) eram as ultimas pendencias de tokens legacy alem dos lobbies de PvP/Ranked/etc. Sessao unica fecha as 3 + adiciona 4 helpers UI tokenizados ao kit.
+
+**Decisoes aplicadas (A-F do audit):**
+
+- **A — UI.shopCard:** NAO criado. ShopScene tem 3 variantes muito diferentes (skill pack / skin live sprite / DG real-money) — abstracao forcada seria pior. Mantido inline com tokens
+- **B — Sliders de volume em Settings:** NAO adicionados. SoundManager so tem toggle binario hoje. UI.slider helper criado mesmo assim (reservado pra ETAPA 5+ quando backend ganhar API). Disclaimer italic exposto na secao AUDIO: "Sliders de volume aguardam API no SoundManager."
+- **C — Battle Pass paleta:** Identidade violeta PRESERVADA. Mapeamento aplicado: `0x8844cc → currency.dgGem (0xa78bfa)`, `0xcc88ff → 0xc4b5fd (light)`, `0x4a1a6a → currency.dgGemEdge (0x5b21b6)`, `0x2a1a3a → 0x2e1065 (deep)`. Identidade violeta agora alinhada com a DG gem da Print 11 — mesma familia visual entre o passe e a moeda DG (era cyan blue antes, errado). Local palette `BP` no topo do arquivo
+- **D — Shop tabs:** UI.segmentedControl aplicado. Substitui o indicator + 3 hit boxes + recolor handlers inline (~50 LOC removidas)
+- **E — Shop purchase popup:** UI.modal aplicado. 90+ LOC inline (blocker + panel + title + desc + 2 button gfx + cancel link) substituidas por uma unica chamada UI.modal
+- **F — Settings logout popup:** UI.modal aplicado. 7 game objects manuais substituidos pela chamada UI.modal
+
+**Helpers UI novos (Sub 4.1):**
+
+- `UI.toggle({value, onChange, width?, height?})` — 44x22 pill com knob slide 140ms ease-out, on=success/off=deepest
+- `UI.slider({value, width?, height?, thumbR?, label?, onChange?, onCommit?})` — track 320x6 + thumb 16x16 com drag onChange contínuo + onCommit no release. Generic, reutilizavel
+- `UI.segmentedControl<T>({options, value, width?, height?, onChange})` — generic sobre tipo T, container surface.raised + active surface.primary + accent border
+- `UI.progressBarV2({width, height?, ratio, color?, showLabel?})` — substituto tokenizado pro UI.progressBar legacy (mask-based). Track surface.deepest + fill accent.primary + setRatio(r, animate?) com 800ms Quad.Out
+
+**Currency family alinhada:** ShopScene + BattlePassScene + Lobby + Settings agora consomem o mesmo set `currency.goldCoin/goldCoinEdge` (dourado) e `currency.dgGem/dgGemEdge` (violeta) — identidade visual coerente entre "moeda comum" e "moeda premium" mais "passe premium".
+
+**Resultado numerico:**
+
+- 4 commits atomicos (`etapa4-sub4.1/.4/.2/.3`) + relatorio em `docs/ETAPA4_REPORT.md`
+- ~+154 LOC liquidos (helpers novos pagam por si — Settings caiu 40%, Shop caiu 14%)
+- 529 tests verdes em cada checkpoint, 0 regressao
+- Tempo real ~7h vs estimativa 8h (1h de folga)
+- Stop rules acionadas: 0
+
+**Status:** 11 de 13 cenas no design system. Restam pra ETAPA 5: ProfileScene, RankedScene (sala), RankingScene, TournamentScene, BracketScene, PvPLobbyScene (sala), PvELobbyScene, CustomLobbyScene, PvESelectScene + polish final. Relatorio completo em `docs/ETAPA4_REPORT.md`.
+
+---
+
 ## 2026-04-21 — ETAPA 3: 5 cenas finalizadas no design system (pre/pos-partida + upgrade + deck build)
 
 **Contexto:** Etapas 1a/1b/2 deferiram 4 cenas pro pacote de shape vertical 120×160 + MatchmakingScene dedicada. Sessao unica fecha as 5 em ordem inversa de risco (3.3 → 3.5 → 3.4 → 3.2 → 3.1).
