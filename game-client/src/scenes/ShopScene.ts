@@ -300,9 +300,15 @@ export default class ShopScene extends Phaser.Scene {
     const iconGlow = this.add.circle(0, iconY, isPremium ? 36 : 30, accentColor, 0)
     this.tweens.add({ targets: iconGlow, alpha: { from: 0.05, to: 0.16 }, duration: 2000, yoyo: true, repeat: -1, ease: 'Sine.InOut' })
 
+    // ETAPA 6.1 — DG tab items render the canonical currency-dg SVG (the same
+    // asset the lobby HUD uses via UI.currencyPill). Custom Graphics drawings
+    // of the gem have been retired to keep a single source of truth.
+    const extraIconElements: Phaser.GameObjects.GameObject[] = []
+
     if (item.category === 'premium' && item.dropCount === 0) {
-      // DG tab items — show DG coin icon
-      this.drawDGCoinIcon(iconG, 0, iconY, 22)
+      const dgIcon = this.add.image(0, iconY, 'currency-dg').setDisplaySize(44, 44)
+      dgIcon.setTintFill(currency.dgGem)
+      extraIconElements.push(dgIcon)
     } else if (isPremium) {
       // Premium skill pack — sword + shield
       this.drawSwordIcon(iconG, -20, iconY, accentColor, 1.4)
@@ -451,7 +457,7 @@ export default class ShopScene extends Phaser.Scene {
 
     // ── Assemble ──
     const children: Phaser.GameObjects.GameObject[] = [
-      ...premElements, bg, glowG, iconGlow, rLabel, iconG, nameText, descText,
+      ...premElements, bg, glowG, iconGlow, rLabel, iconG, ...extraIconElements, nameText, descText,
       ...badgeEls, ...priceElements, ...lockElements, hit,
     ]
     const container = this.add.container(cx, cy, children)
@@ -1026,41 +1032,6 @@ export default class ShopScene extends Phaser.Scene {
     // ── Top edge highlight (light glint) ──
     g.lineStyle(1, 0xffffff, 0.1)
     g.lineBetween(x - 14 * s, y - 19 * s, x + 14 * s, y - 19 * s)
-  }
-
-  /** DG coin icon — large violet gem coin (Print 11 vocabulary) */
-  private drawDGCoinIcon(g: Phaser.GameObjects.Graphics, x: number, y: number, r: number) {
-    // Outer glow
-    g.fillStyle(currency.dgGem, 0.10)
-    g.fillCircle(x, y, r + 4)
-    // Coin body
-    g.fillStyle(currency.dgGem, 0.6)
-    g.fillCircle(x, y, r)
-    g.lineStyle(2, currency.dgGemEdge, 1)
-    g.strokeCircle(x, y, r)
-    // Inner ring
-    g.lineStyle(1, 0xffffff, 0.1)
-    g.strokeCircle(x, y, r * 0.7)
-    // Diamond emblem
-    const ds = r * 0.45
-    g.fillStyle(0xffffff, 0.3)
-    g.fillPoints([
-      new Phaser.Geom.Point(x, y - ds),
-      new Phaser.Geom.Point(x + ds * 0.7, y),
-      new Phaser.Geom.Point(x, y + ds),
-      new Phaser.Geom.Point(x - ds * 0.7, y),
-    ], true)
-    // Diamond highlight
-    g.fillStyle(0xffffff, 0.15)
-    g.fillPoints([
-      new Phaser.Geom.Point(x, y - ds),
-      new Phaser.Geom.Point(x + ds * 0.35, y - ds * 0.2),
-      new Phaser.Geom.Point(x, y),
-      new Phaser.Geom.Point(x - ds * 0.35, y - ds * 0.2),
-    ], true)
-    // Top shine
-    g.fillStyle(0xffffff, 0.08)
-    g.fillCircle(x - r * 0.2, y - r * 0.3, r * 0.2)
   }
 
   shutdown() { this.tweens.killAll() }

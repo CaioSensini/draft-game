@@ -842,28 +842,14 @@ export default class BattlePassScene extends Phaser.Scene {
         g.fillCircle(x - r * 0.35, y - r * 0.35, r * 0.22)
       }
     } else if (type === 'dg') {
-      // ── DG gem-coin (currency.dgGem violet, Print 11 vocabulary) ──
-      g.fillStyle(currency.dgGem, alpha * 0.85)
-      g.fillCircle(x, y, r)
-      g.lineStyle(1.5, currency.dgGemEdge, alpha)
-      g.strokeCircle(x, y, r)
-      const ds = r * 0.55
-      g.fillStyle(0xffffff, alpha * 0.32)
-      g.fillPoints([
-        new Phaser.Geom.Point(x, y - ds),
-        new Phaser.Geom.Point(x + ds * 0.7, y),
-        new Phaser.Geom.Point(x, y + ds),
-        new Phaser.Geom.Point(x - ds * 0.7, y),
-      ], true)
-      if (size !== 'small') {
-        g.lineStyle(1, 0xffffff, alpha * 0.55)
-        g.strokePoints([
-          new Phaser.Geom.Point(x, y - ds),
-          new Phaser.Geom.Point(x + ds * 0.7, y),
-          new Phaser.Geom.Point(x, y + ds),
-          new Phaser.Geom.Point(x - ds * 0.7, y),
-        ], true)
-      }
+      // ── DG gem — canonical SVG (ETAPA 6.1 consistency fix)
+      // Same asset the lobby HUD uses via UI.currencyPill. Scales naturally
+      // across small/medium/large size modes.
+      const dgSize = r * 2.2
+      const dgImg = this.add.image(x, y, 'currency-dg').setDisplaySize(dgSize, dgSize)
+      dgImg.setTintFill(currency.dgGem)
+      dgImg.setAlpha(alpha)
+      container.add(dgImg)
     } else if (type === 'skill_pack') {
       // ── Skill pack — warn amber tome ──
       const sw = r * 1.7

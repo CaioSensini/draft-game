@@ -518,23 +518,11 @@ function createCard(
     lg.strokeRoundedRect(-actionW / 2, actionY - actionH / 2, actionW, actionH, radii.md)
     container.add(lg)
 
-    // DG gem icon (violet)
-    const gem = scene.add.graphics()
-    gem.fillStyle(currency.dgGem, 1)
-    gem.fillCircle(-actionW / 2 + 22, actionY, 9)
-    gem.lineStyle(1, currency.dgGemEdge, 1)
-    gem.strokeCircle(-actionW / 2 + 22, actionY, 9)
+    // DG gem icon — canonical SVG (ETAPA 6.1 consistency fix)
+    const gem = scene.add.image(-actionW / 2 + 22, actionY, 'currency-dg')
+      .setDisplaySize(18, 18)
+    gem.setTintFill(currency.dgGem)
     container.add(gem)
-    container.add(
-      scene.add
-        .text(-actionW / 2 + 22, actionY, 'DG', {
-          fontFamily: fontFamily.body,
-          fontSize:   '8px',
-          color:      currency.dgGemEdgeHex,
-          fontStyle:  '700',
-        })
-        .setOrigin(0.5),
-    )
 
     container.add(
       scene.add
