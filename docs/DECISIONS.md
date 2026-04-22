@@ -4,6 +4,39 @@
 
 ---
 
+## 2026-04-22 — ETAPA 6: Polish pós-design (5 ajustes)
+
+**Contexto:** ETAPA 6 fecha o polish pós-ETAPA 5b com 5 ajustes finos identificados pela usuária ao jogar o projeto — não é refactor, é consistency + clareza visual. Sessão única entrega 5 commits atômicos em ~3.5h (vs estimativa 4.5-5.5h).
+
+**Decisões aplicadas (audit inicial):**
+
+- **Sub 6.1 — DG icon consistente:** 4 implementações divergentes consolidadas no SVG canônico `/assets/icons/currency/dg.svg` (preloaded como `currency-dg`, mesmo asset que `UI.currencyPill` já usa). Retirados: `ShopScene.drawDGCoinIcon` (90 LOC de Graphics), `SkinPicker` inline Graphics + texto "DG", `BattlePassScene.drawRewardIcon('dg')` Graphics com diamond points. Todos passam a usar `scene.add.image('currency-dg').setTintFill(currency.dgGem)` escalado por contexto (44×44 Shop, 18×18 SkinPicker, r×2.2 BattlePass).
+
+- **Sub 6.2 — Battle Pass missions layout:** removido subtitle italic "Todas expiram junto com a temporada" (redundante com o chip "Xd restantes" na top bar). Cards 195×64 → **240×80**. Grid 2×4 mantido com gap vertical 8→10, gridY `py+46` → `py+36`. `MISSION_H` 200→220. Layout interno: header (pill+stage) y+12, descrição y+38 (agora abaixo do header, não mais sobreposta ao stage indicator), progress bar y+h-16. Premium button agora a 62px de distância do grid (era 242, mas cards cresceram).
+
+- **Sub 6.5 — Long description schema + UI:** `SkillDefinition.longDescription?: string` opcional adicionado; `Skill` domain class expõe `readonly longDescription: string` (empty string quando unset). `UI.skillDetailCard` card 310×380 → **310×460**. Top header ganha 5 bolinhas de progresso (●●●○○) ao lado do "NV X". Descrição dividida em 2 seções: **DESCRIÇÃO** (curta existente, até ~72px/4 linhas) e **DESCRIÇÃO DETALHADA** (longDescription; placeholder italic "Descrição detalhada em breve." quando vazio). 6 call sites em SkillUpgradeScene atualizados para forwarding de `longDescription` do catalog. **Skills do catálogo ficam vazias** — usuária preenche skill a skill depois.
+
+- **Sub 6.3 — Top bar lobbies consistente:** PvP + PvE alinhados ao padrão CustomLobby — ALTERAR MODO movido x=W-104 (direita) → x=156 (esquerda); mode pill x=W-208 → x=W-60 (borda direita) com pillW 68→72. Ranked já estava no padrão (sem mudança). **Ambiguidade documentada:** usuária reportou "riscos decorativos (linhas/riscos amarelo-escuros diagonais) em torno do título" mas grep exaustivo em drawHeader, asset preloads e chamadas gráficas não encontrou nenhum elemento diagonal/ornamento. Todas as 4 top bars usam mesmo pattern `surface.panel + 1px border.subtle`. Hipótese: o cluster accent-primary (ALTERAR MODO gold + pill gold adjacente) em PvP/PvE criava aparência "marcada" — o novo layout esquerda/direita elimina esse cluster. Se percepção persistir, precisa screenshot para follow-up específico.
+
+- **Sub 6.4 — Skill card vertical refactor:** reescrita completa de `UI.skillCardVertical`. Novo layout 120×160: **top band** (32px, class-color wash) com linha 1 `CAT · CLASSE` + linha 2 `NV X + 5 bolinhas progresso`; **middle** (90px) icon circle r=20 + Cormorant skill name; **footer** (38px, surface.deepest) com row 1 `STAT VALUE · TIPO` left + `CD N` right, e row 2 conditional `↑ UPAR Xg` integrado (só aparece quando `opts.upgrade` fornecido e `canUpgrade=true`). Descrição removida do card pequeno — vive agora apenas no hover detail (SEU sugerido pela usuária). Derivação de TIPO: targetType (ALVO/PRÓPRIO/ALIADO/ALIADOS) + areaShape (LINHA/CONE/ANEL/ÁREA/TILE). Aplicado em **TODOS os 5 callers** (BattleScene hand, DeckBuildScene, SkillUpgradeScene deck+inventory, PackOpenAnimation). **Removidos**: helper `_buildUparChip` (~90 LOC), constantes `UPAR_CHIP_W/H/OFFSET_Y`, reserva `+28` em `_deckPanelHeight` → `+12`, stride extra `+18` em inventory → 0. Battle hand passa `level:1` placeholder (Character domain não carrega owned level; lookup em playerData é follow-up futuro).
+
+**Dots em batalha confirmados pela usuária:** "aparecem em TODOS os contextos, inclusive batalha". Level 1 placeholder é aceito — mostra 1 dot filled, 4 empty. Lookup refinado pode vir depois.
+
+**Cards 310×460 validados:** tooltip flutuante + clamp de posição nos callers absorve altura maior sem overflow.
+
+**Resultado numérico:**
+
+- 5 commits atômicos (`etapa6-sub6.1` até `6.4`) + relatório + esta entry
+- Δ +30 LOC líquidos (consolidação removeu ~125 LOC, novo código adicionou ~155)
+- 529 tests verdes em cada um dos 5 checkpoints
+- Build clean em cada commit
+- Tempo real ~3.5h vs estimativa 4.5-5.5h (1-2h de folga)
+- Stop rules acionadas: 0
+
+**Princípio validado pela 7ª etapa consecutiva:** *"SUBSTITUIR tokens/fontes/visual superficial, MAS PRESERVAR arquitetura, features e lógica que já funcionam bem."* Nenhum refactor de business logic. Relatório completo em `docs/ETAPA6_REPORT.md`.
+
+---
+
 ## 2026-04-22 — ETAPA 5b: CustomLobby + Ranked + polish final (ÚLTIMA)
 
 **Contexto:** ETAPA 5b fecha as 2 cenas restantes (`CustomLobbyScene` 617 LOC → 682, `RankedScene` 1064 → 965) e migra 2 overlays compartilhados (`SkinPicker`, `PlayModesOverlay`) que já eram chamados por múltiplas cenas migradas. Sessão única entrega 4 commits atômicos em ~2.5h (vs estimativa 6.5h). Ao final, **design system 100% aplicado em todas as 19 cenas vivas**.
