@@ -4,6 +4,51 @@
 
 ---
 
+## 2026-04-22 — ETAPA 5b: CustomLobby + Ranked + polish final (ÚLTIMA)
+
+**Contexto:** ETAPA 5b fecha as 2 cenas restantes (`CustomLobbyScene` 617 LOC → 682, `RankedScene` 1064 → 965) e migra 2 overlays compartilhados (`SkinPicker`, `PlayModesOverlay`) que já eram chamados por múltiplas cenas migradas. Sessão única entrega 4 commits atômicos em ~2.5h (vs estimativa 6.5h). Ao final, **design system 100% aplicado em todas as 19 cenas vivas**.
+
+**Decisões aplicadas (audit inicial):**
+
+- **A — Cores de time no CustomLobby:** migração `0x00ccaa` (ciano) → `colors.team.ally` (#3b82f6) e `0x8844cc` (roxo) → `colors.team.enemy` (#ef4444). Audit detectou a inconsistência cross-scene com BattleScene + PvPLobby já migrados. Usuária aprovou alinhamento. Consistência cross-scene > preservação de paleta original isolada.
+
+- **B — BattleScene Arial (~30 sites) aceito como débito residual:** textos micro-temporários (log de combate flutuante, damage floaters, status misc) que o jogador vê por 1-2 segundos. Migração exige testes visuais extensivos em combate real (não automatizável via tests). Risco > ganho estético. Documentado formalmente em `DESIGN_SYSTEM_FINAL_REPORT.md` como débito com justificativa técnica. Pode virar sessão dedicada futura se priorizado.
+
+- **C — SkinPicker + PlayModesOverlay incluídos no polish:** overlays compartilhados chamados por várias cenas já migradas (PvP/PvE/Custom lobby cards chamam SkinPicker; Lobby + 4 room scenes chamam PlayModesOverlay). Natural de incluir no polish final.
+
+- **D — Imports legacy C/F/S/SHADOW mantidos nas cenas já migradas:** justificativa técnica — `C.king/warrior/specialist/executor` são aliases para os tokens corretos; remover imports destruiria ~200+ callsites por cena sem ganho funcional. Tokens novos preferidos em **código novo**; callers antigos continuam funcionando.
+
+- **E — Legacy Ranked/Custom cores mesma estratégia do PvPLobby (5a.4):** layouts 1×4 horizontais + cards 200×240 preservados; sidebar/log na direita; tokens surface.* + team.*; swap button top-right dos cards.
+
+- **F — Swap overlay "TROCAR" em RankedScene:** único site Arial Black em cena viva (line 641 do arquivo antigo). Corrigido em 5b.2 para Manrope meta letterSpacing 1.8 accent.primary — elimina último remanescente Arial em cenas (fora do BattleScene com débito aceito).
+
+**PlayModesOverlay — alinhamento de categoria com tokens:**
+
+- PVP category: `C.danger` → `state.error` (#ef4444)
+- PVE category: `C.info` → `state.info` (#3b82f6)
+- CRIAÇÃO category: `C.purple` → `currency.dgGem` (#a78bfa) — **alinhamento com família DG violeta** (mesma cor da moeda premium). Coerência visual: CRIAÇÃO como "premium/special" ecoa o DG gem.
+
+**SkinPicker — LOCKED DG icon corrigido:** era gold coin (wrong family), migrado para DG gem violet (`currency.dgGem` + `currency.dgGemEdge`). Alinhamento Print 11 — DG é violeta, nunca gold.
+
+**Resultado numérico:**
+
+- 4 commits atômicos (`etapa5b-sub5b.1/.2/.3` + relatórios) + `DECISIONS.md` entry
+- ~−33 LOC líquidos (Custom +65, Ranked −99, SkinPicker −86, PlayModes −39, +relatórios)
+- 529 tests verdes em cada checkpoint, 0 regressão
+- Tempo real ~2.5h vs estimativa 6.5h (4h de folga)
+- Stop rules acionadas: 0
+
+**Navegação E2E verificada via leitura estática** — 31 `transitionTo()` em todas as cenas vivas, todos resolvem para cenas registradas em `gameConfig.ts`. 13 fluxos principais validados (Login→Menu→Lobby; Lobby→{Profile,Ranking,Settings,Shop,BattlePass,Skills}; Lobby→JOGAR→{PvE/PvP/Custom/Ranked}→Battle→PostMatch; Bracket↔Battle com saved state). Nenhuma regressão encontrada.
+
+**Status final do projeto:** 19 de 19 cenas vivas no design system. 2 overlays compartilhados tokenizados. 3 cenas mortas deletadas. 25 UI kit helpers. 4 Google Fonts. 21 SVG assets. 529 tests estáveis em todas as 8 etapas (Design Phase 1 + ETAPA 1a/1b/2/3/4/5a/5b). 36 commits atômicos. 0 regressões. 0 stop rules acionadas. Relatórios:
+
+- `docs/ETAPA5B_REPORT.md` — esta etapa
+- `docs/DESIGN_SYSTEM_FINAL_REPORT.md` — agregado das 8 etapas + débitos residuais formais + recomendações pós-projeto
+
+**Princípio "SUBSTITUIR superficial, PRESERVAR lógica" validado em 6 etapas consecutivas.** Zero refactor de business logic durante as migrações visuais.
+
+---
+
 ## 2026-04-22 — ETAPA 5a: Profile + Ranking + PvE/PvP Lobby + Bracket + cleanup de 3 cenas mortas
 
 **Contexto:** ETAPA 5a fecha as 5 cenas essenciais do loop principal do jogador (Profile + Ranking + PvE Lobby + PvP Lobby + Bracket) e deleta 3 cenas órfãs descobertas no audit (PvESelectScene, TournamentScene, TutorialScene). Sessão única entrega 6 commits atômicos em ~2h (vs estimativa 8-10h).
