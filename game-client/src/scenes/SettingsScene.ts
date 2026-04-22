@@ -2,24 +2,24 @@ import Phaser from 'phaser'
 import { soundManager } from '../utils/SoundManager'
 import { transitionTo } from '../utils/SceneTransition'
 import { UI } from '../utils/UIComponents'
-import { C, F, S, SHADOW, SCREEN } from '../utils/DesignTokens'
-
-// ---- Dark Fantasy Premium palette (aliases for design tokens) ---------------
+import {
+  SCREEN,
+  surface, border, accent, fg,
+  fontFamily, typeScale, radii,
+} from '../utils/DesignTokens'
 
 const W = SCREEN.W
-const H = SCREEN.H
-
-const CARD_BG         = 0x141a24
-const CARD_BG_HOVER   = 0x1a2230
 
 const DIFFICULTIES = ['easy', 'normal', 'hard'] as const
-const DIFFICULTY_LABELS: Record<string, string> = {
-  easy: 'Facil',
+type Difficulty = typeof DIFFICULTIES[number]
+
+const DIFFICULTY_LABELS: Record<Difficulty, string> = {
+  easy:   'Fácil',
   normal: 'Normal',
-  hard: 'Dificil',
+  hard:   'Difícil',
 }
 
-// ---- Shared particles (now delegated to UI.particles) -----------------------
+const TOP_BAR_H = 56
 
 export default class SettingsScene extends Phaser.Scene {
   constructor() {
@@ -27,293 +27,214 @@ export default class SettingsScene extends Phaser.Scene {
   }
 
   create() {
-    // Background
     UI.background(this)
-    UI.particles(this, 16)
+    UI.particles(this, 14)
 
-    // Panel shadow + gold trim
-    this.add.rectangle(W / 2, H / 2 + 4, 700, 540, C.shadow, 0.15)
-    this.add.rectangle(W / 2, H / 2, 700, 540, C.panelBg, 0.97)
-      .setStrokeStyle(2, C.panelBorder, 1)
-    this.add.rectangle(W / 2, H / 2, 704, 544, C.black, 0)
-      .setStrokeStyle(1, C.gold, 0.08)
+    this._drawTopBar()
+    this._drawCentralPanel()
+    UI.fadeIn(this)
+  }
 
-    // Title
-    this.add.text(W / 2, 120, 'CONFIGURACOES', {
-      fontFamily: F.title,
-      fontSize: S.titleHuge,
-      color: C.goldHex,
-      fontStyle: 'bold',
-      shadow: SHADOW.goldGlow,
-    }).setOrigin(0.5)
+  // ── Top bar ──
 
-    // Gold divider under title
-    this.add.rectangle(W / 2, 148, 240, 2, C.goldDim, 0.3)
+  private _drawTopBar() {
+    const bg = this.add.graphics()
+    bg.fillStyle(surface.panel, 0.97)
+    bg.fillRect(0, 0, W, TOP_BAR_H)
+    bg.fillStyle(border.subtle, 1)
+    bg.fillRect(0, TOP_BAR_H - 1, W, 1)
 
-    let currentY = 190
-
-    // ── Sound Toggle Panel ───────────────────────────────────────────────────
-    soundManager.init()
-    let soundEnabled = soundManager.isEnabled()
-
-    const soundPanelW = 500
-    const soundPanelH = 70
-    this.add.rectangle(W / 2, currentY + soundPanelH / 2, soundPanelW, soundPanelH, CARD_BG)
-      .setStrokeStyle(1, C.panelBorder, 0.3)
-
-    const soundIcon = this.add.text(W / 2 - soundPanelW / 2 + 20, currentY + soundPanelH / 2, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07', {
-      fontFamily: F.body,
-      fontSize: '28px',
-      color: C.bodyHex,
-    }).setOrigin(0, 0.5)
-
-    const soundLabel = this.add.text(W / 2 - soundPanelW / 2 + 60, currentY + soundPanelH / 2, `Som: ${soundEnabled ? 'Ligado' : 'Desligado'}`, {
-      fontFamily: F.body,
-      fontSize: S.titleSmall,
-      color: C.bodyHex,
-      fontStyle: 'bold',
-      shadow: SHADOW.text,
-    }).setOrigin(0, 0.5)
-
-    // Bigger toggle switch (right side)
-    const toggleW = 72
-    const toggleH = 36
-    const toggleX = W / 2 + soundPanelW / 2 - 58
-    const toggleY = currentY + soundPanelH / 2
-
-    const toggleTrack = this.add.rectangle(toggleX, toggleY, toggleW, toggleH,
-      soundEnabled ? C.successDark : C.dangerDark,
-    ).setStrokeStyle(2, soundEnabled ? C.success : C.danger, 0.8)
-      .setInteractive({ useHandCursor: true })
-
-    const toggleKnob = this.add.rectangle(
-      soundEnabled ? toggleX + 16 : toggleX - 16, toggleY, 24, 28,
-      soundEnabled ? C.success : C.danger,
-    )
-
-    // ON/OFF big text inside the toggle
-    const toggleStateText = this.add.text(
-      soundEnabled ? toggleX - 12 : toggleX + 10, toggleY,
-      soundEnabled ? 'ON' : 'OFF', {
-        fontFamily: F.body,
-        fontSize: S.small,
-        color: soundEnabled ? C.successHex : C.dangerHex,
-        fontStyle: 'bold',
-      }).setOrigin(0.5)
-
-    toggleTrack.on('pointerdown', () => {
-      soundEnabled = soundManager.toggle()
-      soundLabel.setText(`Som: ${soundEnabled ? 'Ligado' : 'Desligado'}`)
-      soundIcon.setText(soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
-      toggleTrack.setFillStyle(soundEnabled ? C.successDark : C.dangerDark)
-      toggleTrack.setStrokeStyle(2, soundEnabled ? C.success : C.danger, 0.8)
-      // Animate knob slide
-      this.tweens.add({
-        targets: toggleKnob,
-        x: soundEnabled ? toggleX + 16 : toggleX - 16,
-        duration: 120,
-        ease: 'Quad.Out',
-      })
-      toggleKnob.setFillStyle(soundEnabled ? C.success : C.danger)
-      toggleStateText.setText(soundEnabled ? 'ON' : 'OFF')
-      toggleStateText.setColor(soundEnabled ? C.successHex : C.dangerHex)
-      toggleStateText.setX(soundEnabled ? toggleX - 12 : toggleX + 10)
-      soundManager.playClick()
-    })
-
-    currentY += soundPanelH + 16
-
-    // ── Difficulty Selector Panel (Radio Buttons) ────────────────────────────
-    const diffPanelW = 500
-    const diffPanelH = 70
-    this.add.rectangle(W / 2, currentY + diffPanelH / 2, diffPanelW, diffPanelH, CARD_BG)
-      .setStrokeStyle(1, C.panelBorder, 0.3)
-
-    this.add.text(W / 2 - diffPanelW / 2 + 20, currentY + 14, 'Dificuldade do Bot:', {
-      fontFamily: F.body,
-      fontSize: S.body,
-      color: C.bodyHex,
-      fontStyle: 'bold',
-      shadow: SHADOW.text,
-    }).setOrigin(0, 0)
-
-    const savedDifficulty = localStorage.getItem('draft_difficulty') || 'normal'
-    let difficultyIndex = DIFFICULTIES.indexOf(savedDifficulty as typeof DIFFICULTIES[number])
-    if (difficultyIndex === -1) difficultyIndex = 1
-
-    // Radio-button style difficulty options
-    const radioY = currentY + 48
-    const radioGap = 150
-    const radioStartX = W / 2 - radioGap
-
-    const radioItems: Array<{
-      outer: Phaser.GameObjects.Arc
-      inner: Phaser.GameObjects.Arc
-      label: Phaser.GameObjects.Text
-      hitZone: Phaser.GameObjects.Rectangle
-    }> = []
-
-    DIFFICULTIES.forEach((d, i) => {
-      const x = radioStartX + i * radioGap
-      const isActive = i === difficultyIndex
-
-      // Radio outer ring
-      const outer = this.add.circle(x - 30, radioY, 9, C.black, 0)
-        .setStrokeStyle(2, isActive ? C.gold : C.panelBorder, isActive ? 1 : 0.4)
-      // Radio inner filled dot
-      const inner = this.add.circle(x - 30, radioY, 5, C.gold, isActive ? 1 : 0)
-
-      const label = this.add.text(x - 14, radioY, DIFFICULTY_LABELS[d], {
-        fontFamily: F.body,
-        fontSize: S.body,
-        color: isActive ? C.goldHex : C.mutedHex,
-        fontStyle: 'bold',
-        shadow: SHADOW.text,
-      }).setOrigin(0, 0.5)
-
-      // Invisible hit zone for easy clicking
-      const hitZone = this.add.rectangle(x, radioY, 120, 28, 0x000000, 0)
-        .setInteractive({ useHandCursor: true })
-
-      hitZone.on('pointerdown', () => {
-        difficultyIndex = i
-        const key = DIFFICULTIES[difficultyIndex]
-        localStorage.setItem('draft_difficulty', key)
-        soundManager.playClick()
-
-        // Update all radio buttons
-        radioItems.forEach((item, j) => {
-          const active = j === difficultyIndex
-          item.outer.setStrokeStyle(2, active ? C.gold : C.panelBorder, active ? 1 : 0.4)
-          item.inner.setAlpha(active ? 1 : 0)
-          item.label.setColor(active ? C.goldHex : C.mutedHex)
-        })
-      })
-
-      radioItems.push({ outer, inner, label, hitZone })
-    })
-
-    currentY += diffPanelH + 16
-
-    currentY += 24
-
-    // ── Credits ───────────────────────────────────────────────────────────────
-    this.add.rectangle(W / 2, currentY, 160, 1, C.goldDim, 0.2)
-    currentY += 14
-
-    this.add.text(W / 2, currentY, 'Draft Game v1.0', {
-      fontFamily: F.body,
-      fontSize: S.body,
-      color: C.mutedHex,
-      shadow: SHADOW.text,
-    }).setOrigin(0.5)
-
-    // Prominent studio name with gold border treatment
-    const studioY = currentY + 26
-    this.add.rectangle(W / 2, studioY, 180, 30, C.black, 0)
-      .setStrokeStyle(1, C.goldDim, 0.25)
-    this.add.text(W / 2, studioY, 'CODEFORJE VIO', {
-      fontFamily: F.title,
-      fontSize: S.titleSmall,
-      color: C.goldHex,
-      fontStyle: 'bold',
-      shadow: SHADOW.goldGlow,
-    }).setOrigin(0.5)
-    // Small decorative lines flanking the name
-    this.add.rectangle(W / 2 - 100, studioY, 16, 1, C.goldDim, 0.4)
-    this.add.rectangle(W / 2 + 100, studioY, 16, 1, C.goldDim, 0.4)
-
-    this.add.text(W / 2, studioY + 22, 'Desenvolvido por Caio Sensini', {
-      fontFamily: F.body,
-      fontSize: S.small,
-      color: C.mutedHex,
-      shadow: SHADOW.text,
-    }).setOrigin(0.5)
-
-    currentY = studioY + 52
-
-    // ── Logout Button (with confirmation popup) ─────────────────────────────
-    let logoutConfirming = false
-    const logoutConfirmGroup: Phaser.GameObjects.GameObject[] = []
-
-    this.add.rectangle(W / 2, currentY + 3, 260, S.buttonH, C.shadow, 0.25) // shadow
-    const logoutBg = this.add.rectangle(W / 2, currentY, 260, S.buttonH, C.dangerDark)
-      .setStrokeStyle(2, C.danger, 0.7)
-      .setInteractive({ useHandCursor: true })
-
-    this.add.text(W / 2, currentY, 'Sair da Conta', {
-      fontFamily: F.body,
-      fontSize: S.body,
-      color: C.dangerHex,
-      fontStyle: 'bold',
-      shadow: SHADOW.text,
-    }).setOrigin(0.5)
-
-    logoutBg.on('pointerover', () => { if (!logoutConfirming) logoutBg.setFillStyle(0x4a1a1a) })
-    logoutBg.on('pointerout', () => { if (!logoutConfirming) logoutBg.setFillStyle(C.dangerDark) })
-    logoutBg.on('pointerdown', () => {
-      if (logoutConfirming) return
-      logoutConfirming = true
-      soundManager.playClick()
-
-      // Show confirmation popup overlay
-      const overlay = this.add.rectangle(W / 2, H / 2, W, H, C.black, 0.5).setDepth(100)
-        .setInteractive() // block clicks behind
-      const popupBg = this.add.rectangle(W / 2, H / 2, 340, 160, C.panelBg, 0.98).setDepth(101)
-        .setStrokeStyle(2, C.danger, 0.6)
-      const popupTitle = this.add.text(W / 2, H / 2 - 40, 'Deseja sair?', {
-        fontFamily: F.title, fontSize: S.titleMedium, color: C.dangerHex, fontStyle: 'bold',
-        shadow: SHADOW.strong,
-      }).setOrigin(0.5).setDepth(101)
-
-      // Yes button
-      const yesBg = this.add.rectangle(W / 2 - 70, H / 2 + 30, 110, 38, C.dangerDark)
-        .setStrokeStyle(1, C.danger, 0.7).setDepth(101).setInteractive({ useHandCursor: true })
-      const yesLabel = this.add.text(W / 2 - 70, H / 2 + 30, 'Sim', {
-        fontFamily: F.body, fontSize: S.body, color: C.dangerHex, fontStyle: 'bold',
-        shadow: SHADOW.text,
-      }).setOrigin(0.5).setDepth(101)
-
-      // No button
-      const noBg = this.add.rectangle(W / 2 + 70, H / 2 + 30, 110, 38, CARD_BG)
-        .setStrokeStyle(1, C.panelBorder, 0.4).setDepth(101).setInteractive({ useHandCursor: true })
-      const noLabel = this.add.text(W / 2 + 70, H / 2 + 30, 'Nao', {
-        fontFamily: F.body, fontSize: S.body, color: C.mutedHex, fontStyle: 'bold',
-        shadow: SHADOW.text,
-      }).setOrigin(0.5).setDepth(101)
-
-      logoutConfirmGroup.push(overlay, popupBg, popupTitle, yesBg, yesLabel, noBg, noLabel)
-
-      const closePopup = () => {
-        logoutConfirmGroup.forEach(o => o.destroy())
-        logoutConfirmGroup.length = 0
-        logoutConfirming = false
-      }
-
-      noBg.on('pointerover', () => noBg.setFillStyle(CARD_BG_HOVER))
-      noBg.on('pointerout', () => noBg.setFillStyle(CARD_BG))
-      noBg.on('pointerdown', () => { soundManager.playClick(); closePopup() })
-
-      yesBg.on('pointerover', () => yesBg.setFillStyle(0x4a1a1a))
-      yesBg.on('pointerout', () => yesBg.setFillStyle(C.dangerDark))
-      yesBg.on('pointerdown', async () => {
-        soundManager.playClick()
-        closePopup()
-        localStorage.removeItem('draft_token')
-        const { playerData } = await import('../utils/PlayerDataManager')
-        playerData.reset()
-        transitionTo(this, 'LoginScene')
-      })
-    })
-
-    // ── Back Arrow ─────────────────────────────────────────────────────────────
     UI.backArrow(this, () => {
       soundManager.playClick()
       transitionTo(this, 'LobbyScene')
     })
 
-    // Fade-in from black
-    UI.fadeIn(this)
+    this.add.text(70, TOP_BAR_H / 2, 'CONFIGURAÇÕES', {
+      fontFamily: fontFamily.display, fontSize: typeScale.h2,
+      color: accent.primaryHex, fontStyle: '700',
+    }).setOrigin(0, 0.5).setLetterSpacing(3)
+  }
+
+  // ── Central panel containing all sections ──
+
+  private _drawCentralPanel() {
+    const panelW = 600
+    const panelH = 540
+    const panelX = W / 2
+    const panelY = TOP_BAR_H + 8 + panelH / 2
+
+    // Panel — surface.panel + border.default + radii.xl + drop shadow
+    const panelBg = this.add.graphics()
+    panelBg.fillStyle(0x000000, 0.5)
+    panelBg.fillRoundedRect(panelX - panelW / 2 + 4, panelY - panelH / 2 + 8, panelW, panelH, radii.xl)
+    panelBg.fillStyle(surface.panel, 1)
+    panelBg.fillRoundedRect(panelX - panelW / 2, panelY - panelH / 2, panelW, panelH, radii.xl)
+    panelBg.fillStyle(0xffffff, 0.04)
+    panelBg.fillRoundedRect(panelX - panelW / 2 + 2, panelY - panelH / 2 + 2, panelW - 4, 22,
+      { tl: radii.xl - 1, tr: radii.xl - 1, bl: 0, br: 0 })
+    panelBg.lineStyle(1, border.default, 1)
+    panelBg.strokeRoundedRect(panelX - panelW / 2, panelY - panelH / 2, panelW, panelH, radii.xl)
+
+    // ── Section: ÁUDIO (sound toggle only — sliders pending volume API) ──
+    let cursorY = panelY - panelH / 2 + 36
+
+    this._drawSectionHeader(panelX, cursorY, 'ÁUDIO')
+    cursorY += 30
+
+    soundManager.init()
+    const soundCardH = 64
+    this._drawCard(panelX, cursorY + soundCardH / 2, panelW - 48, soundCardH)
+
+    // Sound icon + label on the left
+    const soundIcon = UI.lucideIcon(this, 'settings', panelX - panelW / 2 + 36, cursorY + soundCardH / 2, 22, fg.secondary)
+    void soundIcon
+    this.add.text(panelX - panelW / 2 + 64, cursorY + soundCardH / 2 - 8, 'SOM', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: fg.tertiaryHex, fontStyle: '700',
+    }).setLetterSpacing(1.6)
+    const soundStateLabel = this.add.text(panelX - panelW / 2 + 64, cursorY + soundCardH / 2 + 10,
+      soundManager.isEnabled() ? 'Efeitos sonoros ligados' : 'Efeitos sonoros desligados', {
+        fontFamily: fontFamily.body, fontSize: typeScale.small,
+        color: fg.secondaryHex, fontStyle: '500',
+      })
+
+    UI.toggle(this, panelX + panelW / 2 - 60, cursorY + soundCardH / 2, {
+      value: soundManager.isEnabled(),
+      onChange: (v) => {
+        soundManager.toggle()  // soundManager.toggle returns bool but we already have v
+        soundStateLabel.setText(v ? 'Efeitos sonoros ligados' : 'Efeitos sonoros desligados')
+        soundManager.playClick()
+      },
+    })
+
+    // Pending note about volume sliders
+    cursorY += soundCardH + 6
+    this.add.text(panelX, cursorY,
+      'Sliders de volume aguardam API no SoundManager.', {
+        fontFamily: fontFamily.serif, fontSize: typeScale.small,
+        color: fg.disabledHex, fontStyle: 'italic',
+      }).setOrigin(0.5)
+
+    // ── Section: JOGABILIDADE ──
+    cursorY += 28
+    this._drawSectionHeader(panelX, cursorY, 'JOGABILIDADE')
+    cursorY += 30
+
+    const diffCardH = 80
+    this._drawCard(panelX, cursorY + diffCardH / 2, panelW - 48, diffCardH)
+
+    // Card label
+    this.add.text(panelX - panelW / 2 + 36, cursorY + 14, 'DIFICULDADE DO BOT', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: fg.tertiaryHex, fontStyle: '700',
+    }).setLetterSpacing(1.6)
+
+    // Segmented control for difficulty
+    const savedDifficulty = (localStorage.getItem('draft_difficulty') || 'normal') as Difficulty
+    const validDifficulty: Difficulty = DIFFICULTIES.includes(savedDifficulty) ? savedDifficulty : 'normal'
+
+    UI.segmentedControl<Difficulty>(this, panelX, cursorY + diffCardH / 2 + 12, {
+      options: DIFFICULTIES.map(d => ({ key: d, label: DIFFICULTY_LABELS[d] })),
+      value: validDifficulty,
+      width: panelW - 96,
+      height: 32,
+      onChange: (key) => {
+        localStorage.setItem('draft_difficulty', key)
+        soundManager.playClick()
+      },
+    })
+
+    // ── Section: CONTA ──
+    cursorY += diffCardH + 24
+    this._drawSectionHeader(panelX, cursorY, 'CONTA')
+    cursorY += 30
+
+    const accountCardH = 64
+    this._drawCard(panelX, cursorY + accountCardH / 2, panelW - 48, accountCardH)
+    this.add.text(panelX - panelW / 2 + 36, cursorY + accountCardH / 2 - 8, 'SESSÃO', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: fg.tertiaryHex, fontStyle: '700',
+    }).setLetterSpacing(1.6)
+    this.add.text(panelX - panelW / 2 + 36, cursorY + accountCardH / 2 + 10,
+      'Sair da conta atual', {
+        fontFamily: fontFamily.body, fontSize: typeScale.small,
+        color: fg.secondaryHex, fontStyle: '500',
+      })
+
+    UI.buttonDestructive(this, panelX + panelW / 2 - 90, cursorY + accountCardH / 2,
+      'SAIR', {
+        w: 140, h: 36,
+        onPress: () => this._confirmLogout(),
+      },
+    )
+
+    // ── Footer credits ──
+    cursorY = panelY + panelH / 2 - 50
+    this.add.text(panelX, cursorY, 'CODEFORJE VIO', {
+      fontFamily: fontFamily.display, fontSize: typeScale.meta,
+      color: accent.primaryHex, fontStyle: '700',
+    }).setOrigin(0.5).setLetterSpacing(2.4)
+    this.add.text(panelX, cursorY + 16, 'Draft Game v1.0  ·  por Caio Sensini', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: fg.disabledHex, fontStyle: '500',
+    }).setOrigin(0.5)
+  }
+
+  // ── Section header — UPPER eyebrow with thin gold underline ──
+
+  private _drawSectionHeader(cx: number, y: number, text: string) {
+    this.add.text(cx, y, text, {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: accent.primaryHex, fontStyle: '700',
+    }).setOrigin(0.5).setLetterSpacing(2)
+
+    const ruleW = 24
+    this.add.rectangle(cx, y + 14, ruleW, 1, accent.primary, 0.5)
+  }
+
+  // ── Card — surface.raised + border.default + radii.md ──
+
+  private _drawCard(cx: number, cy: number, w: number, h: number) {
+    const g = this.add.graphics()
+    g.fillStyle(surface.raised, 1)
+    g.fillRoundedRect(cx - w / 2, cy - h / 2, w, h, radii.md)
+    g.lineStyle(1, border.default, 1)
+    g.strokeRoundedRect(cx - w / 2, cy - h / 2, w, h, radii.md)
+    // Top inset highlight
+    g.fillStyle(0xffffff, 0.025)
+    g.fillRoundedRect(cx - w / 2 + 2, cy - h / 2 + 2, w - 4, 14,
+      { tl: radii.md - 1, tr: radii.md - 1, bl: 0, br: 0 })
+  }
+
+  // ── Logout confirmation via UI.modal ──
+
+  private _confirmLogout() {
+    soundManager.playClick()
+    const { close } = UI.modal(this, {
+      eyebrow: 'CONFIRMAR',
+      title:   'Sair da conta',
+      body:    'Você será desconectado do reino. Quer mesmo continuar?',
+      actions: [
+        {
+          label: 'CANCELAR', kind: 'secondary',
+          onClick: () => {
+            soundManager.playClick()
+            close()
+          },
+        },
+        {
+          label: 'SAIR DA CONTA', kind: 'destructive',
+          onClick: async () => {
+            soundManager.playClick()
+            close()
+            localStorage.removeItem('draft_token')
+            const { playerData } = await import('../utils/PlayerDataManager')
+            playerData.reset()
+            transitionTo(this, 'LoginScene')
+          },
+        },
+      ],
+    })
   }
 
   shutdown() {
