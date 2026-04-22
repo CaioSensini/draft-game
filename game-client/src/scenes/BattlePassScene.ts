@@ -32,7 +32,7 @@ const BP = {
 const W = SCREEN.W
 const H = SCREEN.H
 const TOP_H = 56
-const MISSION_H = 200
+const MISSION_H = 220
 const TRACK_Y = TOP_H + MISSION_H + 8
 const TRACK_H = H - TRACK_Y - 8
 
@@ -160,26 +160,26 @@ export default class BattlePassScene extends Phaser.Scene {
     pg.fillRoundedRect(px, py, pw, 2, { tl: radii.lg, tr: radii.lg, bl: 0, br: 0 })
 
     // Title — Manrope meta letterSpacing 1.8 violet
-    this.add.text(px + 16, py + 18, 'MISSÕES DA TEMPORADA', {
+    this.add.text(px + 16, py + 20, 'MISSÕES DA TEMPORADA', {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: BP.lightHex, fontStyle: '700',
     }).setOrigin(0, 0.5).setLetterSpacing(1.8)
-    this.add.text(px + 16, py + 36, 'Todas expiram junto com a temporada', {
-      fontFamily: fontFamily.serif, fontSize: typeScale.small,
-      color: fg.tertiaryHex, fontStyle: 'italic',
-    }).setOrigin(0, 0.5)
 
     // ── Mission grid (2 rows × 4 cols, fits the 8 chain slots) ──
     // Each card holds the CURRENT stage of an evolving chain — when the
     // player claims a stage the next stage just slides in to replace it,
     // so the slot count never grows past 8.
+    //
+    // ETAPA 6.2: cards grew 195×64 → 240×80 and the "Todas expiram…"
+    // subtitle was dropped; the wider footprint stops the description from
+    // crowding the stage indicator to its right.
     const gridX = px + 16
-    const gridY = py + 46
+    const gridY = py + 36
     const colsPerRow = 4
-    const cardW = 195
-    const cardH = 64
+    const cardW = 240
+    const cardH = 80
     const cardGapX = 10
-    const cardGapY = 8
+    const cardGapY = 10
 
     bp.seasonMissions.forEach((m, i) => {
       const row = Math.floor(i / colsPerRow)
@@ -306,7 +306,7 @@ export default class BattlePassScene extends Phaser.Scene {
 
     // ── Category pill (top-left) ──
     if (mission.category) {
-      const pillX = x + 8; const pillY = y + 10
+      const pillX = x + 8; const pillY = y + 12
       const pillTextW = mission.category.length * 6 + 12
       const pillH = 14
       const pillGfx = this.add.graphics()
@@ -324,7 +324,7 @@ export default class BattlePassScene extends Phaser.Scene {
     // ── Stage indicator (top-right) ──
     {
       const indicatorX = x + w - 8
-      const indicatorY = y + 10
+      const indicatorY = y + 12
       const stageText = fullyDone
         ? `${mission.totalStages}/${mission.totalStages}`
         : `${mission.stageIndex + 1}/${mission.totalStages}`
@@ -336,7 +336,9 @@ export default class BattlePassScene extends Phaser.Scene {
     }
 
     // ── Description ──
-    this.add.text(x + 8, y + 26, mission.description, {
+    // Sits below the category/stage header so 2-line wraps never crowd
+    // the stage indicator in the top-right corner (ETAPA 6.2 fix).
+    this.add.text(x + 8, y + 38, mission.description, {
       fontFamily: fontFamily.body, fontSize: typeScale.small,
       color: fullyDone ? state.successHex : done ? fg.primaryHex : fg.secondaryHex,
       fontStyle: '500',
@@ -345,7 +347,7 @@ export default class BattlePassScene extends Phaser.Scene {
 
     // ── Bottom row: progress/claim ──
     if (fullyDone) {
-      const cy = y + h - 12
+      const cy = y + h - 14
       const cGfx = this.add.graphics()
       cGfx.fillStyle(state.successDim, 0.7)
       cGfx.fillRoundedRect(x + 8, cy - 4, w - 16, 8, 4)
@@ -360,9 +362,9 @@ export default class BattlePassScene extends Phaser.Scene {
       return
     }
 
-    const rightZone = 50
+    const rightZone = 54
     const barX = x + 8
-    const barY = y + h - 14
+    const barY = y + h - 16
     const barH = 6
     const countTextW = 32
     const barW = Math.max(40, w - 16 - rightZone - countTextW - 4)
