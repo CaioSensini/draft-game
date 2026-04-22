@@ -265,6 +265,8 @@ function drawSkillCard(
     progress: drop.progress ?? 0,
     skillId: drop.skillId,
     description: drop.description,
+    targetType: catalogEntry?.targetType,
+    areaShape: catalogEntry?.areaShape ?? null,
   }, {
     orientation: 'vertical',
     width: cardW,

@@ -1768,12 +1768,16 @@ export default class BattleScene extends Phaser.Scene {
     const actorRole = actorChar?.role ?? 'king'
 
     // Vertical 120×160 shape per INTEGRATION_SPEC §2 + Print 15.
+    // ETAPA 6.4: card exposes CAT·CLASSE + NV+dots at top and stat·TYPE in
+    // the footer; UPAR is hidden in battle (read-only context).
     const card = UI.skillCard(this, x, y, {
       skillId: skill.id,
       name: skill.name, effectType: skill.effectType, power: skill.power,
       group: skill.group, unitClass: actorRole, level: 1,
       description: skill.description,
       cooldownTurns: skill.cooldownTurns ?? 0,
+      targetType: skill.targetType,
+      areaShape: skill.areaShape,
     }, {
       width: CARD_W, height: CARD_H,
       orientation: 'vertical',

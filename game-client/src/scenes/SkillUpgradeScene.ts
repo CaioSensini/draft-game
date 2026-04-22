@@ -43,12 +43,6 @@ const INV_CARD_H = DECK_CARD_H
 const MAX_SKILL_LEVEL = 5
 const GROUP_ORDER = ['attack1', 'attack2', 'defense1', 'defense2']
 
-// UPAR chip — drawn OUTSIDE the 120x160 card to avoid squeezing the
-// canonical footer. Chip lives 4px below the card and is 80x20.
-const UPAR_CHIP_W = 86
-const UPAR_CHIP_H = 20
-const UPAR_CHIP_OFFSET_Y = DECK_CARD_H / 2 + 14
-
 interface ClassMeta {
   role: UnitRole
   label: string
@@ -360,7 +354,8 @@ export default class SkillUpgradeScene extends Phaser.Scene {
   /** Unified deck panel height — used by both drawLeft and drawDeck
    *  to keep stats/sprite aligned with deck/inventory panels. */
   private _deckPanelHeight(): number {
-    return 36 + DECK_ROWS * DECK_CARD_H + (DECK_ROWS - 1) * DECK_GAP + 28 // header + rows + UPAR chip room
+    // header + rows — UPAR is now in the card footer so no extra reserve.
+    return 36 + DECK_ROWS * DECK_CARD_H + (DECK_ROWS - 1) * DECK_GAP + 12
   }
 
   /** Deck grid origin — shared source of truth for drawDeck + highlight helpers */
@@ -455,14 +450,26 @@ export default class SkillUpgradeScene extends Phaser.Scene {
           const def = this.getSkillDef(sid)
           const owned = this.findOwnedSkill(sid)
           if (def && owned) {
+            // UPAR data feeds the in-card footer chip (ETAPA 6.4 refactor
+            // retired the external _buildUparChip helper).
+            const canUp = owned.progress >= owned.level && owned.level < MAX_SKILL_LEVEL
+            const costDeck = canUp ? playerData.getUpgradeCost(owned.level) : 0
+            const affordDeck = canUp ? this.gold >= costDeck : false
             const card = UI.skillCard(this, cardX + DECK_CARD_W / 2, cy + DECK_CARD_H / 2, {
               name: def.name, effectType: def.effectType, power: def.power,
               group: def.group, unitClass: owned.unitClass, level: owned.level,
               progress: owned.progress, skillId: sid, description: def.description,
+              targetType: def.targetType, areaShape: def.areaShape ?? null,
             }, {
               orientation: 'vertical',
               width: DECK_CARD_W, height: DECK_CARD_H,
               equipped: true, showTooltip: false,
+              upgrade: canUp ? {
+                canUpgrade: true,
+                cost: costDeck,
+                canAfford: affordDeck,
+                onUpgrade: () => this.performUpgrade(sid),
+              } : undefined,
             })
             this.deckGroup.push(card)
 
@@ -470,18 +477,6 @@ export default class SkillUpgradeScene extends Phaser.Scene {
             this.deckCardPositions.push({
               x: cardX, y: cy, skillId: sid, slotIdx: si, category: grp.cat, group: def.group,
             })
-
-            // UPAR chip — floats BELOW the card (Decision B)
-            const canUp = owned.progress >= owned.level && owned.level < MAX_SKILL_LEVEL
-            if (canUp) {
-              const costDeck = playerData.getUpgradeCost(owned.level)
-              const affordDeck = this.gold >= costDeck
-              const chipCx = cardX + DECK_CARD_W / 2
-              const chipCy = cy + DECK_CARD_H / 2 + UPAR_CHIP_OFFSET_Y
-              const chip = this._buildUparChip(chipCx, chipCy, costDeck, affordDeck, sid)
-              chip.setDepth(4)
-              this.deckGroup.push(chip)
-            }
 
             // Click on deck card → select for swap + drag + tooltip
             const deckCardHit = this.add.rectangle(cardX + DECK_CARD_W / 2, cy + DECK_CARD_H / 2, DECK_CARD_W, DECK_CARD_H, 0, 0.001)
@@ -663,8 +658,10 @@ export default class SkillUpgradeScene extends Phaser.Scene {
         return
       }
 
-      // Stride per row = card + chip space below (so chip never overlaps next row)
-      const ROW_STRIDE = INV_CARD_H + INV_GAP + 18
+      // UPAR is now integrated into the card footer (ETAPA 6.4 refactor),
+      // so the inventory stride no longer reserves an extra 18px for the
+      // external chip.
+      const ROW_STRIDE = INV_CARD_H + INV_GAP
       const COL_STRIDE = INV_CARD_W + INV_GAP
 
       skills.forEach((item, gi) => {
@@ -679,15 +676,22 @@ export default class SkillUpgradeScene extends Phaser.Scene {
         const cost = playerData.getUpgradeCost(item.skill.level)
         const canAfford = this.gold >= cost
 
-        // Canonical 120x160 vertical skill card
+        // Canonical 120x160 vertical skill card with in-footer UPAR chip
         const card = UI.skillCard(this, cx, cy, {
           name: def.name, effectType: def.effectType, power: def.power,
           group: def.group, unitClass: item.skill.unitClass, level: item.skill.level,
           progress: item.skill.progress, skillId: item.skill.skillId, description: def.description,
+          targetType: def.targetType, areaShape: def.areaShape ?? null,
         }, {
           orientation: 'vertical',
           width: INV_CARD_W, height: INV_CARD_H,
           showTooltip: false,
+          upgrade: canUpgrade ? {
+            canUpgrade: true,
+            cost,
+            canAfford,
+            onUpgrade: () => this.performUpgrade(item.skill.skillId),
+          } : undefined,
         })
 
         if (isSelected) {
@@ -699,14 +703,6 @@ export default class SkillUpgradeScene extends Phaser.Scene {
         }
 
         container.add(card)
-
-        // UPAR chip below the card (kept OUTSIDE the card container so it
-        // scrolls with the inventory mask and can receive its own clicks).
-        if (canUpgrade) {
-          const chipCy = cy + INV_CARD_H / 2 + 14
-          const chip = this._buildUparChip(cx, chipCy, cost, canAfford, item.skill.skillId)
-          container.add(chip)
-        }
 
         // Register position for click detection
         this.invCardPositions.push({
@@ -1205,98 +1201,6 @@ export default class SkillUpgradeScene extends Phaser.Scene {
   private clearHighlights() {
     this.highlightTweens.forEach(t => t.destroy()); this.highlightTweens = []
     this.highlightObjs.forEach(o => o.destroy()); this.highlightObjs = []
-  }
-
-  /**
-   * UPAR chip — floats BELOW the canonical 120x160 card so the card's own
-   * footer (DMG/CD per INTEGRATION_SPEC §2) stays untouched. Self-contained
-   * interactive container; click invokes performUpgrade(skillId) directly.
-   *
-   * @returns Container at (cx, cy) sized UPAR_CHIP_W x UPAR_CHIP_H.
-   */
-  private _buildUparChip(
-    cx: number, cy: number, cost: number, canAfford: boolean, skillId?: string,
-  ): Phaser.GameObjects.Container {
-    const w = UPAR_CHIP_W; const h = UPAR_CHIP_H
-    const hw = w / 2; const hh = h / 2
-    const els: Phaser.GameObjects.GameObject[] = []
-
-    // Background
-    const g = this.add.graphics()
-    if (canAfford) {
-      // Soft success-tinted halo
-      g.fillStyle(state.success, 0.10)
-      g.fillRoundedRect(-hw - 2, -hh - 2, w + 4, h + 4, radii.md)
-      // Drop shadow
-      g.fillStyle(0x000000, 0.35)
-      g.fillRoundedRect(-hw + 1, -hh + 2, w, h, radii.md)
-      // Base dark surface
-      g.fillStyle(surface.deepest, 1)
-      g.fillRoundedRect(-hw, -hh, w, h, radii.md)
-      // Inner gradient — success dim glow
-      g.fillStyle(state.successDim, 0.85)
-      g.fillRoundedRect(-hw + 2, -hh + 1, w - 4, h - 2, radii.sm)
-      // Top gloss
-      g.fillStyle(0xffffff, 0.10)
-      g.fillRoundedRect(-hw + 3, -hh + 1, w - 6, h * 0.4,
-        { tl: radii.sm, tr: radii.sm, bl: 0, br: 0 })
-      // Border
-      g.lineStyle(1, state.success, 1)
-      g.strokeRoundedRect(-hw, -hh, w, h, radii.md)
-    } else {
-      g.fillStyle(surface.panel, 1)
-      g.fillRoundedRect(-hw, -hh, w, h, radii.md)
-      g.lineStyle(1, border.subtle, 0.7)
-      g.strokeRoundedRect(-hw, -hh, w, h, radii.md)
-    }
-    els.push(g)
-
-    // Arrow ↑ icon (only when affordable)
-    if (canAfford) {
-      const arrow = this.add.graphics()
-      const arrowX = -hw + 14
-      arrow.fillStyle(0xffffff, 0.95)
-      arrow.beginPath()
-      arrow.moveTo(arrowX, -5)
-      arrow.lineTo(arrowX + 4, -1)
-      arrow.lineTo(arrowX - 4, -1)
-      arrow.closePath()
-      arrow.fillPath()
-      arrow.fillRect(arrowX - 1.5, -1, 3, 5)
-      els.push(arrow)
-    }
-
-    // Label — Mono tabular, white when affordable / disabled when not
-    const label = canAfford ? `UPAR ${cost}g` : `${cost}g`
-    els.push(this.add.text(canAfford ? 8 : 0, 0, label, {
-      fontFamily: fontFamily.mono, fontSize: typeScale.meta,
-      color: canAfford ? fg.primaryHex : fg.disabledHex, fontStyle: '700',
-    }).setOrigin(0.5))
-
-    const container = this.add.container(cx, cy, els)
-
-    // Pulsing halo when affordable
-    if (canAfford) {
-      const pulse = this.add.rectangle(0, 0, w + 6, h + 6, state.success, 0)
-      container.addAt(pulse, 0)
-      this.tweens.add({
-        targets: pulse, alpha: { from: 0.04, to: 0.18 },
-        duration: 1000, yoyo: true, repeat: -1, ease: 'Sine.InOut',
-      })
-    }
-
-    // Hit area only when affordable — chip handles its own click
-    if (canAfford && skillId) {
-      const hit = this.add.rectangle(0, 0, w + 6, h + 6, 0x000000, 0.001)
-        .setInteractive({ useHandCursor: true })
-      hit.on('pointerdown', (_p: Phaser.Input.Pointer, _x: number, _y: number, ev: Phaser.Types.Input.EventData) => {
-        ev.stopPropagation()
-        this.performUpgrade(skillId)
-      })
-      container.add(hit)
-    }
-
-    return container
   }
 
   /** Destroy any floating hover tooltips (from deck highlights or inv hover) */

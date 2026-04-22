@@ -420,6 +420,7 @@ export default class DeckBuildScene extends Phaser.Scene {
         level:       1,              // mock data — no level progression here
         skillId:     card.id,
         description: card.shortDescription,
+        targetType:  card.targetType,
       }, {
         orientation: 'vertical',
         width:  CARD_W,

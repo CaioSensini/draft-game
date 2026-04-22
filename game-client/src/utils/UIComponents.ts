@@ -678,14 +678,34 @@ export const UI = {
       name: string; effectType: string; power: number;
       group: string; unitClass: string; level: number;
       progress?: number;
-      skillId?: string; description?: string;
+      skillId?: string;
+      /** Not rendered — kept for caller backwards-compat (ETAPA 6.4 removed description). */
+      description?: string;
       cooldownTurns?: number;
+      /** Max level for the progress dots. Defaults to 5. */
+      maxLevel?: number;
+      /** Target type helps build the footer TYPE label. */
+      targetType?: string;
+      /** Area shape gives a more specific TYPE label (LINHA/CONE/ANEL/…) when present. */
+      areaShape?: { type: string } | null;
     },
     opts?: {
       width?: number; height?: number; depth?: number;
       showTooltip?: boolean;
       interactive?: boolean;
       onPointerDown?: () => void;
+      /**
+       * Upgrade hook (ETAPA 6.4). When provided AND the skill is eligible,
+       * the card's footer renders an integrated UPAR row. Callers in
+       * read-only contexts (BattleScene hand, PackOpenAnimation) omit these
+       * and the UPAR row is hidden.
+       */
+      upgrade?: {
+        canUpgrade: boolean
+        cost: number
+        canAfford: boolean
+        onUpgrade: () => void
+      }
     },
   ): Phaser.GameObjects.Container {
     const w = opts?.width  ?? 120
@@ -702,6 +722,7 @@ export const UI = {
       king: 'REI', warrior: 'GUERREIRO', specialist: 'ESPECIALISTA', executor: 'EXECUTOR',
     }
     const classColor = CLASS_COLOR[skill.unitClass] ?? accent.primary
+    const classHex   = '#' + classColor.toString(16).padStart(6, '0')
     const className  = CLASS_NAME[skill.unitClass]  ?? skill.unitClass.toUpperCase()
 
     const CAT_LABEL: Record<string, string> = {
@@ -710,7 +731,7 @@ export const UI = {
     }
     const catLabel = CAT_LABEL[skill.group] ?? skill.group.toUpperCase()
 
-    // Determine primary stat line per effect type.
+    // Determine primary stat value/label per effect type (ETAPA 6.4 spec).
     const DMG_TYPES = new Set([
       'damage', 'true_damage', 'area', 'bleed', 'burn', 'poison', 'lifesteal', 'mark',
     ])
@@ -718,38 +739,51 @@ export const UI = {
     const SHIELD_TYPES = new Set(['shield'])
     const EVADE_TYPES  = new Set(['evade', 'reflect'])
 
-    type FooterKind = 'attack' | 'shield' | 'heal' | 'evade' | 'other'
-    let footerKind: FooterKind = 'other'
-    let footerLabel = 'EFF'
-    let footerValue = String(skill.power)
+    type StatKind = 'attack' | 'shield' | 'heal' | 'evade' | 'other'
+    let statKind: StatKind = 'other'
+    let statLabel = ''
+    let statValue = ''
     if (DMG_TYPES.has(skill.effectType)) {
-      footerKind = 'attack'; footerLabel = 'DMG'
+      statKind = 'attack'; statLabel = 'DMG'; statValue = String(skill.power)
     } else if (HEAL_TYPES.has(skill.effectType)) {
-      footerKind = 'heal'; footerLabel = 'HEAL'
+      statKind = 'heal'; statLabel = 'HEAL'; statValue = String(skill.power)
     } else if (SHIELD_TYPES.has(skill.effectType)) {
-      footerKind = 'shield'; footerLabel = 'SHLD'
+      statKind = 'shield'; statLabel = 'SHLD'; statValue = String(skill.power)
     } else if (EVADE_TYPES.has(skill.effectType)) {
-      footerKind = 'evade'; footerLabel = 'EVADE'; footerValue = ''
+      statKind = 'evade'; statLabel = 'EVADE'; statValue = ''
     } else {
-      // def_up / atk_up / cleanse / purge / etc.
-      footerKind = skill.group.startsWith('defense') ? 'shield' : 'attack'
-      footerLabel = skill.power > 0 ? 'PWR' : ''
-      footerValue = skill.power > 0 ? String(skill.power) : ''
+      statKind = skill.group.startsWith('defense') ? 'shield' : 'attack'
+      statLabel = skill.power > 0 ? 'PWR' : ''
+      statValue = skill.power > 0 ? String(skill.power) : ''
     }
 
-    const FOOTER_FILL: Record<FooterKind, number> = {
-      attack: dsState.error,
-      shield: dsState.info,
-      heal:   dsState.success,
-      evade:  dsState.info,
-      other:  border.default,
+    // TYPE label — derived from targetType + areaShape.
+    const TARGET_TYPE_LABEL: Record<string, string> = {
+      single: 'ALVO', self: 'PRÓPRIO', lowest_ally: 'ALIADO', all_allies: 'ALIADOS',
     }
-    const footerFill = FOOTER_FILL[footerKind]
+    const AREA_SHAPE_LABEL: Record<string, string> = {
+      line: 'LINHA', cone: 'CONE', ring: 'ANEL',
+      diamond: 'ÁREA', square: 'ÁREA', single: 'TILE',
+    }
+    let typeLabel = ''
+    if (skill.targetType === 'area') {
+      typeLabel = skill.areaShape ? (AREA_SHAPE_LABEL[skill.areaShape.type] ?? 'ÁREA') : 'ÁREA'
+    } else if (skill.targetType && TARGET_TYPE_LABEL[skill.targetType]) {
+      typeLabel = TARGET_TYPE_LABEL[skill.targetType]
+    }
+
+    const STAT_COLOR: Record<StatKind, string> = {
+      attack: dsState.errorHex, shield: dsState.infoHex,
+      heal:   dsState.successHex, evade:  dsState.infoHex,
+      other:  fg.primaryHex,
+    }
+    const statColor = STAT_COLOR[statKind]
 
     // ── Constants ──
-    const BAND_H   = 24
-    const FOOTER_H = 26
-    const R        = radii.md
+    const TOP_H_BAND = 32
+    const FOOTER_H   = 38
+    const R          = radii.md
+    const showUpar   = !!(opts?.upgrade && opts.upgrade.canUpgrade)
 
     // ── Layer 1: drop shadow ──
     const g = scene.add.graphics()
@@ -760,33 +794,62 @@ export const UI = {
     g.fillStyle(surface.panel, 1)
     g.fillRoundedRect(-hw, -hh, w, h, R)
 
-    // ── Layer 3: class band (top 24px, class color solid) ──
-    g.fillStyle(classColor, 1)
-    g.fillRoundedRect(-hw, -hh, w, BAND_H, { tl: R, tr: R, bl: 0, br: 0 })
+    // ── Layer 3: top band (class-color wash, 32px) ──
+    g.fillStyle(classColor, 0.95)
+    g.fillRoundedRect(-hw, -hh, w, TOP_H_BAND, { tl: R, tr: R, bl: 0, br: 0 })
+    // Bottom divider line of the band
+    g.fillStyle(0x000000, 0.28)
+    g.fillRect(-hw, -hh + TOP_H_BAND, w, 1)
 
-    // ── Layer 4: class-color outer stroke ──
+    // ── Layer 4: outer stroke (class-color) ──
     g.lineStyle(1.5, classColor, 0.95)
     g.strokeRoundedRect(-hw, -hh, w, h, R)
 
-    // Class band label — small meta text, two lines max ("ATAQUE · GUERREIRO")
-    const bandLabel = `${catLabel} · ${className}`
-    const bandText = scene.add.text(-hw + 8, -hh + 4, bandLabel, {
-      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+    // ── Top band — line 1: CAT · CLASSE ──
+    // Starts at meta (~11px) and shrinks if the class name is long
+    // ("ESPECIALISTA" combined with category overflows at default size).
+    let catFontSize = 11
+    const catText = scene.add.text(-hw + 8, -hh + 8, `${catLabel} · ${className}`, {
+      fontFamily: fontFamily.body, fontSize: `${catFontSize}px`,
       color: fg.inverseHex, fontStyle: 'bold',
-      wordWrap: { width: w - 16 },
-    }).setOrigin(0, 0).setLetterSpacing(1.6)
+    }).setOrigin(0, 0).setLetterSpacing(1.4)
+    while (catText.width > w - 16 && catFontSize > 8) {
+      catFontSize--
+      catText.setFontSize(catFontSize)
+    }
 
-    // ── Layer 5: icon circle (centered upper-half) ──
+    // ── Top band — line 2: NV X + progress dots ──
+    const maxLvl = skill.maxLevel ?? 5
+    const nvY = -hh + 22
+    const nvText = scene.add.text(-hw + 8, nvY, `NV ${skill.level}`, {
+      fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+      color: fg.inverseHex, fontStyle: 'bold',
+    }).setOrigin(0, 0.5)
+
+    const dotEls: Phaser.GameObjects.GameObject[] = []
+    const dotStartX = -hw + 8 + nvText.width + 6
+    const dotGap = 7
+    for (let i = 0; i < maxLvl; i++) {
+      const filled = i < skill.level
+      const dotX = dotStartX + i * dotGap
+      const dot = scene.add.circle(dotX, nvY, 2.2,
+        filled ? fg.inverse : 0x000000, filled ? 1 : 0.25)
+      if (!filled) dot.setStrokeStyle(1, fg.inverse, 0.45)
+      dotEls.push(dot)
+    }
+
+    // ── Icon circle (centered middle) ──
     const iconCx = 0
-    const iconCy = -hh + BAND_H + 28   // 28px below the band
-    const iconR = 22
+    const middleTop = -hh + TOP_H_BAND + 6
+    const footerTop = hh - FOOTER_H
+    const iconCy = middleTop + 24
+    const iconR = 20
     const iconG = scene.add.graphics()
     iconG.fillStyle(surface.raised, 1)
     iconG.fillCircle(iconCx, iconCy, iconR)
     iconG.lineStyle(1.5, classColor, 0.95)
     iconG.strokeCircle(iconCx, iconCy, iconR)
 
-    // Skill icon — PNG if available, otherwise 2-letter abbreviation
     let iconContent: Phaser.GameObjects.GameObject
     const EFFECT_ABBREVS: Record<string, string> = {
       damage: 'DA', heal: 'HE', shield: 'SH', area: 'AR', stun: 'ST',
@@ -799,7 +862,7 @@ export const UI = {
     }
     if (skill.skillId && hasSkillIcon(scene, skill.skillId)) {
       const img = scene.add.image(iconCx, iconCy, getSkillIconKey(skill.skillId))
-      const target = iconR * 2 - 8
+      const target = iconR * 2 - 6
       const scale = target / Math.max(img.width, img.height, 1)
       img.setScale(scale)
       iconContent = img
@@ -807,78 +870,101 @@ export const UI = {
       const abbrev = EFFECT_ABBREVS[skill.effectType] ?? '??'
       iconContent = scene.add.text(iconCx, iconCy, abbrev, {
         fontFamily: fontFamily.mono, fontSize: typeScale.statMd,
-        color: `#${classColor.toString(16).padStart(6, '0')}`, fontStyle: 'bold',
+        color: classHex, fontStyle: 'bold',
       }).setOrigin(0.5)
     }
 
-    // ── Layer 6: title (Cormorant) ──
-    const titleY = iconCy + iconR + 8
-    let titleFontSize = 14
+    // ── Skill name (Cormorant, centered below icon) ──
+    const titleY = iconCy + iconR + 6
+    let titleFontSize = 13
     const titleText = scene.add.text(0, titleY, skill.name, {
       fontFamily: fontFamily.serif, fontSize: `${titleFontSize}px`,
       color: fg.primaryHex, fontStyle: 'bold',
       align: 'center',
       wordWrap: { width: w - 12 },
     }).setOrigin(0.5, 0)
-    while ((titleText.width > w - 12 || titleText.height > 34) && titleFontSize > 10) {
+    while ((titleText.width > w - 12 || titleText.height > footerTop - titleY - 2)
+      && titleFontSize > 10) {
       titleFontSize--
       titleText.setFontSize(titleFontSize)
     }
 
-    // ── Layer 7: description (Manrope) ──
-    const descElements: Phaser.GameObjects.GameObject[] = []
-    if (skill.description) {
-      const descY = titleY + titleText.height + 2
-      const desc = scene.add.text(0, descY, skill.description, {
-        fontFamily: fontFamily.body, fontSize: '10px',
-        color: fg.secondaryHex,
-        align: 'center',
-        wordWrap: { width: w - 12 },
-      }).setOrigin(0.5, 0)
-      // Clip to 2 lines visually by trimming any overflow
-      const lines = desc.getWrappedText(desc.text)
-      if (Array.isArray(lines) && lines.length > 2) {
-        desc.setText(lines.slice(0, 2).join('\n'))
-      }
-      descElements.push(desc)
-    }
-
-    // ── Layer 8: footer (category tint + primary stat + CD) ──
+    // ── Footer ──
     const footerG = scene.add.graphics()
-    footerG.fillStyle(footerFill, 0.85)
-    footerG.fillRoundedRect(-hw, hh - FOOTER_H, w, FOOTER_H, { tl: 0, tr: 0, bl: R, br: R })
-    // Footer separator line
-    footerG.fillStyle(0x000000, 0.25)
-    footerG.fillRect(-hw, hh - FOOTER_H, w, 1)
+    footerG.fillStyle(surface.deepest, 1)
+    footerG.fillRoundedRect(-hw, footerTop, w, FOOTER_H, { tl: 0, tr: 0, bl: R, br: R })
+    footerG.fillStyle(0xffffff, 0.04)
+    footerG.fillRect(-hw, footerTop, w, 1)
 
-    // Footer text — primary stat left, CD right
-    const footerFontY = hh - FOOTER_H / 2
-    const footerChildren: Phaser.GameObjects.Text[] = []
-    if (footerLabel) {
-      const leftTxt = footerValue ? `${footerLabel} ${footerValue}` : footerLabel
-      const leftText = scene.add.text(-hw + 8, footerFontY, leftTxt, {
-        fontFamily: fontFamily.mono, fontSize: typeScale.small,
-        color: fg.primaryHex, fontStyle: 'bold',
-      }).setOrigin(0, 0.5)
-      footerChildren.push(leftText)
-    }
+    // Footer row 1: stat · TYPE (left) + CD (right)
+    const row1Y = footerTop + 10
+    const statStr = statValue ? `${statLabel} ${statValue}` : statLabel
+    const typeStr = typeLabel ? ` · ${typeLabel}` : ''
+    const statPill = scene.add.text(-hw + 8, row1Y, `${statStr}${typeStr}`, {
+      fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+      color: statColor, fontStyle: 'bold',
+    }).setOrigin(0, 0.5)
+
     const cdVal = skill.cooldownTurns ?? 0
-    const cdText = scene.add.text(hw - 8, footerFontY, `CD ${cdVal}`, {
-      fontFamily: fontFamily.mono, fontSize: typeScale.small,
-      color: fg.primaryHex, fontStyle: 'bold',
+    const cdText = scene.add.text(hw - 8, row1Y, `CD ${cdVal}`, {
+      fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+      color: fg.tertiaryHex, fontStyle: 'bold',
     }).setOrigin(1, 0.5)
-    footerChildren.push(cdText)
+
+    // Footer row 2: UPAR button (conditional)
+    const uparEls: Phaser.GameObjects.GameObject[] = []
+    let uparHit: Phaser.GameObjects.Rectangle | null = null
+    if (showUpar && opts?.upgrade) {
+      const up = opts.upgrade
+      const uparY = footerTop + 26
+      const uparBtnW = w - 16
+      const uparBtnH = 16
+      const uparBg = scene.add.graphics()
+      if (up.canAfford) {
+        uparBg.fillStyle(dsState.success, 0.88)
+        uparBg.fillRoundedRect(-uparBtnW / 2, uparY - uparBtnH / 2, uparBtnW, uparBtnH, radii.sm)
+        uparBg.lineStyle(1, dsState.success, 1)
+        uparBg.strokeRoundedRect(-uparBtnW / 2, uparY - uparBtnH / 2, uparBtnW, uparBtnH, radii.sm)
+      } else {
+        uparBg.fillStyle(surface.panel, 1)
+        uparBg.fillRoundedRect(-uparBtnW / 2, uparY - uparBtnH / 2, uparBtnW, uparBtnH, radii.sm)
+        uparBg.lineStyle(1, border.default, 0.7)
+        uparBg.strokeRoundedRect(-uparBtnW / 2, uparY - uparBtnH / 2, uparBtnW, uparBtnH, radii.sm)
+      }
+      uparEls.push(uparBg)
+      const uparLabel = up.canAfford ? `↑ UPAR ${up.cost}g` : `${up.cost}g`
+      const uparTx = scene.add.text(0, uparY, uparLabel, {
+        fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+        color: up.canAfford ? fg.primaryHex : fg.disabledHex, fontStyle: 'bold',
+      }).setOrigin(0.5)
+      uparEls.push(uparTx)
+
+      if (up.canAfford) {
+        uparHit = scene.add.rectangle(0, uparY, uparBtnW, uparBtnH + 6, 0, 0.001)
+          .setInteractive({ useHandCursor: true })
+        uparHit.on('pointerdown', (_p: Phaser.Input.Pointer, _lx: number, _ly: number, ev: Phaser.Types.Input.EventData) => {
+          ev.stopPropagation()
+          up.onUpgrade()
+        })
+        uparEls.push(uparHit)
+      }
+    }
 
     // ── Assemble container ──
     const children: Phaser.GameObjects.GameObject[] = [
-      g, bandText, iconG, iconContent, titleText, ...descElements, footerG, ...footerChildren,
+      g, catText, nvText, ...dotEls,
+      iconG, iconContent, titleText,
+      footerG, statPill, cdText, ...uparEls,
     ]
     const container = scene.add.container(x, y, children).setDepth(d)
 
-    // Interactivity
+    // Interactivity (card-level — separate from upar hit)
     if (opts?.interactive || opts?.onPointerDown) {
       const hit = scene.add.rectangle(0, 0, w, h, 0, 0.001).setInteractive({ useHandCursor: true })
-      container.add(hit)
+      // Insert the card hit BEFORE upar elements so the upar button wins clicks
+      // in its own bounds (Phaser uses child order, but upar was added after;
+      // addAt(0) keeps the card hit under everything).
+      container.addAt(hit, 0)
       if (opts.onPointerDown) hit.on('pointerdown', opts.onPointerDown)
     }
 
@@ -905,6 +991,10 @@ export const UI = {
       progress?: number; // filled dots (new system)
       skillId?: string; description?: string;
       cooldownTurns?: number;
+      /** ETAPA 6.4: vertical-card footer type label ("ALVO/ÁREA/…"). */
+      targetType?: string;
+      areaShape?: { type: string } | null;
+      maxLevel?: number;
     },
     opts?: {
       width?: number; height?: number; depth?: number;
@@ -928,6 +1018,13 @@ export const UI = {
        * already deferred to the same sprint.
        */
       orientation?: 'horizontal' | 'vertical';
+      /** ETAPA 6.4: integrated UPAR footer for vertical cards. */
+      upgrade?: {
+        canUpgrade: boolean
+        cost: number
+        canAfford: boolean
+        onUpgrade: () => void
+      };
     },
   ): Phaser.GameObjects.Container {
     if (opts?.orientation === 'vertical') {
