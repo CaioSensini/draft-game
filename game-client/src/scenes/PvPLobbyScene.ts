@@ -186,16 +186,16 @@ export default class PvPLobbyScene extends Phaser.Scene {
       fontStyle:  '600',
     }).setOrigin(0.5).setLetterSpacing(3)
 
-    // Mode switcher (right)
-    UI.buttonGhost(this, W - 104, TOP_H / 2, 'ALTERAR MODO', {
+    // Mode switcher (left) — mirrors CustomLobby layout per ETAPA 6.3
+    UI.buttonGhost(this, 156, TOP_H / 2, 'ALTERAR MODO', {
       w: 160,
       h: 32,
       onPress: () => this.showModeSwitcher(),
     })
 
-    // Mode pill
-    const pillW = 68
-    const pillX = W - 208
+    // Mode pill (right) — single derivedMode indicator, CustomLobby-aligned
+    const pillW = 72
+    const pillX = W - 60
     const pillY = TOP_H / 2
     const pillBg = this.add.graphics()
     pillBg.fillStyle(surface.deepest, 1)
