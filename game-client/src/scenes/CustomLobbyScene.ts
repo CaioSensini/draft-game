@@ -1,18 +1,16 @@
 /**
  * CustomLobbyScene.ts -- Custom match lobby.
- * Same layout as PvPLobbyScene but with two team panels.
+ * Two vertically stacked team panels (Blue / Red), mode selector, swap team.
  *
  * Mode rules:
  *   - SOLO: 1 player per side (controls 4 chars). Max 2 players total.
  *   - DUO: 2 players per side (each controls 2 chars). Max 4 players total.
  *   - SQUAD: 4 players per side (each controls 1 char). Max 8 players total.
- *   - Modes auto-upgrade when more players join.
  *   - Lower modes lock when too many players for them.
  */
 
 import Phaser from 'phaser'
 import { UI } from '../utils/UIComponents'
-import { C, F, S, SHADOW, SCREEN } from '../utils/DesignTokens'
 import { transitionTo } from '../utils/SceneTransition'
 import { playerData } from '../utils/PlayerDataManager'
 import { drawCharacterSprite, type SpriteRole, type SpriteSide } from '../utils/SpriteFactory'
@@ -20,6 +18,10 @@ import { openSkinPicker } from '../utils/SkinPicker'
 import { showPlayModesOverlay } from '../utils/PlayModesOverlay'
 import type { UnitRole } from '../engine/types'
 import type { CharClass } from '../utils/AssetPaths'
+import {
+  SCREEN, surface, border, fg, accent, state,
+  colors, fontFamily, typeScale, radii,
+} from '../utils/DesignTokens'
 
 const W = SCREEN.W
 const H = SCREEN.H
@@ -28,8 +30,17 @@ const ROLES: UnitRole[] = ['king', 'warrior', 'specialist', 'executor']
 const ROLE_LABELS: Record<UnitRole, string> = {
   king: 'REI', warrior: 'GUERREIRO', specialist: 'ESPECIALISTA', executor: 'EXECUTOR',
 }
-const CLASS_ACCENTS: Record<UnitRole, number> = {
-  king: C.king, warrior: C.warrior, specialist: C.specialist, executor: C.executor,
+const CLASS_ACCENT: Record<UnitRole, number> = {
+  king:       colors.class.king,
+  warrior:    colors.class.warrior,
+  specialist: colors.class.specialist,
+  executor:   colors.class.executor,
+}
+const CLASS_ACCENT_HEX: Record<UnitRole, string> = {
+  king:       colors.class.kingHex,
+  warrior:    colors.class.warriorHex,
+  specialist: colors.class.specialistHex,
+  executor:   colors.class.executorHex,
 }
 
 type SlotOccupant = 'me' | 'friend' | 'empty'
@@ -44,6 +55,17 @@ let _savedSide: 'blue' | 'red' = 'blue'
 let _savedBlue: CustomSlot[] | null = null
 let _savedRed: CustomSlot[] | null = null
 
+// Layout
+const TOP_H = 56
+const TEAM_PANEL_X = 40
+const TEAM_PANEL_W = 880
+const TEAM_PANEL_H = 250
+const BLUE_PANEL_Y = TOP_H + 16
+const RED_PANEL_Y  = TOP_H + 16 + TEAM_PANEL_H + 50
+const LOG_X = W - 200
+const LOG_W = 200
+const LOG_H = 260
+
 export default class CustomLobbyScene extends Phaser.Scene {
   private blueSlots: CustomSlot[] = []
   private redSlots: CustomSlot[] = []
@@ -57,6 +79,7 @@ export default class CustomLobbyScene extends Phaser.Scene {
 
   create(): void {
     this.blueCards = []; this.redCards = []
+    this._swapHighlights = []
     this.matchMode = _savedMode; this.playerSide = _savedSide
     if (_savedBlue && _savedRed) {
       this.blueSlots = _savedBlue; this.redSlots = _savedRed
@@ -66,19 +89,18 @@ export default class CustomLobbyScene extends Phaser.Scene {
     }
 
     UI.background(this)
-    UI.particles(this, 12)
     UI.fadeIn(this)
 
     this._drawHeader()
     this._drawBlueTeamPanel()
-    this._drawSwapTeamButton()
     this._drawRedTeamPanel()
+    this._drawSwapTeamButton()
     this._drawRoomLog()
     this._drawStartButton()
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // SLOT LOGIC
+  // SLOT LOGIC (preserved)
   // ═══════════════════════════════════════════════════════════════════════════
 
   private _rebuildSlots(): void {
@@ -90,12 +112,10 @@ export default class CustomLobbyScene extends Phaser.Scene {
     for (let i = 0; i < count && i < 4; i++) { target[i].occupant = 'me'; target[i].playerName = name }
   }
 
-  /** Count total human players across both teams. */
   private _totalPlayers(): number {
     return [...this.blueSlots, ...this.redSlots].filter(s => s.occupant === 'me' || s.occupant === 'friend').length
   }
 
-  /** Check if a mode is available (not locked due to player count). */
   private _isModeAvailable(mode: MatchMode): boolean {
     const total = this._totalPlayers()
     if (mode === 'solo' && total > 2) return false
@@ -103,7 +123,6 @@ export default class CustomLobbyScene extends Phaser.Scene {
     return true
   }
 
-  /** Swap player to the other team using smart logic based on mode. */
   private _swapTeam(): void {
     const newSide = this.playerSide === 'blue' ? 'red' : 'blue'
     const fromSlots = this.playerSide === 'blue' ? this.blueSlots : this.redSlots
@@ -111,14 +130,11 @@ export default class CustomLobbyScene extends Phaser.Scene {
     const count = SLOTS_PER_PLAYER[this.matchMode]
     const name = playerData.get().username || 'Jogador'
 
-    // Find bot/empty slots on the target side (prioritize bots)
     const targetIdxs: number[] = []
     for (let i = 0; i < 4 && targetIdxs.length < count; i++) {
       if (toSlots[i].occupant === 'empty') targetIdxs.push(i)
     }
-    // If not enough empty, take bot slots too
     if (targetIdxs.length < count) {
-      // In this offline mode, non-me non-friend slots are effectively bots
       for (let i = 0; i < 4 && targetIdxs.length < count; i++) {
         if (toSlots[i].occupant !== 'me' && toSlots[i].occupant !== 'friend' && !targetIdxs.includes(i)) {
           targetIdxs.push(i)
@@ -126,12 +142,9 @@ export default class CustomLobbyScene extends Phaser.Scene {
       }
     }
 
-    if (targetIdxs.length === 0) return // no room
+    if (targetIdxs.length === 0) return
 
-    // Clear player from old side
     for (const s of fromSlots) { if (s.occupant === 'me') { s.occupant = 'empty'; s.playerName = null } }
-
-    // Place player on new side
     for (let n = 0; n < count && n < targetIdxs.length; n++) {
       toSlots[targetIdxs[n]].occupant = 'me'
       toSlots[targetIdxs[n]].playerName = name
@@ -149,68 +162,93 @@ export default class CustomLobbyScene extends Phaser.Scene {
   // ═══════════════════════════════════════════════════════════════════════════
 
   private _drawHeader(): void {
-    const stk = { stroke: '#000000', strokeThickness: 3 }
+    const bar = this.add.graphics()
+    bar.fillStyle(surface.panel, 1)
+    bar.fillRect(0, 0, W, TOP_H)
+    bar.lineStyle(1, border.subtle, 1)
+    bar.beginPath()
+    bar.moveTo(0, TOP_H - 0.5)
+    bar.lineTo(W, TOP_H - 0.5)
+    bar.strokePath()
 
-    this.add.text(W / 2, 16, 'PARTIDA', {
-      fontFamily: F.title, fontSize: '20px', color: '#ffffff',
-      fontStyle: 'bold', shadow: SHADOW.strong, ...stk,
-    }).setOrigin(0.5)
-    this.add.text(W / 2, 36, 'PERSONALIZADA', {
-      fontFamily: F.title, fontSize: '16px', color: C.goldHex,
-      fontStyle: 'bold', shadow: SHADOW.goldGlow, ...stk,
-    }).setOrigin(0.5)
+    UI.backArrow(this, () => {
+      _savedMode = 'solo'; _savedSide = 'blue'
+      _savedBlue = null; _savedRed = null
+      transitionTo(this, 'LobbyScene')
+    })
 
-    // Mode selector (right side)
+    // Eyebrow + title (centered)
+    this.add.text(W / 2, TOP_H / 2 - 10, 'CUSTOM', {
+      fontFamily: fontFamily.body,
+      fontSize:   typeScale.meta,
+      color:      accent.primaryHex,
+      fontStyle:  '700',
+    }).setOrigin(0.5).setLetterSpacing(1.8)
+
+    this.add.text(W / 2, TOP_H / 2 + 10, 'PARTIDA PERSONALIZADA', {
+      fontFamily: fontFamily.display,
+      fontSize:   typeScale.h2,
+      color:      fg.primaryHex,
+      fontStyle:  '600',
+    }).setOrigin(0.5).setLetterSpacing(3)
+
+    // Mode switcher "ALTERAR MODO" (left-center)
+    UI.buttonGhost(this, 156, TOP_H / 2, 'ALTERAR MODO', {
+      w: 160,
+      h: 32,
+      onPress: () => this._showModeSwitcher(),
+    })
+
+    // Mode selector (right) — 3 pill segments: SOLO / DUO / SQUAD
     const modes: Array<{ key: MatchMode; label: string }> = [
-      { key: 'solo', label: 'SOLO' }, { key: 'duo', label: 'DUO' }, { key: 'squad', label: 'SQUAD' },
+      { key: 'solo',  label: 'SOLO'  },
+      { key: 'duo',   label: 'DUO'   },
+      { key: 'squad', label: 'SQUAD' },
     ]
-    const mBtnW = 64; const mGap = 6
-    const totalMW = modes.length * mBtnW + (modes.length - 1) * mGap
-    const mStartX = W - 30 - totalMW
+    const segW = 68
+    const segH = 28
+    const gap = 4
+    const totalW = modes.length * segW + (modes.length - 1) * gap
+    const startX = W - 24 - totalW
+    const segY = TOP_H / 2
 
     modes.forEach((m, i) => {
-      const mx = mStartX + i * (mBtnW + mGap) + mBtnW / 2
+      const mx = startX + i * (segW + gap)
       const active = m.key === this.matchMode
       const available = this._isModeAvailable(m.key)
       const locked = !available && !active
 
-      const mbg = this.add.graphics()
-      mbg.fillStyle(active ? 0x1a1808 : 0x0e1420, active ? 0.95 : locked ? 0.3 : 0.6)
-      mbg.fillRoundedRect(mx - mBtnW / 2, 10, mBtnW, 28, 4)
-      mbg.lineStyle(1, active ? C.gold : 0x333344, active ? 0.6 : 0.2)
-      mbg.strokeRoundedRect(mx - mBtnW / 2, 10, mBtnW, 28, 4)
+      const bg = this.add.graphics()
+      const drawSeg = (hover: boolean) => {
+        bg.clear()
+        bg.fillStyle(active ? surface.raised : surface.panel, locked ? 0.5 : 1)
+        bg.fillRoundedRect(mx, segY - segH / 2, segW, segH, radii.md)
+        bg.lineStyle(1, active ? accent.primary : hover ? border.strong : border.default, locked ? 0.4 : 1)
+        bg.strokeRoundedRect(mx, segY - segH / 2, segW, segH, radii.md)
+      }
+      drawSeg(false)
 
-      const ml = this.add.text(mx, 24, m.label, {
-        fontFamily: F.title, fontSize: '13px',
-        color: active ? C.goldHex : locked ? C.dimHex : C.mutedHex,
-        fontStyle: 'bold', ...stk,
-      }).setOrigin(0.5)
+      const labelColor = active ? accent.primaryHex : locked ? fg.disabledHex : fg.secondaryHex
+      const label = this.add.text(mx + segW / 2, segY, m.label, {
+        fontFamily: fontFamily.body,
+        fontSize:   typeScale.meta,
+        color:      labelColor,
+        fontStyle:  '700',
+      }).setOrigin(0.5).setLetterSpacing(1.4)
 
       if (!locked) {
-        const mHit = this.add.rectangle(mx, 24, mBtnW, 28, 0, 0.001).setInteractive({ useHandCursor: true })
-        mHit.on('pointerdown', () => {
+        const hit = this.add.rectangle(mx + segW / 2, segY, segW, segH, 0, 0.001)
+          .setInteractive({ useHandCursor: true })
+        hit.on('pointerover', () => { if (!active) { drawSeg(true); label.setColor(fg.primaryHex) } })
+        hit.on('pointerout',  () => { if (!active) { drawSeg(false); label.setColor(fg.secondaryHex) } })
+        hit.on('pointerdown', () => {
           if (m.key === this.matchMode) return
-          _savedMode = m.key as MatchMode; _savedSide = this.playerSide; _savedBlue = null; _savedRed = null; this.scene.restart()
+          _savedMode = m.key; _savedSide = this.playerSide
+          _savedBlue = null; _savedRed = null
+          this.scene.restart()
         })
-        mHit.on('pointerover', () => { if (m.key !== this.matchMode) ml.setColor('#c9a84c') })
-        mHit.on('pointerout', () => { if (m.key !== this.matchMode) ml.setColor(C.mutedHex) })
       }
     })
-
-    UI.backArrow(this, () => { _savedMode = 'solo'; _savedSide = 'blue'; _savedBlue = null; _savedRed = null; transitionTo(this, 'LobbyScene') })
-
-    // Alterar Modo
-    const sw = 120; const sh = 28; const sx = 126; const sy = 26
-    const sbg = this.add.graphics()
-    sbg.fillStyle(0x12161f, 1); sbg.fillRoundedRect(sx - sw / 2, sy - sh / 2, sw, sh, 4)
-    sbg.lineStyle(1, C.goldDim, 0.5); sbg.strokeRoundedRect(sx - sw / 2, sy - sh / 2, sw, sh, 4)
-    const sl = this.add.text(sx, sy, 'Alterar Modo', { fontFamily: F.body, fontSize: '13px', color: C.goldDimHex, fontStyle: 'bold', shadow: SHADOW.text }).setOrigin(0.5)
-    const sHit = this.add.rectangle(sx, sy, sw, sh, 0, 0.001).setInteractive({ useHandCursor: true })
-    sHit.on('pointerover', () => { sl.setColor(C.goldHex); sbg.clear(); sbg.fillStyle(0x1a2030, 1); sbg.fillRoundedRect(sx - sw / 2, sy - sh / 2, sw, sh, 4); sbg.lineStyle(1, C.gold, 0.6); sbg.strokeRoundedRect(sx - sw / 2, sy - sh / 2, sw, sh, 4) })
-    sHit.on('pointerout', () => { sl.setColor(C.goldDimHex); sbg.clear(); sbg.fillStyle(0x12161f, 1); sbg.fillRoundedRect(sx - sw / 2, sy - sh / 2, sw, sh, 4); sbg.lineStyle(1, C.goldDim, 0.5); sbg.strokeRoundedRect(sx - sw / 2, sy - sh / 2, sw, sh, 4) })
-    sHit.on('pointerdown', () => this._showModeSwitcher())
-
-    this.add.rectangle(W / 2, 55, W - 60, 1, C.goldDim, 0.12)
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -218,260 +256,315 @@ export default class CustomLobbyScene extends Phaser.Scene {
   // ═══════════════════════════════════════════════════════════════════════════
 
   private _drawBlueTeamPanel(): void {
-    const px = W / 2 - 70; const py = 72; const pw = 780; const ph = 240
-    UI.panel(this, px, py + ph / 2, pw, ph, { fill: 0x0c1019, border: 0x00ccaa, borderAlpha: 0.4 })
-    this.add.text(px - pw / 2 + 24, py + 10, 'TIME AZUL', {
-      fontFamily: F.title, fontSize: S.titleSmall, color: '#00ccaa', fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0, 0.5)
-    const dg = this.add.graphics(); dg.fillStyle(0x00ccaa, 0.15); dg.fillRect(px - pw / 2 + 20, py + 22, pw - 40, 1)
-    this._drawCards(px, py + 26, this.blueSlots, this.blueCards)
+    this._drawTeamPanel({
+      panelY: BLUE_PANEL_Y,
+      teamColor: colors.team.ally,
+      teamColorHex: colors.team.allyHex,
+      title: 'TIME AZUL',
+      slots: this.blueSlots,
+      cardContainers: this.blueCards,
+      side: 'blue',
+    })
   }
 
   private _drawRedTeamPanel(): void {
-    const px = W / 2 - 70; const py = 328; const pw = 780; const ph = 240
-    UI.panel(this, px, py + ph / 2, pw, ph, { fill: 0x0c1019, border: 0x8844cc, borderAlpha: 0.4 })
-    this.add.text(px - pw / 2 + 24, py + 10, 'TIME ROXO', {
-      fontFamily: F.title, fontSize: S.titleSmall, color: '#8844cc', fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0, 0.5)
-    const dg = this.add.graphics(); dg.fillStyle(0x8844cc, 0.15); dg.fillRect(px - pw / 2 + 20, py + 22, pw - 40, 1)
-    this._drawCards(px, py + 26, this.redSlots, this.redCards)
+    this._drawTeamPanel({
+      panelY: RED_PANEL_Y,
+      teamColor: colors.team.enemy,
+      teamColorHex: colors.team.enemyHex,
+      title: 'TIME VERMELHO',
+      slots: this.redSlots,
+      cardContainers: this.redCards,
+      side: 'red',
+    })
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // SWAP TEAM BUTTON (between the two panels)
-  // ═══════════════════════════════════════════════════════════════════════════
+  private _drawTeamPanel(opts: {
+    panelY: number
+    teamColor: number
+    teamColorHex: string
+    title: string
+    slots: CustomSlot[]
+    cardContainers: Phaser.GameObjects.Container[]
+    side: 'blue' | 'red'
+  }): void {
+    const { panelY, teamColor, teamColorHex, title, slots, cardContainers, side } = opts
+    const panelX = TEAM_PANEL_X
 
-  private _drawSwapTeamButton(): void {
-    const stk = { stroke: '#000000', strokeThickness: 2 }
-    const cx = W / 2 - 70; const cy = 320
-    const bw = 180; const bh = 30
-
+    // Panel frame
     const bg = this.add.graphics()
-    const draw = (hover: boolean) => {
-      bg.clear()
-      bg.fillStyle(hover ? 0x1a1808 : 0x0e1420, 0.95)
-      bg.fillRoundedRect(cx - bw / 2, cy - bh / 2, bw, bh, 6)
-      bg.lineStyle(1.5, hover ? C.gold : C.goldDim, hover ? 0.6 : 0.3)
-      bg.strokeRoundedRect(cx - bw / 2, cy - bh / 2, bw, bh, 6)
+    bg.fillStyle(surface.panel, 1)
+    bg.fillRoundedRect(panelX, panelY, TEAM_PANEL_W, TEAM_PANEL_H, radii.lg)
+    bg.lineStyle(1, border.default, 1)
+    bg.strokeRoundedRect(panelX, panelY, TEAM_PANEL_W, TEAM_PANEL_H, radii.lg)
+    // Team accent top stripe
+    bg.fillStyle(teamColor, 0.7)
+    bg.fillRect(panelX + 16, panelY, TEAM_PANEL_W - 32, 2)
+    // Top inset highlight
+    bg.fillStyle(0xffffff, 0.04)
+    bg.fillRect(panelX + 1, panelY + 2, TEAM_PANEL_W - 2, 1)
+
+    // Title
+    this.add.text(panelX + 24, panelY + 20, title, {
+      fontFamily: fontFamily.body,
+      fontSize:   typeScale.meta,
+      color:      teamColorHex,
+      fontStyle:  '700',
+    }).setOrigin(0, 0.5).setLetterSpacing(1.8)
+
+    // Playing-side indicator
+    if (this.playerSide === side) {
+      this.add.text(panelX + TEAM_PANEL_W - 24, panelY + 20, 'SEU TIME', {
+        fontFamily: fontFamily.body,
+        fontSize:   typeScale.meta,
+        color:      accent.primaryHex,
+        fontStyle:  '700',
+      }).setOrigin(1, 0.5).setLetterSpacing(1.8)
     }
-    draw(false)
 
-    const label = this.add.text(cx, cy, '⇅  Trocar de Time', {
-      fontFamily: F.body, fontSize: '14px', color: C.goldDimHex, fontStyle: 'bold', ...stk,
-    }).setOrigin(0.5)
-
-    const hit = this.add.rectangle(cx, cy, bw, bh, 0, 0.001).setInteractive({ useHandCursor: true })
-    hit.on('pointerover', () => { draw(true); label.setColor(C.goldHex) })
-    hit.on('pointerout', () => { draw(false); label.setColor(C.goldDimHex) })
-    hit.on('pointerdown', () => this._swapTeam())
+    this._drawCards(panelX + TEAM_PANEL_W / 2, panelY + 40, slots, cardContainers, side)
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // CARDS
-  // ═══════════════════════════════════════════════════════════════════════════
+  private _drawCards(
+    centerX: number,
+    topY: number,
+    slots: CustomSlot[],
+    cardContainers: Phaser.GameObjects.Container[],
+    side: 'blue' | 'red',
+  ): void {
+    cardContainers.forEach(c => c.destroy())
+    cardContainers.length = 0
 
-  private _drawCards(centerX: number, topY: number, slots: CustomSlot[], cardContainers: Phaser.GameObjects.Container[]): void {
-    cardContainers.forEach(c => c.destroy()); cardContainers.length = 0
-    const cardW = 170; const cardH = 200; const gap = 14
+    const cardW = 200
+    const cardH = 196
+    const gap = 14
     const totalW = 4 * cardW + 3 * gap
     const startX = centerX - totalW / 2 + cardW / 2
-    const cardCenterY = topY + cardH / 2 + 10
+    const cardCenterY = topY + cardH / 2 + 6
 
-    // Side this team belongs to — used to flip the preview sprite the right way
-    const teamSide: SpriteSide = slots === this.blueSlots ? 'left' : 'right'
+    const teamSide: SpriteSide = side === 'blue' ? 'left' : 'right'
 
     slots.forEach((slot, i) => {
       const cx = startX + i * (cardW + gap)
-      const container = this.add.container(cx, cardCenterY); cardContainers.push(container)
-      const accent = CLASS_ACCENTS[slot.role]
-      const accentHex = '#' + accent.toString(16).padStart(6, '0')
-      const isMe = slot.occupant === 'me'; const isFriend = slot.occupant === 'friend'
+      const container = this.add.container(cx, cardCenterY)
+      cardContainers.push(container)
+      const classAccent = CLASS_ACCENT[slot.role]
+      const classAccentHex = CLASS_ACCENT_HEX[slot.role]
+      const isMe = slot.occupant === 'me'
+      const isFriend = slot.occupant === 'friend'
       const isFilled = isMe || isFriend
 
+      // Card frame
       const bg = this.add.graphics()
-      bg.fillStyle(0x0e1420, 1); bg.fillRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, S.borderRadius)
-      bg.fillStyle(accent, 0.08); bg.fillRoundedRect(-cardW / 2, -cardH / 2, cardW, 42, { tl: S.borderRadius, tr: S.borderRadius, bl: 0, br: 0 })
-      bg.lineStyle(1.5, isMe ? accent : isFilled ? 0x555555 : 0x333333, isMe ? 0.55 : 0.2)
-      bg.strokeRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, S.borderRadius); container.add(bg)
+      bg.fillStyle(surface.raised, 1)
+      bg.fillRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, radii.lg)
+      bg.fillStyle(classAccent, 0.14)
+      bg.fillRoundedRect(-cardW / 2, -cardH / 2, cardW, 38,
+        { tl: radii.lg, tr: radii.lg, bl: 0, br: 0 })
+      const borderColor = isMe ? classAccent : isFilled ? border.default : border.subtle
+      bg.lineStyle(1, borderColor, 1)
+      bg.strokeRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, radii.lg)
+      container.add(bg)
 
-      // Character sprite preview — uses player's equipped skin for 'me', defaults
-      // to 'idle' for bots/friends. Pedestal glow underneath for that AAA feel.
+      // Class label
+      container.add(this.add.text(0, -cardH / 2 + 19, ROLE_LABELS[slot.role], {
+        fontFamily: fontFamily.body,
+        fontSize:   typeScale.meta,
+        color:      classAccentHex,
+        fontStyle:  '700',
+      }).setOrigin(0.5).setLetterSpacing(1.8))
+
+      // Sprite + pedestal
       const skinId = isMe ? playerData.getEquippedSkin(slot.role as CharClass) : 'idle'
       const ped = this.add.graphics()
-      ped.fillStyle(accent, isMe ? 0.22 : 0.1)
-      ped.fillEllipse(0, -cardH / 2 + 76, cardW * 0.55, 12)
+      ped.fillStyle(classAccent, isMe ? 0.24 : 0.12)
+      ped.fillEllipse(0, -cardH / 2 + 108, cardW * 0.55, 10)
       container.add(ped)
-      const sprite = drawCharacterSprite(this, slot.role as SpriteRole, teamSide, 72, skinId)
-      sprite.setPosition(0, -cardH / 2 + 46)
+      const sprite = drawCharacterSprite(this, slot.role as SpriteRole, teamSide, 68, skinId)
+      sprite.setPosition(0, -cardH / 2 + 70)
       container.add(sprite)
 
-      container.add(this.add.text(0, -cardH / 2 + 90, ROLE_LABELS[slot.role], {
-        fontFamily: F.title, fontSize: '13px', color: accentHex, fontStyle: 'bold', shadow: SHADOW.text,
-      }).setOrigin(0.5))
-
-      const dg = this.add.graphics(); dg.fillStyle(accent, 0.15); dg.fillRect(-cardW / 2 + 16, -cardH / 2 + 104, cardW - 32, 1); container.add(dg)
-
-      let nameText = 'Bot'; let nameColor: string = C.mutedHex
-      if (isMe) { nameText = slot.playerName ?? 'Jogador'; nameColor = C.bodyHex }
-      else if (isFriend) { nameText = slot.playerName ?? 'Amigo'; nameColor = '#88ccff' }
-
-      container.add(this.add.text(0, -cardH / 2 + 118, nameText, {
-        fontFamily: F.body, fontSize: '13px', color: nameColor, fontStyle: 'bold', shadow: SHADOW.text,
-      }).setOrigin(0.5))
-
+      // Name + status
+      const nameY = -cardH / 2 + 128
+      let nameText = 'Bot'
+      let nameColor: string = fg.tertiaryHex
+      let subText: string | null = null
       if (isMe) {
-        container.add(this.add.text(0, -cardH / 2 + 134, 'Voce', {
-          fontFamily: F.body, fontSize: '11px', color: C.successHex, shadow: SHADOW.text,
-        }).setOrigin(0.5))
+        nameText = slot.playerName ?? 'Jogador'
+        nameColor = fg.primaryHex
+        subText = 'VOCÊ'
       } else if (isFriend) {
-        container.add(this.add.text(0, -cardH / 2 + 134, 'Amigo', {
-          fontFamily: F.body, fontSize: '11px', color: C.infoHex, shadow: SHADOW.text,
-        }).setOrigin(0.5))
+        nameText = slot.playerName ?? 'Amigo'
+        nameColor = state.infoHex
+        subText = 'AMIGO'
+      } else {
+        subText = 'BOT'
       }
 
-      // ALTERAR SKIN pill — on the player's own cards
+      container.add(this.add.text(0, nameY, nameText, {
+        fontFamily: fontFamily.serif,
+        fontSize:   typeScale.h3,
+        color:      nameColor,
+        fontStyle:  '600',
+      }).setOrigin(0.5))
+
+      if (subText) {
+        const pillW = 48
+        const pillY = nameY + 18
+        const pillColor = isMe ? state.success : isFriend ? state.info : border.strong
+        const pillColorHex = isMe ? state.successHex : isFriend ? state.infoHex : fg.disabledHex
+        const pillBg = this.add.graphics()
+        pillBg.fillStyle(isMe ? state.successDim : surface.deepest, 1)
+        pillBg.fillRoundedRect(-pillW / 2, pillY - 8, pillW, 16, radii.sm)
+        pillBg.lineStyle(1, pillColor, 1)
+        pillBg.strokeRoundedRect(-pillW / 2, pillY - 8, pillW, 16, radii.sm)
+        container.add(pillBg)
+        container.add(this.add.text(0, pillY, subText, {
+          fontFamily: fontFamily.body,
+          fontSize:   typeScale.meta,
+          color:      pillColorHex,
+          fontStyle:  '700',
+        }).setOrigin(0.5).setLetterSpacing(1.4))
+      }
+
+      // ALTERAR SKIN pill (only on player's own cards)
       if (isMe) {
-        const pillW = 116
+        const pillW = 124
         const pillH = 22
-        const pillY = -cardH / 2 + 156
+        const pillY = cardH / 2 - 18
         const pillG = this.add.graphics()
         const drawPill = (hover: boolean) => {
           pillG.clear()
-          pillG.fillStyle(hover ? 0x1a1808 : 0x0e1420, 0.95)
-          pillG.fillRoundedRect(-pillW / 2, pillY - pillH / 2, pillW, pillH, 5)
-          pillG.lineStyle(1.2, hover ? C.gold : C.goldDim, hover ? 0.85 : 0.5)
-          pillG.strokeRoundedRect(-pillW / 2, pillY - pillH / 2, pillW, pillH, 5)
+          pillG.fillStyle(hover ? surface.raised : surface.deepest, 1)
+          pillG.fillRoundedRect(-pillW / 2, pillY - pillH / 2, pillW, pillH, radii.md)
+          pillG.lineStyle(1, hover ? accent.primary : border.default, 1)
+          pillG.strokeRoundedRect(-pillW / 2, pillY - pillH / 2, pillW, pillH, radii.md)
         }
         drawPill(false)
         container.add(pillG)
-        const pillLabel = this.add.text(0, pillY, '✦  ALTERAR SKIN', {
-          fontFamily: F.title, fontSize: '10px', color: C.goldDimHex,
-          fontStyle: 'bold', shadow: SHADOW.text,
-          stroke: '#000000', strokeThickness: 2,
-        }).setOrigin(0.5)
+
+        const pillLabel = this.add.text(0, pillY, 'ALTERAR SKIN', {
+          fontFamily: fontFamily.body,
+          fontSize:   typeScale.meta,
+          color:      fg.secondaryHex,
+          fontStyle:  '700',
+        }).setOrigin(0.5).setLetterSpacing(1.4)
         container.add(pillLabel)
+
         const pillHit = this.add.rectangle(0, pillY, pillW + 8, pillH + 8, 0x000000, 0.001)
           .setInteractive({ useHandCursor: true })
         container.add(pillHit)
-        pillHit.on('pointerover', () => { drawPill(true); pillLabel.setColor(C.goldHex) })
-        pillHit.on('pointerout', () => { drawPill(false); pillLabel.setColor(C.goldDimHex) })
+        pillHit.on('pointerover', () => { drawPill(true); pillLabel.setColor(accent.primaryHex) })
+        pillHit.on('pointerout',  () => { drawPill(false); pillLabel.setColor(fg.secondaryHex) })
         pillHit.on('pointerdown', () => {
           openSkinPicker(this, slot.role as CharClass, {
             side: teamSide,
-            onChange: () => this._drawCards(centerX, topY, slots, cardContainers),
+            onChange: () => this._drawCards(centerX, topY, slots, cardContainers, side),
           })
         })
       }
 
-      // Swap button (duo/squad only, on player's own cards)
+      // Swap within-team button (duo/squad only, top-right)
       if (isMe && this.matchMode !== 'solo') {
-        this._drawSwapIcon(container, cardH, slots, i)
+        this._drawSwapIcon(container, cardW, cardH, slots, i, cardContainers)
       }
 
-      container.setAlpha(0).setScale(0.95)
-      this.tweens.add({ targets: container, alpha: 1, scaleX: 1, scaleY: 1, duration: 250, delay: 60 + i * 50, ease: 'Back.easeOut' })
+      container.setAlpha(0).setScale(0.94)
+      this.tweens.add({
+        targets: container,
+        alpha: 1, scaleX: 1, scaleY: 1,
+        duration: 280, delay: 80 + i * 60, ease: 'Back.easeOut',
+      })
     })
   }
 
   /** Draw a circular swap icon on a card for changing role within the team. */
   private _drawSwapIcon(
-    container: Phaser.GameObjects.Container, cardH: number,
-    slots: CustomSlot[], slotIdx: number,
+    container: Phaser.GameObjects.Container,
+    cardW: number,
+    cardH: number,
+    slots: CustomSlot[],
+    slotIdx: number,
+    cardContainers: Phaser.GameObjects.Container[],
   ): void {
-    // Top-right corner so it doesn't collide with the bottom-aligned ALTERAR SKIN pill.
-    const cardW = 170
-    const btnR = 12; const bx = cardW / 2 - 18; const by = -cardH / 2 + 18
+    const btnR = 13
+    const bx = cardW / 2 - 18
+    const by = -cardH / 2 + 19
 
     const btnBg = this.add.graphics()
-    btnBg.fillStyle(0x1a2030, 1); btnBg.fillCircle(bx, by, btnR)
-    btnBg.lineStyle(1.2, C.info, 0.4); btnBg.strokeCircle(bx, by, btnR)
+    const drawBg = (hover: boolean) => {
+      btnBg.clear()
+      btnBg.fillStyle(hover ? surface.raised : surface.deepest, 1)
+      btnBg.fillCircle(bx, by, btnR)
+      btnBg.lineStyle(1, hover ? accent.primary : state.info, 1)
+      btnBg.strokeCircle(bx, by, btnR)
+    }
+    drawBg(false)
     container.add(btnBg)
 
-    // Swap arrows icon
-    const ag = this.add.graphics()
-    ag.lineStyle(1.8, C.info, 0.8)
-    ag.beginPath()
-    for (let a = -0.8; a <= 0.8; a += 0.1) {
-      const rx = bx + Math.cos(a - Math.PI / 2) * 7
-      const ry = by + Math.sin(a - Math.PI / 2) * 7 + 1
-      if (a <= -0.7) ag.moveTo(rx, ry); else ag.lineTo(rx, ry)
-    }
-    ag.strokePath()
-    ag.fillStyle(C.info, 0.8); ag.fillTriangle(bx + 5, by - 8, bx + 9, by - 4, bx + 3, by - 3)
-    ag.beginPath()
-    for (let a = -0.8; a <= 0.8; a += 0.1) {
-      const rx = bx + Math.cos(a + Math.PI / 2) * 7
-      const ry = by + Math.sin(a + Math.PI / 2) * 7 - 1
-      if (a <= -0.7) ag.moveTo(rx, ry); else ag.lineTo(rx, ry)
-    }
-    ag.strokePath()
-    ag.fillTriangle(bx - 5, by + 8, bx - 9, by + 4, bx - 3, by + 3)
-    container.add(ag)
+    const icon = this.add.text(bx, by, '⇄', {
+      fontFamily: fontFamily.body,
+      fontSize:   '16px',
+      color:      state.infoHex,
+      fontStyle:  '700',
+    }).setOrigin(0.5)
+    container.add(icon)
 
-    const hit = this.add.rectangle(bx, by, btnR * 2.5, btnR * 2.5, 0, 0.001)
+    const hit = this.add.rectangle(bx, by, btnR * 2.5, btnR * 2.5, 0x000000, 0.001)
       .setInteractive({ useHandCursor: true })
     container.add(hit)
-    hit.on('pointerover', () => {
-      btnBg.clear(); btnBg.fillStyle(0x253040, 1); btnBg.fillCircle(bx, by, btnR)
-      btnBg.lineStyle(1.2, C.info, 0.7); btnBg.strokeCircle(bx, by, btnR)
-    })
-    hit.on('pointerout', () => {
-      btnBg.clear(); btnBg.fillStyle(0x1a2030, 1); btnBg.fillCircle(bx, by, btnR)
-      btnBg.lineStyle(1.2, C.info, 0.4); btnBg.strokeCircle(bx, by, btnR)
-    })
-    hit.on('pointerdown', () => {
-      const cards = slots === this.blueSlots ? this.blueCards : this.redCards
-      this._onSwapRole(slots, slotIdx, cards)
-    })
+    hit.on('pointerover', () => { drawBg(true); icon.setColor(accent.primaryHex) })
+    hit.on('pointerout',  () => { drawBg(false); icon.setColor(state.infoHex) })
+    hit.on('pointerdown', () => this._onSwapRole(slots, slotIdx, cardContainers))
   }
 
-  /** Show highlighted swap targets — player clicks one to confirm swap. */
-  private _onSwapRole(slots: CustomSlot[], myIdx: number, cardContainers: Phaser.GameObjects.Container[]): void {
-    // Clear previous highlights
+  /** Show highlighted swap targets -- player clicks one to confirm swap. */
+  private _onSwapRole(
+    slots: CustomSlot[],
+    myIdx: number,
+    cardContainers: Phaser.GameObjects.Container[],
+  ): void {
     this._clearSwapHighlights()
 
-    // Find all valid swap targets (non-me, non-friend)
     const targets: number[] = []
     for (let i = 0; i < 4; i++) {
       if (i !== myIdx && slots[i].occupant !== 'me' && slots[i].occupant !== 'friend') targets.push(i)
     }
     if (targets.length === 0) return
 
-    // Add overlay to cancel if clicking elsewhere
-    const cancelOverlay = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.15)
+    const cancelOverlay = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.2)
       .setInteractive().setDepth(14)
     cancelOverlay.on('pointerdown', () => this._clearSwapHighlights())
     this._swapHighlights.push(cancelOverlay)
 
-    // Highlight each valid target card
     for (const tIdx of targets) {
       const card = cardContainers[tIdx]
       if (!card) continue
       const { x, y } = card
 
-      // Pulsing gold highlight
-      const hl = this.add.rectangle(x, y, 174, 204, 0xf0c850, 0.1)
-        .setStrokeStyle(2, 0xf0c850, 0.6).setDepth(15)
-      this.tweens.add({ targets: hl, alpha: { from: 0.06, to: 0.18 }, duration: 500, yoyo: true, repeat: -1 })
+      const hl = this.add.rectangle(x, y, 208, 204, accent.primary, 0.12)
+        .setStrokeStyle(2, accent.primary, 0.65).setDepth(15)
+      this.tweens.add({ targets: hl, alpha: { from: 0.08, to: 0.22 }, duration: 520, yoyo: true, repeat: -1 })
       this._swapHighlights.push(hl)
 
-      // "Trocar" text
-      const txt = this.add.text(x, y + 60, 'TROCAR', {
-        fontFamily: F.title, fontSize: '13px', color: C.goldHex, fontStyle: 'bold',
-        stroke: '#000000', strokeThickness: 3,
-      }).setOrigin(0.5).setDepth(16)
+      const txt = this.add.text(x, y + 64, 'TROCAR', {
+        fontFamily: fontFamily.body,
+        fontSize:   typeScale.meta,
+        color:      accent.primaryHex,
+        fontStyle:  '700',
+      }).setOrigin(0.5).setLetterSpacing(1.8).setDepth(16)
       this._swapHighlights.push(txt)
 
-      // Click target to swap
-      const hit = this.add.rectangle(x, y, 174, 204, 0, 0.001)
+      const hit = this.add.rectangle(x, y, 208, 204, 0, 0.001)
         .setInteractive({ useHandCursor: true }).setDepth(17)
       this._swapHighlights.push(hit)
       hit.on('pointerdown', () => {
-        // Do the swap
-        const tmpOcc = slots[myIdx].occupant; const tmpName = slots[myIdx].playerName
-        slots[myIdx].occupant = slots[tIdx].occupant; slots[myIdx].playerName = slots[tIdx].playerName
-        slots[tIdx].occupant = tmpOcc; slots[tIdx].playerName = tmpName
-        // Persist and restart
+        const tmpOcc = slots[myIdx].occupant
+        const tmpName = slots[myIdx].playerName
+        slots[myIdx].occupant = slots[tIdx].occupant
+        slots[myIdx].playerName = slots[tIdx].playerName
+        slots[tIdx].occupant = tmpOcc
+        slots[tIdx].playerName = tmpName
         _savedMode = this.matchMode; _savedSide = this.playerSide
         _savedBlue = this.blueSlots.map(s => ({ ...s }))
         _savedRed = this.redSlots.map(s => ({ ...s }))
@@ -486,102 +579,139 @@ export default class CustomLobbyScene extends Phaser.Scene {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // ROOM LOG (right side)
+  // SWAP TEAM BUTTON (between the two panels)
   // ═══════════════════════════════════════════════════════════════════════════
 
-  private _drawRoomLog(): void {
-    const stk = { stroke: '#000000', strokeThickness: 2 }
-    const logX = 1160; const logY = 100; const logW = 200; const logH = 260
-    UI.panel(this, logX, logY + logH / 2, logW, logH, { fill: 0x0c1019 })
-
-    const total = this._totalPlayers()
-    const max = MAX_PLAYERS[this.matchMode]
-    this.add.text(logX, logY + 14, `SALA ${total}/${max}`, {
-      fontFamily: F.title, fontSize: S.bodySmall, color: C.goldHex, fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0.5)
-    this.add.rectangle(logX, logY + 28, logW - 20, 1, C.goldDim, 0.2)
-
-    // List all human players
-    let y = logY + 46
-    const allSlots = [...this.blueSlots.map(s => ({ ...s, side: 'blue' as const })), ...this.redSlots.map(s => ({ ...s, side: 'red' as const }))]
-    const seen = new Set<string>()
-    for (const s of allSlots) {
-      if ((s.occupant === 'me' || s.occupant === 'friend') && s.playerName && !seen.has(s.playerName)) {
-        seen.add(s.playerName)
-        const teamColor = s.side === 'blue' ? 0x00ccaa : 0x8844cc
-        const teamHex = s.side === 'blue' ? '#00ccaa' : '#8844cc'
-        const teamLabel = s.side === 'blue' ? 'AZUL' : 'ROXO'
-
-        const dotG = this.add.graphics(); dotG.fillStyle(teamColor, 0.8); dotG.fillCircle(logX - logW / 2 + 22, y, 5)
-        this.add.text(logX - logW / 2 + 34, y, s.playerName, {
-          fontFamily: F.body, fontSize: S.bodySmall, color: s.occupant === 'me' ? C.goldHex : C.bodyHex,
-          fontStyle: s.occupant === 'me' ? 'bold' : 'normal', shadow: SHADOW.text, ...stk,
-        }).setOrigin(0, 0.5)
-        this.add.text(logX + logW / 2 - 14, y, teamLabel, {
-          fontFamily: F.body, fontSize: '10px', color: teamHex, fontStyle: 'bold', shadow: SHADOW.text,
-        }).setOrigin(1, 0.5)
-        y += 28
-      }
-    }
-
-    // Convidar button below
-    const invY = logY + logH + 20; const invW = logW - 16; const invH = 32
-    const invG = this.add.graphics()
-    invG.fillStyle(0x141a24, 1); invG.fillRoundedRect(logX - invW / 2, invY - invH / 2, invW, invH, 5)
-    invG.lineStyle(1, C.info, 0.4); invG.strokeRoundedRect(logX - invW / 2, invY - invH / 2, invW, invH, 5)
-    this.add.text(logX, invY, '+ Convidar Amigo', {
-      fontFamily: F.body, fontSize: S.small, color: C.infoHex, fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0.5)
-    const invHit = this.add.rectangle(logX, invY, invW, invH, 0, 0.001).setInteractive({ useHandCursor: true })
-    invHit.on('pointerdown', () => this._showInvitePopup())
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // START BUTTON (right side, below room log)
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  private _drawStartButton(): void {
-    const btnX = 1160; const btnY = 618; const btnW = 200; const btnH = 44
-    const bg = this.add.graphics()
-    const render = (hover: boolean) => { bg.clear()
-      bg.fillStyle(hover ? 0x224422 : 0x1a3a1a, 1); bg.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, S.borderRadius)
-      bg.lineStyle(2, C.success, hover ? 0.8 : 0.6); bg.strokeRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, S.borderRadius)
-      bg.fillStyle(0xffffff, hover ? 0.05 : 0.03); bg.fillRoundedRect(btnX - btnW / 2 + 2, btnY - btnH / 2 + 2, btnW - 4, btnH * 0.4,
-        { tl: S.borderRadius - 1, tr: S.borderRadius - 1, bl: 0, br: 0 }) }
-    render(false)
-    this.add.text(btnX, btnY, 'INICIAR', {
-      fontFamily: F.title, fontSize: '16px', color: C.successHex, fontStyle: 'bold',
-      shadow: SHADOW.goldGlow, stroke: '#000000', strokeThickness: 3,
-    }).setOrigin(0.5)
-    const hit = this.add.rectangle(btnX, btnY, btnW, btnH, 0, 0.001).setInteractive({ useHandCursor: true })
-    hit.on('pointerover', () => render(true)); hit.on('pointerout', () => render(false))
-    hit.on('pointerdown', () => {
-      const side = this.playerSide === 'blue' ? 'left' : 'right'
-      // Build list of character IDs the player controls
-      const mySlots = (this.playerSide === 'blue' ? this.blueSlots : this.redSlots)
-        .filter(s => s.occupant === 'me')
-      const prefix = side === 'left' ? 'l' : 'r'
-      const charIds = mySlots.map(s => `${prefix}${s.role}`)
-      // If player controls all 4, don't pass specific IDs (full side control)
-      const playerCharIds = charIds.length < 4 ? charIds : undefined
-
-      // Count actual human players on the player's team (me + friends)
-      const teamSlots = this.playerSide === 'blue' ? this.blueSlots : this.redSlots
-      const humanCount = teamSlots.filter(s => s.occupant === 'me' || s.occupant === 'friend').length
-
-      transitionTo(this, 'BattleScene', {
-        deckConfig: playerData.getDeckConfig(),
-        skinConfig: playerData.getSkinConfig(),
-        pveMode: 'custom', difficulty: 'normal',
-        playerSide: side,
-        playerCharIds,
-        playersPerSide: humanCount,
-      }, 400, 'wipeRight')
+  private _drawSwapTeamButton(): void {
+    const cx = TEAM_PANEL_X + TEAM_PANEL_W / 2
+    const cy = BLUE_PANEL_Y + TEAM_PANEL_H + 25
+    UI.buttonSecondary(this, cx, cy, '⇅  TROCAR DE TIME', {
+      w: 200,
+      h: 36,
+      onPress: () => this._swapTeam(),
     })
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // MODE SWITCHER OVERLAY — same panel as lobby (shared utility)
+  // ROOM LOG (right side)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  private _drawRoomLog(): void {
+    const logX = LOG_X
+    const logY = BLUE_PANEL_Y
+
+    const bg = this.add.graphics()
+    bg.fillStyle(surface.panel, 1)
+    bg.fillRoundedRect(logX - LOG_W / 2, logY, LOG_W, LOG_H, radii.lg)
+    bg.lineStyle(1, border.default, 1)
+    bg.strokeRoundedRect(logX - LOG_W / 2, logY, LOG_W, LOG_H, radii.lg)
+    bg.fillStyle(accent.primary, 0.45)
+    bg.fillRect(logX - LOG_W / 2 + 16, logY, LOG_W - 32, 1)
+
+    const total = this._totalPlayers()
+    const max = MAX_PLAYERS[this.matchMode]
+    this.add.text(logX, logY + 18, `SALA ${total}/${max}`, {
+      fontFamily: fontFamily.body,
+      fontSize:   typeScale.meta,
+      color:      accent.primaryHex,
+      fontStyle:  '700',
+    }).setOrigin(0.5).setLetterSpacing(1.8)
+
+    // Mode readout
+    this.add.text(logX, logY + 38, this.matchMode.toUpperCase(), {
+      fontFamily: fontFamily.body,
+      fontSize:   typeScale.meta,
+      color:      fg.tertiaryHex,
+      fontStyle:  '700',
+    }).setOrigin(0.5).setLetterSpacing(1.4)
+
+    // Divider
+    const div = this.add.graphics()
+    div.fillStyle(border.subtle, 1)
+    div.fillRect(logX - LOG_W / 2 + 20, logY + 56, LOG_W - 40, 1)
+
+    // List all human players
+    let y = logY + 74
+    const allSlots = [
+      ...this.blueSlots.map(s => ({ ...s, side: 'blue' as const })),
+      ...this.redSlots.map(s => ({ ...s, side: 'red' as const })),
+    ]
+    const seen = new Set<string>()
+    for (const s of allSlots) {
+      if ((s.occupant === 'me' || s.occupant === 'friend') && s.playerName && !seen.has(s.playerName)) {
+        seen.add(s.playerName)
+        const teamColor = s.side === 'blue' ? colors.team.ally : colors.team.enemy
+        const teamColorHex = s.side === 'blue' ? colors.team.allyHex : colors.team.enemyHex
+        const teamLabel = s.side === 'blue' ? 'AZUL' : 'VERM'
+
+        const dot = this.add.graphics()
+        dot.fillStyle(teamColor, 1)
+        dot.fillCircle(logX - LOG_W / 2 + 22, y, 4)
+
+        this.add.text(logX - LOG_W / 2 + 36, y, s.playerName, {
+          fontFamily: fontFamily.serif,
+          fontSize:   typeScale.small,
+          color:      s.occupant === 'me' ? accent.primaryHex : fg.primaryHex,
+          fontStyle:  s.occupant === 'me' ? '700' : '500',
+        }).setOrigin(0, 0.5)
+
+        this.add.text(logX + LOG_W / 2 - 14, y, teamLabel, {
+          fontFamily: fontFamily.body,
+          fontSize:   typeScale.meta,
+          color:      teamColorHex,
+          fontStyle:  '700',
+        }).setOrigin(1, 0.5).setLetterSpacing(1.2)
+
+        y += 24
+      }
+    }
+
+    // Invite button below
+    const invY = logY + LOG_H + 20
+    UI.buttonSecondary(this, logX, invY, 'CONVIDAR AMIGO', {
+      w: 184,
+      h: 36,
+      onPress: () => this._showInvitePopup(),
+    })
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // START BUTTON (bottom center)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  private _drawStartButton(): void {
+    const btnX = W / 2
+    const btnY = H - 56
+
+    UI.buttonPrimary(this, btnX, btnY, 'INICIAR BATALHA', {
+      size: 'lg',
+      w:    340,
+      h:    56,
+      onPress: () => {
+        const side = this.playerSide === 'blue' ? 'left' : 'right'
+        const mySlots = (this.playerSide === 'blue' ? this.blueSlots : this.redSlots)
+          .filter(s => s.occupant === 'me')
+        const prefix = side === 'left' ? 'l' : 'r'
+        const charIds = mySlots.map(s => `${prefix}${s.role}`)
+        const playerCharIds = charIds.length < 4 ? charIds : undefined
+
+        const teamSlots = this.playerSide === 'blue' ? this.blueSlots : this.redSlots
+        const humanCount = teamSlots.filter(s => s.occupant === 'me' || s.occupant === 'friend').length
+
+        transitionTo(this, 'BattleScene', {
+          deckConfig: playerData.getDeckConfig(),
+          skinConfig: playerData.getSkinConfig(),
+          pveMode: 'custom', difficulty: 'normal',
+          playerSide: side,
+          playerCharIds,
+          playersPerSide: humanCount,
+        }, 400, 'wipeRight')
+      },
+    })
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MODE SWITCHER OVERLAY
   // ═══════════════════════════════════════════════════════════════════════════
 
   private _showModeSwitcher(): void {
@@ -597,21 +727,15 @@ export default class CustomLobbyScene extends Phaser.Scene {
   // ═══════════════════════════════════════════════════════════════════════════
 
   private _showInvitePopup(): void {
-    const dimBg = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.7).setDepth(100).setInteractive()
-    const popup = this.add.container(W / 2, H / 2).setDepth(101).setAlpha(0).setScale(0.9)
-    const pw = 320; const ph = 110
-    const pbg = this.add.graphics()
-    pbg.fillStyle(0x0c1019, 0.98); pbg.fillRoundedRect(-pw / 2, -ph / 2, pw, ph, 8)
-    pbg.lineStyle(1.5, C.purple, 0.4); pbg.strokeRoundedRect(-pw / 2, -ph / 2, pw, ph, 8)
-    popup.add(pbg)
-    popup.add(this.add.text(0, -18, 'Em breve', { fontFamily: F.title, fontSize: S.titleSmall, color: C.purpleHex, fontStyle: 'bold', shadow: SHADOW.goldGlow }).setOrigin(0.5))
-    popup.add(this.add.text(0, 6, 'Sistema de convites em desenvolvimento', { fontFamily: F.body, fontSize: S.bodySmall, color: C.mutedHex, shadow: SHADOW.text }).setOrigin(0.5))
-    const okl = this.add.text(0, ph / 2 - 22, 'OK', { fontFamily: F.body, fontSize: S.body, color: C.goldHex, fontStyle: 'bold', shadow: SHADOW.text }).setOrigin(0.5)
-    popup.add(okl)
-    const okH = this.add.rectangle(0, ph / 2 - 22, 60, 22, 0, 0.001).setInteractive({ useHandCursor: true }); popup.add(okH)
-    const close = () => { this.tweens.add({ targets: [popup, dimBg], alpha: 0, duration: 150, onComplete: () => { popup.destroy(); dimBg.destroy() } }) }
-    dimBg.on('pointerdown', close); okH.on('pointerdown', close)
-    okH.on('pointerover', () => okl.setColor('#ffe680')); okH.on('pointerout', () => okl.setColor(C.goldHex))
-    this.tweens.add({ targets: popup, alpha: 1, scaleX: 1, scaleY: 1, duration: 200, ease: 'Back.easeOut' })
+    UI.modal(this, {
+      eyebrow: 'PRÓXIMAMENTE',
+      title:   'CONVITE DE AMIGO',
+      body:    'O sistema de convites está em desenvolvimento. Por enquanto, adicione bots ao seu time.',
+      actions: [{ label: 'OK', kind: 'primary', onClick: () => {} }],
+    })
+  }
+
+  shutdown(): void {
+    this.tweens.killAll()
   }
 }
