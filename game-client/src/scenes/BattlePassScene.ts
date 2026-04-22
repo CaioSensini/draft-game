@@ -1,12 +1,33 @@
 import Phaser from 'phaser'
 import { UI } from '../utils/UIComponents'
-import { C, F, SHADOW, SCREEN } from '../utils/DesignTokens'
+import {
+  SCREEN,
+  surface, border, accent, fg, state, currency,
+  fontFamily, typeScale, radii,
+} from '../utils/DesignTokens'
 import { transitionTo } from '../utils/SceneTransition'
 import { playerData } from '../utils/PlayerDataManager'
 import type { BattlePassMission } from '../utils/PlayerDataManager'
 import { SEASON_TIERS, PASS_XP_PER_TIER, PASS_MAX_TIER, PASS_PREMIUM_PRICE_LABEL, CURRENT_SEASON } from '../data/battlePass'
 import type { TierReward, RewardType } from '../data/battlePass'
 import { getCharacterKey } from '../utils/AssetPaths'
+
+// ── Battle Pass violet identity (Decision C — preserved per Print 11) ──
+//
+// The pass keeps its distinct purple identity so it never reads like the
+// gold accent or stat tints. The mapping aligns with the canonical DG
+// gem currency tokens, so the pass and the DG balance pill share the
+// same family of colors.
+const BP = {
+  primary:    currency.dgGem,         // 0xa78bfa — main violet
+  primaryHex: currency.dgGemHex,
+  light:      0xc4b5fd,               // lighter violet for highlights / current tier
+  lightHex:   '#c4b5fd',
+  edge:       currency.dgGemEdge,     // 0x5b21b6 — dark violet for borders / shadows
+  edgeHex:    currency.dgGemEdgeHex,
+  deep:       0x2e1065,               // deep purple for panel washes
+  ink:        0x1a1030,               // very deep panel for inset surfaces
+} as const
 
 const W = SCREEN.W
 const H = SCREEN.H
@@ -60,59 +81,61 @@ export default class BattlePassScene extends Phaser.Scene {
     const bp = playerData.getBattlePass()
 
     const bg = this.add.graphics()
-    bg.fillStyle(0x0a0f18, 0.97)
+    bg.fillStyle(surface.panel, 0.97)
     bg.fillRect(0, 0, W, TOP_H)
-    // Bottom gradient line
-    for (let i = 0; i < W; i++) {
-      const d = Math.abs(i - W / 2) / (W / 2)
-      bg.fillStyle(0x8844cc, 0.25 * (1 - d * d))
-      bg.fillRect(i, TOP_H - 1, 1, 1)
-    }
+    // Bottom violet rule (subtle, identifies the pass screen)
+    bg.fillStyle(BP.primary, 0.5)
+    bg.fillRect(0, TOP_H - 1, W, 1)
 
     UI.backArrow(this, () => transitionTo(this, 'LobbyScene'))
 
-    // Title
+    // Title — Cinzel h2 violet
     this.add.text(70, TOP_H / 2 - 6, 'PASSE DE BATALHA', {
-      fontFamily: F.title, fontSize: '20px', color: '#cc88ff', fontStyle: 'bold',
-      shadow: { offsetX: 0, offsetY: 2, color: '#4a1a6a', blur: 8, fill: true },
+      fontFamily: fontFamily.display, fontSize: typeScale.h2,
+      color: BP.lightHex, fontStyle: '700',
+    }).setOrigin(0, 0.5).setLetterSpacing(2.4)
+
+    // Season name — Cormorant italic
+    this.add.text(70, TOP_H / 2 + 14, CURRENT_SEASON.name, {
+      fontFamily: fontFamily.serif, fontSize: typeScale.small,
+      color: fg.tertiaryHex, fontStyle: 'italic',
     }).setOrigin(0, 0.5)
 
-    // Season name
-    this.add.text(70, TOP_H / 2 + 12, CURRENT_SEASON.name, {
-      fontFamily: F.body, fontSize: '10px', color: '#886aaa', shadow: SHADOW.text,
-    }).setOrigin(0, 0.5)
-
-    // Right: tier + XP
-    const tierText = bp.tier >= PASS_MAX_TIER ? 'MAX' : `Nivel ${bp.tier}`
+    // Right: tier badge + XP bar
+    const tierText = bp.tier >= PASS_MAX_TIER ? 'NÍVEL MÁX' : `NÍVEL ${bp.tier}`
     this.add.text(W - 20, TOP_H / 2 - 8, tierText, {
-      fontFamily: F.title, fontSize: '16px', color: '#cc88ff', fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(1, 0.5)
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: BP.lightHex, fontStyle: '700',
+    }).setOrigin(1, 0.5).setLetterSpacing(1.8)
 
     if (bp.tier < PASS_MAX_TIER) {
-      // XP progress bar
-      const barW = 120; const barH = 8
+      const barW = 140; const barH = 8
       const barX = W - 20 - barW; const barY = TOP_H / 2 + 8
       const ratio = bp.xp / PASS_XP_PER_TIER
 
       const barGfx = this.add.graphics()
-      barGfx.fillStyle(0x1a1030, 1)
+      barGfx.fillStyle(surface.deepest, 1)
       barGfx.fillRoundedRect(barX, barY, barW, barH, barH / 2)
+      barGfx.lineStyle(1, BP.edge, 0.6)
+      barGfx.strokeRoundedRect(barX, barY, barW, barH, barH / 2)
       const fillW = Math.max(barH, barW * ratio)
-      barGfx.fillStyle(0x8844cc, 0.8)
+      barGfx.fillStyle(BP.primary, 1)
       barGfx.fillRoundedRect(barX, barY, fillW, barH, barH / 2)
-      barGfx.fillStyle(0xffffff, 0.15)
+      barGfx.fillStyle(0xffffff, 0.20)
       barGfx.fillRoundedRect(barX, barY, fillW, barH * 0.4, { tl: barH / 2, tr: barH / 2, bl: 0, br: 0 })
 
       this.add.text(barX + barW / 2, barY + barH / 2, `${bp.xp}/${PASS_XP_PER_TIER} XP`, {
-        fontFamily: F.body, fontSize: '11px', color: '#ffffff', fontStyle: 'bold', shadow: SHADOW.text,
+        fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+        color: fg.primaryHex, fontStyle: '700',
       }).setOrigin(0.5)
     }
 
     // Days remaining
     const endDate = new Date(CURRENT_SEASON.endDate).getTime()
     const daysLeft = Math.max(0, Math.ceil((endDate - Date.now()) / (24 * 60 * 60 * 1000)))
-    this.add.text(W - 150, TOP_H / 2 + 8, `${daysLeft}d restantes`, {
-      fontFamily: F.body, fontSize: '13px', color: '#665588', shadow: SHADOW.text,
+    this.add.text(W - 170, TOP_H / 2 + 8, `${daysLeft}d restantes`, {
+      fontFamily: fontFamily.body, fontSize: typeScale.small,
+      color: fg.tertiaryHex, fontStyle: '500',
     }).setOrigin(1, 0.5)
   }
 
@@ -124,19 +147,26 @@ export default class BattlePassScene extends Phaser.Scene {
     const bp = playerData.getBattlePass()
     const px = 12; const py = TOP_H + 6; const pw = W - 24; const ph = MISSION_H - 12
 
-    // Panel background
+    // Panel — surface.panel + border.default + radii.lg + violet top rule
     const pg = this.add.graphics()
-    pg.fillStyle(0x0c1019, 0.9)
-    pg.fillRoundedRect(px, py, pw, ph, 10)
-    pg.lineStyle(1, 0x8844cc, 0.15)
-    pg.strokeRoundedRect(px, py, pw, ph, 10)
+    pg.fillStyle(surface.panel, 0.92)
+    pg.fillRoundedRect(px, py, pw, ph, radii.lg)
+    pg.lineStyle(1, border.default, 1)
+    pg.strokeRoundedRect(px, py, pw, ph, radii.lg)
+    pg.fillStyle(0xffffff, 0.03)
+    pg.fillRoundedRect(px + 2, py + 2, pw - 4, 18,
+      { tl: radii.lg - 1, tr: radii.lg - 1, bl: 0, br: 0 })
+    pg.fillStyle(BP.primary, 0.45)
+    pg.fillRoundedRect(px, py, pw, 2, { tl: radii.lg, tr: radii.lg, bl: 0, br: 0 })
 
-    // Title + subtitle ("expire with the season")
-    this.add.text(px + 16, py + 16, 'MISSOES DA TEMPORADA', {
-      fontFamily: F.title, fontSize: '14px', color: '#cc88ff', fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0, 0.5)
-    this.add.text(px + 16, py + 32, 'Todas expiram junto com a temporada', {
-      fontFamily: F.body, fontSize: '10px', color: '#666688', shadow: SHADOW.text,
+    // Title — Manrope meta letterSpacing 1.8 violet
+    this.add.text(px + 16, py + 18, 'MISSÕES DA TEMPORADA', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: BP.lightHex, fontStyle: '700',
+    }).setOrigin(0, 0.5).setLetterSpacing(1.8)
+    this.add.text(px + 16, py + 36, 'Todas expiram junto com a temporada', {
+      fontFamily: fontFamily.serif, fontSize: typeScale.small,
+      color: fg.tertiaryHex, fontStyle: 'italic',
     }).setOrigin(0, 0.5)
 
     // ── Mission grid (2 rows × 4 cols, fits the 8 chain slots) ──
@@ -162,81 +192,82 @@ export default class BattlePassScene extends Phaser.Scene {
     // ── Premium purchase / active badge (right column) ──
     if (!bp.isPremium) {
       const btnX = W - 110; const btnY = py + ph / 2
-      const btnW = 170; const btnH = 84
+      const btnW = 180; const btnH = 88
 
-      // Outer glow
-      const glow = this.add.rectangle(btnX, btnY, btnW + 10, btnH + 10, 0x8844cc, 0)
+      // Outer pulse glow
+      const glow = this.add.rectangle(btnX, btnY, btnW + 10, btnH + 10, BP.primary, 0)
       this.tweens.add({
-        targets: glow, alpha: { from: 0.06, to: 0.2 }, duration: 1400, yoyo: true, repeat: -1, ease: 'Sine.InOut',
+        targets: glow, alpha: { from: 0.08, to: 0.25 }, duration: 1400, yoyo: true, repeat: -1, ease: 'Sine.InOut',
       })
 
       const btnGfx = this.add.graphics()
-      // Shadow
-      btnGfx.fillStyle(0x000000, 0.3)
-      btnGfx.fillRoundedRect(btnX - btnW / 2 + 2, btnY - btnH / 2 + 3, btnW, btnH, 10)
-      // Fill
-      btnGfx.fillStyle(0x1a1030, 1)
-      btnGfx.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 10)
-      // Purple wash
-      btnGfx.fillStyle(0x8844cc, 0.18)
+      // Drop shadow
+      btnGfx.fillStyle(0x000000, 0.45)
+      btnGfx.fillRoundedRect(btnX - btnW / 2 + 2, btnY - btnH / 2 + 4, btnW, btnH, radii.lg)
+      // Base
+      btnGfx.fillStyle(BP.ink, 1)
+      btnGfx.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, radii.lg)
+      // Violet wash top
+      btnGfx.fillStyle(BP.primary, 0.22)
       btnGfx.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH / 2, {
-        tl: 10, tr: 10, bl: 0, br: 0,
+        tl: radii.lg, tr: radii.lg, bl: 0, br: 0,
       })
       // Top gloss
-      btnGfx.fillStyle(0xffffff, 0.04)
+      btnGfx.fillStyle(0xffffff, 0.05)
       btnGfx.fillRoundedRect(btnX - btnW / 2 + 2, btnY - btnH / 2 + 2, btnW - 4, 16,
-        { tl: 8, tr: 8, bl: 0, br: 0 })
-      // Double border
-      btnGfx.lineStyle(2, 0x8844cc, 0.85)
-      btnGfx.strokeRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 10)
-      btnGfx.lineStyle(1, 0xcc88ff, 0.4)
-      btnGfx.strokeRoundedRect(btnX - btnW / 2 + 3, btnY - btnH / 2 + 3, btnW - 6, btnH - 6, 8)
+        { tl: radii.lg - 1, tr: radii.lg - 1, bl: 0, br: 0 })
+      // Border + inner ring
+      btnGfx.lineStyle(2, BP.primary, 1)
+      btnGfx.strokeRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, radii.lg)
+      btnGfx.lineStyle(1, BP.light, 0.45)
+      btnGfx.strokeRoundedRect(btnX - btnW / 2 + 3, btnY - btnH / 2 + 3, btnW - 6, btnH - 6, radii.md)
 
-      this.add.text(btnX, btnY - 22, 'OBTER PREMIUM', {
-        fontFamily: F.title, fontSize: '13px', color: '#ffffff', fontStyle: 'bold',
-        shadow: { offsetX: 0, offsetY: 1, color: '#2a0a4a', blur: 6, fill: true },
-      }).setOrigin(0.5)
-      this.add.text(btnX, btnY - 4, PASS_PREMIUM_PRICE_LABEL, {
-        fontFamily: F.title, fontSize: '18px', color: '#f0c850', fontStyle: 'bold',
-        shadow: { offsetX: 0, offsetY: 2, color: '#3a2a0a', blur: 6, fill: true },
-      }).setOrigin(0.5)
-      this.add.text(btnX, btnY + 18, 'Desbloqueia recompensas', {
-        fontFamily: F.body, fontSize: '9px', color: '#886aaa', shadow: SHADOW.text,
-      }).setOrigin(0.5)
-      this.add.text(btnX, btnY + 30, 'premium do passe', {
-        fontFamily: F.body, fontSize: '9px', color: '#886aaa', shadow: SHADOW.text,
+      this.add.text(btnX, btnY - 24, 'OBTER PREMIUM', {
+        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+        color: fg.primaryHex, fontStyle: '700',
+      }).setOrigin(0.5).setLetterSpacing(1.8)
+      this.add.text(btnX, btnY - 2, PASS_PREMIUM_PRICE_LABEL, {
+        fontFamily: fontFamily.display, fontSize: typeScale.h3,
+        color: accent.primaryHex, fontStyle: '700',
+      }).setOrigin(0.5).setLetterSpacing(1.4)
+      this.add.text(btnX, btnY + 22, 'Desbloqueia trilha premium', {
+        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+        color: fg.tertiaryHex, fontStyle: '500',
       }).setOrigin(0.5)
 
       const hit = this.add.rectangle(btnX, btnY, btnW, btnH, 0, 0.001)
         .setInteractive({ useHandCursor: true })
       hit.on('pointerover', () => {
-        this.tweens.add({ targets: [glow], alpha: 0.3, duration: 140 })
+        this.tweens.add({ targets: [glow], alpha: 0.4, duration: 140 })
       })
       hit.on('pointerout', () => {
-        this.tweens.add({ targets: [glow], alpha: 0.15, duration: 140 })
+        this.tweens.add({ targets: [glow], alpha: 0.18, duration: 140 })
       })
       hit.on('pointerdown', () => {
-        // TODO: hook into the real-money IAP flow. For now the client just
-        // unlocks the premium track to let designers validate the UX.
+        // TODO: hook into the real-money IAP flow. For now unlocks the
+        // premium track locally to validate UX.
         if (playerData.unlockPremiumPass()) {
           this.scene.restart()
         }
       })
     } else {
-      // Premium active badge
+      // Premium active badge — violet pill
       const badgeX = W - 110; const badgeY = py + ph / 2
+      const badgeW = 152; const badgeH = 50
       const badgeGfx = this.add.graphics()
-      badgeGfx.fillStyle(0x2a1a3a, 0.9)
-      badgeGfx.fillRoundedRect(badgeX - 70, badgeY - 22, 140, 44, 10)
-      badgeGfx.lineStyle(2, 0x8844cc, 0.7)
-      badgeGfx.strokeRoundedRect(badgeX - 70, badgeY - 22, 140, 44, 10)
-      badgeGfx.lineStyle(1, 0xcc88ff, 0.4)
-      badgeGfx.strokeRoundedRect(badgeX - 67, badgeY - 19, 134, 38, 8)
-      this.add.text(badgeX, badgeY - 6, 'PREMIUM ATIVO', {
-        fontFamily: F.title, fontSize: '13px', color: '#cc88ff', fontStyle: 'bold', shadow: SHADOW.text,
-      }).setOrigin(0.5)
+      badgeGfx.fillStyle(BP.deep, 0.95)
+      badgeGfx.fillRoundedRect(badgeX - badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH, radii.md)
+      badgeGfx.lineStyle(2, BP.primary, 0.85)
+      badgeGfx.strokeRoundedRect(badgeX - badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH, radii.md)
+      badgeGfx.lineStyle(1, BP.light, 0.45)
+      badgeGfx.strokeRoundedRect(badgeX - badgeW / 2 + 3, badgeY - badgeH / 2 + 3, badgeW - 6, badgeH - 6, radii.sm)
+      this.add.text(badgeX, badgeY - 8, 'PREMIUM ATIVO', {
+        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+        color: BP.lightHex, fontStyle: '700',
+      }).setOrigin(0.5).setLetterSpacing(2)
       this.add.text(badgeX, badgeY + 10, 'Obrigado por apoiar!', {
-        fontFamily: F.body, fontSize: '9px', color: '#886aaa', shadow: SHADOW.text,
+        fontFamily: fontFamily.serif, fontSize: typeScale.small,
+        color: fg.tertiaryHex, fontStyle: 'italic',
       }).setOrigin(0.5)
     }
   }
@@ -259,133 +290,116 @@ export default class BattlePassScene extends Phaser.Scene {
     const done = mission.completed
     const fullyDone = mission.fullyDone
 
-    // ── Background ──
-    g.fillStyle(fullyDone ? 0x14241a : done ? 0x1a1a30 : 0x0e1420, 0.92)
-    g.fillRoundedRect(x, y, w, h, 6)
-
-    // Top highlight band — subtle shine on the upper third
-    g.fillStyle(fullyDone ? 0x1f2f25 : done ? 0x252040 : 0x141a26, 0.6)
-    g.fillRoundedRect(x, y, w, h * 0.35, { tl: 6, tr: 6, bl: 0, br: 0 })
+    // ── Background — surface.raised default, success-tinted when fullyDone,
+    //    violet-tinted when ready-to-claim ──
+    const fillColor = fullyDone ? state.successDim : done ? BP.deep : surface.raised
+    g.fillStyle(fillColor, 0.95)
+    g.fillRoundedRect(x, y, w, h, radii.md)
+    // Top highlight band
+    g.fillStyle(0xffffff, 0.04)
+    g.fillRoundedRect(x, y, w, h * 0.35, { tl: radii.md, tr: radii.md, bl: 0, br: 0 })
 
     // Border picks the state color
-    const borderColor = fullyDone ? C.success : done ? 0xcc88ff : 0x3a3a4a
-    g.lineStyle(1.5, borderColor, fullyDone ? 0.7 : done ? 0.65 : 0.25)
-    g.strokeRoundedRect(x, y, w, h, 6)
-    // Inner ring (very subtle) to feel premium
-    g.lineStyle(1, borderColor, fullyDone ? 0.25 : done ? 0.22 : 0.08)
-    g.strokeRoundedRect(x + 2, y + 2, w - 4, h - 4, 5)
+    const borderColor = fullyDone ? state.success : done ? BP.primary : border.default
+    g.lineStyle(1.5, borderColor, fullyDone ? 0.85 : done ? 0.85 : 0.7)
+    g.strokeRoundedRect(x, y, w, h, radii.md)
 
     // ── Category pill (top-left) ──
     if (mission.category) {
       const pillX = x + 8; const pillY = y + 10
-      const pillTextW = mission.category.length * 6 + 10
+      const pillTextW = mission.category.length * 6 + 12
       const pillH = 14
       const pillGfx = this.add.graphics()
-      pillGfx.fillStyle(0x1a1030, 0.85)
-      pillGfx.fillRoundedRect(pillX, pillY - pillH / 2, pillTextW, pillH, 7)
-      pillGfx.lineStyle(1, borderColor, 0.6)
-      pillGfx.strokeRoundedRect(pillX, pillY - pillH / 2, pillTextW, pillH, 7)
-      this.add.text(pillX + pillTextW / 2, pillY, mission.category, {
-        fontFamily: F.title, fontSize: '8px',
-        color: fullyDone ? '#9be8aa' : done ? '#cc88ff' : '#666688',
-        fontStyle: 'bold', shadow: SHADOW.text,
-      }).setOrigin(0.5)
+      pillGfx.fillStyle(surface.deepest, 0.85)
+      pillGfx.fillRoundedRect(pillX, pillY - pillH / 2, pillTextW, pillH, pillH / 2)
+      pillGfx.lineStyle(1, borderColor, 0.7)
+      pillGfx.strokeRoundedRect(pillX, pillY - pillH / 2, pillTextW, pillH, pillH / 2)
+      this.add.text(pillX + pillTextW / 2, pillY, mission.category.toUpperCase(), {
+        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+        color: fullyDone ? state.successHex : done ? BP.lightHex : fg.tertiaryHex,
+        fontStyle: '700',
+      }).setOrigin(0.5).setLetterSpacing(1.4)
     }
 
-    // ── Stage indicator (top-right): "2/5" or "✓" if fully done ──
+    // ── Stage indicator (top-right) ──
     {
       const indicatorX = x + w - 8
       const indicatorY = y + 10
-      // When fullyDone we render the checkmark INSIDE the same slot the
-      // claim button used to occupy on the bottom row, so the top-right
-      // just shows "5/5". When mid-chain we show the active stage number.
       const stageText = fullyDone
         ? `${mission.totalStages}/${mission.totalStages}`
         : `${mission.stageIndex + 1}/${mission.totalStages}`
       this.add.text(indicatorX, indicatorY, stageText, {
-        fontFamily: F.title, fontSize: '9px',
-        color: fullyDone ? '#9be8aa' : done ? '#cc88ff' : '#666677',
-        fontStyle: 'bold', shadow: SHADOW.text,
+        fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+        color: fullyDone ? state.successHex : done ? BP.lightHex : fg.tertiaryHex,
+        fontStyle: '700',
       }).setOrigin(1, 0.5)
     }
 
-    // ── Description (middle row) ──
+    // ── Description ──
     this.add.text(x + 8, y + 26, mission.description, {
-      fontFamily: F.body, fontSize: '10px',
-      color: fullyDone ? '#9be8aa' : done ? '#ccbbee' : '#888888',
-      fontStyle: 'bold', shadow: SHADOW.text,
+      fontFamily: fontFamily.body, fontSize: typeScale.small,
+      color: fullyDone ? state.successHex : done ? fg.primaryHex : fg.secondaryHex,
+      fontStyle: '500',
       wordWrap: { width: w - 16 },
     }).setOrigin(0, 0.5)
 
-    // ── Progress bar + count + claim/XP (bottom row) ──
+    // ── Bottom row: progress/claim ──
     if (fullyDone) {
-      // Replace the bar with a flat "concluído" line and a checkmark.
       const cy = y + h - 12
       const cGfx = this.add.graphics()
-      cGfx.fillStyle(0x1a3a1a, 0.6)
+      cGfx.fillStyle(state.successDim, 0.7)
       cGfx.fillRoundedRect(x + 8, cy - 4, w - 16, 8, 4)
       this.add.text(x + 8, cy, 'CADEIA COMPLETA', {
-        fontFamily: F.title, fontSize: '8px', color: '#9be8aa',
-        fontStyle: 'bold', shadow: SHADOW.text,
-      }).setOrigin(0, 0.5)
+        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+        color: state.successHex, fontStyle: '700',
+      }).setOrigin(0, 0.5).setLetterSpacing(1.4)
       this.add.text(x + w - 8, cy, '✓', {
-        fontFamily: F.title, fontSize: '14px', color: '#4ade80',
-        fontStyle: 'bold', shadow: SHADOW.text,
+        fontFamily: fontFamily.display, fontSize: typeScale.h3,
+        color: state.successHex, fontStyle: '700',
       }).setOrigin(1, 0.5)
       return
     }
 
-    // Reserve right-side space for either the claim button (when done) or
-    // the static "+xp" pill (otherwise). The progress bar fills whatever is
-    // left of the card minus margins.
-    const rightZone = 50 // width of XP/claim block
+    const rightZone = 50
     const barX = x + 8
     const barY = y + h - 14
     const barH = 6
-    const countTextW = 32 // room for "999/999"
+    const countTextW = 32
     const barW = Math.max(40, w - 16 - rightZone - countTextW - 4)
 
-    // Bar background
     const ratio = Math.min(mission.progress / mission.target, 1)
     const pGfx = this.add.graphics()
-    pGfx.fillStyle(0x0a0e18, 1)
+    pGfx.fillStyle(surface.deepest, 1)
     pGfx.fillRoundedRect(barX, barY, barW, barH, barH / 2)
-    // Fill
     const fillW = Math.max(barH, barW * ratio)
-    pGfx.fillStyle(done ? 0xcc88ff : 0x554477, 0.85)
+    pGfx.fillStyle(done ? BP.primary : BP.edge, 0.95)
     pGfx.fillRoundedRect(barX, barY, fillW, barH, barH / 2)
-    // Glossy highlight
-    pGfx.fillStyle(0xffffff, 0.18)
+    pGfx.fillStyle(0xffffff, 0.20)
     pGfx.fillRoundedRect(barX, barY, fillW, barH * 0.4, { tl: barH / 2, tr: barH / 2, bl: 0, br: 0 })
 
-    // Progress count text
     const countX = barX + barW + 4
     this.add.text(countX, barY + barH / 2, `${Math.min(mission.progress, mission.target)}/${mission.target}`, {
-      fontFamily: F.body, fontSize: '10px',
-      color: done ? '#cc88ff' : '#666677',
-      fontStyle: 'bold', shadow: SHADOW.text,
+      fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+      color: done ? BP.lightHex : fg.tertiaryHex, fontStyle: '700',
     }).setOrigin(0, 0.5)
 
-    // Claim pill (or static "+xp" preview)
     const claimX = x + w - 26
     const claimY = barY + barH / 2
     if (done) {
       const claimGfx = this.add.graphics()
-      claimGfx.fillStyle(0x2a1a3a, 1)
+      claimGfx.fillStyle(BP.deep, 1)
       claimGfx.fillRoundedRect(claimX - 22, claimY - 9, 44, 18, 9)
-      claimGfx.lineStyle(1, 0x8844cc, 0.85)
+      claimGfx.lineStyle(1, BP.primary, 1)
       claimGfx.strokeRoundedRect(claimX - 22, claimY - 9, 44, 18, 9)
-      // Pulsing glow
-      const pulse = this.add.rectangle(claimX, claimY, 48, 22, 0x8844cc, 0)
+      const pulse = this.add.rectangle(claimX, claimY, 48, 22, BP.primary, 0)
       this.tweens.add({
-        targets: pulse, alpha: { from: 0.04, to: 0.2 },
+        targets: pulse, alpha: { from: 0.06, to: 0.25 },
         duration: 800, yoyo: true, repeat: -1, ease: 'Sine.InOut',
       })
       this.add.text(claimX, claimY, `+${mission.xpReward}`, {
-        fontFamily: F.title, fontSize: '12px', color: '#cc88ff',
-        fontStyle: 'bold', shadow: SHADOW.text,
+        fontFamily: fontFamily.mono, fontSize: typeScale.small,
+        color: BP.lightHex, fontStyle: '700',
       }).setOrigin(0.5)
-      // Hit zone
       const claimHit = this.add.rectangle(claimX, claimY, 46, 20, 0, 0.001)
         .setInteractive({ useHandCursor: true })
       claimHit.on('pointerdown', () => {
@@ -393,9 +407,9 @@ export default class BattlePassScene extends Phaser.Scene {
         this.scene.restart()
       })
     } else {
-      this.add.text(claimX, claimY, `+${mission.xpReward}xp`, {
-        fontFamily: F.body, fontSize: '10px',
-        color: '#555566', fontStyle: 'bold', shadow: SHADOW.text,
+      this.add.text(claimX, claimY, `+${mission.xpReward} XP`, {
+        fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+        color: fg.disabledHex, fontStyle: '700',
       }).setOrigin(0.5)
     }
   }
@@ -408,17 +422,23 @@ export default class BattlePassScene extends Phaser.Scene {
     const bp = playerData.getBattlePass()
     const trackX = 12; const trackW = W - 24
 
-    // Panel background
+    // Panel — surface.panel + border.default + radii.lg + violet top rule
     const panelGfx = this.add.graphics()
-    panelGfx.fillStyle(0x0c1019, 0.9)
-    panelGfx.fillRoundedRect(trackX, TRACK_Y, trackW, TRACK_H, 10)
-    panelGfx.lineStyle(1, 0x8844cc, 0.15)
-    panelGfx.strokeRoundedRect(trackX, TRACK_Y, trackW, TRACK_H, 10)
+    panelGfx.fillStyle(surface.panel, 0.92)
+    panelGfx.fillRoundedRect(trackX, TRACK_Y, trackW, TRACK_H, radii.lg)
+    panelGfx.lineStyle(1, border.default, 1)
+    panelGfx.strokeRoundedRect(trackX, TRACK_Y, trackW, TRACK_H, radii.lg)
+    panelGfx.fillStyle(0xffffff, 0.03)
+    panelGfx.fillRoundedRect(trackX + 2, TRACK_Y + 2, trackW - 4, 18,
+      { tl: radii.lg - 1, tr: radii.lg - 1, bl: 0, br: 0 })
+    panelGfx.fillStyle(BP.primary, 0.45)
+    panelGfx.fillRoundedRect(trackX, TRACK_Y, trackW, 2, { tl: radii.lg, tr: radii.lg, bl: 0, br: 0 })
 
-    // Title
-    this.add.text(trackX + 16, TRACK_Y + 16, 'RECOMPENSAS', {
-      fontFamily: F.title, fontSize: '14px', color: C.goldHex, fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0, 0.5)
+    // Title — Manrope meta accent letterSpacing 1.8
+    this.add.text(trackX + 16, TRACK_Y + 18, 'RECOMPENSAS', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: accent.primaryHex, fontStyle: '700',
+    }).setOrigin(0, 0.5).setLetterSpacing(1.8)
 
     // ── Vertical layout constants ──
     // PREMIUM on top, GRATIS on bottom, with the tier-number circle living
@@ -431,8 +451,8 @@ export default class BattlePassScene extends Phaser.Scene {
     const tierCircleY = premCardY + PREMIUM_CARD_H + trackGap / 2          // dead center of the gap
 
     // ── Track labels (left-rail "PREMIUM" / "GRATIS" pill stamps) ──
-    this.drawTrackLabel(trackX + 10, premCardY + PREMIUM_CARD_H / 2, 'PREMIUM', 0xcc88ff)
-    this.drawTrackLabel(trackX + 10, freeCardY + FREE_CARD_H / 2, 'GRATIS', 0x4ade80)
+    this.drawTrackLabel(trackX + 10, premCardY + PREMIUM_CARD_H / 2, 'PREMIUM', BP.primary)
+    this.drawTrackLabel(trackX + 10, freeCardY + FREE_CARD_H / 2, 'GRÁTIS', state.success)
 
     // Scrollable container for tiers
     const contentX = trackX + 72
@@ -470,42 +490,40 @@ export default class BattlePassScene extends Phaser.Scene {
       this.drawRewardCard(container, tx + freeOffsetX, freeCardY, FREE_CARD_W, FREE_CARD_H,
         st.freeReward, reached, freeClaimed, false, st.tier, false)
 
-      // ── Connection line between tier circles (drawn after cards so it
-      //    sits in the central gap between rows) ──
+      // ── Connection line between tier circles ──
       if (st.tier > 1) {
         const lineGfx = this.add.graphics()
-        lineGfx.fillStyle(reached ? 0x8844cc : 0x222233, reached ? 0.6 : 0.3)
+        lineGfx.fillStyle(reached ? BP.primary : border.subtle, reached ? 0.7 : 0.5)
         lineGfx.fillRect(tx - TIER_GAP, tierCircleY - 1.5, TIER_GAP, 3)
         container.add(lineGfx)
       }
 
-      // ── Tier number circle (DRAWN LAST so it sits on top of cards) ──
+      // ── Tier number circle ──
       const circleR = 15
       const circleGfx = this.add.graphics()
       if (isCurrent) {
         // Current tier: soft outer glow
-        circleGfx.fillStyle(0x8844cc, 0.22)
+        circleGfx.fillStyle(BP.primary, 0.28)
         circleGfx.fillCircle(tx + TIER_W / 2, tierCircleY, circleR + 6)
-        circleGfx.fillStyle(0x8844cc, 0.12)
+        circleGfx.fillStyle(BP.primary, 0.14)
         circleGfx.fillCircle(tx + TIER_W / 2, tierCircleY, circleR + 12)
       }
       // Solid backing so it occludes any card edge it overlaps
-      circleGfx.fillStyle(0x0a0e18, 1)
+      circleGfx.fillStyle(surface.deepest, 1)
       circleGfx.fillCircle(tx + TIER_W / 2, tierCircleY, circleR + 1)
       // Inner fill
-      circleGfx.fillStyle(reached ? 0x2a1a3a : 0x12161f, 1)
+      circleGfx.fillStyle(reached ? BP.deep : surface.primary, 1)
       circleGfx.fillCircle(tx + TIER_W / 2, tierCircleY, circleR)
       // Double border ring
-      circleGfx.lineStyle(1.8, reached ? 0x8844cc : 0x444455, reached ? 0.95 : 0.5)
+      circleGfx.lineStyle(1.8, reached ? BP.primary : border.strong, reached ? 1 : 0.6)
       circleGfx.strokeCircle(tx + TIER_W / 2, tierCircleY, circleR)
-      circleGfx.lineStyle(1, reached ? 0xcc88ff : 0x666677, reached ? 0.5 : 0.25)
+      circleGfx.lineStyle(1, reached ? BP.light : border.default, reached ? 0.55 : 0.3)
       circleGfx.strokeCircle(tx + TIER_W / 2, tierCircleY, circleR - 3)
       container.add(circleGfx)
 
       container.add(this.add.text(tx + TIER_W / 2, tierCircleY, `${st.tier}`, {
-        fontFamily: F.title, fontSize: '13px',
-        color: reached ? '#ffe6ff' : '#666677',
-        fontStyle: 'bold', shadow: SHADOW.text,
+        fontFamily: fontFamily.mono, fontSize: typeScale.small,
+        color: reached ? fg.primaryHex : fg.tertiaryHex, fontStyle: '700',
       }).setOrigin(0.5))
     })
 
@@ -544,19 +562,17 @@ export default class BattlePassScene extends Phaser.Scene {
    * PREMIUM). Rendered as a vertical pill with colored border.
    */
   private drawTrackLabel(x: number, y: number, text: string, color: number) {
-    const w = 52; const h = 24
+    const w = 56; const h = 24
     const g = this.add.graphics()
-    g.fillStyle(0x0e1018, 0.9)
-    g.fillRoundedRect(x, y - h / 2, w, h, 6)
-    g.lineStyle(1.5, color, 0.8)
-    g.strokeRoundedRect(x, y - h / 2, w, h, 6)
-    g.lineStyle(1, color, 0.3)
-    g.strokeRoundedRect(x + 2, y - h / 2 + 2, w - 4, h - 4, 4)
+    g.fillStyle(surface.deepest, 0.9)
+    g.fillRoundedRect(x, y - h / 2, w, h, radii.sm)
+    g.lineStyle(1.5, color, 0.85)
+    g.strokeRoundedRect(x, y - h / 2, w, h, radii.sm)
     this.add.text(x + w / 2, y, text, {
-      fontFamily: F.title, fontSize: '10px',
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: `#${color.toString(16).padStart(6, '0')}`,
-      fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0.5)
+      fontStyle: '700',
+    }).setOrigin(0.5).setLetterSpacing(1.6)
   }
 
   /**
@@ -586,33 +602,34 @@ export default class BattlePassScene extends Phaser.Scene {
       priorityOrder.find((t) => rewards.some((r) => r.type === t)) ?? 'gold'
     const isSpecial = primaryType === 'skin' || primaryType === 'skill_pack'
 
-    // ── Card background (vertical gradient via two rectangles) ──
-    g.fillStyle(isSpecial ? 0x1a1430 : 0x0e1420, alpha)
-    g.fillRoundedRect(x, y, w, h, 8)
+    // ── Card background — surface.panel (or violet-tinted for special) ──
+    g.fillStyle(isSpecial ? BP.deep : surface.panel, alpha)
+    g.fillRoundedRect(x, y, w, h, radii.md)
     // Top highlight band
-    g.fillStyle(isSpecial ? 0x2a1a50 : 0x1a2030, alpha * 0.5)
-    g.fillRoundedRect(x, y, w, h * 0.45, { tl: 8, tr: 8, bl: 0, br: 0 })
+    g.fillStyle(isSpecial ? BP.primary : surface.raised, alpha * 0.4)
+    g.fillRoundedRect(x, y, w, h * 0.45, { tl: radii.md, tr: radii.md, bl: 0, br: 0 })
 
     // Diagonal shine accent for skin cards
     if (primaryType === 'skin' && reached) {
-      g.fillStyle(0xcc88ff, 0.05)
+      g.fillStyle(BP.light, 0.06)
       g.fillTriangle(x, y, x + w, y, x, y + h * 0.6)
     }
 
-    // Border follows the primary reward type. Note: DG owns the cyan blue
-    // (matching the lobby HUD), so skill packs use a distinct warm orange.
+    // Border follows the primary reward type. DG = violet (Decision C —
+    // aligned with currency.dgGem), skill_pack = warn amber, skin = light
+    // violet (premium track headline color), gold = neutral.
     const borderColor =
-      primaryType === 'skin' ? 0xcc88ff :
-      primaryType === 'skill_pack' ? 0xffa726 :
-      primaryType === 'dg' ? 0x4fc3f7 :
-      0x3a3a4a
-    g.lineStyle(1.5, borderColor, reached ? 0.65 : 0.18)
-    g.strokeRoundedRect(x, y, w, h, 8)
+      primaryType === 'skin' ? BP.light :
+      primaryType === 'skill_pack' ? state.warn :
+      primaryType === 'dg' ? BP.primary :
+      border.strong
+    g.lineStyle(1.5, borderColor, reached ? 0.85 : 0.35)
+    g.strokeRoundedRect(x, y, w, h, radii.md)
 
     // Outer glow for unclaimed "special" rewards (skin / skill_pack)
     if (isSpecial && reached && !claimed) {
-      g.lineStyle(2, borderColor, 0.35)
-      g.strokeRoundedRect(x - 2, y - 2, w + 4, h + 4, 10)
+      g.lineStyle(2, borderColor, 0.5)
+      g.strokeRoundedRect(x - 2, y - 2, w + 4, h + 4, radii.md + 2)
     }
 
     container.add(g)
@@ -671,7 +688,7 @@ export default class BattlePassScene extends Phaser.Scene {
         const sprite = this.add.image(displayCenterX, spriteCenterY, spriteKey)
         sprite.setScale(fitScale)
         sprite.setAlpha(alpha)
-        if (!reached) sprite.setTint(0x555566)
+        if (!reached) sprite.setTint(border.strong)
         container.add(sprite)
       } else {
         // Texture missing — fall back to the generic glyph
@@ -718,36 +735,35 @@ export default class BattlePassScene extends Phaser.Scene {
       this.drawRewardIcon(container, displayCenterX, displayCenterY, rewards[0].type, alpha, 'large')
     }
 
-    // ── Label strip at the bottom of the card ──
+    // ── Label strip — surface.deepest pill ──
     const stripG = this.add.graphics()
-    stripG.fillStyle(0x000000, alpha * 0.45)
-    stripG.fillRoundedRect(x + 4, labelBoxTop + 2, w - 8, labelBoxH - 6, 5)
-    stripG.lineStyle(1, borderColor, alpha * 0.35)
-    stripG.strokeRoundedRect(x + 4, labelBoxTop + 2, w - 8, labelBoxH - 6, 5)
+    stripG.fillStyle(surface.deepest, alpha * 0.85)
+    stripG.fillRoundedRect(x + 4, labelBoxTop + 2, w - 8, labelBoxH - 6, radii.sm)
+    stripG.lineStyle(1, borderColor, alpha * 0.5)
+    stripG.strokeRoundedRect(x + 4, labelBoxTop + 2, w - 8, labelBoxH - 6, radii.sm)
     container.add(stripG)
 
     // Each reward gets its own label line so bundles read cleanly.
     const labelText = rewards.map((r) => r.label).join('\n')
-    const fontSize = rewards.length > 1 ? '8px' : '10px'
+    const fontSize = rewards.length > 1 ? '9px' : typeScale.meta
     container.add(this.add.text(x + w / 2, labelBoxTop + labelBoxH / 2, labelText, {
-      fontFamily: F.body,
+      fontFamily: fontFamily.body,
       fontSize,
-      color: reached ? '#e8e0f2' : '#555566',
-      fontStyle: 'bold',
-      shadow: SHADOW.text,
+      color: reached ? fg.primaryHex : fg.disabledHex,
+      fontStyle: '700',
       align: 'center',
       wordWrap: { width: w - 12 },
       lineSpacing: 1,
-    }).setOrigin(0.5).setAlpha(alpha))
+    }).setOrigin(0.5).setAlpha(alpha).setLetterSpacing(1.2))
 
     // ── Claimed checkmark ──
     if (claimed) {
       const checkG = this.add.graphics()
-      checkG.fillStyle(0x1a3a1a, 0.9)
+      checkG.fillStyle(state.successDim, 0.95)
       checkG.fillCircle(x + w - 14, y + 14, 10)
-      checkG.lineStyle(2, C.success, 0.95)
+      checkG.lineStyle(2, state.success, 1)
       checkG.strokeCircle(x + w - 14, y + 14, 10)
-      checkG.lineStyle(2.5, C.success, 1)
+      checkG.lineStyle(2.5, state.success, 1)
       checkG.beginPath()
       checkG.moveTo(x + w - 18, y + 14)
       checkG.lineTo(x + w - 14, y + 18)
@@ -759,20 +775,18 @@ export default class BattlePassScene extends Phaser.Scene {
     // ── Lock overlay for premium locked ──
     if (locked) {
       const lockG = this.add.graphics()
-      lockG.fillStyle(0x000000, 0.58)
-      lockG.fillRoundedRect(x, y, w, h, 8)
-      // Shackle
+      lockG.fillStyle(0x000000, 0.65)
+      lockG.fillRoundedRect(x, y, w, h, radii.md)
+      // Shackle + lock body using fg.tertiary
       const lockCx = x + w / 2
       const lockCy = y + h / 2 - 4
-      lockG.lineStyle(2.5, 0x888899, 0.85)
+      lockG.lineStyle(2.5, fg.tertiary, 0.95)
       lockG.beginPath()
       lockG.arc(lockCx, lockCy, 8, Math.PI, 0, false)
       lockG.strokePath()
-      // Body
-      lockG.fillStyle(0x888899, 0.9)
+      lockG.fillStyle(fg.tertiary, 0.95)
       lockG.fillRoundedRect(lockCx - 10, lockCy, 20, 14, 2)
-      // Keyhole
-      lockG.fillStyle(0x0e1018, 1)
+      lockG.fillStyle(surface.deepest, 1)
       lockG.fillCircle(lockCx, lockCy + 6, 1.5)
       container.add(lockG)
     }
@@ -814,39 +828,35 @@ export default class BattlePassScene extends Phaser.Scene {
     const r = size === 'small' ? 9 : size === 'medium' ? 16 : 22
 
     if (type === 'gold') {
-      // ── Standard gold coin (mirrors LobbyScene.drawCoinIcon) ──
-      g.fillStyle(C.gold, alpha * 0.7)
+      // ── Gold coin (currency.goldCoin) ──
+      g.fillStyle(currency.goldCoin, alpha * 0.85)
       g.fillCircle(x, y, r)
-      g.lineStyle(1.5, C.gold, alpha * 0.9)
+      g.lineStyle(1.5, currency.goldCoinEdge, alpha)
       g.strokeCircle(x, y, r)
-      g.lineStyle(1, 0xffffff, alpha * 0.18)
+      g.lineStyle(1, 0xffffff, alpha * 0.2)
       g.strokeCircle(x, y, r * 0.55)
-      // Larger sizes get an extra rim highlight + center shine
       if (size !== 'small') {
-        g.lineStyle(1, 0xffdd88, alpha * 0.55)
+        g.lineStyle(1, 0xffe9a8, alpha * 0.55)
         g.strokeCircle(x, y, r - 2)
-        g.fillStyle(0xffffff, alpha * 0.32)
+        g.fillStyle(0xffffff, alpha * 0.35)
         g.fillCircle(x - r * 0.35, y - r * 0.35, r * 0.22)
       }
     } else if (type === 'dg') {
-      // ── Standard DG diamond-coin (mirrors LobbyScene.drawDiamondIcon) ──
-      // Outer coin
-      g.fillStyle(C.info, alpha * 0.6)
+      // ── DG gem-coin (currency.dgGem violet, Print 11 vocabulary) ──
+      g.fillStyle(currency.dgGem, alpha * 0.85)
       g.fillCircle(x, y, r)
-      g.lineStyle(1.5, C.info, alpha * 0.9)
+      g.lineStyle(1.5, currency.dgGemEdge, alpha)
       g.strokeCircle(x, y, r)
-      // Inner diamond
       const ds = r * 0.55
-      g.fillStyle(0xffffff, alpha * 0.28)
+      g.fillStyle(0xffffff, alpha * 0.32)
       g.fillPoints([
         new Phaser.Geom.Point(x, y - ds),
         new Phaser.Geom.Point(x + ds * 0.7, y),
         new Phaser.Geom.Point(x, y + ds),
         new Phaser.Geom.Point(x - ds * 0.7, y),
       ], true)
-      // Diamond outline (only for larger sizes)
       if (size !== 'small') {
-        g.lineStyle(1, 0xffffff, alpha * 0.5)
+        g.lineStyle(1, 0xffffff, alpha * 0.55)
         g.strokePoints([
           new Phaser.Geom.Point(x, y - ds),
           new Phaser.Geom.Point(x + ds * 0.7, y),
@@ -855,33 +865,30 @@ export default class BattlePassScene extends Phaser.Scene {
         ], true)
       }
     } else if (type === 'skill_pack') {
-      // ── Skill pack — orange tome/scroll ──
+      // ── Skill pack — warn amber tome ──
       const sw = r * 1.7
       const sh = r * 1.5
-      // Outer pack body
-      g.fillStyle(0xffa726, alpha * 0.7)
-      g.fillRoundedRect(x - sw / 2, y - sh / 2, sw, sh, 4)
-      g.lineStyle(1.8, 0xffa726, alpha * 0.95)
-      g.strokeRoundedRect(x - sw / 2, y - sh / 2, sw, sh, 4)
-      // Horizontal binding strap
-      g.fillStyle(0x6a3a0a, alpha * 0.55)
+      g.fillStyle(state.warn, alpha * 0.8)
+      g.fillRoundedRect(x - sw / 2, y - sh / 2, sw, sh, radii.sm)
+      g.lineStyle(1.8, state.warn, alpha)
+      g.strokeRoundedRect(x - sw / 2, y - sh / 2, sw, sh, radii.sm)
+      // Binding strap
+      g.fillStyle(0x6a3a0a, alpha * 0.6)
       g.fillRect(x - sw / 2 + 1, y - 1.5, sw - 2, 3)
-      // Vertical seam down the middle
-      g.lineStyle(1, 0x6a3a0a, alpha * 0.4)
+      g.lineStyle(1, 0x6a3a0a, alpha * 0.45)
       g.beginPath()
       g.moveTo(x, y - sh / 2 + 2)
       g.lineTo(x, y + sh / 2 - 2)
       g.strokePath()
-      // Top corner sparkle for "rare" feel
       if (size !== 'small') {
-        g.fillStyle(0xffffff, alpha * 0.55)
+        g.fillStyle(0xffffff, alpha * 0.6)
         g.fillCircle(x + sw / 2 - 3, y - sh / 2 + 3, 1.4)
       }
     } else if (type === 'skin') {
-      // Fallback glyph when sprite texture is missing
-      g.fillStyle(0xcc88ff, alpha * 0.55)
+      // Fallback glyph when sprite texture is missing — light violet
+      g.fillStyle(BP.light, alpha * 0.6)
       g.fillCircle(x, y, r)
-      g.lineStyle(1.8, 0xcc88ff, alpha * 0.9)
+      g.lineStyle(1.8, BP.primary, alpha)
       g.strokeCircle(x, y, r)
       g.fillStyle(0xffffff, alpha * 0.4)
       g.fillCircle(x, y, r * 0.35)
