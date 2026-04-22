@@ -505,6 +505,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
                   name: dDef.name, effectType: dDef.effectType, power: dDef.power,
                   group: dDef.group, unitClass: capturedOwned.unitClass, level: capturedOwned.level,
                   progress: capturedOwned.progress, description: dDef.description,
+                  longDescription: dDef.longDescription,
                   targetType: dDef.targetType, range: dDef.range,
                   secondaryEffect: dDef.secondaryEffect ?? null,
                 })
@@ -537,6 +538,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
                   name: clickDef.name, effectType: clickDef.effectType, power: clickDef.power,
                   group: clickDef.group, unitClass: capturedOwned.unitClass, level: capturedOwned.level,
                   progress: capturedOwned.progress, description: clickDef.description,
+                  longDescription: clickDef.longDescription,
                   targetType: clickDef.targetType, range: clickDef.range,
                   secondaryEffect: clickDef.secondaryEffect ?? null,
                 })
@@ -747,6 +749,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
         name: def.name, effectType: def.effectType, power: def.power,
         group: def.group, unitClass: owned?.unitClass ?? 'king', level: owned?.level ?? 1,
         progress: owned?.progress ?? 0, description: def.description,
+        longDescription: def.longDescription,
         targetType: def.targetType, range: def.range,
         secondaryEffect: def.secondaryEffect ?? null,
       })
@@ -785,6 +788,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
           name: def.name, effectType: def.effectType, power: def.power,
           group: def.group, unitClass: owned?.unitClass ?? 'king', level: owned?.level ?? 1,
           progress: owned?.progress ?? 0, description: def.description,
+          longDescription: def.longDescription,
           targetType: def.targetType, range: def.range,
           secondaryEffect: def.secondaryEffect ?? null,
         })
@@ -985,6 +989,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
             name: sDef.name, effectType: sDef.effectType, power: sDef.power,
             group: sDef.group, unitClass: sOwned?.unitClass ?? 'king', level: sOwned?.level ?? 1,
             progress: sOwned?.progress ?? 0, description: sDef.description,
+            longDescription: sDef.longDescription,
             targetType: sDef.targetType, range: sDef.range,
             secondaryEffect: sDef.secondaryEffect ?? null,
           })
@@ -1060,6 +1065,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
             name: slotDef.name, effectType: slotDef.effectType, power: slotDef.power,
             group: slotDef.group, unitClass: slotOwned?.unitClass ?? 'king', level: slotOwned?.level ?? 1,
             progress: slotOwned?.progress ?? 0, description: slotDef.description,
+            longDescription: slotDef.longDescription,
             targetType: slotDef.targetType, range: slotDef.range,
             secondaryEffect: slotDef.secondaryEffect ?? null,
           })

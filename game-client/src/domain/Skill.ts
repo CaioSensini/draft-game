@@ -225,9 +225,11 @@ export const ALL_EFFECT_TYPES: readonly SkillEffectType[] = [
 
 export class Skill {
   // ── Identity ──────────────────────────────────────────────────────────────
-  readonly id:          string
-  readonly name:        string
-  readonly description: string
+  readonly id:              string
+  readonly name:            string
+  readonly description:     string
+  /** Multi-paragraph lore / mechanics detail. Empty string when unset. */
+  readonly longDescription: string
 
   // ── Classification ────────────────────────────────────────────────────────
   readonly category:    SkillCategory    // 'attack' or 'defense'
@@ -284,6 +286,7 @@ export class Skill {
     this.id              = def.id
     this.name            = def.name
     this.description     = def.description ?? ''
+    this.longDescription = def.longDescription ?? ''
     this.category        = def.category
     this.group           = def.group
     this.effectType      = def.effectType
@@ -438,6 +441,13 @@ export interface SkillDefinition {
   id:               string
   name:             string
   description?:     string
+  /**
+   * Extended multi-paragraph description rendered in the hover detail card
+   * (UI.skillDetailCard "DESCRIÇÃO DETALHADA" section). Optional — when
+   * absent, the detail card falls back to a placeholder. Populated
+   * per-skill over time; ETAPA 6 only adds the schema hook.
+   */
+  longDescription?: string
   category:         SkillCategory
   group:            SkillGroup
   effectType:       SkillEffectType

@@ -1432,6 +1432,10 @@ export const UI = {
       name: string; effectType: string; power: number;
       group: string; unitClass: string; level: number;
       progress?: number; description?: string;
+      /** Multi-paragraph lore / mechanics copy (ETAPA 6.5). Optional. */
+      longDescription?: string;
+      /** Max level for the progress dots. Defaults to 5. */
+      maxLevel?: number;
       targetType?: string; range?: number;
       skillId?: string;
       // TODO(design-system Fase 2) — Bloco 3 Parte 1 schema refactor (2026-04-21):
@@ -1443,7 +1447,7 @@ export const UI = {
       secondaryEffect?: { effectType: string; power: number; ticks?: number } | null;
     },
   ): Phaser.GameObjects.Container {
-    const cardW = 310; const cardH = 380
+    const cardW = 310; const cardH = 460
     const hw = cardW / 2; const hh = cardH / 2
 
     // Class colour comes straight from the canonical tokens. We keep a small
@@ -1505,11 +1509,25 @@ export const UI = {
     g.fillRoundedRect(-hw, -hh + 4, 4, cardH - 8, { tl: radii.xl, bl: radii.xl, tr: 0, br: 0 })
     els.push(g)
 
-    // ── Top-left: Class name + Level ──
-    els.push(scene.add.text(-hw + 14, -hh + 12, `${cName.toUpperCase()}  ·  NV ${skill.level}`, {
+    // ── Top-left: Class name + Level + progress dots ──
+    // Dots read "lvl atual / max lvl" at a glance (ETAPA 6.5 spec).
+    const headerY = -hh + 14
+    const headerTx = scene.add.text(-hw + 14, headerY, `${cName.toUpperCase()}  ·  NV ${skill.level}`, {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: cHex, fontStyle: '700',
-    }).setLetterSpacing(1.6))
+    }).setOrigin(0, 0.5).setLetterSpacing(1.6)
+    els.push(headerTx)
+
+    const maxLvl = skill.maxLevel ?? 5
+    const dotStartX = -hw + 14 + headerTx.width + 10
+    const dotGap = 10
+    for (let i = 0; i < maxLvl; i++) {
+      const filled = i < skill.level
+      const dotX = dotStartX + i * dotGap
+      const dot = scene.add.circle(dotX, headerY, 3, filled ? C.gold : surface.raised, 1)
+      if (!filled) dot.setStrokeStyle(1, border.default, 0.7)
+      els.push(dot)
+    }
 
     // ── Icon (centered, below class) ──
     const iconSz = 72; const iconCy = -hh + 72
@@ -1608,16 +1626,57 @@ export const UI = {
     els.push(sg2)
     curY += 8
 
-    // ── Description (Manrope body, readable) ──
-    const descMaxH = hh - (curY - (-hh)) - 10
-    let dfs = 14
+    // ── Description (short, Manrope body) ──
+    els.push(scene.add.text(-hw + 18, curY, 'DESCRIÇÃO', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: fg.tertiaryHex, fontStyle: '700',
+    }).setLetterSpacing(1.6))
+    curY += 18
+
+    let dfs = 13
     const descTx = scene.add.text(0, curY, skill.description ?? '', {
       fontFamily: fontFamily.body, fontSize: `${dfs}px`,
       color: fg.secondaryHex,
-      wordWrap: { width: cardW - 30 }, align: 'center', lineSpacing: 5,
+      wordWrap: { width: cardW - 30 }, align: 'center', lineSpacing: 4,
     }).setOrigin(0.5, 0)
-    while (descTx.height > descMaxH && dfs > 11) { dfs--; descTx.setFontSize(dfs) }
+    // Give the short description up to ~4 lines; anything beyond belongs
+    // in longDescription.
+    const shortDescMaxH = 72
+    while (descTx.height > shortDescMaxH && dfs > 11) { dfs--; descTx.setFontSize(dfs) }
     els.push(descTx)
+    curY += Math.max(descTx.height, 18) + 14
+
+    // ── Separator 3 ──
+    const sg3 = scene.add.graphics()
+    for (let i = 0; i < cardW - 30; i++) {
+      const t4 = 1 - Math.abs(i - (cardW - 30) / 2) / ((cardW - 30) / 2)
+      sg3.fillStyle(bColor, 0.18 * t4); sg3.fillRect(-hw + 15 + i, curY, 1, 1)
+    }
+    els.push(sg3)
+    curY += 8
+
+    // ── Long description (ETAPA 6.5 — placeholder until catalog is filled) ──
+    els.push(scene.add.text(-hw + 18, curY, 'DESCRIÇÃO DETALHADA', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: fg.tertiaryHex, fontStyle: '700',
+    }).setLetterSpacing(1.6))
+    curY += 18
+
+    const longBody = (skill.longDescription && skill.longDescription.trim().length > 0)
+      ? skill.longDescription
+      : 'Descrição detalhada em breve.'
+    const isPlaceholder = !(skill.longDescription && skill.longDescription.trim().length > 0)
+    const longMaxH = hh - curY - 14
+    let lfs = 12
+    const longTx = scene.add.text(0, curY, longBody, {
+      fontFamily: fontFamily.body, fontSize: `${lfs}px`,
+      color: isPlaceholder ? fg.disabledHex : fg.secondaryHex,
+      fontStyle: isPlaceholder ? 'italic' : 'normal',
+      wordWrap: { width: cardW - 30 }, align: 'left', lineSpacing: 4,
+    }).setOrigin(0.5, 0)
+    while (longTx.height > longMaxH && lfs > 10) { lfs--; longTx.setFontSize(lfs) }
+    els.push(longTx)
+
     // Silence unused-var for bHex which served only for the legacy group ref
     void bHex
 
