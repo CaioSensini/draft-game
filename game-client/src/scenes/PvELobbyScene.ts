@@ -16,7 +16,6 @@
 
 import Phaser from 'phaser'
 import { UI } from '../utils/UIComponents'
-import { C, F, S, SHADOW, SCREEN } from '../utils/DesignTokens'
 import { transitionTo } from '../utils/SceneTransition'
 import { playerData } from '../utils/PlayerDataManager'
 import { drawCharacterSprite, type SpriteRole } from '../utils/SpriteFactory'
@@ -25,6 +24,10 @@ import { showPlayModesOverlay } from '../utils/PlayModesOverlay'
 import { RANKED_TIERS } from '../data/tournaments'
 import type { UnitRole } from '../engine/types'
 import type { CharClass } from '../utils/AssetPaths'
+import {
+  SCREEN, surface, border, fg, accent, state, currency,
+  colors, fontFamily, typeScale, radii, motion,
+} from '../utils/DesignTokens'
 
 const W = SCREEN.W
 const H = SCREEN.H
@@ -40,25 +43,23 @@ const ROLE_LABELS: Record<UnitRole, string> = {
   executor: 'EXECUTOR',
 }
 
-const CLASS_ACCENTS: Record<UnitRole, number> = {
-  king: C.king,
-  warrior: C.warrior,
-  specialist: C.specialist,
-  executor: C.executor,
+const CLASS_ACCENT: Record<UnitRole, number> = {
+  king:       colors.class.king,
+  warrior:    colors.class.warrior,
+  specialist: colors.class.specialist,
+  executor:   colors.class.executor,
+}
+const CLASS_ACCENT_HEX: Record<UnitRole, string> = {
+  king:       colors.class.kingHex,
+  warrior:    colors.class.warriorHex,
+  specialist: colors.class.specialistHex,
+  executor:   colors.class.executorHex,
 }
 
 type DerivedMode = 'Solo' | 'Duo' | 'Squad'
-
-const MODE_COLORS: Record<DerivedMode, number> = {
-  Solo: C.gold,
-  Duo: C.info,
-  Squad: C.success,
-}; void MODE_COLORS
-
 type PvEType = 'battle' | 'tournament'
 
-// ── Level brackets for Torneio ──────────────────────────────────────────────
-
+// Level brackets for Torneio
 interface LevelBracket {
   level: number
   label: string
@@ -72,7 +73,8 @@ const LEVEL_BRACKETS: LevelBracket[] = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50
     cost: 50 + Math.floor((lvl - 1) / 5) * 25,
   }))
 
-// ── Interfaces ───────────────────────────────────────────────────────────────
+// Layout constants
+const TOP_H = 56
 
 interface RoomSlot {
   role: UnitRole
@@ -91,25 +93,11 @@ export default class PvELobbyScene extends Phaser.Scene {
 
   // UI references
   private cardContainers: Phaser.GameObjects.Container[] = []
-  private modeLabel!: Phaser.GameObjects.Text
-  private modeBadgeBg!: Phaser.GameObjects.Graphics
-  private bonusTexts: Phaser.GameObjects.Text[] = []
-  private startBg!: Phaser.GameObjects.Graphics
-
-  // Tab buttons
-  // Mode tabs removed — "Alterar Modo" handles switching
-
-  // Bracket UI
-  private bracketContainer: Phaser.GameObjects.Container | null = null
-
-  // Info panel text
+  private bracketLabel: Phaser.GameObjects.Text | null = null
+  private bracketCost:  Phaser.GameObjects.Text | null = null
   private infoTexts: Phaser.GameObjects.Text[] = []
 
   constructor() { super('PvELobbyScene') }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // LIFECYCLE
-  // ═══════════════════════════════════════════════════════════════════════════
 
   init(data?: { pveType?: PvEType }): void {
     this.pveType = data?.pveType ?? 'battle'
@@ -117,9 +105,7 @@ export default class PvELobbyScene extends Phaser.Scene {
 
   create(): void {
     this.cardContainers = []
-    this.bonusTexts = []
     this.infoTexts = []
-    this.bracketContainer = null
     this.playerCount = 1
 
     // Auto-select bracket closest to player level
@@ -135,11 +121,9 @@ export default class PvELobbyScene extends Phaser.Scene {
     this.initRoom()
 
     UI.background(this)
-    UI.particles(this, 15)
     UI.fadeIn(this)
 
     this.drawHeader()
-    // Mode tabs removed — use "Alterar Modo" button instead
     this.drawTeamPanel()
     this.drawRoomLog()
     this.drawBonusPanel()
@@ -149,9 +133,7 @@ export default class PvELobbyScene extends Phaser.Scene {
     this.drawStartButton()
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // STATE
-  // ═══════════════════════════════════════════════════════════════════════════
+  // ── State ─────────────────────────────────────────────────────────────────
 
   private initRoom(): void {
     const p = playerData.get()
@@ -173,113 +155,86 @@ export default class PvELobbyScene extends Phaser.Scene {
     return LEVEL_BRACKETS[this.selectedBracketIndex]
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // HEADER
-  // ═══════════════════════════════════════════════════════════════════════════
+  // ── Header ────────────────────────────────────────────────────────────────
 
   private drawHeader(): void {
-    const stk = { stroke: '#000000', strokeThickness: 3 }
+    const bar = this.add.graphics()
+    bar.fillStyle(surface.panel, 1)
+    bar.fillRect(0, 0, W, TOP_H)
+    bar.lineStyle(1, border.subtle, 1)
+    bar.beginPath()
+    bar.moveTo(0, TOP_H - 0.5)
+    bar.lineTo(W, TOP_H - 0.5)
+    bar.strokePath()
 
-    // Title centered — two lines
-    const topWord = this.pveType === 'battle' ? 'BATALHA' : 'TORNEIO'
-    this.add.text(W / 2, 16, topWord, {
-      fontFamily: F.title, fontSize: '20px', color: '#ffffff',
-      fontStyle: 'bold', shadow: SHADOW.strong, ...stk,
-    }).setOrigin(0.5)
-    this.add.text(W / 2, 36, 'PVE', {
-      fontFamily: F.title, fontSize: '16px', color: C.goldHex,
-      fontStyle: 'bold', shadow: SHADOW.goldGlow, ...stk,
-    }).setOrigin(0.5)
-
-    // Mode label (SOLO) — right side, slightly lower
-    this.modeBadgeBg = this.add.graphics()
-    this.modeLabel = this.add.text(W - 140, 26, 'SOLO', {
-      fontFamily: F.title, fontSize: '20px', color: C.goldHex,
-      fontStyle: 'bold', shadow: SHADOW.goldGlow, ...stk,
-    }).setOrigin(0.5)
-
-    this.refreshModeBadge()
-
-    // Room count removed
-
-    // Back arrow
     UI.backArrow(this, () => transitionTo(this, 'LobbyScene'))
 
-    // Mode switcher button (left side, dark panel with gold border)
-    const switchBtnW = 110
-    const switchBtnH = 28
-    const switchBtnX = 126
-    const switchBtnY = 26
-    const switchBg = this.add.graphics()
-    switchBg.fillStyle(0x12161f, 1)
-    switchBg.fillRoundedRect(switchBtnX - switchBtnW / 2, switchBtnY - switchBtnH / 2, switchBtnW, switchBtnH, 4)
-    switchBg.lineStyle(1, C.goldDim, 0.5)
-    switchBg.strokeRoundedRect(switchBtnX - switchBtnW / 2, switchBtnY - switchBtnH / 2, switchBtnW, switchBtnH, 4)
+    // Title (eyebrow + h2)
+    this.add.text(W / 2, TOP_H / 2 - 10, 'PVE', {
+      fontFamily: fontFamily.body,
+      fontSize:   typeScale.meta,
+      color:      accent.primaryHex,
+      fontStyle:  '700',
+    }).setOrigin(0.5).setLetterSpacing(1.8)
 
-    const switchLabel = this.add.text(switchBtnX, switchBtnY, 'Alterar Modo', {
-      fontFamily: F.body, fontSize: '13px', color: C.goldDimHex,
-      fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0.5)
+    const titleWord = this.pveType === 'battle' ? 'BATALHA' : 'TORNEIO'
+    this.add.text(W / 2, TOP_H / 2 + 10, titleWord, {
+      fontFamily: fontFamily.display,
+      fontSize:   typeScale.h2,
+      color:      fg.primaryHex,
+      fontStyle:  '600',
+    }).setOrigin(0.5).setLetterSpacing(3)
 
-    const switchHit = this.add.rectangle(switchBtnX, switchBtnY, switchBtnW, switchBtnH, 0x000000, 0.001)
-      .setInteractive({ useHandCursor: true })
-    switchHit.on('pointerover', () => {
-      switchBg.clear()
-      switchBg.fillStyle(0x1a2030, 1)
-      switchBg.fillRoundedRect(switchBtnX - switchBtnW / 2, switchBtnY - switchBtnH / 2, switchBtnW, switchBtnH, 4)
-      switchBg.lineStyle(1, C.gold, 0.6)
-      switchBg.strokeRoundedRect(switchBtnX - switchBtnW / 2, switchBtnY - switchBtnH / 2, switchBtnW, switchBtnH, 4)
-      switchLabel.setColor(C.goldHex)
+    // Mode switcher button (right)
+    UI.buttonGhost(this, W - 104, TOP_H / 2, 'ALTERAR MODO', {
+      w: 160,
+      h: 32,
+      onPress: () => this.showModeSwitcher(),
     })
-    switchHit.on('pointerout', () => {
-      switchBg.clear()
-      switchBg.fillStyle(0x12161f, 1)
-      switchBg.fillRoundedRect(switchBtnX - switchBtnW / 2, switchBtnY - switchBtnH / 2, switchBtnW, switchBtnH, 4)
-      switchBg.lineStyle(1, C.goldDim, 0.5)
-      switchBg.strokeRoundedRect(switchBtnX - switchBtnW / 2, switchBtnY - switchBtnH / 2, switchBtnW, switchBtnH, 4)
-      switchLabel.setColor(C.goldDimHex)
-    })
-    switchHit.on('pointerdown', () => this.showModeSwitcher())
 
-    // Divider
-    this.add.rectangle(W / 2, 72, W - 60, 1, C.goldDim, 0.15)
+    // Mode label pill (right of switcher)
+    const pillW = 68
+    const pillX = W - 208
+    const pillY = TOP_H / 2
+    const pillBg = this.add.graphics()
+    pillBg.fillStyle(surface.deepest, 1)
+    pillBg.fillRoundedRect(pillX - pillW / 2, pillY - 12, pillW, 24, radii.pill)
+    pillBg.lineStyle(1, accent.primary, 1)
+    pillBg.strokeRoundedRect(pillX - pillW / 2, pillY - 12, pillW, 24, radii.pill)
+    this.add.text(pillX, pillY, this.derivedMode.toUpperCase(), {
+      fontFamily: fontFamily.body,
+      fontSize:   typeScale.meta,
+      color:      accent.primaryHex,
+      fontStyle:  '700',
+    }).setOrigin(0.5).setLetterSpacing(1.4)
   }
 
-  private refreshModeBadge(): void {
-    this.modeLabel.setText('SOLO')
-    this.modeBadgeBg.clear()
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // MODE TABS (Batalha / Torneio toggle)
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  // Mode tabs removed — "Alterar Modo" button handles mode switching now
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TEAM PANEL (character cards)
-  // ═══════════════════════════════════════════════════════════════════════════
+  // ── Team panel ────────────────────────────────────────────────────────────
 
   private drawTeamPanel(): void {
-    const panelX = W / 2 - 70
-    const panelY = 72
+    const panelX = 40
+    const panelY = TOP_H + 20
     const panelW = 880
-    const panelH = 290
+    const panelH = 300
 
-    UI.panel(this, panelX, panelY + panelH / 2, panelW, panelH, {
-      fill: 0x0c1019, border: C.panelBorder, borderAlpha: 0.5,
-    })
+    // Panel shell
+    const bg = this.add.graphics()
+    bg.fillStyle(surface.panel, 1)
+    bg.fillRoundedRect(panelX, panelY, panelW, panelH, radii.lg)
+    bg.lineStyle(1, border.default, 1)
+    bg.strokeRoundedRect(panelX, panelY, panelW, panelH, radii.lg)
+    bg.fillStyle(accent.primary, 0.45)
+    bg.fillRect(panelX + 16, panelY, panelW - 32, 1)
 
-    this.add.text(panelX - panelW / 2 + 24, panelY + 12, 'SEU TIME', {
-      fontFamily: F.title, fontSize: '24px', color: C.goldDimHex,
-      fontStyle: 'bold', shadow: SHADOW.text, stroke: '#000000', strokeThickness: 3,
-    }).setOrigin(0, 0.5)
+    // Eyebrow
+    this.add.text(panelX + 24, panelY + 20, 'SEU TIME', {
+      fontFamily: fontFamily.body,
+      fontSize:   typeScale.meta,
+      color:      accent.primaryHex,
+      fontStyle:  '700',
+    }).setOrigin(0, 0.5).setLetterSpacing(1.8)
 
-    const divG = this.add.graphics()
-    divG.fillStyle(C.goldDim, 0.15)
-    divG.fillRect(panelX - panelW / 2 + 20, panelY + 22, panelW - 40, 1)
-
-    this.drawCards(panelX, panelY + 24)
+    this.drawCards(panelX + panelW / 2, panelY + 38)
   }
 
   private drawCards(centerX: number, topY: number): void {
@@ -288,185 +243,165 @@ export default class PvELobbyScene extends Phaser.Scene {
 
     const cardW = 200
     const cardH = 240
-    const gap = 12
+    const gap = 16
     const totalW = 4 * cardW + 3 * gap
     const startX = centerX - totalW / 2 + cardW / 2
-    const cardCenterY = topY + cardH / 2 + 6
+    const cardCenterY = topY + cardH / 2 + 8
 
     const p = playerData.get()
-    const stk2 = { stroke: '#000000', strokeThickness: 2 }
 
     this.roomSlots.forEach((slot, i) => {
       const cx = startX + i * (cardW + gap)
       const container = this.add.container(cx, cardCenterY)
       this.cardContainers.push(container)
 
-      const accent = CLASS_ACCENTS[slot.role]
-      const accentHex = '#' + accent.toString(16).padStart(6, '0')
+      const classAccent = CLASS_ACCENT[slot.role]
+      const classAccentHex = CLASS_ACCENT_HEX[slot.role]
       const isFilled = slot.playerName !== null
 
+      // Card bg
       const bg = this.add.graphics()
-      bg.fillStyle(0x0e1420, 1)
-      bg.fillRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, S.borderRadius)
-      bg.fillStyle(accent, 0.08)
-      bg.fillRoundedRect(-cardW / 2, -cardH / 2, cardW, 46, { tl: S.borderRadius, tr: S.borderRadius, bl: 0, br: 0 })
-      const borderAlpha = slot.isMe ? 0.55 : isFilled ? 0.35 : 0.2
-      bg.lineStyle(1.5, slot.isMe ? accent : isFilled ? 0x555555 : 0x333333, borderAlpha)
-      bg.strokeRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, S.borderRadius)
+      bg.fillStyle(surface.raised, 1)
+      bg.fillRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, radii.lg)
+      // Class-color band (top)
+      bg.fillStyle(classAccent, 0.14)
+      bg.fillRoundedRect(-cardW / 2, -cardH / 2, cardW, 44,
+        { tl: radii.lg, tr: radii.lg, bl: 0, br: 0 })
+      // Border (brighter when filled/isMe)
+      const borderColor = slot.isMe ? classAccent : isFilled ? border.default : border.subtle
+      bg.lineStyle(1, borderColor, 1)
+      bg.strokeRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, radii.lg)
       container.add(bg)
 
-      // Character preview sprite — uses the player's equipped skin so they
-      // can see what they look like without entering battle. Bot/friend slots
-      // fall back to the default 'idle' skin since we don't track their data.
+      // Class label (top band)
+      const roleLabel = this.add.text(0, -cardH / 2 + 22, ROLE_LABELS[slot.role], {
+        fontFamily: fontFamily.body,
+        fontSize:   typeScale.meta,
+        color:      classAccentHex,
+        fontStyle:  '700',
+      }).setOrigin(0.5).setLetterSpacing(1.8)
+      container.add(roleLabel)
+
+      // Preview sprite or class icon
       if (isFilled) {
         const skinId = slot.isMe ? playerData.getEquippedSkin(slot.role as CharClass) : 'idle'
         const sprite = drawCharacterSprite(this, slot.role as SpriteRole, 'left', 86, skinId)
-        sprite.setPosition(0, -cardH / 2 + 56)
+        sprite.setPosition(0, -cardH / 2 + 102)
         container.add(sprite)
 
-        // Subtle pedestal glow
+        // Pedestal
         const ped = this.add.graphics()
-        ped.fillStyle(accent, slot.isMe ? 0.22 : 0.1)
-        ped.fillEllipse(0, -cardH / 2 + 100, cardW * 0.55, 14)
+        ped.fillStyle(classAccent, slot.isMe ? 0.24 : 0.12)
+        ped.fillEllipse(0, -cardH / 2 + 152, cardW * 0.58, 12)
         container.add(ped)
         container.sendToBack(ped)
         container.bringToTop(sprite)
       } else {
-        UI.classIcon(this, cx, cardCenterY - cardH / 2 + 50, slot.role, 26, accent)
+        UI.classIcon(this, cx, cardCenterY - cardH / 2 + 102, slot.role, 34, classAccent)
       }
 
-      container.add(this.add.text(0, -cardH / 2 + 110, ROLE_LABELS[slot.role], {
-        fontFamily: F.title, fontSize: '17px', color: accentHex,
-        fontStyle: 'bold', shadow: SHADOW.text, ...stk2,
-      }).setOrigin(0.5))
-
-      const divLine = this.add.graphics()
-      divLine.fillStyle(accent, 0.15)
-      divLine.fillRect(-cardW / 2 + 16, -cardH / 2 + 124, cardW - 32, 1)
-      container.add(divLine)
-
+      // Name (Cormorant h3)
+      const nameY = -cardH / 2 + 172
       if (isFilled) {
-        const displayName = slot.playerName!
-        container.add(this.add.text(0, -cardH / 2 + 142, displayName, {
-          fontFamily: F.body, fontSize: '15px',
-          color: slot.isMe ? C.bodyHex : C.infoHex,
-          fontStyle: 'bold', shadow: SHADOW.text, ...stk2,
+        container.add(this.add.text(0, nameY, slot.playerName!, {
+          fontFamily: fontFamily.serif,
+          fontSize:   typeScale.h3,
+          color:      slot.isMe ? fg.primaryHex : fg.secondaryHex,
+          fontStyle:  '600',
         }).setOrigin(0.5))
 
-        container.add(this.add.text(0, -cardH / 2 + 162, `Lv.${p.level}`, {
-          fontFamily: F.body, fontSize: '13px', color: C.mutedHex,
-          shadow: SHADOW.text, ...stk2,
-        }).setOrigin(0.5))
+        container.add(this.add.text(0, nameY + 20, `NV ${p.level}`, {
+          fontFamily: fontFamily.body,
+          fontSize:   typeScale.meta,
+          color:      fg.tertiaryHex,
+          fontStyle:  '700',
+        }).setOrigin(0.5).setLetterSpacing(1.4))
 
         if (slot.isMe) {
-          // ALTERAR SKIN pill — opens the picker and refreshes the card
-          const pillW = 124
+          // Alter skin pill (token-ized)
+          const pillW = 132
           const pillH = 24
-          const pillY = -cardH / 2 + 192
+          const pillY = -cardH / 2 + 212
           const pillG = this.add.graphics()
           const drawPill = (hover: boolean) => {
             pillG.clear()
-            pillG.fillStyle(hover ? 0x1a1808 : 0x0e1420, 0.95)
-            pillG.fillRoundedRect(-pillW / 2, pillY - pillH / 2, pillW, pillH, 5)
-            pillG.lineStyle(1.2, hover ? C.gold : C.goldDim, hover ? 0.85 : 0.5)
-            pillG.strokeRoundedRect(-pillW / 2, pillY - pillH / 2, pillW, pillH, 5)
+            pillG.fillStyle(hover ? surface.raised : surface.deepest, 1)
+            pillG.fillRoundedRect(-pillW / 2, pillY - pillH / 2, pillW, pillH, radii.md)
+            pillG.lineStyle(1, hover ? accent.primary : accent.dim, 1)
+            pillG.strokeRoundedRect(-pillW / 2, pillY - pillH / 2, pillW, pillH, radii.md)
           }
           drawPill(false)
           container.add(pillG)
 
-          const pillLabel = this.add.text(0, pillY, '✦  ALTERAR SKIN', {
-            fontFamily: F.title, fontSize: '11px', color: C.goldDimHex,
-            fontStyle: 'bold', shadow: SHADOW.text, ...stk2,
-          }).setOrigin(0.5)
+          const pillLabel = this.add.text(0, pillY, 'ALTERAR SKIN', {
+            fontFamily: fontFamily.body,
+            fontSize:   typeScale.meta,
+            color:      accent.primaryHex,
+            fontStyle:  '700',
+          }).setOrigin(0.5).setLetterSpacing(1.4)
           container.add(pillLabel)
 
           const pillHit = this.add.rectangle(0, pillY, pillW + 8, pillH + 8, 0x000000, 0.001)
             .setInteractive({ useHandCursor: true })
           container.add(pillHit)
-          pillHit.on('pointerover', () => { drawPill(true); pillLabel.setColor(C.goldHex) })
-          pillHit.on('pointerout', () => { drawPill(false); pillLabel.setColor(C.goldDimHex) })
+          pillHit.on('pointerover', () => { drawPill(true); pillLabel.setColor(fg.primaryHex) })
+          pillHit.on('pointerout',  () => { drawPill(false); pillLabel.setColor(accent.primaryHex) })
           pillHit.on('pointerdown', () => {
             openSkinPicker(this, slot.role as CharClass, {
               side: 'left',
               onChange: () => this.drawCards(centerX, topY),
             })
           })
-
-          // SEU username badge
-          const myBadge = this.add.graphics()
-          myBadge.fillStyle(C.success, 0.12)
-          myBadge.fillRoundedRect(-34, -cardH / 2 + 212, 68, 22, 4)
-          myBadge.lineStyle(1, C.success, 0.45)
-          myBadge.strokeRoundedRect(-34, -cardH / 2 + 212, 68, 22, 4)
-          container.add(myBadge)
-
-          container.add(this.add.text(0, -cardH / 2 + 223, p.username, {
-            fontFamily: F.title, fontSize: '11px', color: C.successHex,
-            fontStyle: 'bold', shadow: SHADOW.text, ...stk2,
-          }).setOrigin(0.5))
         }
       } else {
-        container.add(this.add.text(0, -cardH / 2 + 128, 'Vazio', {
-          fontFamily: F.body, fontSize: '18px', color: C.mutedHex,
-          fontStyle: 'bold', shadow: SHADOW.text, ...stk2,
+        container.add(this.add.text(0, nameY, 'Vazio', {
+          fontFamily: fontFamily.serif,
+          fontSize:   typeScale.h3,
+          color:      fg.tertiaryHex,
+          fontStyle:  'italic',
         }).setOrigin(0.5))
 
-        container.add(this.add.text(0, -cardH / 2 + 146, 'Aguardando...', {
-          fontFamily: F.body, fontSize: S.bodySmall, color: C.dimHex,
-          shadow: SHADOW.text,
+        container.add(this.add.text(0, nameY + 18, 'Aguardando…', {
+          fontFamily: fontFamily.body,
+          fontSize:   typeScale.small,
+          color:      fg.disabledHex,
         }).setOrigin(0.5))
-
-        // Mini invite on empty card
-        const invW = 100
-        const invH = 26
-        const invBg = this.add.graphics()
-        invBg.fillStyle(0x1a2030, 1)
-        invBg.fillRoundedRect(-invW / 2, -cardH / 2 + 170 - invH / 2, invW, invH, 4)
-        invBg.lineStyle(1, C.info, 0.3)
-        invBg.strokeRoundedRect(-invW / 2, -cardH / 2 + 170 - invH / 2, invW, invH, 4)
-        container.add(invBg)
-
-        const invText = this.add.text(0, -cardH / 2 + 170, 'Convidar', {
-          fontFamily: F.body, fontSize: S.small, color: C.infoHex,
-          fontStyle: 'bold', shadow: SHADOW.text,
-        }).setOrigin(0.5)
-        container.add(invText)
-
-        const invHit = this.add.rectangle(0, -cardH / 2 + 170, invW, invH, 0x000000, 0.001)
-          .setInteractive({ useHandCursor: true })
-        invHit.on('pointerover', () => invText.setColor('#80e0ff'))
-        invHit.on('pointerout', () => invText.setColor(C.infoHex))
-        invHit.on('pointerdown', () => this.showInvitePopup())
-        container.add(invHit)
       }
 
       // Entrance animation
-      container.setAlpha(0).setScale(0.9)
+      container.setAlpha(0).setScale(0.94)
       this.tweens.add({
         targets: container,
         alpha: 1, scaleX: 1, scaleY: 1,
-        duration: 300, delay: 100 + i * 80, ease: 'Back.easeOut',
+        duration: 300, delay: 90 + i * 80, ease: 'Back.easeOut',
       })
     })
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // ROOM LOG (right side)
-  // ═══════════════════════════════════════════════════════════════════════════
+  // ── Room log (right sidebar) ──────────────────────────────────────────────
 
   private drawRoomLog(): void {
-    const logX = 1160, logY = 100, logW = 200, logH = 260
+    const logX = W - 200
+    const logY = TOP_H + 20
+    const logW = 200
+    const logH = 300
 
-    UI.panel(this, logX, logY + logH / 2, logW, logH, { fill: 0x0c1019 })
+    const bg = this.add.graphics()
+    bg.fillStyle(surface.panel, 1)
+    bg.fillRoundedRect(logX - logW / 2, logY, logW, logH, radii.lg)
+    bg.lineStyle(1, border.default, 1)
+    bg.strokeRoundedRect(logX - logW / 2, logY, logW, logH, radii.lg)
+    bg.fillStyle(accent.primary, 0.45)
+    bg.fillRect(logX - logW / 2 + 16, logY, logW - 32, 1)
 
-    this.add.text(logX, logY + 16, `SALA ${this.playerCount}/4`, {
-      fontFamily: F.title, fontSize: S.bodySmall, color: C.goldHex,
-      fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0.5)
+    this.add.text(logX, logY + 18, `SALA ${this.playerCount}/4`, {
+      fontFamily: fontFamily.body,
+      fontSize:   typeScale.meta,
+      color:      accent.primaryHex,
+      fontStyle:  '700',
+    }).setOrigin(0.5).setLetterSpacing(1.8)
 
-    this.add.rectangle(logX, logY + 28, logW - 20, 1, C.goldDim, 0.2)
-
-    // Get highest elo across all queues
+    // Get highest elo
     const ranked = playerData.getRanked()
     const allInfos = [ranked['1v1'], ranked['2v2'], ranked['4v4']]
     const tierOrder = ['desconhecido', 'recruta', 'aprendiz', 'soldado', 'veterano', 'comandante', 'rei']
@@ -477,7 +412,6 @@ export default class PvELobbyScene extends Phaser.Scene {
     }
     const bestTd = RANKED_TIERS[bestInfo.tier]
 
-    // Deduplicate players
     const unique = new Map<string, { name: string; isMe: boolean }>()
     this.roomSlots.filter(s => s.playerName).forEach(s => {
       if (!unique.has(s.playerName!)) {
@@ -485,286 +419,253 @@ export default class PvELobbyScene extends Phaser.Scene {
       }
     })
 
-    let y = logY + 46
+    let y = logY + 48
     unique.forEach(p => {
       UI.tierIcon(this, logX - logW / 2 + 22, y, bestInfo.tier, 12)
-      const color = p.isMe ? C.goldHex : C.bodyHex
-      this.add.text(logX - logW / 2 + 38, y, p.name, {
-        fontFamily: F.body, fontSize: S.bodySmall, color,
-        fontStyle: p.isMe ? 'bold' : 'normal', shadow: SHADOW.text,
+      this.add.text(logX - logW / 2 + 40, y, p.name, {
+        fontFamily: fontFamily.serif,
+        fontSize:   typeScale.small,
+        color:      p.isMe ? accent.primaryHex : fg.primaryHex,
+        fontStyle:  p.isMe ? '700' : '500',
       }).setOrigin(0, 0.5)
 
-      this.add.text(logX + logW / 2 - 14, y, bestTd.name, {
-        fontFamily: F.body, fontSize: '10px', color: bestTd.colorHex,
-        shadow: SHADOW.text,
-      }).setOrigin(1, 0.5)
+      this.add.text(logX + logW / 2 - 14, y, bestTd.name.toUpperCase(), {
+        fontFamily: fontFamily.body,
+        fontSize:   typeScale.meta,
+        color:      bestTd.colorHex,
+        fontStyle:  '700',
+      }).setOrigin(1, 0.5).setLetterSpacing(1.2)
 
       y += 28
     })
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // BONUS PANEL
-  // ═══════════════════════════════════════════════════════════════════════════
+  // ── Bonus panel ───────────────────────────────────────────────────────────
 
   private drawBonusPanel(): void {
-    const panelX = W / 2 - 210
-    const panelY = 378
-    const panelW = 320
-    const panelH = 140
-
-    UI.panel(this, panelX, panelY + panelH / 2, panelW, panelH, {
-      fill: 0x0c1019, border: C.panelBorder, borderAlpha: 0.4,
-    })
-
-    this.add.text(panelX, panelY + 16, 'BONUS DE EQUIPE', {
-      fontFamily: F.title, fontSize: S.bodySmall, color: C.goldDimHex,
-      fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0.5)
-
-    const entries: { label: string; mode: DerivedMode }[] = [
-      { label: 'Solo:    Sem bonus', mode: 'Solo' },
-      { label: 'Duo:     +10% XP e Gold', mode: 'Duo' },
-      { label: 'Squad:  +20% XP e Gold', mode: 'Squad' },
-    ]
-
-    this.bonusTexts = []
-    entries.forEach((entry, i) => {
-      const isActive = entry.mode === this.derivedMode
-      const txt = this.add.text(panelX - panelW / 2 + 24, panelY + 44 + i * 24, entry.label, {
-        fontFamily: F.body, fontSize: S.bodySmall,
-        color: isActive ? C.goldHex : C.mutedHex,
-        fontStyle: isActive ? 'bold' : 'normal',
-        shadow: SHADOW.text,
-      }).setOrigin(0, 0.5)
-      this.bonusTexts.push(txt)
-    })
-
-    const activeIdx = this.derivedMode === 'Solo' ? 0 : this.derivedMode === 'Duo' ? 1 : 2
-    this.add.text(
-      panelX + panelW / 2 - 20,
-      panelY + 44 + activeIdx * 24,
-      'Atual',
-      {
-        fontFamily: F.body, fontSize: '10px', color: C.successHex,
-        fontStyle: 'bold', shadow: SHADOW.text,
-      },
-    ).setOrigin(1, 0.5)
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // INFO PANEL (changes based on pveType)
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  private drawInfoPanel(): void {
-    const panelX = W / 2 + 160
-    const panelY = 378
+    const panelX = 40
+    const panelY = TOP_H + 340
     const panelW = 400
     const panelH = 140
 
-    UI.panel(this, panelX, panelY + panelH / 2, panelW, panelH, {
-      fill: 0x0c1019, border: C.panelBorder, borderAlpha: 0.4,
+    const bg = this.add.graphics()
+    bg.fillStyle(surface.panel, 1)
+    bg.fillRoundedRect(panelX, panelY, panelW, panelH, radii.lg)
+    bg.lineStyle(1, border.default, 1)
+    bg.strokeRoundedRect(panelX, panelY, panelW, panelH, radii.lg)
+
+    this.add.text(panelX + 20, panelY + 20, 'BÔNUS DE EQUIPE', {
+      fontFamily: fontFamily.body,
+      fontSize:   typeScale.meta,
+      color:      fg.tertiaryHex,
+      fontStyle:  '700',
+    }).setOrigin(0, 0.5).setLetterSpacing(1.8)
+
+    const entries: { label: string; mode: DerivedMode }[] = [
+      { label: 'SOLO · sem bônus',          mode: 'Solo'  },
+      { label: 'DUO · +10% XP e Gold',      mode: 'Duo'   },
+      { label: 'SQUAD · +20% XP e Gold',    mode: 'Squad' },
+    ]
+
+    entries.forEach((entry, i) => {
+      const isActive = entry.mode === this.derivedMode
+      const ly = panelY + 48 + i * 24
+      const dot = this.add.graphics()
+      dot.fillStyle(isActive ? state.success : border.default, 1)
+      dot.fillCircle(panelX + 24, ly, 3)
+
+      this.add.text(panelX + 36, ly, entry.label, {
+        fontFamily: fontFamily.body,
+        fontSize:   typeScale.small,
+        color:      isActive ? fg.primaryHex : fg.tertiaryHex,
+        fontStyle:  isActive ? '700' : '500',
+      }).setOrigin(0, 0.5)
+
+      if (isActive) {
+        this.add.text(panelX + panelW - 20, ly, 'ATUAL', {
+          fontFamily: fontFamily.body,
+          fontSize:   typeScale.meta,
+          color:      state.successHex,
+          fontStyle:  '700',
+        }).setOrigin(1, 0.5).setLetterSpacing(1.4)
+      }
     })
-
-    this.add.text(panelX, panelY + 16, 'INFORMACOES', {
-      fontFamily: F.title, fontSize: S.bodySmall, color: C.goldDimHex,
-      fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0.5)
-
-    this.renderInfoBullets(panelX, panelY, panelW)
   }
 
-  private renderInfoBullets(panelX: number, panelY: number, panelW: number): void {
-    // Destroy old info texts
+  // ── Info panel ────────────────────────────────────────────────────────────
+
+  private drawInfoPanel(): void {
+    const panelX = 460
+    const panelY = TOP_H + 340
+    const panelW = 460
+    const panelH = 140
+
+    const bg = this.add.graphics()
+    bg.fillStyle(surface.panel, 1)
+    bg.fillRoundedRect(panelX, panelY, panelW, panelH, radii.lg)
+    bg.lineStyle(1, border.default, 1)
+    bg.strokeRoundedRect(panelX, panelY, panelW, panelH, radii.lg)
+
+    this.add.text(panelX + 20, panelY + 20, 'INFORMAÇÕES', {
+      fontFamily: fontFamily.body,
+      fontSize:   typeScale.meta,
+      color:      fg.tertiaryHex,
+      fontStyle:  '700',
+    }).setOrigin(0, 0.5).setLetterSpacing(1.8)
+
+    this.renderInfoBullets(panelX, panelY)
+  }
+
+  private renderInfoBullets(panelX: number, panelY: number): void {
     this.infoTexts.forEach(t => t.destroy())
     this.infoTexts = []
 
-    let bullets: string[]
-    if (this.pveType === 'battle') {
-      bullets = [
-        'Bot inteligente do seu nivel',
-        'Bonus de gold por vitoria',
-      ]
-    } else {
-      bullets = [
-        'Chaveamento 8 times',
-        'Bonus de gold por vitoria',
-      ]
-    }
+    const bullets = this.pveType === 'battle'
+      ? [
+          'Bot inteligente do seu nível',
+          'Bônus de Gold por vitória',
+        ]
+      : [
+          'Chaveamento de 8 times',
+          'Custo em Gold varia por faixa',
+          'Recompensa escalada por round',
+        ]
 
     bullets.forEach((b, i) => {
-      const txt = this.add.text(panelX - panelW / 2 + 24, panelY + 44 + i * 22, `\u2022  ${b}`, {
-        fontFamily: F.body, fontSize: S.bodySmall, color: C.mutedHex,
-        shadow: SHADOW.text,
+      const ly = panelY + 48 + i * 22
+      const dot = this.add.graphics()
+      dot.fillStyle(accent.primary, 1)
+      dot.fillCircle(panelX + 24, ly, 2)
+
+      const txt = this.add.text(panelX + 36, ly, b, {
+        fontFamily: fontFamily.body,
+        fontSize:   typeScale.small,
+        color:      fg.secondaryHex,
       }).setOrigin(0, 0.5)
       this.infoTexts.push(txt)
     })
   }
 
   private refreshInfoPanel(): void {
-    const panelX = W / 2 + 140
-    const panelY = 376
-    const panelW = 370
-    this.renderInfoBullets(panelX, panelY, panelW)
+    this.renderInfoBullets(460, TOP_H + 340)
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // BRACKET SELECTOR (only visible for Torneio)
-  // ═══════════════════════════════════════════════════════════════════════════
+  // ── Bracket selector (tournament only) ────────────────────────────────────
 
   private drawBracketSelector(): void {
     const baseX = W / 2
-    const baseY = 530
+    const baseY = TOP_H + 500
 
-    this.bracketContainer = this.add.container(baseX, baseY)
+    const container = this.add.container(baseX, baseY)
 
-    // Label
-    this.bracketContainer.add(this.add.text(-180, 0, 'Nivel:', {
-      fontFamily: F.title, fontSize: S.bodySmall, color: C.goldDimHex,
-      fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0, 0.5))
+    // Eyebrow
+    container.add(this.add.text(-200, 0, 'FAIXA DE NÍVEL', {
+      fontFamily: fontFamily.body,
+      fontSize:   typeScale.meta,
+      color:      fg.tertiaryHex,
+      fontStyle:  '700',
+    }).setOrigin(0, 0.5).setLetterSpacing(1.8))
 
     // Left arrow
-    const leftArrow = this.add.text(-60, 0, '<', {
-      fontFamily: F.title, fontSize: S.titleSmall, color: C.infoHex,
-      fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-    leftArrow.on('pointerdown', () => this.changeBracket(-1))
-    leftArrow.on('pointerover', () => leftArrow.setColor('#80e0ff'))
-    leftArrow.on('pointerout', () => leftArrow.setColor(C.infoHex))
-    this.bracketContainer.add(leftArrow)
-
-    // Bracket display
-    const bracketBg = this.add.graphics()
-    bracketBg.fillStyle(0x0e1420, 1)
-    bracketBg.fillRoundedRect(-40, -16, 80, 32, 4)
-    bracketBg.lineStyle(1, C.warning, 0.5)
-    bracketBg.strokeRoundedRect(-40, -16, 80, 32, 4)
-    this.bracketContainer.add(bracketBg)
-
-    const bracketLabel = this.add.text(0, 0, this.currentBracket.label, {
-      fontFamily: F.title, fontSize: S.body, color: C.warningHex,
-      fontStyle: 'bold', shadow: SHADOW.text,
+    const leftX = -80
+    const leftArrow = this.add.text(leftX, 0, '<', {
+      fontFamily: fontFamily.display,
+      fontSize:   typeScale.h2,
+      color:      fg.primaryHex,
+      fontStyle:  '700',
     }).setOrigin(0.5)
-    this.bracketContainer.add(bracketLabel)
+    container.add(leftArrow)
+    const leftHit = this.add.rectangle(leftX, 0, 36, 36, 0x000000, 0.001)
+      .setInteractive({ useHandCursor: true })
+    leftHit.on('pointerover', () => leftArrow.setColor(accent.primaryHex))
+    leftHit.on('pointerout',  () => leftArrow.setColor(fg.primaryHex))
+    leftHit.on('pointerdown', () => this.changeBracket(-1))
+    container.add(leftHit)
+
+    // Level chip
+    const chipW = 108
+    const chipH = 32
+    const chipBg = this.add.graphics()
+    chipBg.fillStyle(surface.deepest, 1)
+    chipBg.fillRoundedRect(-chipW / 2, -chipH / 2, chipW, chipH, radii.md)
+    chipBg.lineStyle(1, accent.primary, 1)
+    chipBg.strokeRoundedRect(-chipW / 2, -chipH / 2, chipW, chipH, radii.md)
+    container.add(chipBg)
+
+    this.bracketLabel = this.add.text(0, 0, this.currentBracket.label, {
+      fontFamily: fontFamily.mono,
+      fontSize:   typeScale.statMd,
+      color:      accent.primaryHex,
+      fontStyle:  '700',
+    }).setOrigin(0.5)
+    container.add(this.bracketLabel)
 
     // Right arrow
-    const rightArrow = this.add.text(60, 0, '>', {
-      fontFamily: F.title, fontSize: S.titleSmall, color: C.infoHex,
-      fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-    rightArrow.on('pointerdown', () => this.changeBracket(1))
-    rightArrow.on('pointerover', () => rightArrow.setColor('#80e0ff'))
-    rightArrow.on('pointerout', () => rightArrow.setColor(C.infoHex))
-    this.bracketContainer.add(rightArrow)
+    const rightX = 80
+    const rightArrow = this.add.text(rightX, 0, '>', {
+      fontFamily: fontFamily.display,
+      fontSize:   typeScale.h2,
+      color:      fg.primaryHex,
+      fontStyle:  '700',
+    }).setOrigin(0.5)
+    container.add(rightArrow)
+    const rightHit = this.add.rectangle(rightX, 0, 36, 36, 0x000000, 0.001)
+      .setInteractive({ useHandCursor: true })
+    rightHit.on('pointerover', () => rightArrow.setColor(accent.primaryHex))
+    rightHit.on('pointerout',  () => rightArrow.setColor(fg.primaryHex))
+    rightHit.on('pointerdown', () => this.changeBracket(1))
+    container.add(rightHit)
 
-    // Cost display
-    this.bracketContainer.add(this.add.text(120, 0, `| Custo: ${this.currentBracket.cost}g`, {
-      fontFamily: F.body, fontSize: S.bodySmall, color: C.goldHex,
-      fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0, 0.5))
+    // Cost
+    this.bracketCost = this.add.text(130, 0, `CUSTO ${this.currentBracket.cost}G`, {
+      fontFamily: fontFamily.mono,
+      fontSize:   typeScale.small,
+      color:      currency.goldCoinHex,
+      fontStyle:  '700',
+    }).setOrigin(0, 0.5).setLetterSpacing(1.2)
+    container.add(this.bracketCost)
 
-    // Store references for updates
-    ;(this.bracketContainer as any)._bracketLabel = bracketLabel
-    ;(this.bracketContainer as any)._costLabel = this.bracketContainer.list[this.bracketContainer.list.length - 1]
-
-    this.refreshBracketVisibility()
+    container.setVisible(this.pveType === 'tournament')
   }
 
   private changeBracket(dir: number): void {
     this.selectedBracketIndex = Math.max(0, Math.min(LEVEL_BRACKETS.length - 1, this.selectedBracketIndex + dir))
-
-    if (this.bracketContainer) {
-      const lbl = (this.bracketContainer as any)._bracketLabel as Phaser.GameObjects.Text
-      const costLbl = (this.bracketContainer as any)._costLabel as Phaser.GameObjects.Text
-      if (lbl) lbl.setText(this.currentBracket.label)
-      if (costLbl) costLbl.setText(`| Custo: ${this.currentBracket.cost}g`)
-    }
-
+    if (this.bracketLabel) this.bracketLabel.setText(this.currentBracket.label)
+    if (this.bracketCost)  this.bracketCost.setText(`CUSTO ${this.currentBracket.cost}G`)
     this.refreshInfoPanel()
   }
 
-  private refreshBracketVisibility(): void {
-    if (this.bracketContainer) {
-      this.bracketContainer.setVisible(this.pveType === 'tournament')
-    }
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // INVITE BUTTON (below room log)
-  // ═══════════════════════════════════════════════════════════════════════════
+  // ── Invite button (under room log) ────────────────────────────────────────
 
   private drawInviteButton(): void {
-    const logX = 1160, logY = 100, logW = 200, logH = 260
+    const logX = W - 200
+    const logY = TOP_H + 20
+    const logH = 300
     const invY = logY + logH + 20
-    const invW = logW - 16
-    const invH = 32
-    const invG = this.add.graphics()
-    invG.fillStyle(0x141a24, 1)
-    invG.fillRoundedRect(logX - invW / 2, invY - invH / 2, invW, invH, 5)
-    invG.lineStyle(1, C.info, 0.4)
-    invG.strokeRoundedRect(logX - invW / 2, invY - invH / 2, invW, invH, 5)
 
-    this.add.text(logX, invY, '+ Convidar Amigo', {
-      fontFamily: F.body, fontSize: S.small, color: C.infoHex,
-      fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0.5)
-
-    const invHit = this.add.rectangle(logX, invY, invW, invH, 0, 0.001)
-      .setInteractive({ useHandCursor: true })
-    invHit.on('pointerdown', () => this.showInvitePopup())
+    UI.buttonSecondary(this, logX, invY, 'CONVIDAR AMIGO', {
+      w: 184,
+      h: 36,
+      onPress: () => this.showInvitePopup(),
+    })
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // START BUTTON
-  // ═══════════════════════════════════════════════════════════════════════════
+  // ── Start button ──────────────────────────────────────────────────────────
 
   private drawStartButton(): void {
     const btnX = W / 2
-    const btnY = 618
-    const btnW = 380
-    const btnH = 58
+    const btnY = H - 56
 
-    this.startBg = this.add.graphics()
-    this.renderStartBtn(this.startBg, btnX, btnY, btnW, btnH, false)
-
-    this.add.text(btnX, btnY, 'INICIAR PARTIDA', {
-      fontFamily: F.title, fontSize: S.titleSmall, color: C.successHex,
-      fontStyle: 'bold', shadow: SHADOW.goldGlow,
-    }).setOrigin(0.5)
-
-    const startHit = this.add.rectangle(btnX, btnY, btnW, btnH, 0x000000, 0.001)
-      .setInteractive({ useHandCursor: true })
-
-    startHit.on('pointerover', () => {
-      this.renderStartBtn(this.startBg, btnX, btnY, btnW, btnH, true)
+    UI.buttonPrimary(this, btnX, btnY, 'INICIAR PARTIDA', {
+      size: 'lg',
+      w:    320,
+      h:    56,
+      onPress: () => this.onStartMatch(),
     })
-    startHit.on('pointerout', () => {
-      this.renderStartBtn(this.startBg, btnX, btnY, btnW, btnH, false)
-    })
-    startHit.on('pointerdown', () => this.onStartMatch())
-  }
-
-  private renderStartBtn(
-    g: Phaser.GameObjects.Graphics,
-    bx: number, by: number, bw: number, bh: number,
-    hovered: boolean,
-  ): void {
-    g.clear()
-    g.fillStyle(hovered ? 0x224422 : 0x1a3a1a, 1)
-    g.fillRoundedRect(bx - bw / 2, by - bh / 2, bw, bh, S.borderRadius)
-    g.lineStyle(2, C.success, hovered ? 0.8 : 0.6)
-    g.strokeRoundedRect(bx - bw / 2, by - bh / 2, bw, bh, S.borderRadius)
-    g.fillStyle(0xffffff, hovered ? 0.05 : 0.04)
-    g.fillRoundedRect(
-      bx - bw / 2 + 2, by - bh / 2 + 2, bw - 4, bh * 0.4,
-      { tl: S.borderRadius - 1, tr: S.borderRadius - 1, bl: 0, br: 0 },
-    )
   }
 
   private onStartMatch(): void {
     if (this.pveType === 'battle') {
-      // Start battle vs smart bot at player level
       transitionTo(this, 'BattleScene', {
         deckConfig: playerData.getDeckConfig(),
         skinConfig: playerData.getSkinConfig(),
@@ -772,7 +673,6 @@ export default class PvELobbyScene extends Phaser.Scene {
         botLevel: playerData.getLevel(),
       }, 400, 'wipeRight')
     } else {
-      // Start tournament bracket
       transitionTo(this, 'BracketScene', {
         type: 'pve',
         bracketLevel: this.currentBracket.level,
@@ -781,69 +681,18 @@ export default class PvELobbyScene extends Phaser.Scene {
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // INVITE POPUP (placeholder)
-  // ═══════════════════════════════════════════════════════════════════════════
+  // ── Invite popup ──────────────────────────────────────────────────────────
 
   private showInvitePopup(): void {
-    const dimBg = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.7)
-      .setDepth(100).setInteractive()
-
-    const popup = this.add.container(W / 2, H / 2).setDepth(101).setAlpha(0).setScale(0.9)
-
-    const pW = 360
-    const pH = 150
-
-    const panelBg = this.add.graphics()
-    panelBg.fillStyle(0x0c1019, 0.98)
-    panelBg.fillRoundedRect(-pW / 2, -pH / 2, pW, pH, 10)
-    panelBg.lineStyle(1.5, C.info, 0.4)
-    panelBg.strokeRoundedRect(-pW / 2, -pH / 2, pW, pH, 10)
-    popup.add(panelBg)
-
-    popup.add(this.add.text(0, -28, 'Em breve', {
-      fontFamily: F.title, fontSize: S.titleSmall, color: C.infoHex,
-      fontStyle: 'bold', shadow: SHADOW.goldGlow,
-    }).setOrigin(0.5))
-
-    popup.add(this.add.text(0, 4, 'Sistema de convites em desenvolvimento', {
-      fontFamily: F.body, fontSize: S.body, color: C.mutedHex,
-      shadow: SHADOW.text,
-    }).setOrigin(0.5))
-
-    const okLabel = this.add.text(0, pH / 2 - 28, 'OK', {
-      fontFamily: F.body, fontSize: S.body, color: C.goldHex,
-      fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0.5)
-    popup.add(okLabel)
-
-    const okHit = this.add.rectangle(0, pH / 2 - 28, 80, 28, 0x000000, 0.001)
-      .setInteractive({ useHandCursor: true })
-    popup.add(okHit)
-
-    const closePopup = () => {
-      this.tweens.add({
-        targets: [popup, dimBg],
-        alpha: 0, duration: 150, ease: 'Quad.In',
-        onComplete: () => { popup.destroy(); dimBg.destroy() },
-      })
-    }
-
-    dimBg.on('pointerdown', closePopup)
-    okHit.on('pointerdown', closePopup)
-    okHit.on('pointerover', () => okLabel.setColor('#ffe680'))
-    okHit.on('pointerout', () => okLabel.setColor(C.goldHex))
-
-    this.tweens.add({
-      targets: popup,
-      alpha: 1, scaleX: 1, scaleY: 1,
-      duration: 200, ease: 'Back.easeOut',
+    UI.modal(this, {
+      eyebrow: 'PRÓXIMAMENTE',
+      title:   'CONVITE DE AMIGO',
+      body:    'O sistema de convites está em desenvolvimento. Por enquanto, use modo Solo para jogar.',
+      actions: [{ label: 'OK', kind: 'primary', onClick: () => {} }],
     })
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // MODE SWITCHER OVERLAY
-  // ═══════════════════════════════════════════════════════════════════════════
+  // ── Mode switcher ─────────────────────────────────────────────────────────
 
   private showModeSwitcher(): void {
     showPlayModesOverlay(this, {
@@ -853,7 +702,6 @@ export default class PvELobbyScene extends Phaser.Scene {
       dimSceneBackground: true,
       onModeSelect: (mode) => {
         if (mode.target === 'PvELobbyScene') {
-          // Same scene: restart with new data instead of start+stop
           this.time.delayedCall(200, () => this.scene.restart(mode.data))
         } else {
           transitionTo(this, mode.target, mode.data)
@@ -861,4 +709,11 @@ export default class PvELobbyScene extends Phaser.Scene {
       },
     })
   }
+
+  shutdown(): void {
+    this.tweens.killAll()
+  }
 }
+
+// Prevent unused warnings for values not consumed in the new layout
+void motion
