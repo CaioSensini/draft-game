@@ -1,7 +1,11 @@
 import Phaser from 'phaser'
 import { playerData } from '../utils/PlayerDataManager'
 import { UI } from '../utils/UIComponents'
-import { C, F, SHADOW, SCREEN } from '../utils/DesignTokens'
+import {
+  SCREEN,
+  surface, border, accent, fg, state, currency,
+  fontFamily, typeScale, radii,
+} from '../utils/DesignTokens'
 import { showPackOpen } from '../utils/PackOpenAnimation'
 import { SKILL_CATALOG } from '../data/skillCatalog'
 import { transitionTo } from '../utils/SceneTransition'
@@ -19,7 +23,6 @@ import { drawCharacterSprite, type SpriteRole } from '../utils/SpriteFactory'
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const W = SCREEN.W
-const H = SCREEN.H
 const CARD_W = 220
 const CARD_H = 280
 const CARD_GAP = 14
@@ -84,13 +87,25 @@ function hasAvailableSkills(type: 'attack' | 'defense' | 'both'): boolean {
 // Helpers
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const RARITY_LABEL: Record<string, string> = { basic: 'BASICO', medium: 'MEDIO', advanced: 'AVANCADO', premium: 'PREMIUM' }
-const RARITY_COLORS: Record<string, number> = { basic: 0x888888, medium: 0x44aacc, advanced: 0xffa726, premium: 0xf0c850 }
-const RARITY_HEX: Record<string, string> = { basic: '#888888', medium: '#44aacc', advanced: '#ffa726', premium: '#f0c850' }
+const RARITY_LABEL: Record<string, string> = { basic: 'BÁSICO', medium: 'MÉDIO', advanced: 'AVANÇADO', premium: 'PREMIUM' }
+// Tokens: basic=tertiary slate, medium=info blue, advanced=warn amber,
+// premium=accent gold (matches the dual-currency Print 11 vocabulary).
+const RARITY_COLORS: Record<string, number> = {
+  basic:    border.strong,
+  medium:   state.info,
+  advanced: state.warn,
+  premium:  accent.primary,
+}
+const RARITY_HEX: Record<string, string> = {
+  basic:    fg.tertiaryHex,
+  medium:   state.infoHex,
+  advanced: state.warnHex,
+  premium:  accent.primaryHex,
+}
 
 function getCardAccent(item: ShopItem): number {
-  if (item.rarity === 'premium') return 0xf0c850
-  return item.dropType === 'attack' ? 0xdd4422 : 0x2299aa
+  if (item.rarity === 'premium') return accent.primary
+  return item.dropType === 'attack' ? state.error : state.info
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -100,8 +115,8 @@ function getCardAccent(item: ShopItem): number {
 export default class ShopScene extends Phaser.Scene {
   private activeTab: 'skills' | 'skins' | 'dg' = 'skills'
   private cardContainer!: Phaser.GameObjects.Container
-  private balanceGoldText!: Phaser.GameObjects.Text
-  private balanceDGText!: Phaser.GameObjects.Text
+  private balanceGoldPill!: Phaser.GameObjects.Container
+  private balanceDgPill!: Phaser.GameObjects.Container
 
   constructor() { super('ShopScene') }
 
@@ -127,53 +142,25 @@ export default class ShopScene extends Phaser.Scene {
 
   private drawTopBar() {
     const bg = this.add.graphics()
-    bg.fillStyle(0x0a0f18, 0.97)
+    bg.fillStyle(surface.panel, 0.97)
     bg.fillRect(0, 0, W, TOP_BAR_H)
-    for (let i = 0; i < W; i++) {
-      const d = Math.abs(i - W / 2) / (W / 2)
-      bg.fillStyle(C.goldDim, 0.2 * (1 - d * d))
-      bg.fillRect(i, TOP_BAR_H - 1, 1, 1)
-    }
+    bg.fillStyle(border.subtle, 1)
+    bg.fillRect(0, TOP_BAR_H - 1, W, 1)
 
     UI.backArrow(this, () => transitionTo(this, 'LobbyScene'))
 
     this.add.text(70, TOP_BAR_H / 2, 'LOJA', {
-      fontFamily: F.title, fontSize: '24px', color: C.goldHex, fontStyle: 'bold',
-      shadow: SHADOW.goldGlow,
-    }).setOrigin(0, 0.5)
+      fontFamily: fontFamily.display, fontSize: typeScale.h2,
+      color: accent.primaryHex, fontStyle: '700',
+    }).setOrigin(0, 0.5).setLetterSpacing(3)
 
-    // Gold balance
-    const goldX = W - 200
-    const coinGfx = this.add.graphics()
-    coinGfx.fillStyle(C.gold, 0.7); coinGfx.fillCircle(goldX, TOP_BAR_H / 2, 9)
-    coinGfx.lineStyle(1.5, C.gold, 0.9); coinGfx.strokeCircle(goldX, TOP_BAR_H / 2, 9)
-    coinGfx.lineStyle(1, 0xffffff, 0.15); coinGfx.strokeCircle(goldX, TOP_BAR_H / 2, 5)
-
-    this.balanceGoldText = this.add.text(goldX + 15, TOP_BAR_H / 2, `${playerData.getGold()}`, {
-      fontFamily: F.title, fontSize: '15px', color: '#ffa726', fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0, 0.5)
-
-    // DG balance
-    const dgX = W - 80
-    const dgGfx = this.add.graphics()
-    // Blue diamond coin
-    dgGfx.fillStyle(C.info, 0.6)
-    dgGfx.fillCircle(dgX, TOP_BAR_H / 2, 9)
-    dgGfx.lineStyle(1.5, C.info, 0.9)
-    dgGfx.strokeCircle(dgX, TOP_BAR_H / 2, 9)
-    // Inner diamond
-    const ds = 5
-    dgGfx.fillStyle(0xffffff, 0.25)
-    dgGfx.fillPoints([
-      new Phaser.Geom.Point(dgX, TOP_BAR_H / 2 - ds),
-      new Phaser.Geom.Point(dgX + ds * 0.7, TOP_BAR_H / 2),
-      new Phaser.Geom.Point(dgX, TOP_BAR_H / 2 + ds),
-      new Phaser.Geom.Point(dgX - ds * 0.7, TOP_BAR_H / 2),
-    ], true)
-
-    this.balanceDGText = this.add.text(dgX + 12, TOP_BAR_H / 2, `${playerData.getDG()}`, {
-      fontFamily: F.title, fontSize: '15px', color: '#4fc3f7', fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0, 0.5)
+    // Gold + DG pills via UI.currencyPill kit (Print 11 canonical)
+    this.balanceGoldPill = UI.currencyPill(this, W - 220, TOP_BAR_H / 2, {
+      kind: 'gold', amount: playerData.getGold(),
+    })
+    this.balanceDgPill = UI.currencyPill(this, W - 90, TOP_BAR_H / 2, {
+      kind: 'dg', amount: playerData.getDG(),
+    })
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -181,60 +168,23 @@ export default class ShopScene extends Phaser.Scene {
   // ═══════════════════════════════════════════════════════════════════════════
 
   private drawTabs() {
-    // Three tabs evenly spaced. Touch targets are deliberately wide (140px)
-    // so mobile players can tap confidently without zooming.
-    const tabs = [
-      { key: 'skills' as const, label: 'PACOTES', x: W / 2 - 170 },
-      { key: 'skins'  as const, label: 'SKINS',   x: W / 2       },
-      { key: 'dg'     as const, label: 'DG',      x: W / 2 + 170 },
-    ]
-    const TAB_HIT_W = 140
-    const TAB_HIT_H = 34
-
-    const indicator = this.add.graphics()
-    const drawIndicator = () => {
-      indicator.clear()
-      const activeTab = tabs.find(t => t.key === this.activeTab)!
-      // Soft glow under the underline
-      indicator.fillStyle(C.gold, 0.15)
-      indicator.fillRoundedRect(activeTab.x - 45, TAB_Y + 16, 90, 7, 3)
-      // Bright underline
-      indicator.fillStyle(C.gold, 0.85)
-      indicator.fillRoundedRect(activeTab.x - 38, TAB_Y + 18, 76, 3, 1.5)
-    }
-
-    // Keep a reference so hover/out handlers can update the right text
-    const tabTexts = new Map<string, Phaser.GameObjects.Text>()
-
-    tabs.forEach(tab => {
-      const isActive = tab.key === this.activeTab
-
-      // Big invisible hit box — users can tap anywhere around the label
-      const hit = this.add.rectangle(tab.x, TAB_Y + 10, TAB_HIT_W, TAB_HIT_H, 0x000000, 0.001)
-        .setInteractive({ useHandCursor: true })
-
-      const txt = this.add.text(tab.x, TAB_Y + 6, tab.label, {
-        fontFamily: F.title, fontSize: '16px',
-        color: isActive ? C.goldHex : '#666666',
-        fontStyle: 'bold', shadow: SHADOW.text,
-      }).setOrigin(0.5)
-      tabTexts.set(tab.key, txt)
-
-      hit.on('pointerover', () => { if (tab.key !== this.activeTab) txt.setColor('#aaaaaa') })
-      hit.on('pointerout', () => txt.setColor(tab.key === this.activeTab ? C.goldHex : '#666666'))
-      hit.on('pointerdown', () => {
-        if (tab.key === this.activeTab) return
-        this.activeTab = tab.key
-        // Recolor every tab label (previous active becomes inactive)
-        tabTexts.forEach((t, k) => {
-          t.setColor(k === this.activeTab ? C.goldHex : '#666666')
-        })
-        drawIndicator()
+    // Canonical UI.segmentedControl per Decision D — replaces the inline
+    // 3-tab indicator + per-tab hit boxes + recolor handlers.
+    UI.segmentedControl<'skills' | 'skins' | 'dg'>(this, W / 2, TAB_Y + 14, {
+      options: [
+        { key: 'skills', label: 'PACOTES' },
+        { key: 'skins',  label: 'SKINS' },
+        { key: 'dg',     label: 'DG' },
+      ],
+      value: this.activeTab,
+      width: 480,
+      height: 36,
+      onChange: (key) => {
+        if (key === this.activeTab) return
+        this.activeTab = key
         this.drawCards()
-      })
+      },
     })
-
-    drawIndicator()
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -294,10 +244,10 @@ export default class ShopScene extends Phaser.Scene {
   // ═══════════════════════════════════════════════════════════════════════════
 
   private createCard(cx: number, cy: number, cw: number, ch: number, item: ShopItem): Phaser.GameObjects.Container {
-    const accent = getCardAccent(item)
-    const accentHex = '#' + accent.toString(16).padStart(6, '0')
-    const rarityColor = RARITY_COLORS[item.rarity] ?? 0x888888
-    const rarityHex = RARITY_HEX[item.rarity] ?? '#888888'
+    const accentColor = getCardAccent(item)
+    const accentHex = '#' + accentColor.toString(16).padStart(6, '0')
+    const rarityColor = RARITY_COLORS[item.rarity] ?? border.strong
+    const rarityHex = RARITY_HEX[item.rarity] ?? fg.tertiaryHex
     const isPremium = item.rarity === 'premium'
     const locked = item.dropCount > 0 && !hasAvailableSkills(item.dropType)
     const hw = cw / 2; const hh = ch / 2
@@ -305,78 +255,74 @@ export default class ShopScene extends Phaser.Scene {
     // ── Card Background (multi-layer depth) ──
     const bg = this.add.graphics()
     // Drop shadow
-    bg.fillStyle(0x000000, 0.4)
-    bg.fillRoundedRect(-hw + 4, -hh + 5, cw, ch, 12)
-    // Main body
-    bg.fillStyle(0x0e1420, 1)
-    bg.fillRoundedRect(-hw, -hh, cw, ch, 12)
+    bg.fillStyle(0x000000, 0.45)
+    bg.fillRoundedRect(-hw + 4, -hh + 5, cw, ch, radii.lg)
+    // Main body — surface.panel
+    bg.fillStyle(surface.panel, 1)
+    bg.fillRoundedRect(-hw, -hh, cw, ch, radii.lg)
     // Inner gradient (darker bottom for 3D depth)
-    bg.fillStyle(0x000000, 0.12)
-    bg.fillRoundedRect(-hw + 2, 0, cw - 4, hh - 2, { tl: 0, tr: 0, bl: 10, br: 10 })
+    bg.fillStyle(0x000000, 0.18)
+    bg.fillRoundedRect(-hw + 2, 0, cw - 4, hh - 2, { tl: 0, tr: 0, bl: radii.lg - 2, br: radii.lg - 2 })
     // Top highlight (glass effect)
-    bg.fillStyle(0xffffff, 0.03)
-    bg.fillRoundedRect(-hw + 3, -hh + 3, cw - 6, 24, { tl: 9, tr: 9, bl: 0, br: 0 })
-    // Outer border
-    bg.lineStyle(1.5, rarityColor, isPremium ? 0.5 : 0.25)
-    bg.strokeRoundedRect(-hw, -hh, cw, ch, 12)
-    // Inner white border (subtle)
-    bg.lineStyle(1, 0xffffff, 0.02)
-    bg.strokeRoundedRect(-hw + 3, -hh + 3, cw - 6, ch - 6, 9)
+    bg.fillStyle(0xffffff, 0.04)
+    bg.fillRoundedRect(-hw + 3, -hh + 3, cw - 6, 22, { tl: radii.lg - 1, tr: radii.lg - 1, bl: 0, br: 0 })
+    // Outer border tinted by rarity
+    bg.lineStyle(1.5, rarityColor, isPremium ? 0.85 : 0.55)
+    bg.strokeRoundedRect(-hw, -hh, cw, ch, radii.lg)
 
-    // ── Rarity Banner ──
+    // ── Rarity banner — tinted top wash by category ──
     if (item.dropType === 'attack' && !isPremium) {
-      bg.fillStyle(0xcc3333, 0.15)
-      bg.fillRect(-hw + 3, -hh + 3, (cw - 6) / 2, BANNER_H)
-      bg.fillStyle(0xdd6633, 0.15)
-      bg.fillRect(0, -hh + 3, (cw - 6) / 2, BANNER_H)
+      bg.fillStyle(state.error, 0.18)
+      bg.fillRect(-hw + 3, -hh + 3, cw - 6, BANNER_H)
     } else if (item.dropType === 'defense' && !isPremium) {
-      bg.fillStyle(0x3366cc, 0.15)
-      bg.fillRect(-hw + 3, -hh + 3, (cw - 6) / 2, BANNER_H)
-      bg.fillStyle(0x33aa88, 0.15)
-      bg.fillRect(0, -hh + 3, (cw - 6) / 2, BANNER_H)
+      bg.fillStyle(state.info, 0.18)
+      bg.fillRect(-hw + 3, -hh + 3, cw - 6, BANNER_H)
     } else if (isPremium) {
-      bg.fillStyle(0xf0c850, 0.12)
-      bg.fillRoundedRect(-hw + 3, -hh + 3, cw - 6, BANNER_H, { tl: 9, tr: 9, bl: 0, br: 0 })
+      bg.fillStyle(accent.primary, 0.14)
+      bg.fillRoundedRect(-hw + 3, -hh + 3, cw - 6, BANNER_H,
+        { tl: radii.lg - 1, tr: radii.lg - 1, bl: 0, br: 0 })
     }
     // Banner separator
-    bg.lineStyle(1, rarityColor, 0.12)
+    bg.lineStyle(1, rarityColor, 0.25)
     bg.lineBetween(-hw + 14, -hh + BANNER_H + 4, hw - 14, -hh + BANNER_H + 4)
 
-    // Rarity label
+    // Rarity label — Manrope meta letterSpacing 1.6
     const rLabel = this.add.text(0, -hh + BANNER_H / 2 + 2, RARITY_LABEL[item.rarity] ?? '', {
-      fontFamily: F.title, fontSize: '10px', color: rarityHex, fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0.5)
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: rarityHex, fontStyle: '700',
+    }).setOrigin(0.5).setLetterSpacing(1.6)
 
     // ── Icon (3D-style with glow) ──
     const iconY = -hh + 100
     const iconG = this.add.graphics()
 
     // Icon glow circle behind
-    const iconGlow = this.add.circle(0, iconY, isPremium ? 36 : 30, accent, 0)
-    this.tweens.add({ targets: iconGlow, alpha: { from: 0.04, to: 0.12 }, duration: 2000, yoyo: true, repeat: -1, ease: 'Sine.InOut' })
+    const iconGlow = this.add.circle(0, iconY, isPremium ? 36 : 30, accentColor, 0)
+    this.tweens.add({ targets: iconGlow, alpha: { from: 0.05, to: 0.16 }, duration: 2000, yoyo: true, repeat: -1, ease: 'Sine.InOut' })
 
     if (item.category === 'premium' && item.dropCount === 0) {
       // DG tab items — show DG coin icon
       this.drawDGCoinIcon(iconG, 0, iconY, 22)
     } else if (isPremium) {
       // Premium skill pack — sword + shield
-      this.drawSwordIcon(iconG, -20, iconY, accent, 1.4)
-      this.drawShieldIcon(iconG, 20, iconY, accent, 1.4)
+      this.drawSwordIcon(iconG, -20, iconY, accentColor, 1.4)
+      this.drawShieldIcon(iconG, 20, iconY, accentColor, 1.4)
     } else if (item.dropType === 'attack') {
-      this.drawSwordIcon(iconG, 0, iconY, accent, 1.6)
+      this.drawSwordIcon(iconG, 0, iconY, accentColor, 1.6)
     } else {
-      this.drawShieldIcon(iconG, 0, iconY, accent, 1.6)
+      this.drawShieldIcon(iconG, 0, iconY, accentColor, 1.6)
     }
 
-    // ── Name ──
+    // ── Name — Cormorant h3 ──
     const nameText = this.add.text(0, -hh + 158, item.name, {
-      fontFamily: F.title, fontSize: '22px', color: '#e8e0d0', fontStyle: 'bold',
-      shadow: { offsetX: 0, offsetY: 2, color: '#000000', blur: 6, fill: true },
+      fontFamily: fontFamily.serif, fontSize: typeScale.h3,
+      color: fg.primaryHex, fontStyle: '600',
     }).setOrigin(0.5)
 
-    // ── Description ──
+    // ── Description — Manrope small ──
     const descText = this.add.text(0, -hh + 184, item.desc, {
-      fontFamily: F.body, fontSize: '12px', color: '#888888', shadow: SHADOW.text,
+      fontFamily: fontFamily.body, fontSize: typeScale.small,
+      color: fg.tertiaryHex, fontStyle: '500',
     }).setOrigin(0.5)
 
     // ── Drop count badge ──
@@ -384,96 +330,89 @@ export default class ShopScene extends Phaser.Scene {
     if (item.dropCount > 0) {
       const badgeY = -hh + 206
       const badgeGfx = this.add.graphics()
-      badgeGfx.fillStyle(accent, 0.12)
-      badgeGfx.fillRoundedRect(-28, badgeY - 8, 56, 16, 8)
-      badgeGfx.lineStyle(1, accent, 0.25)
-      badgeGfx.strokeRoundedRect(-28, badgeY - 8, 56, 16, 8)
+      badgeGfx.fillStyle(accentColor, 0.16)
+      badgeGfx.fillRoundedRect(-32, badgeY - 9, 64, 18, 9)
+      badgeGfx.lineStyle(1, accentColor, 0.5)
+      badgeGfx.strokeRoundedRect(-32, badgeY - 9, 64, 18, 9)
       badgeEls.push(badgeGfx)
 
-      badgeEls.push(this.add.text(0, badgeY, `x${item.dropCount} skills`, {
-        fontFamily: F.body, fontSize: '13px', color: accentHex, fontStyle: 'bold', shadow: SHADOW.text,
-      }).setOrigin(0.5))
+      badgeEls.push(this.add.text(0, badgeY, `×${item.dropCount} SKILLS`, {
+        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+        color: accentHex, fontStyle: '700',
+      }).setOrigin(0.5).setLetterSpacing(1.2))
     }
 
-    // ── Price Area — unified bar with gold + DG side by side ──
+    // ── Price area — surface.deepest pill bar with token-driven prices ──
     const priceY = -hh + 242
     const priceElements: Phaser.GameObjects.GameObject[] = []
     const priceBgW = cw - 24
     const priceBgH = 28
 
-    // Single price background bar
     const priceBg = this.add.graphics()
-    priceBg.fillStyle(0x080c14, 0.8)
+    priceBg.fillStyle(surface.deepest, 0.92)
     priceBg.fillRoundedRect(-priceBgW / 2, priceY - priceBgH / 2, priceBgW, priceBgH, priceBgH / 2)
-    priceBg.lineStyle(1, rarityColor, 0.12)
+    priceBg.lineStyle(1, border.subtle, 1)
     priceBg.strokeRoundedRect(-priceBgW / 2, priceY - priceBgH / 2, priceBgW, priceBgH, priceBgH / 2)
     priceElements.push(priceBg)
 
     if (item.goldPrice > 0 && item.dgPrice > 0) {
-      // Gold coin icon + price (left)
+      // Gold (left) + DG (right) split
       const goldCoin = this.add.graphics()
-      goldCoin.fillStyle(0xffa726, 0.7); goldCoin.fillCircle(-priceBgW / 4 - 16, priceY, 5)
-      goldCoin.lineStyle(1, 0xffa726, 0.9); goldCoin.strokeCircle(-priceBgW / 4 - 16, priceY, 5)
+      goldCoin.fillStyle(currency.goldCoin, 0.85)
+      goldCoin.fillCircle(-priceBgW / 4 - 14, priceY, 5)
+      goldCoin.lineStyle(1, currency.goldCoinEdge, 1)
+      goldCoin.strokeCircle(-priceBgW / 4 - 14, priceY, 5)
       priceElements.push(goldCoin)
-      priceElements.push(this.add.text(-priceBgW / 4 + 2, priceY, `${item.goldPrice}`, {
-        fontFamily: F.title, fontSize: '12px', color: '#ffa726', fontStyle: 'bold', shadow: SHADOW.text,
+      priceElements.push(this.add.text(-priceBgW / 4 + 4, priceY, `${item.goldPrice}`, {
+        fontFamily: fontFamily.mono, fontSize: typeScale.small,
+        color: currency.goldCoinHex, fontStyle: '700',
       }).setOrigin(0.5))
 
-      // Subtle divider
+      // Divider
       const divG = this.add.graphics()
-      divG.fillStyle(0xffffff, 0.08); divG.fillRect(-1, priceY - 8, 2, 16)
+      divG.fillStyle(border.default, 0.5); divG.fillRect(-0.5, priceY - 8, 1, 16)
       priceElements.push(divG)
 
-      // DG coin icon + price (right)
+      // DG
       const dgCoin = this.add.graphics()
-      dgCoin.fillStyle(0x4fc3f7, 0.6); dgCoin.fillCircle(priceBgW / 4 - 14, priceY, 5)
-      dgCoin.lineStyle(1, 0x4fc3f7, 0.9); dgCoin.strokeCircle(priceBgW / 4 - 14, priceY, 5)
-      dgCoin.fillStyle(0xffffff, 0.2)
-      const dds = 3
-      dgCoin.fillPoints([
-        new Phaser.Geom.Point(priceBgW / 4 - 14, priceY - dds),
-        new Phaser.Geom.Point(priceBgW / 4 - 14 + dds * 0.6, priceY),
-        new Phaser.Geom.Point(priceBgW / 4 - 14, priceY + dds),
-        new Phaser.Geom.Point(priceBgW / 4 - 14 - dds * 0.6, priceY),
-      ], true)
+      dgCoin.fillStyle(currency.dgGem, 0.85)
+      dgCoin.fillCircle(priceBgW / 4 - 14, priceY, 5)
+      dgCoin.lineStyle(1, currency.dgGemEdge, 1)
+      dgCoin.strokeCircle(priceBgW / 4 - 14, priceY, 5)
       priceElements.push(dgCoin)
       priceElements.push(this.add.text(priceBgW / 4 + 4, priceY, `${item.dgPrice}`, {
-        fontFamily: F.title, fontSize: '12px', color: '#4fc3f7', fontStyle: 'bold', shadow: SHADOW.text,
+        fontFamily: fontFamily.mono, fontSize: typeScale.small,
+        color: currency.dgGemHex, fontStyle: '700',
       }).setOrigin(0.5))
     } else if (item.dgPrice > 0) {
-      // DG only — centered coin + text
       const dgCoin = this.add.graphics()
-      dgCoin.fillStyle(0x4fc3f7, 0.6); dgCoin.fillCircle(-20, priceY, 6)
-      dgCoin.lineStyle(1, 0x4fc3f7, 0.9); dgCoin.strokeCircle(-20, priceY, 6)
-      dgCoin.fillStyle(0xffffff, 0.2)
-      const dds2 = 3.5
-      dgCoin.fillPoints([
-        new Phaser.Geom.Point(-20, priceY - dds2),
-        new Phaser.Geom.Point(-20 + dds2 * 0.6, priceY),
-        new Phaser.Geom.Point(-20, priceY + dds2),
-        new Phaser.Geom.Point(-20 - dds2 * 0.6, priceY),
-      ], true)
+      dgCoin.fillStyle(currency.dgGem, 0.85)
+      dgCoin.fillCircle(-22, priceY, 6)
+      dgCoin.lineStyle(1, currency.dgGemEdge, 1)
+      dgCoin.strokeCircle(-22, priceY, 6)
       priceElements.push(dgCoin)
-      priceElements.push(this.add.text(4, priceY, `${item.dgPrice} DG`, {
-        fontFamily: F.title, fontSize: '13px', color: '#4fc3f7', fontStyle: 'bold', shadow: SHADOW.text,
+      priceElements.push(this.add.text(2, priceY, `${item.dgPrice} DG`, {
+        fontFamily: fontFamily.mono, fontSize: typeScale.small,
+        color: currency.dgGemHex, fontStyle: '700',
       }).setOrigin(0.5))
     } else if (item.goldPrice > 0) {
-      // Gold only — centered coin + text
       const goldCoin = this.add.graphics()
-      goldCoin.fillStyle(0xffa726, 0.7); goldCoin.fillCircle(-20, priceY, 6)
-      goldCoin.lineStyle(1, 0xffa726, 0.9); goldCoin.strokeCircle(-20, priceY, 6)
-      goldCoin.lineStyle(0.8, 0xffffff, 0.15); goldCoin.strokeCircle(-20, priceY, 3)
+      goldCoin.fillStyle(currency.goldCoin, 0.85)
+      goldCoin.fillCircle(-22, priceY, 6)
+      goldCoin.lineStyle(1, currency.goldCoinEdge, 1)
+      goldCoin.strokeCircle(-22, priceY, 6)
       priceElements.push(goldCoin)
-      priceElements.push(this.add.text(4, priceY, `${item.goldPrice}g`, {
-        fontFamily: F.title, fontSize: '13px', color: '#ffa726', fontStyle: 'bold', shadow: SHADOW.text,
+      priceElements.push(this.add.text(2, priceY, `${item.goldPrice}`, {
+        fontFamily: fontFamily.mono, fontSize: typeScale.small,
+        color: currency.goldCoinHex, fontStyle: '700',
       }).setOrigin(0.5))
     }
 
     // ── Hover glow ──
     const glowG = this.add.graphics().setAlpha(0)
     if (!locked) {
-      glowG.lineStyle(2, rarityColor, 0.5)
-      glowG.strokeRoundedRect(-hw - 2, -hh - 2, cw + 4, ch + 4, 14)
+      glowG.lineStyle(2, rarityColor, 0.6)
+      glowG.strokeRoundedRect(-hw - 2, -hh - 2, cw + 4, ch + 4, radii.lg + 2)
     }
 
     // ── Hit area ──
@@ -484,33 +423,30 @@ export default class ShopScene extends Phaser.Scene {
     const lockElements: Phaser.GameObjects.GameObject[] = []
     if (locked) {
       const lockOverlay = this.add.graphics()
-      lockOverlay.fillStyle(0x000000, 0.5)
-      lockOverlay.fillRoundedRect(-hw, -hh, cw, ch, 12)
+      lockOverlay.fillStyle(0x000000, 0.55)
+      lockOverlay.fillRoundedRect(-hw, -hh, cw, ch, radii.lg)
       lockElements.push(lockOverlay)
-
-      const lockG = this.add.graphics()
-      lockG.lineStyle(5, 0xaaaaaa, 0.9)
-      lockG.beginPath(); lockG.arc(0, -22, 18, Math.PI, 0, false); lockG.strokePath()
-      lockG.fillStyle(0xaaaaaa, 0.9)
-      lockG.fillRoundedRect(-22, -22, 44, 32, 5)
-      lockG.fillStyle(0x000000, 0.6)
-      lockG.fillCircle(0, -10, 5)
-      lockG.fillRect(-3, -7, 6, 10)
-      lockElements.push(lockG)
+      // Lucide lock icon — 32px tinted fg.tertiary, centered
+      const lockIcon = UI.lucideIcon(this, 'x', 0, -16, 32, fg.tertiary)
+      lockElements.push(lockIcon)
+      lockElements.push(this.add.text(0, 22, 'JÁ POSSUI TODAS', {
+        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+        color: fg.tertiaryHex, fontStyle: '700',
+      }).setOrigin(0.5).setLetterSpacing(1.6))
     }
 
     // ── Premium special effects ──
     const premElements: Phaser.GameObjects.GameObject[] = []
     if (isPremium && !locked) {
-      // Pulsing outer glow
+      // Pulsing outer accent glow
       const pulseGlow = this.add.graphics()
-      pulseGlow.lineStyle(2, 0xf0c850, 0.2)
-      pulseGlow.strokeRoundedRect(-hw - 3, -hh - 3, cw + 6, ch + 6, 14)
+      pulseGlow.lineStyle(2, accent.primary, 0.4)
+      pulseGlow.strokeRoundedRect(-hw - 3, -hh - 3, cw + 6, ch + 6, radii.lg + 3)
       premElements.push(pulseGlow)
-      this.tweens.add({ targets: pulseGlow, alpha: { from: 0.3, to: 0.8 }, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.InOut' })
+      this.tweens.add({ targets: pulseGlow, alpha: { from: 0.4, to: 0.9 }, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.InOut' })
 
       // Corner ornaments
-      premElements.push(UI.cornerOrnaments(this, 0, 0, cw - 16, ch - 16, C.gold, 0.2, 16))
+      premElements.push(UI.cornerOrnaments(this, 0, 0, cw - 16, ch - 16, accent.primary, 0.25, 16))
     }
 
     // ── Assemble ──
@@ -604,41 +540,38 @@ export default class ShopScene extends Phaser.Scene {
     const bg = this.add.graphics()
     // Drop shadow
     bg.fillStyle(0x000000, 0.45)
-    bg.fillRoundedRect(-hw + 4, -hh + 5, cw, ch, 14)
+    bg.fillRoundedRect(-hw + 4, -hh + 5, cw, ch, radii.lg + 2)
     // Body
-    bg.fillStyle(0x0e1420, 1)
-    bg.fillRoundedRect(-hw, -hh, cw, ch, 14)
+    bg.fillStyle(surface.panel, 1)
+    bg.fillRoundedRect(-hw, -hh, cw, ch, radii.lg + 2)
     // Vertical colour wash keyed to rarity
-    bg.fillStyle(rarityColor, 0.08)
-    bg.fillRoundedRect(-hw, -hh, cw, ch * 0.55, { tl: 14, tr: 14, bl: 0, br: 0 })
+    bg.fillStyle(rarityColor, 0.10)
+    bg.fillRoundedRect(-hw, -hh, cw, ch * 0.55, { tl: radii.lg + 2, tr: radii.lg + 2, bl: 0, br: 0 })
     // Glass sheen
-    bg.fillStyle(0xffffff, 0.04)
-    bg.fillRoundedRect(-hw + 3, -hh + 3, cw - 6, 26, { tl: 11, tr: 11, bl: 0, br: 0 })
+    bg.fillStyle(0xffffff, 0.05)
+    bg.fillRoundedRect(-hw + 3, -hh + 3, cw - 6, 24, { tl: radii.lg + 1, tr: radii.lg + 1, bl: 0, br: 0 })
     // Darker bottom half for readability
-    bg.fillStyle(0x000000, 0.18)
-    bg.fillRoundedRect(-hw + 2, 10, cw - 4, hh - 12, { tl: 0, tr: 0, bl: 12, br: 12 })
-    // Rarity border (thicker than skills cards — skins are the showcase)
-    bg.lineStyle(2, rarityColor, 0.55)
-    bg.strokeRoundedRect(-hw, -hh, cw, ch, 14)
-    // Inner subtle border
-    bg.lineStyle(1, 0xffffff, 0.03)
-    bg.strokeRoundedRect(-hw + 3, -hh + 3, cw - 6, ch - 6, 11)
+    bg.fillStyle(0x000000, 0.20)
+    bg.fillRoundedRect(-hw + 2, 10, cw - 4, hh - 12, { tl: 0, tr: 0, bl: radii.lg, br: radii.lg })
+    // Rarity border (thicker than skill cards — skins are the showcase)
+    bg.lineStyle(2, rarityColor, 0.7)
+    bg.strokeRoundedRect(-hw, -hh, cw, ch, radii.lg + 2)
     container.add(bg)
 
     // ── Rarity badge (top) ──
     const rBadge = this.add.graphics()
-    const rw = 86
+    const rw = 92
     const rh = 20
-    rBadge.fillStyle(rarityColor, 0.15)
+    rBadge.fillStyle(rarityColor, 0.18)
     rBadge.fillRoundedRect(-rw / 2, -hh + 8, rw, rh, rh / 2)
-    rBadge.lineStyle(1, rarityColor, 0.5)
+    rBadge.lineStyle(1, rarityColor, 0.6)
     rBadge.strokeRoundedRect(-rw / 2, -hh + 8, rw, rh, rh / 2)
     container.add(rBadge)
     container.add(
-      this.add.text(0, -hh + 8 + rh / 2, rarityLabel, {
-        fontFamily: F.title, fontSize: '10px',
-        color: rarityHex, fontStyle: 'bold', shadow: SHADOW.text,
-      }).setOrigin(0.5),
+      this.add.text(0, -hh + 8 + rh / 2, rarityLabel.toUpperCase(), {
+        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+        color: rarityHex, fontStyle: '700',
+      }).setOrigin(0.5).setLetterSpacing(1.6),
     )
 
     // ── Character sprite preview (centered "hero shot") ──
@@ -666,14 +599,11 @@ export default class ShopScene extends Phaser.Scene {
     // Make sure the sprite stays above the pedestal
     container.bringToTop(sprite)
 
-    // ── Skin name ──
-    // Centered between the sprite's feet and the action button for a clean
-    // vertical rhythm — no subtitle here (was removed for a cleaner layout).
+    // ── Skin name — Cormorant h3 ──
     container.add(
       this.add.text(0, -hh + 236, skin.displayName, {
-        fontFamily: F.title, fontSize: '16px',
-        color: '#f5f0e0', fontStyle: 'bold',
-        shadow: { offsetX: 0, offsetY: 2, color: '#000000', blur: 5, fill: true },
+        fontFamily: fontFamily.serif, fontSize: typeScale.h3,
+        color: fg.primaryHex, fontStyle: '600',
       }).setOrigin(0.5),
     )
 
@@ -683,64 +613,56 @@ export default class ShopScene extends Phaser.Scene {
     const actionH = 34
 
     if (owned) {
-      // Owned state — no buy button, show status badge
+      // Owned state — token-driven status badge
       const badgeBg = this.add.graphics()
-      const statusColor = equipped ? 0x44dd66 : 0x4488cc
-      const statusColorHex = equipped ? '#44dd66' : '#4488cc'
-      badgeBg.fillStyle(statusColor, 0.12)
+      const statusColor = equipped ? state.success : state.info
+      const statusColorHex = equipped ? state.successHex : state.infoHex
+      badgeBg.fillStyle(statusColor, 0.16)
       badgeBg.fillRoundedRect(-actionW / 2, actionY - actionH / 2, actionW, actionH, actionH / 2)
-      badgeBg.lineStyle(1.5, statusColor, 0.6)
+      badgeBg.lineStyle(1.5, statusColor, 0.7)
       badgeBg.strokeRoundedRect(-actionW / 2, actionY - actionH / 2, actionW, actionH, actionH / 2)
       container.add(badgeBg)
 
       container.add(
         this.add.text(0, actionY, equipped ? 'EQUIPADA' : 'ADQUIRIDA', {
-          fontFamily: F.title, fontSize: '13px',
-          color: statusColorHex, fontStyle: 'bold', shadow: SHADOW.text,
-        }).setOrigin(0.5),
+          fontFamily: fontFamily.body, fontSize: typeScale.meta,
+          color: statusColorHex, fontStyle: '700',
+        }).setOrigin(0.5).setLetterSpacing(1.8),
       )
     } else {
-      // Buy state — DG price + big touch button
+      // Buy state — DG price + touch button (currency-themed pill)
       const canAfford = playerData.getDG() >= skin.dgPrice
-      const btnFill   = canAfford ? 0x0e1a2a : 0x111419
-      const btnBorder = canAfford ? 0x4fc3f7 : 0x333942
-      const priceHex  = canAfford ? '#4fc3f7' : '#555b66'
+      const btnFill   = canAfford ? surface.deepest : surface.primary
+      const btnBorder = canAfford ? currency.dgGemEdge : border.subtle
+      const priceHex  = canAfford ? currency.dgGemHex : fg.disabledHex
 
       const btnBg = this.add.graphics()
       btnBg.fillStyle(btnFill, 1)
       btnBg.fillRoundedRect(-actionW / 2, actionY - actionH / 2, actionW, actionH, actionH / 2)
-      btnBg.lineStyle(1.5, btnBorder, canAfford ? 0.7 : 0.3)
+      btnBg.lineStyle(1.5, btnBorder, canAfford ? 1 : 0.4)
       btnBg.strokeRoundedRect(-actionW / 2, actionY - actionH / 2, actionW, actionH, actionH / 2)
       container.add(btnBg)
 
-      // Mini DG coin icon
+      // Mini DG coin
       const coin = this.add.graphics()
-      coin.fillStyle(0x4fc3f7, canAfford ? 0.6 : 0.2)
+      coin.fillStyle(currency.dgGem, canAfford ? 0.85 : 0.3)
       coin.fillCircle(-34, actionY, 7)
-      coin.lineStyle(1.2, 0x4fc3f7, canAfford ? 0.9 : 0.3)
+      coin.lineStyle(1.2, currency.dgGemEdge, canAfford ? 1 : 0.4)
       coin.strokeCircle(-34, actionY, 7)
-      const ds = 4
-      coin.fillStyle(0xffffff, canAfford ? 0.25 : 0.08)
-      coin.fillPoints([
-        new Phaser.Geom.Point(-34, actionY - ds),
-        new Phaser.Geom.Point(-34 + ds * 0.6, actionY),
-        new Phaser.Geom.Point(-34, actionY + ds),
-        new Phaser.Geom.Point(-34 - ds * 0.6, actionY),
-      ], true)
       container.add(coin)
 
       container.add(
         this.add.text(-16, actionY, `${skin.dgPrice}`, {
-          fontFamily: F.title, fontSize: '14px',
-          color: priceHex, fontStyle: 'bold', shadow: SHADOW.text,
+          fontFamily: fontFamily.mono, fontSize: typeScale.small,
+          color: priceHex, fontStyle: '700',
         }).setOrigin(0, 0.5),
       )
 
       container.add(
         this.add.text(actionW / 2 - 12, actionY, 'COMPRAR', {
-          fontFamily: F.title, fontSize: '12px',
-          color: priceHex, fontStyle: 'bold', shadow: SHADOW.text,
-        }).setOrigin(1, 0.5),
+          fontFamily: fontFamily.body, fontSize: typeScale.meta,
+          color: priceHex, fontStyle: '700',
+        }).setOrigin(1, 0.5).setLetterSpacing(1.6),
       )
 
       // Hit area for the buy button
@@ -777,104 +699,63 @@ export default class ShopScene extends Phaser.Scene {
     return container
   }
 
-  /** Confirmation modal — identical visual language to skill-pack popup. */
+  /** Confirmation modal for skin purchase via UI.modal kit. */
   private showSkinPurchasePopup(skin: SkinDef) {
-    const d = 5000
-
-    const blocker = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.85)
-      .setDepth(d).setInteractive()
-
-    const pw = 460
-    const ph = 260
-    const panel = this.add.graphics().setDepth(d + 1)
-    panel.fillStyle(0x0e1420, 1)
-    panel.fillRoundedRect(W / 2 - pw / 2, H / 2 - ph / 2, pw, ph, 16)
-    panel.fillStyle(0xffffff, 0.03)
-    panel.fillRoundedRect(W / 2 - pw / 2 + 3, H / 2 - ph / 2 + 3, pw - 6, 22, { tl: 13, tr: 13, bl: 0, br: 0 })
-    panel.lineStyle(2, SKIN_RARITY_COLOR[skin.rarity], 0.55)
-    panel.strokeRoundedRect(W / 2 - pw / 2, H / 2 - ph / 2, pw, ph, 16)
-
-    const title = this.add.text(W / 2, H / 2 - 95, `Comprar ${skin.displayName}?`, {
-      fontFamily: F.title, fontSize: '20px', color: SKIN_RARITY_HEX[skin.rarity],
-      fontStyle: 'bold', shadow: SHADOW.goldGlow,
-    }).setOrigin(0.5).setDepth(d + 2)
-
-    const desc = this.add.text(W / 2, H / 2 - 68, skin.subtitle, {
-      fontFamily: F.body, fontSize: '13px', color: '#aaaaaa', shadow: SHADOW.text,
-    }).setOrigin(0.5).setDepth(d + 2)
-
-    // Character preview in the modal
-    const preview = drawCharacterSprite(this, skin.classId as SpriteRole, 'left', 110, skin.id)
-    preview.setPosition(W / 2, H / 2 - 8).setDepth(d + 2).setScale(0.9)
-
-    const elements: Phaser.GameObjects.GameObject[] = [blocker, panel, title, desc, preview]
-    const cleanup = () => elements.forEach(e => e.destroy())
-
-    // DG button
     const canAfford = playerData.getDG() >= skin.dgPrice
-    const btnX = W / 2 - 90
-    const btnY = H / 2 + 82
-    const btnGfx = this.add.graphics().setDepth(d + 3)
-    btnGfx.fillStyle(canAfford ? 0x0e1a2a : 0x111111, 1)
-    btnGfx.fillRoundedRect(btnX - 80, btnY - 20, 160, 40, 20)
-    btnGfx.lineStyle(1.8, canAfford ? 0x4fc3f7 : 0x444444, canAfford ? 0.7 : 0.25)
-    btnGfx.strokeRoundedRect(btnX - 80, btnY - 20, 160, 40, 20)
-    elements.push(btnGfx)
-
-    const btnTxt = this.add.text(btnX, btnY, `${skin.dgPrice} DG`, {
-      fontFamily: F.title, fontSize: '16px', color: canAfford ? '#4fc3f7' : '#555555',
-      fontStyle: 'bold', shadow: SHADOW.text,
-    }).setOrigin(0.5).setDepth(d + 4)
-    elements.push(btnTxt)
-
+    let modalClose: () => void = () => {}
+    const actions: Array<{ label: string; kind: 'primary' | 'secondary' | 'destructive' | 'ghost'; onClick: () => void }> = [
+      {
+        label: 'CANCELAR', kind: 'secondary',
+        onClick: () => modalClose(),
+      },
+    ]
     if (canAfford) {
-      const btnHit = this.add.rectangle(btnX, btnY, 160, 40, 0, 0.001)
-        .setInteractive({ useHandCursor: true }).setDepth(d + 5)
-      elements.push(btnHit)
-      btnHit.on('pointerover', () => btnTxt.setColor('#ffffff'))
-      btnHit.on('pointerout', () => btnTxt.setColor('#4fc3f7'))
-      btnHit.on('pointerdown', () => {
-        const ok = playerData.purchaseSkin(skin.classId, skin.id)
-        cleanup()
-        if (ok) {
-          this.refreshBalance()
-          this.drawCards()
-          this.showSkinPurchasedToast(skin)
-        }
+      actions.push({
+        label: `COMPRAR · ${skin.dgPrice} DG`, kind: 'primary',
+        onClick: () => {
+          modalClose()
+          const ok = playerData.purchaseSkin(skin.classId, skin.id)
+          if (ok) {
+            this.refreshBalance()
+            this.drawCards()
+            this.showPurchasedToast(skin.displayName, SKIN_RARITY_COLOR[skin.rarity], SKIN_RARITY_HEX[skin.rarity])
+          }
+        },
+      })
+    } else {
+      actions.push({
+        label: 'SALDO INSUFICIENTE', kind: 'ghost',
+        onClick: () => modalClose(),
       })
     }
-
-    // Cancel link
-    const cancelTxt = this.add.text(W / 2 + 90, H / 2 + 82, 'Cancelar', {
-      fontFamily: F.body, fontSize: '14px', color: '#888888', shadow: SHADOW.text,
-    }).setOrigin(0.5).setDepth(d + 3).setInteractive({ useHandCursor: true })
-    cancelTxt.on('pointerover', () => cancelTxt.setColor('#cccccc'))
-    cancelTxt.on('pointerout',  () => cancelTxt.setColor('#888888'))
-    cancelTxt.on('pointerdown', cleanup)
-    elements.push(cancelTxt)
-
-    blocker.on('pointerdown', cleanup)
+    const { close } = UI.modal(this, {
+      eyebrow: SKIN_RARITY_LABEL[skin.rarity],
+      title:   `Comprar ${skin.displayName}?`,
+      body:    skin.subtitle,
+      actions,
+    }, { width: 460 })
+    modalClose = close
   }
 
-  /** Brief success toast after a skin purchase. */
-  private showSkinPurchasedToast(skin: SkinDef) {
+  /** Brief tokenized toast — works for both skin and skill pack purchases. */
+  private showPurchasedToast(name: string, accentColor: number, accentHex: string) {
     const d = 6000
     const bg = this.add.graphics().setDepth(d)
     const tw = 360
-    const th = 54
-    bg.fillStyle(0x0e1420, 0.96)
-    bg.fillRoundedRect(W / 2 - tw / 2, 80, tw, th, 10)
-    bg.lineStyle(2, SKIN_RARITY_COLOR[skin.rarity], 0.75)
-    bg.strokeRoundedRect(W / 2 - tw / 2, 80, tw, th, 10)
+    const th = 56
+    bg.fillStyle(surface.panel, 0.96)
+    bg.fillRoundedRect(W / 2 - tw / 2, 80, tw, th, radii.lg)
+    bg.lineStyle(2, accentColor, 0.85)
+    bg.strokeRoundedRect(W / 2 - tw / 2, 80, tw, th, radii.lg)
 
-    const txt = this.add.text(W / 2, 80 + th / 2 - 8, 'SKIN DESBLOQUEADA!', {
-      fontFamily: F.title, fontSize: '14px',
-      color: SKIN_RARITY_HEX[skin.rarity], fontStyle: 'bold', shadow: SHADOW.goldGlow,
-    }).setOrigin(0.5).setDepth(d + 1)
+    const txt = this.add.text(W / 2, 80 + th / 2 - 8, 'DESBLOQUEADO', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: accentHex, fontStyle: '700',
+    }).setOrigin(0.5).setDepth(d + 1).setLetterSpacing(2)
 
-    const sub = this.add.text(W / 2, 80 + th / 2 + 10, skin.displayName, {
-      fontFamily: F.body, fontSize: '12px',
-      color: '#e8e0d0', shadow: SHADOW.text,
+    const sub = this.add.text(W / 2, 80 + th / 2 + 10, name, {
+      fontFamily: fontFamily.serif, fontSize: typeScale.small,
+      color: fg.primaryHex, fontStyle: '600',
     }).setOrigin(0.5).setDepth(d + 1)
 
     this.tweens.add({
@@ -891,97 +772,41 @@ export default class ShopScene extends Phaser.Scene {
   // ═══════════════════════════════════════════════════════════════════════════
 
   private showPurchasePopup(item: ShopItem) {
-    const d = 5000
+    const canAffordGold = item.goldPrice > 0 && playerData.getGold() >= item.goldPrice
+    const canAffordDG   = item.dgPrice   > 0 && playerData.getDG()   >= item.dgPrice
+    let modalClose: () => void = () => {}
 
-    // Dim background
-    const blocker = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.85)
-      .setDepth(d).setInteractive()
-
-    // Panel
-    const pw = 420; const ph = 220
-    const panel = this.add.graphics().setDepth(d + 1)
-    panel.fillStyle(0x0e1420, 1)
-    panel.fillRoundedRect(W / 2 - pw / 2, H / 2 - ph / 2, pw, ph, 14)
-    panel.fillStyle(0xffffff, 0.02)
-    panel.fillRoundedRect(W / 2 - pw / 2 + 3, H / 2 - ph / 2 + 3, pw - 6, 20, { tl: 11, tr: 11, bl: 0, br: 0 })
-    panel.lineStyle(1.5, C.gold, 0.4)
-    panel.strokeRoundedRect(W / 2 - pw / 2, H / 2 - ph / 2, pw, ph, 14)
-
-    const title = this.add.text(W / 2, H / 2 - 70, `Comprar ${item.name}?`, {
-      fontFamily: F.title, fontSize: '20px', color: C.goldHex, fontStyle: 'bold', shadow: SHADOW.goldGlow,
-    }).setOrigin(0.5).setDepth(d + 2)
-
-    const desc = this.add.text(W / 2, H / 2 - 40, item.desc, {
-      fontFamily: F.body, fontSize: '14px', color: '#aaaaaa', shadow: SHADOW.text,
-    }).setOrigin(0.5).setDepth(d + 2)
-
-    const elements: Phaser.GameObjects.GameObject[] = [blocker, panel, title, desc]
-    const cleanup = () => elements.forEach(e => e.destroy())
-
-    // Gold button
-    if (item.goldPrice > 0) {
-      const canAfford = playerData.getGold() >= item.goldPrice
-      const btnX = W / 2 - 90; const btnY = H / 2 + 15
-      const btnGfx = this.add.graphics().setDepth(d + 3)
-      btnGfx.fillStyle(canAfford ? 0x1a1408 : 0x111111, 1)
-      btnGfx.fillRoundedRect(btnX - 70, btnY - 18, 140, 36, 18)
-      btnGfx.lineStyle(1.5, canAfford ? 0xffa726 : 0x444444, canAfford ? 0.6 : 0.2)
-      btnGfx.strokeRoundedRect(btnX - 70, btnY - 18, 140, 36, 18)
-      elements.push(btnGfx)
-
-      const btnTxt = this.add.text(btnX, btnY, `${item.goldPrice} Gold`, {
-        fontFamily: F.title, fontSize: '15px', color: canAfford ? '#ffa726' : '#555555',
-        fontStyle: 'bold', shadow: SHADOW.text,
-      }).setOrigin(0.5).setDepth(d + 4)
-      elements.push(btnTxt)
-
-      if (canAfford) {
-        const btnHit = this.add.rectangle(btnX, btnY, 140, 36, 0, 0.001)
-          .setInteractive({ useHandCursor: true }).setDepth(d + 5)
-        elements.push(btnHit)
-        btnHit.on('pointerover', () => btnTxt.setColor('#ffffff'))
-        btnHit.on('pointerout', () => btnTxt.setColor('#ffa726'))
-        btnHit.on('pointerdown', () => { cleanup(); this.executePurchase(item, false) })
-      }
+    const actions: Array<{ label: string; kind: 'primary' | 'secondary' | 'destructive' | 'ghost'; onClick: () => void }> = [
+      { label: 'CANCELAR', kind: 'secondary', onClick: () => modalClose() },
+    ]
+    if (canAffordGold) {
+      actions.push({
+        label: `COMPRAR · ${item.goldPrice} GOLD`, kind: 'primary',
+        onClick: () => { modalClose(); this.executePurchase(item, false) },
+      })
+    }
+    if (canAffordDG) {
+      actions.push({
+        label: `COMPRAR · ${item.dgPrice} DG`, kind: 'primary',
+        onClick: () => { modalClose(); this.executePurchase(item, true) },
+      })
+    }
+    if (!canAffordGold && !canAffordDG) {
+      actions.push({
+        label: 'SALDO INSUFICIENTE', kind: 'ghost',
+        onClick: () => modalClose(),
+      })
     }
 
-    // DG button
-    if (item.dgPrice > 0) {
-      const canAfford = playerData.getDG() >= item.dgPrice
-      const btnX = W / 2 + 90; const btnY = H / 2 + 15
-      const btnGfx = this.add.graphics().setDepth(d + 3)
-      btnGfx.fillStyle(canAfford ? 0x0e1a2a : 0x111111, 1)
-      btnGfx.fillRoundedRect(btnX - 70, btnY - 18, 140, 36, 18)
-      btnGfx.lineStyle(1.5, canAfford ? 0x4fc3f7 : 0x444444, canAfford ? 0.6 : 0.2)
-      btnGfx.strokeRoundedRect(btnX - 70, btnY - 18, 140, 36, 18)
-      elements.push(btnGfx)
-
-      const btnTxt = this.add.text(btnX, btnY, `${item.dgPrice} DG`, {
-        fontFamily: F.title, fontSize: '15px', color: canAfford ? '#4fc3f7' : '#555555',
-        fontStyle: 'bold', shadow: SHADOW.text,
-      }).setOrigin(0.5).setDepth(d + 4)
-      elements.push(btnTxt)
-
-      if (canAfford) {
-        const btnHit = this.add.rectangle(btnX, btnY, 140, 36, 0, 0.001)
-          .setInteractive({ useHandCursor: true }).setDepth(d + 5)
-        elements.push(btnHit)
-        btnHit.on('pointerover', () => btnTxt.setColor('#ffffff'))
-        btnHit.on('pointerout', () => btnTxt.setColor('#4fc3f7'))
-        btnHit.on('pointerdown', () => { cleanup(); this.executePurchase(item, true) })
-      }
-    }
-
-    // Cancel
-    const cancelTxt = this.add.text(W / 2, H / 2 + 70, 'Cancelar', {
-      fontFamily: F.body, fontSize: '13px', color: '#666666', shadow: SHADOW.text,
-    }).setOrigin(0.5).setDepth(d + 3).setInteractive({ useHandCursor: true })
-    cancelTxt.on('pointerover', () => cancelTxt.setColor('#aaaaaa'))
-    cancelTxt.on('pointerout', () => cancelTxt.setColor('#666666'))
-    cancelTxt.on('pointerdown', cleanup)
-    elements.push(cancelTxt)
-
-    blocker.on('pointerdown', cleanup)
+    const { close } = UI.modal(this, {
+      eyebrow: RARITY_LABEL[item.rarity] ?? '',
+      title:   `Comprar ${item.name}?`,
+      body:    item.dropCount > 0
+        ? `${item.desc}  ·  ${item.dropCount} skill${item.dropCount > 1 ? 's' : ''} aleatória${item.dropCount > 1 ? 's' : ''}.`
+        : item.desc,
+      actions,
+    }, { width: 480 })
+    modalClose = close
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -1037,8 +862,15 @@ export default class ShopScene extends Phaser.Scene {
   }
 
   private refreshBalance() {
-    this.balanceGoldText.setText(`${playerData.getGold()}`)
-    this.balanceDGText.setText(`${playerData.getDG()}`)
+    // currencyPill autosizes by content — destroy + rebuild on amount change
+    this.balanceGoldPill?.destroy(true)
+    this.balanceDgPill?.destroy(true)
+    this.balanceGoldPill = UI.currencyPill(this, W - 220, TOP_BAR_H / 2, {
+      kind: 'gold', amount: playerData.getGold(),
+    })
+    this.balanceDgPill = UI.currencyPill(this, W - 90, TOP_BAR_H / 2, {
+      kind: 'dg', amount: playerData.getDG(),
+    })
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -1196,15 +1028,15 @@ export default class ShopScene extends Phaser.Scene {
     g.lineBetween(x - 14 * s, y - 19 * s, x + 14 * s, y - 19 * s)
   }
 
-  /** DG coin icon — large blue diamond coin */
+  /** DG coin icon — large violet gem coin (Print 11 vocabulary) */
   private drawDGCoinIcon(g: Phaser.GameObjects.Graphics, x: number, y: number, r: number) {
     // Outer glow
-    g.fillStyle(C.info, 0.08)
+    g.fillStyle(currency.dgGem, 0.10)
     g.fillCircle(x, y, r + 4)
     // Coin body
-    g.fillStyle(C.info, 0.5)
+    g.fillStyle(currency.dgGem, 0.6)
     g.fillCircle(x, y, r)
-    g.lineStyle(2, C.info, 0.9)
+    g.lineStyle(2, currency.dgGemEdge, 1)
     g.strokeCircle(x, y, r)
     // Inner ring
     g.lineStyle(1, 0xffffff, 0.1)
