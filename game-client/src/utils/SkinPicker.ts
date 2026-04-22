@@ -13,16 +13,16 @@
  *   - Dims the parent scene with a click-to-close backdrop
  *   - Lays out the 3 skins for the chosen class side-by-side
  *   - Owned skins are clickable; the equipped one is highlighted in gold
- *   - Locked skins show a padlock + DG price + "loja" hint
+ *   - Locked skins show a padlock + DG price + "na loja" hint
  *   - Calls onChange(newSkinId) right after persisting the choice, so the
  *     calling lobby scene can redraw its character card with the new sprite
- *
- * Visual design follows the AAA conventions used elsewhere in the project:
- *   multi-layer panels, rarity-tinted borders, soft glows, entrance tweens.
  */
 
 import Phaser from 'phaser'
-import { C, F, S, SHADOW, SCREEN } from './DesignTokens'
+import {
+  SCREEN, surface, border, fg, accent, state,
+  currency, fontFamily, typeScale, radii,
+} from './DesignTokens'
 import { drawCharacterSprite, type SpriteRole, type SpriteSide } from './SpriteFactory'
 import { playerData } from './PlayerDataManager'
 import {
@@ -55,8 +55,8 @@ export interface SkinPickerOptions {
   onChange?: (newSkinId: string) => void
 
   /**
-   * Which side the preview faces. Defaults to 'left' (turquesa team look).
-   * Pass 'right' for purple-team previews so the picker matches the lobby.
+   * Which side the preview faces. Defaults to 'left'.
+   * Pass 'right' for enemy-team previews so the picker matches the lobby.
    */
   side?: SpriteSide
 }
@@ -88,7 +88,7 @@ export function openSkinPicker(
 
   scene.tweens.add({
     targets: backdrop,
-    fillAlpha: 0.82,
+    fillAlpha: 0.75,
     duration: 200,
     ease: 'Quad.Out',
   })
@@ -103,90 +103,70 @@ export function openSkinPicker(
   const PANEL_W = 900
   const PANEL_H = 520
 
-  // Soft outer gold halo so the modal pops off the dark backdrop
-  const halo = scene.add.graphics()
-  halo.fillStyle(C.gold, 0.05)
-  halo.fillRoundedRect(-PANEL_W / 2 - 12, -PANEL_H / 2 - 12, PANEL_W + 24, PANEL_H + 24, 18)
-  halo.fillStyle(C.gold, 0.03)
-  halo.fillRoundedRect(-PANEL_W / 2 - 6, -PANEL_H / 2 - 6, PANEL_W + 12, PANEL_H + 12, 16)
-  root.add(halo)
-
-  // Main panel — multi-layer for AAA depth
+  // Main panel — token-driven with drop shadow + top inset
   const bg = scene.add.graphics()
-  // shadow
+  // drop shadow
   bg.fillStyle(0x000000, 0.55)
-  bg.fillRoundedRect(-PANEL_W / 2 + 4, -PANEL_H / 2 + 8, PANEL_W, PANEL_H, 14)
+  bg.fillRoundedRect(-PANEL_W / 2 + 4, -PANEL_H / 2 + 8, PANEL_W, PANEL_H, radii.xl)
   // body
-  bg.fillStyle(0x070a12, 0.985)
-  bg.fillRoundedRect(-PANEL_W / 2, -PANEL_H / 2, PANEL_W, PANEL_H, 14)
-  // top header strip (slightly lighter)
-  bg.fillStyle(0x121724, 0.95)
-  bg.fillRoundedRect(-PANEL_W / 2, -PANEL_H / 2, PANEL_W, 70, { tl: 14, tr: 14, bl: 0, br: 0 })
-  // gloss highlight on the very top
+  bg.fillStyle(surface.panel, 1)
+  bg.fillRoundedRect(-PANEL_W / 2, -PANEL_H / 2, PANEL_W, PANEL_H, radii.xl)
+  // header strip (raised surface)
+  bg.fillStyle(surface.raised, 0.7)
+  bg.fillRoundedRect(-PANEL_W / 2, -PANEL_H / 2, PANEL_W, 70,
+    { tl: radii.xl, tr: radii.xl, bl: 0, br: 0 })
+  // top inset highlight
   bg.fillStyle(0xffffff, 0.05)
-  bg.fillRoundedRect(-PANEL_W / 2 + 2, -PANEL_H / 2 + 2, PANEL_W - 4, 32, { tl: 13, tr: 13, bl: 0, br: 0 })
-  // bottom darkening
-  bg.fillStyle(0x000000, 0.18)
-  bg.fillRoundedRect(-PANEL_W / 2 + 2, PANEL_H / 2 - 56, PANEL_W - 4, 54, { tl: 0, tr: 0, bl: 13, br: 13 })
-  // outer gold border
-  bg.lineStyle(2, C.gold, 0.55)
-  bg.strokeRoundedRect(-PANEL_W / 2, -PANEL_H / 2, PANEL_W, PANEL_H, 14)
-  // inner subtle border
-  bg.lineStyle(1, C.goldDim, 0.22)
-  bg.strokeRoundedRect(-PANEL_W / 2 + 4, -PANEL_H / 2 + 4, PANEL_W - 8, PANEL_H - 8, 12)
+  bg.fillRect(-PANEL_W / 2 + 2, -PANEL_H / 2 + 2, PANEL_W - 4, 1)
+  // outer border
+  bg.lineStyle(1, border.default, 1)
+  bg.strokeRoundedRect(-PANEL_W / 2, -PANEL_H / 2, PANEL_W, PANEL_H, radii.xl)
   root.add(bg)
 
   // ── Header — "ESCOLHER SKIN" + role label ──
   root.add(
     scene.add
       .text(0, -PANEL_H / 2 + 22, 'ESCOLHER SKIN', {
-        fontFamily: F.title,
-        fontSize: '14px',
-        color: C.goldDimHex,
-        fontStyle: 'bold',
-        shadow: SHADOW.text,
-        stroke: '#000000',
-        strokeThickness: 2,
+        fontFamily: fontFamily.body,
+        fontSize:   typeScale.meta,
+        color:      accent.primaryHex,
+        fontStyle:  '700',
       })
-      .setOrigin(0.5),
+      .setOrigin(0.5)
+      .setLetterSpacing(1.8),
   )
 
   root.add(
     scene.add
       .text(0, -PANEL_H / 2 + 44, ROLE_LABEL[classId], {
-        fontFamily: F.title,
-        fontSize: '24px',
-        color: C.goldHex,
-        fontStyle: 'bold',
-        shadow: SHADOW.goldGlow,
-        stroke: '#000000',
-        strokeThickness: 3,
+        fontFamily: fontFamily.display,
+        fontSize:   typeScale.h2,
+        color:      fg.primaryHex,
+        fontStyle:  '600',
       })
-      .setOrigin(0.5),
+      .setOrigin(0.5)
+      .setLetterSpacing(3),
   )
 
   // Decorative divider under the header
   const dividerY = -PANEL_H / 2 + 70
   const dvg = scene.add.graphics()
-  dvg.fillStyle(C.goldDim, 0.35)
-  dvg.fillRect(-PANEL_W / 2 + 60, dividerY, PANEL_W - 120, 1)
-  dvg.fillStyle(C.gold, 0.6)
-  dvg.fillRect(-30, dividerY, 60, 1)
+  dvg.fillStyle(accent.primary, 0.45)
+  dvg.fillRect(-PANEL_W / 2 + 16, dividerY, PANEL_W - 32, 1)
   root.add(dvg)
 
   // ── Close X (top right) ──
   const closeX = scene.add
-    .text(PANEL_W / 2 - 24, -PANEL_H / 2 + 32, 'X', {
-      fontFamily: F.title,
-      fontSize: '20px',
-      color: C.mutedHex,
-      fontStyle: 'bold',
-      shadow: SHADOW.text,
+    .text(PANEL_W / 2 - 24, -PANEL_H / 2 + 32, '✕', {
+      fontFamily: fontFamily.body,
+      fontSize:   '20px',
+      color:      fg.tertiaryHex,
+      fontStyle:  '700',
     })
     .setOrigin(0.5)
     .setInteractive({ useHandCursor: true })
-  closeX.on('pointerover', () => closeX.setColor('#ff6b6b'))
-  closeX.on('pointerout', () => closeX.setColor(C.mutedHex))
+  closeX.on('pointerover', () => closeX.setColor(fg.primaryHex))
+  closeX.on('pointerout', () => closeX.setColor(fg.tertiaryHex))
   closeX.on('pointerdown', () => close())
   root.add(closeX)
 
@@ -197,11 +177,10 @@ export function openSkinPicker(
   // Footer hint text (re-created on each redraw with current state)
   const hintText = scene.add
     .text(0, PANEL_H / 2 - 28, '', {
-      fontFamily: F.body,
-      fontSize: '13px',
-      color: C.mutedHex,
-      fontStyle: 'italic',
-      shadow: SHADOW.text,
+      fontFamily: fontFamily.serif,
+      fontSize:   typeScale.small,
+      color:      fg.tertiaryHex,
+      fontStyle:  'italic',
     })
     .setOrigin(0.5)
   root.add(hintText)
@@ -225,7 +204,6 @@ export function openSkinPicker(
       const isOwned = playerData.ownsSkin(classId, skin.id)
 
       const card = createCard(scene, cx, cardY, CARD_W, CARD_H, skin, side, isOwned, isEquipped, () => {
-        // Equip handler — only fires for owned, non-equipped skins
         const ok = playerData.setEquippedSkin(classId, skin.id)
         if (ok) {
           if (onChange) onChange(skin.id)
@@ -234,7 +212,6 @@ export function openSkinPicker(
       })
       cardsLayer.add(card)
 
-      // Stagger entrance for the cards on first open
       card.setAlpha(0).setScale(0.92)
       scene.tweens.add({
         targets: card,
@@ -247,14 +224,13 @@ export function openSkinPicker(
       })
     })
 
-    // Update the footer hint based on whether anything is locked
     const locked = skins.filter((s) => !playerData.ownsSkin(classId, s.id)).length
     if (locked > 0) {
       hintText.setText(`${locked} skin(s) bloqueada(s) — compre na loja`)
-      hintText.setColor(C.mutedHex)
+      hintText.setColor(fg.tertiaryHex)
     } else {
       hintText.setText('Todas as skins desbloqueadas — toque para equipar')
-      hintText.setColor(C.successHex)
+      hintText.setColor(state.successHex)
     }
   }
 
@@ -322,44 +298,43 @@ function createCard(
   const rarityHex = SKIN_RARITY_HEX[skin.rarity]
   const rarityLabel = SKIN_RARITY_LABEL[skin.rarity]
 
-  // ── Background — multi-layer card with rarity tint ──
+  // ── Background — token-driven card with rarity tint ──
   const bg = scene.add.graphics()
 
   // Drop shadow
   bg.fillStyle(0x000000, 0.55)
-  bg.fillRoundedRect(-hw + 3, -hh + 5, cw, ch, 12)
+  bg.fillRoundedRect(-hw + 3, -hh + 5, cw, ch, radii.lg)
 
   // Body
-  bg.fillStyle(0x0a0e18, 1)
-  bg.fillRoundedRect(-hw, -hh, cw, ch, 12)
+  bg.fillStyle(surface.raised, 1)
+  bg.fillRoundedRect(-hw, -hh, cw, ch, radii.lg)
 
   // Rarity colour wash on top half
   bg.fillStyle(rarityColor, isOwned ? 0.1 : 0.05)
-  bg.fillRoundedRect(-hw, -hh, cw, ch * 0.55, { tl: 12, tr: 12, bl: 0, br: 0 })
+  bg.fillRoundedRect(-hw, -hh, cw, ch * 0.55,
+    { tl: radii.lg, tr: radii.lg, bl: 0, br: 0 })
 
-  // Glass sheen
+  // Top inset highlight
   bg.fillStyle(0xffffff, 0.04)
-  bg.fillRoundedRect(-hw + 3, -hh + 3, cw - 6, 28, { tl: 11, tr: 11, bl: 0, br: 0 })
+  bg.fillRect(-hw + 2, -hh + 2, cw - 4, 1)
 
   // Bottom darkening
   bg.fillStyle(0x000000, 0.22)
-  bg.fillRoundedRect(-hw + 2, hh - 70, cw - 4, 68, { tl: 0, tr: 0, bl: 11, br: 11 })
+  bg.fillRoundedRect(-hw + 2, hh - 70, cw - 4, 68,
+    { tl: 0, tr: 0, bl: radii.lg - 1, br: radii.lg - 1 })
 
-  // Border — gold if equipped, rarity colour if owned, dim grey if locked
-  let borderColor = 0x2a2e3a
-  let borderAlpha = 0.4
+  // Border — accent if equipped, rarity colour if owned, subtle if locked
+  let borderColor: number = border.subtle
+  let borderAlpha = 0.6
   if (isEquipped) {
-    borderColor = C.gold
+    borderColor = accent.primary
     borderAlpha = 0.9
   } else if (isOwned) {
     borderColor = rarityColor
     borderAlpha = 0.6
   }
-  bg.lineStyle(2.5, borderColor, borderAlpha)
-  bg.strokeRoundedRect(-hw, -hh, cw, ch, 12)
-  // Inner accent line for crisp polish
-  bg.lineStyle(1, borderColor, borderAlpha * 0.4)
-  bg.strokeRoundedRect(-hw + 4, -hh + 4, cw - 8, ch - 8, 10)
+  bg.lineStyle(2, borderColor, borderAlpha)
+  bg.strokeRoundedRect(-hw, -hh, cw, ch, radii.lg)
   container.add(bg)
 
   // ── Rarity badge (top center) ──
@@ -367,26 +342,24 @@ function createCard(
   const badgeH = 22
   const badgeY = -hh + 16
   const bbg = scene.add.graphics()
-  bbg.fillStyle(0x000000, 0.55)
-  bbg.fillRoundedRect(-badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH, 6)
-  bbg.fillStyle(rarityColor, isOwned ? 0.32 : 0.16)
-  bbg.fillRoundedRect(-badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH, 6)
-  bbg.lineStyle(1.2, rarityColor, isOwned ? 0.85 : 0.4)
-  bbg.strokeRoundedRect(-badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH, 6)
+  bbg.fillStyle(surface.deepest, 0.9)
+  bbg.fillRoundedRect(-badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH, radii.md)
+  bbg.fillStyle(rarityColor, isOwned ? 0.28 : 0.14)
+  bbg.fillRoundedRect(-badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH, radii.md)
+  bbg.lineStyle(1, rarityColor, isOwned ? 0.85 : 0.4)
+  bbg.strokeRoundedRect(-badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH, radii.md)
   container.add(bbg)
 
   container.add(
     scene.add
       .text(0, badgeY, rarityLabel, {
-        fontFamily: F.title,
-        fontSize: '11px',
-        color: rarityHex,
-        fontStyle: 'bold',
-        shadow: SHADOW.text,
-        stroke: '#000000',
-        strokeThickness: 2,
+        fontFamily: fontFamily.body,
+        fontSize:   typeScale.meta,
+        color:      rarityHex,
+        fontStyle:  '700',
       })
-      .setOrigin(0.5),
+      .setOrigin(0.5)
+      .setLetterSpacing(1.6),
   )
 
   // ── Pedestal glow under the preview ──
@@ -398,12 +371,12 @@ function createCard(
   ped.fillEllipse(0, pedestalY + 60, cw * 0.78, 30)
   container.add(ped)
 
-  // ── Character preview sprite (the actual skin asset) ──
+  // ── Character preview sprite ──
   const sprite = drawCharacterSprite(scene, skin.classId as SpriteRole, side, 110, skin.id)
   sprite.setPosition(0, pedestalY)
   container.add(sprite)
 
-  // Subtle bob so the preview feels alive
+  // Subtle bob
   scene.tweens.add({
     targets: sprite,
     y: pedestalY - 4,
@@ -422,15 +395,15 @@ function createCard(
     // Body
     lock.fillStyle(0x000000, 0.6)
     lock.fillRoundedRect(-18, lockY - 6, 36, 28, 4)
-    lock.lineStyle(2, 0xffffff, 0.85)
+    lock.lineStyle(2, fg.primary, 0.85)
     lock.strokeRoundedRect(-18, lockY - 6, 36, 28, 4)
     // Shackle
-    lock.lineStyle(3, 0xffffff, 0.9)
+    lock.lineStyle(3, fg.primary, 0.9)
     lock.beginPath()
     lock.arc(0, lockY - 8, 11, Math.PI, 0)
     lock.strokePath()
     // Keyhole
-    lock.fillStyle(0xffffff, 0.85)
+    lock.fillStyle(fg.primary, 0.85)
     lock.fillCircle(0, lockY + 6, 2.5)
     container.add(lock)
   }
@@ -440,15 +413,12 @@ function createCard(
   container.add(
     scene.add
       .text(0, nameY, skin.displayName, {
-        fontFamily: F.title,
-        fontSize: '17px',
-        color: isOwned ? '#ffffff' : C.mutedHex,
-        fontStyle: 'bold',
-        shadow: SHADOW.text,
-        stroke: '#000000',
-        strokeThickness: 3,
-        align: 'center',
-        wordWrap: { width: cw - 24 },
+        fontFamily: fontFamily.serif,
+        fontSize:   typeScale.h3,
+        color:      isOwned ? fg.primaryHex : fg.tertiaryHex,
+        fontStyle:  '600',
+        align:      'center',
+        wordWrap:   { width: cw - 24 },
       })
       .setOrigin(0.5),
   )
@@ -456,13 +426,12 @@ function createCard(
   container.add(
     scene.add
       .text(0, nameY + 22, skin.subtitle, {
-        fontFamily: F.body,
-        fontSize: '11px',
-        color: isOwned ? C.mutedHex : C.dimHex,
-        fontStyle: 'italic',
-        shadow: SHADOW.text,
-        align: 'center',
-        wordWrap: { width: cw - 28 },
+        fontFamily: fontFamily.serif,
+        fontSize:   typeScale.small,
+        color:      isOwned ? fg.tertiaryHex : fg.disabledHex,
+        fontStyle:  'italic',
+        align:      'center',
+        wordWrap:   { width: cw - 28 },
       })
       .setOrigin(0.5),
   )
@@ -473,52 +442,46 @@ function createCard(
   const actionH = 36
 
   if (isEquipped) {
-    // EQUIPADA — glowing gold badge
+    // EQUIPADA — accent badge
     const eg = scene.add.graphics()
-    eg.fillStyle(C.gold, 0.18)
-    eg.fillRoundedRect(-actionW / 2, actionY - actionH / 2, actionW, actionH, 8)
-    eg.lineStyle(1.5, C.gold, 0.85)
-    eg.strokeRoundedRect(-actionW / 2, actionY - actionH / 2, actionW, actionH, 8)
+    eg.fillStyle(accent.primary, 0.18)
+    eg.fillRoundedRect(-actionW / 2, actionY - actionH / 2, actionW, actionH, radii.md)
+    eg.lineStyle(1.5, accent.primary, 0.85)
+    eg.strokeRoundedRect(-actionW / 2, actionY - actionH / 2, actionW, actionH, radii.md)
     container.add(eg)
     container.add(
       scene.add
         .text(0, actionY, '✓  EQUIPADA', {
-          fontFamily: F.title,
-          fontSize: '14px',
-          color: C.goldHex,
-          fontStyle: 'bold',
-          shadow: SHADOW.goldGlow,
-          stroke: '#000000',
-          strokeThickness: 3,
+          fontFamily: fontFamily.body,
+          fontSize:   typeScale.small,
+          color:      accent.primaryHex,
+          fontStyle:  '700',
         })
-        .setOrigin(0.5),
+        .setOrigin(0.5)
+        .setLetterSpacing(1.4),
     )
   } else if (isOwned) {
     // EQUIPAR — clickable button
     const btnG = scene.add.graphics()
     const drawBtn = (hover: boolean) => {
       btnG.clear()
-      btnG.fillStyle(hover ? 0x244534 : 0x18301f, 1)
-      btnG.fillRoundedRect(-actionW / 2, actionY - actionH / 2, actionW, actionH, 8)
-      btnG.lineStyle(2, C.success, hover ? 0.95 : 0.7)
-      btnG.strokeRoundedRect(-actionW / 2, actionY - actionH / 2, actionW, actionH, 8)
-      btnG.fillStyle(0xffffff, hover ? 0.07 : 0.04)
-      btnG.fillRoundedRect(-actionW / 2 + 2, actionY - actionH / 2 + 2, actionW - 4, 14, { tl: 7, tr: 7, bl: 0, br: 0 })
+      btnG.fillStyle(hover ? state.successDim : surface.deepest, 1)
+      btnG.fillRoundedRect(-actionW / 2, actionY - actionH / 2, actionW, actionH, radii.md)
+      btnG.lineStyle(1.5, state.success, hover ? 1 : 0.7)
+      btnG.strokeRoundedRect(-actionW / 2, actionY - actionH / 2, actionW, actionH, radii.md)
     }
     drawBtn(false)
     container.add(btnG)
 
     const btnLabel = scene.add
       .text(0, actionY, 'EQUIPAR', {
-        fontFamily: F.title,
-        fontSize: '14px',
-        color: C.successHex,
-        fontStyle: 'bold',
-        shadow: SHADOW.text,
-        stroke: '#000000',
-        strokeThickness: 3,
+        fontFamily: fontFamily.body,
+        fontSize:   typeScale.small,
+        color:      state.successHex,
+        fontStyle:  '700',
       })
       .setOrigin(0.5)
+      .setLetterSpacing(1.6)
     container.add(btnLabel)
 
     const hit = scene.add
@@ -527,12 +490,12 @@ function createCard(
     container.add(hit)
     hit.on('pointerover', () => {
       drawBtn(true)
-      btnLabel.setColor('#a8f7c0')
+      btnLabel.setColor(fg.primaryHex)
       scene.tweens.add({ targets: container, scaleX: 1.03, scaleY: 1.03, duration: 120, ease: 'Sine.Out' })
     })
     hit.on('pointerout', () => {
       drawBtn(false)
-      btnLabel.setColor(C.successHex)
+      btnLabel.setColor(state.successHex)
       scene.tweens.add({ targets: container, scaleX: 1, scaleY: 1, duration: 120, ease: 'Sine.Out' })
     })
     hit.on('pointerdown', () => {
@@ -549,26 +512,26 @@ function createCard(
   } else {
     // LOCKED — DG price display
     const lg = scene.add.graphics()
-    lg.fillStyle(0x12161f, 1)
-    lg.fillRoundedRect(-actionW / 2, actionY - actionH / 2, actionW, actionH, 8)
-    lg.lineStyle(1.5, C.goldDim, 0.45)
-    lg.strokeRoundedRect(-actionW / 2, actionY - actionH / 2, actionW, actionH, 8)
+    lg.fillStyle(surface.deepest, 1)
+    lg.fillRoundedRect(-actionW / 2, actionY - actionH / 2, actionW, actionH, radii.md)
+    lg.lineStyle(1, border.default, 1)
+    lg.strokeRoundedRect(-actionW / 2, actionY - actionH / 2, actionW, actionH, radii.md)
     container.add(lg)
 
-    // DG coin
-    const coin = scene.add.graphics()
-    coin.fillStyle(C.gold, 1)
-    coin.fillCircle(-actionW / 2 + 22, actionY, 9)
-    coin.lineStyle(1.5, C.goldDark, 1)
-    coin.strokeCircle(-actionW / 2 + 22, actionY, 9)
-    container.add(coin)
+    // DG gem icon (violet)
+    const gem = scene.add.graphics()
+    gem.fillStyle(currency.dgGem, 1)
+    gem.fillCircle(-actionW / 2 + 22, actionY, 9)
+    gem.lineStyle(1, currency.dgGemEdge, 1)
+    gem.strokeCircle(-actionW / 2 + 22, actionY, 9)
+    container.add(gem)
     container.add(
       scene.add
         .text(-actionW / 2 + 22, actionY, 'DG', {
-          fontFamily: F.title,
-          fontSize: '8px',
-          color: C.goldDarkHex,
-          fontStyle: 'bold',
+          fontFamily: fontFamily.body,
+          fontSize:   '8px',
+          color:      currency.dgGemEdgeHex,
+          fontStyle:  '700',
         })
         .setOrigin(0.5),
     )
@@ -576,13 +539,10 @@ function createCard(
     container.add(
       scene.add
         .text(-actionW / 2 + 40, actionY, String(skin.dgPrice), {
-          fontFamily: F.title,
-          fontSize: '15px',
-          color: C.goldHex,
-          fontStyle: 'bold',
-          shadow: SHADOW.text,
-          stroke: '#000000',
-          strokeThickness: 3,
+          fontFamily: fontFamily.mono,
+          fontSize:   typeScale.statMd,
+          color:      currency.dgGemHex,
+          fontStyle:  '700',
         })
         .setOrigin(0, 0.5),
     )
@@ -590,13 +550,13 @@ function createCard(
     container.add(
       scene.add
         .text(actionW / 2 - 12, actionY, 'NA LOJA', {
-          fontFamily: F.title,
-          fontSize: '11px',
-          color: C.mutedHex,
-          fontStyle: 'bold',
-          shadow: SHADOW.text,
+          fontFamily: fontFamily.body,
+          fontSize:   typeScale.meta,
+          color:      fg.tertiaryHex,
+          fontStyle:  '700',
         })
-        .setOrigin(1, 0.5),
+        .setOrigin(1, 0.5)
+        .setLetterSpacing(1.4),
     )
   }
 
@@ -611,42 +571,37 @@ function createCard(
  * Convenience helper for lobby cards: draws a small "ALTERAR SKIN" pill that,
  * when clicked, opens the picker for the given class. Returns the pill
  * container so the caller can position it inside their card.
- *
- * Pass `parentCard` so the pill can be added to it. The picker callback will
- * fire `onChange` so the lobby can rebuild its card visuals.
  */
 export function makeChangeSkinPill(
   scene: Phaser.Scene,
   classId: CharClass,
   options: { onChange?: () => void; side?: SpriteSide; width?: number } = {},
 ): Phaser.GameObjects.Container {
-  const w = options.width ?? 120
-  const h = 24
+  const w = options.width ?? 124
+  const h = 22
 
   const c = scene.add.container(0, 0)
 
   const g = scene.add.graphics()
   const draw = (hover: boolean) => {
     g.clear()
-    g.fillStyle(hover ? 0x1a1808 : 0x0e1420, 0.95)
-    g.fillRoundedRect(-w / 2, -h / 2, w, h, 5)
-    g.lineStyle(1.2, hover ? C.gold : C.goldDim, hover ? 0.85 : 0.5)
-    g.strokeRoundedRect(-w / 2, -h / 2, w, h, 5)
+    g.fillStyle(hover ? surface.raised : surface.deepest, 1)
+    g.fillRoundedRect(-w / 2, -h / 2, w, h, radii.md)
+    g.lineStyle(1, hover ? accent.primary : border.default, 1)
+    g.strokeRoundedRect(-w / 2, -h / 2, w, h, radii.md)
   }
   draw(false)
   c.add(g)
 
   const label = scene.add
-    .text(0, 0, '✦  ALTERAR SKIN', {
-      fontFamily: F.title,
-      fontSize: '11px',
-      color: C.goldDimHex,
-      fontStyle: 'bold',
-      shadow: SHADOW.text,
-      stroke: '#000000',
-      strokeThickness: 2,
+    .text(0, 0, 'ALTERAR SKIN', {
+      fontFamily: fontFamily.body,
+      fontSize:   typeScale.meta,
+      color:      fg.secondaryHex,
+      fontStyle:  '700',
     })
     .setOrigin(0.5)
+    .setLetterSpacing(1.4)
   c.add(label)
 
   const hit = scene.add
@@ -656,11 +611,11 @@ export function makeChangeSkinPill(
 
   hit.on('pointerover', () => {
     draw(true)
-    label.setColor(C.goldHex)
+    label.setColor(accent.primaryHex)
   })
   hit.on('pointerout', () => {
     draw(false)
-    label.setColor(C.goldDimHex)
+    label.setColor(fg.secondaryHex)
   })
   hit.on('pointerdown', () => {
     openSkinPicker(scene, classId, {
@@ -673,7 +628,3 @@ export function makeChangeSkinPill(
 
   return c
 }
-
-// silence unused-import warning when consumers only use openSkinPicker
-void S
-void H

@@ -5,22 +5,13 @@
  * (when the player clicks "JOGAR") and by every room scene (when the player
  * clicks "ALTERAR MODO"). All callers get the same large, mobile-friendly
  * card layout so the UX is identical in both flows.
- *
- * Per-caller knobs:
- *  - `title`           — header text (default "MODOS DE JOGO")
- *  - `currentTarget`   — scene key of the mode to mark with the "ATUAL" badge
- *  - `currentPveType`  — distinguishes Batalha PvE vs Torneio PvE (both share the
- *                        PvELobbyScene key, so we need the data field too)
- *  - `dimTargets`      — background containers to fade out while the overlay is open
- *  - `onModeSelect`    — custom click handler. Defaults to `transitionTo(scene, mode.target, mode.data)`
- *  - `onClose`         — called after the overlay finishes its fade-out tween
- *
- * Returns a handle with `close()` so the caller can dismiss the overlay
- * programmatically (e.g. from a parent close button).
  */
 
 import Phaser from 'phaser'
-import { C, F, S, SHADOW } from './DesignTokens'
+import {
+  surface, border, fg, accent, state,
+  currency, fontFamily, typeScale, radii,
+} from './DesignTokens'
 import { playerData } from './PlayerDataManager'
 import { transitionTo } from './SceneTransition'
 
@@ -47,28 +38,28 @@ export interface PlayCategory {
 export const PLAY_CATEGORIES: PlayCategory[] = [
   {
     title: 'PVP',
-    titleColorHex: C.dangerHex,
-    titleColorNum: C.danger,
+    titleColorHex: state.errorHex,
+    titleColorNum: state.error,
     modes: [
-      { label: 'Arena Rankeada', desc: 'Torneios rankeados (Lv.100)',         target: 'RankedScene',     color: 0xff4444, data: {} },
-      { label: 'Batalha PvP',    desc: 'Enfrente jogadores de nivel similar', target: 'PvPLobbyScene',   color: 0x4ade80, data: {} },
+      { label: 'Arena Rankeada', desc: 'Torneios rankeados (Lv.100)',         target: 'RankedScene',     color: state.error,   data: {} },
+      { label: 'Batalha PvP',    desc: 'Enfrente jogadores de nivel similar', target: 'PvPLobbyScene',   color: state.success, data: {} },
     ],
   },
   {
     title: 'PVE',
-    titleColorHex: C.infoHex,
-    titleColorNum: C.info,
+    titleColorHex: state.infoHex,
+    titleColorNum: state.info,
     modes: [
-      { label: 'Batalha PvE',    desc: 'Enfrente um bot inteligente do seu nivel', target: 'PvELobbyScene', color: 0x4fc3f7, data: { pveType: 'battle' } },
-      { label: 'Torneio PvE',    desc: 'Chaveamento por faixa de nivel',           target: 'PvELobbyScene', color: 0xf0c850, data: { pveType: 'tournament' } },
+      { label: 'Batalha PvE',    desc: 'Enfrente um bot inteligente do seu nivel', target: 'PvELobbyScene', color: state.info,      data: { pveType: 'battle' } },
+      { label: 'Torneio PvE',    desc: 'Chaveamento por faixa de nivel',           target: 'PvELobbyScene', color: accent.primary,  data: { pveType: 'tournament' } },
     ],
   },
   {
-    title: 'CRIACAO',
-    titleColorHex: C.purpleHex,
-    titleColorNum: C.purple,
+    title: 'CRIAÇÃO',
+    titleColorHex: currency.dgGemHex,
+    titleColorNum: currency.dgGem,
     modes: [
-      { label: 'Partida Personalizada', desc: 'Monte times com amigos e bots', target: 'CustomLobbyScene', color: 0xab47bc, data: {} },
+      { label: 'Partida Personalizada', desc: 'Monte times com amigos e bots', target: 'CustomLobbyScene', color: currency.dgGem, data: {} },
     ],
   },
 ]
@@ -86,9 +77,7 @@ export interface PlayModesOverlayOptions {
   dimTargets?: Phaser.GameObjects.GameObject[]
   /**
    * Convenience flag for room scenes: snapshot every existing top-level
-   * GameObject in the scene and fade them while the overlay is open. Saves
-   * each caller from having to enumerate its containers manually.
-   * Ignored when `dimTargets` is also passed.
+   * GameObject in the scene and fade them while the overlay is open.
    */
   dimSceneBackground?: boolean
   /** Custom click handler. If omitted, default is `transitionTo(scene, mode.target, mode.data)`. */
@@ -102,10 +91,6 @@ export interface PlayModesOverlayHandle {
 }
 
 // ── Constants ───────────────────────────────────────────────────────────────
-
-const PANEL_BORDER = C.panelBorder
-const TEXT_MUTED   = C.mutedHex
-const GOLD_ACCENT  = C.goldHex
 
 // Card layout (must stay in sync with what the lobby originally used).
 const CARD_W       = 640
@@ -127,9 +112,7 @@ export function showPlayModesOverlay(
   const currentTarget  = options.currentTarget
   const currentPveType = options.currentPveType
 
-  // Resolve dim targets: explicit list wins, otherwise snapshot the whole scene
-  // if dimSceneBackground was requested. The snapshot MUST happen before we add
-  // any of our own GameObjects below — otherwise the overlay itself would dim.
+  // Resolve dim targets
   let dimTargets: Phaser.GameObjects.GameObject[] = options.dimTargets ?? []
   if (dimTargets.length === 0 && options.dimSceneBackground) {
     dimTargets = scene.children.list.filter(
@@ -145,7 +128,7 @@ export function showPlayModesOverlay(
   dimBg.on('pointerdown', () => closeOverlay())
 
   // Lighter center radial glow
-  const radialGlow = scene.add.circle(W / 2, H / 2, 350, 0x111825, 0).setDepth(100)
+  const radialGlow = scene.add.circle(W / 2, H / 2, 350, surface.primary, 0).setDepth(100)
 
   const overlayContainer = scene.add.container(W / 2, H / 2)
     .setDepth(101).setAlpha(0).setScale(0.92)
@@ -154,9 +137,11 @@ export function showPlayModesOverlay(
 
   // ── Title ──
   overlayContainer.add(scene.add.text(0, -225, title, {
-    fontFamily: F.title, fontSize: S.titleMedium, color: GOLD_ACCENT, fontStyle: 'bold',
-    shadow: SHADOW.goldGlow,
-  }).setOrigin(0.5))
+    fontFamily: fontFamily.display,
+    fontSize:   typeScale.h2,
+    color:      fg.primaryHex,
+    fontStyle:  '600',
+  }).setOrigin(0.5).setLetterSpacing(3))
 
   // ── Close button (X in a circle, top-right of the overlay) ──
   const closeX = 275
@@ -164,25 +149,27 @@ export function showPlayModesOverlay(
   const closeGfx = scene.add.graphics()
   const drawCloseBg = (hover: boolean) => {
     closeGfx.clear()
-    closeGfx.fillStyle(hover ? 0x1a2434 : 0x0e1420, hover ? 0.95 : 0.9)
+    closeGfx.fillStyle(hover ? surface.raised : surface.deepest, 1)
     closeGfx.fillCircle(closeX, closeY, 16)
-    closeGfx.lineStyle(1.5, hover ? C.danger : C.goldDim, hover ? 0.6 : 0.4)
+    closeGfx.lineStyle(1, hover ? state.error : border.default, 1)
     closeGfx.strokeCircle(closeX, closeY, 16)
   }
   drawCloseBg(false)
   overlayContainer.add(closeGfx)
 
-  const closeIcon = scene.add.text(closeX, closeY, 'X', {
-    fontFamily: F.title, fontSize: '14px', color: TEXT_MUTED, fontStyle: 'bold',
-    shadow: SHADOW.text,
+  const closeIcon = scene.add.text(closeX, closeY, '✕', {
+    fontFamily: fontFamily.body,
+    fontSize:   '14px',
+    color:      fg.tertiaryHex,
+    fontStyle:  '700',
   }).setOrigin(0.5)
   overlayContainer.add(closeIcon)
 
   const closeHit = scene.add.circle(closeX, closeY, 16, 0x000000, 0.001)
     .setInteractive({ useHandCursor: true }).setDepth(102)
   overlayContainer.add(closeHit)
-  closeHit.on('pointerover', () => { drawCloseBg(true);  closeIcon.setColor(C.dangerHex) })
-  closeHit.on('pointerout',  () => { drawCloseBg(false); closeIcon.setColor(TEXT_MUTED) })
+  closeHit.on('pointerover', () => { drawCloseBg(true);  closeIcon.setColor(state.errorHex) })
+  closeHit.on('pointerout',  () => { drawCloseBg(false); closeIcon.setColor(fg.tertiaryHex) })
   closeHit.on('pointerdown', () => closeOverlay())
 
   // ── Layout: total height for vertical centering ──
@@ -218,16 +205,18 @@ export function showPlayModesOverlay(
     overlayContainer.add(headerGfx)
 
     overlayContainer.add(scene.add.text(-CARD_W / 2 + 4, headerY, cat.title, {
-      fontFamily: F.title, fontSize: '18px', color: cat.titleColorHex, fontStyle: 'bold',
-      shadow: SHADOW.text, stroke: '#000000', strokeThickness: 3,
-    }).setOrigin(0, 0.5))
+      fontFamily: fontFamily.body,
+      fontSize:   typeScale.meta,
+      color:      cat.titleColorHex,
+      fontStyle:  '700',
+    }).setOrigin(0, 0.5).setLetterSpacing(1.8))
 
     cursorY += HEADER_H
 
     cat.modes.forEach((rawMode) => {
       let mode = rawMode
       if (mode.target === 'RankedScene' && playerData.getLevel() < 100) {
-        mode = { ...mode, desc: 'Disponivel a partir do Lv.100' }
+        mode = { ...mode, desc: 'Disponível a partir do Lv.100' }
       }
       const isLocked  = mode.target === 'RankedScene' && playerData.getLevel() < 100
       const available = !isLocked
@@ -235,81 +224,82 @@ export function showPlayModesOverlay(
       const cy        = cursorY + CARD_H / 2
       const accentHex = '#' + mode.color.toString(16).padStart(6, '0')
 
-      // ── Card background (multi-layer) ──
+      // ── Card background ──
       const cardGfx = scene.add.graphics()
       // Drop shadow
       cardGfx.fillStyle(0x000000, 0.25)
-      cardGfx.fillRoundedRect(-CARD_W / 2 + 2, cy - CARD_H / 2 + 3, CARD_W, CARD_H, 6)
+      cardGfx.fillRoundedRect(-CARD_W / 2 + 2, cy - CARD_H / 2 + 3, CARD_W, CARD_H, radii.md)
       // Main fill
-      cardGfx.fillStyle(available ? 0x111825 : 0x0a0e14, 1)
-      cardGfx.fillRoundedRect(-CARD_W / 2, cy - CARD_H / 2, CARD_W, CARD_H, 6)
-      // Top gloss
+      cardGfx.fillStyle(available ? surface.panel : surface.deepest, 1)
+      cardGfx.fillRoundedRect(-CARD_W / 2, cy - CARD_H / 2, CARD_W, CARD_H, radii.md)
+      // Top inset highlight
       if (available) {
-        cardGfx.fillStyle(0xffffff, 0.02)
-        cardGfx.fillRoundedRect(-CARD_W / 2 + 2, cy - CARD_H / 2 + 2, CARD_W - 4, CARD_H * 0.35,
-          { tl: 4, tr: 4, bl: 0, br: 0 })
+        cardGfx.fillStyle(0xffffff, 0.03)
+        cardGfx.fillRect(-CARD_W / 2 + 2, cy - CARD_H / 2 + 2, CARD_W - 4, 1)
       }
-      // Border (gold for current, default otherwise)
+      // Border
       if (current) {
-        cardGfx.lineStyle(1.5, C.gold, 0.7)
+        cardGfx.lineStyle(1.5, accent.primary, 0.8)
       } else {
-        cardGfx.lineStyle(1, available ? PANEL_BORDER : 0x222222, 0.5)
+        cardGfx.lineStyle(1, available ? border.default : border.subtle, 1)
       }
-      cardGfx.strokeRoundedRect(-CARD_W / 2, cy - CARD_H / 2, CARD_W, CARD_H, 6)
+      cardGfx.strokeRoundedRect(-CARD_W / 2, cy - CARD_H / 2, CARD_W, CARD_H, radii.md)
       overlayContainer.add(cardGfx)
 
       // ── Colored left accent bar ──
       const accentBar = scene.add.graphics()
       accentBar.fillStyle(mode.color, available ? 0.9 : 0.25)
-      accentBar.fillRoundedRect(-CARD_W / 2, cy - CARD_H / 2, 7, CARD_H,
-        { tl: 6, bl: 6, tr: 0, br: 0 })
+      accentBar.fillRoundedRect(-CARD_W / 2, cy - CARD_H / 2, 4, CARD_H,
+        { tl: radii.md, bl: radii.md, tr: 0, br: 0 })
       overlayContainer.add(accentBar)
 
       // ── Label ──
       const label = scene.add.text(-CARD_W / 2 + 26, cy - 14, mode.label, {
-        fontFamily: F.title, fontSize: '24px',
-        color: available ? '#ffffff' : TEXT_MUTED,
-        fontStyle: 'bold', shadow: SHADOW.strong,
-        stroke: '#000000', strokeThickness: 3,
+        fontFamily: fontFamily.serif,
+        fontSize:   typeScale.h3,
+        color:      available ? fg.primaryHex : fg.tertiaryHex,
+        fontStyle:  '600',
       }).setOrigin(0, 0.5)
       overlayContainer.add(label)
 
       // ── Description ──
-      overlayContainer.add(scene.add.text(-CARD_W / 2 + 26, cy + 16, mode.desc, {
-        fontFamily: F.body, fontSize: '16px',
-        color: available ? TEXT_MUTED : C.dimHex,
-        shadow: SHADOW.text, stroke: '#000000', strokeThickness: 2,
+      overlayContainer.add(scene.add.text(-CARD_W / 2 + 26, cy + 14, mode.desc, {
+        fontFamily: fontFamily.body,
+        fontSize:   typeScale.small,
+        color:      available ? fg.secondaryHex : fg.disabledHex,
       }).setOrigin(0, 0.5))
 
       // ── Right-side indicator: ATUAL badge / lock pill / arrow ──
       if (current) {
-        // ATUAL pill — gold rounded badge
+        // ATUAL pill — accent rounded badge
         const pillCx = CARD_W / 2 - 50
-        const pillW  = 70
+        const pillW  = 72
         const pillH  = 24
 
         const pillGfx = scene.add.graphics()
-        pillGfx.fillStyle(0x2a2010, 0.95)
+        pillGfx.fillStyle(surface.deepest, 0.95)
         pillGfx.fillRoundedRect(pillCx - pillW / 2, cy - pillH / 2, pillW, pillH, pillH / 2)
-        pillGfx.lineStyle(1.2, C.gold, 0.7)
+        pillGfx.lineStyle(1, accent.primary, 0.9)
         pillGfx.strokeRoundedRect(pillCx - pillW / 2, cy - pillH / 2, pillW, pillH, pillH / 2)
         overlayContainer.add(pillGfx)
 
         overlayContainer.add(scene.add.text(pillCx, cy, 'ATUAL', {
-          fontFamily: F.title, fontSize: '13px', color: GOLD_ACCENT, fontStyle: 'bold',
-          shadow: SHADOW.text, stroke: '#000000', strokeThickness: 2,
-        }).setOrigin(0.5))
+          fontFamily: fontFamily.body,
+          fontSize:   typeScale.meta,
+          color:      accent.primaryHex,
+          fontStyle:  '700',
+        }).setOrigin(0.5).setLetterSpacing(1.6))
       } else if (!available) {
         // Lock pill (Lv.100)
-        const reqLevel = mode.target === 'RankedScene' ? 'Lv.100' : 'Lv.30'
+        const reqLevel = mode.target === 'RankedScene' ? 'LV.100' : 'LV.30'
         const pillCx = CARD_W / 2 - 50
-        const pillW  = 70
+        const pillW  = 72
         const pillH  = 22
 
         const pillGfx = scene.add.graphics()
-        pillGfx.fillStyle(0x1a1a2a, 0.9)
+        pillGfx.fillStyle(surface.deepest, 1)
         pillGfx.fillRoundedRect(pillCx - pillW / 2, cy - pillH / 2, pillW, pillH, pillH / 2)
-        pillGfx.lineStyle(1, 0x777777, 0.45)
+        pillGfx.lineStyle(1, border.default, 1)
         pillGfx.strokeRoundedRect(pillCx - pillW / 2, cy - pillH / 2, pillW, pillH, pillH / 2)
         overlayContainer.add(pillGfx)
 
@@ -317,24 +307,26 @@ export function showPlayModesOverlay(
         const lockGfx = scene.add.graphics()
         const lkX = pillCx - 17
         const lkOffY = cy + 1
-        lockGfx.lineStyle(1.5, 0x999999, 0.8)
+        lockGfx.lineStyle(1.5, fg.tertiary, 0.85)
         lockGfx.beginPath()
         lockGfx.arc(lkX, lkOffY - 4, 3, Math.PI, 0, false)
         lockGfx.strokePath()
-        lockGfx.fillStyle(0x999999, 0.8)
+        lockGfx.fillStyle(fg.tertiary, 0.85)
         lockGfx.fillRoundedRect(lkX - 4, lkOffY - 4, 8, 6, 1)
         lockGfx.fillStyle(0x000000, 0.5)
         lockGfx.fillCircle(lkX, lkOffY - 2, 1)
         overlayContainer.add(lockGfx)
 
         overlayContainer.add(scene.add.text(pillCx + 1, cy, reqLevel, {
-          fontFamily: F.body, fontSize: '10px', color: '#999999', fontStyle: 'bold',
-          shadow: SHADOW.text,
-        }).setOrigin(0, 0.5))
+          fontFamily: fontFamily.body,
+          fontSize:   typeScale.meta,
+          color:      fg.tertiaryHex,
+          fontStyle:  '700',
+        }).setOrigin(0, 0.5).setLetterSpacing(1.4))
       } else {
         // Arrow chevron
         const arrowGfx = scene.add.graphics()
-        arrowGfx.lineStyle(3, mode.color, 0.5)
+        arrowGfx.lineStyle(2.5, mode.color, 0.6)
         arrowGfx.beginPath()
         arrowGfx.moveTo(CARD_W / 2 - 30, cy - 12)
         arrowGfx.lineTo(CARD_W / 2 - 16, cy)
@@ -350,14 +342,14 @@ export function showPlayModesOverlay(
         overlayContainer.add(cardHit)
 
         const hoverGlow = scene.add.graphics()
-        hoverGlow.fillStyle(mode.color, 0.06)
-        hoverGlow.fillRoundedRect(-CARD_W / 2, cy - CARD_H / 2, CARD_W, CARD_H, 6)
+        hoverGlow.fillStyle(mode.color, 0.08)
+        hoverGlow.fillRoundedRect(-CARD_W / 2, cy - CARD_H / 2, CARD_W, CARD_H, radii.md)
         hoverGlow.setAlpha(0)
         overlayContainer.add(hoverGlow)
 
         const hoverBorder = scene.add.graphics()
-        hoverBorder.lineStyle(1.5, mode.color, 0.5)
-        hoverBorder.strokeRoundedRect(-CARD_W / 2, cy - CARD_H / 2, CARD_W, CARD_H, 6)
+        hoverBorder.lineStyle(1.5, mode.color, 0.6)
+        hoverBorder.strokeRoundedRect(-CARD_W / 2, cy - CARD_H / 2, CARD_W, CARD_H, radii.md)
         hoverBorder.setAlpha(0)
         overlayContainer.add(hoverBorder)
 
@@ -369,7 +361,7 @@ export function showPlayModesOverlay(
         cardHit.on('pointerout', () => {
           hoverGlow.setAlpha(0)
           hoverBorder.setAlpha(0)
-          label.setColor('#ffffff')
+          label.setColor(fg.primaryHex)
         })
         cardHit.on('pointerdown', () => {
           closeOverlay()
@@ -386,7 +378,7 @@ export function showPlayModesOverlay(
     cursorY += CATEGORY_GAP - CARD_GAP
   })
 
-  // ── Fade out background containers (lobby uses this; rooms typically don't) ──
+  // ── Fade out background containers ──
   if (dimTargets.length > 0) {
     scene.tweens.add({
       targets: dimTargets,
@@ -399,7 +391,7 @@ export function showPlayModesOverlay(
   // ── Animate overlay in ──
   scene.tweens.add({
     targets: dimBg,
-    alpha: 0.94,
+    alpha: 0.75,
     duration: 250,
     ease: 'Quad.Out',
   })
@@ -430,12 +422,11 @@ export function showPlayModesOverlay(
     }
   })
 
-  // ── Close fn (returned + used internally) ──
+  // ── Close fn ──
   function closeOverlay() {
     if (isClosing) return
     isClosing = true
 
-    // Restore dimmed backgrounds
     if (dimTargets.length > 0) {
       scene.tweens.add({
         targets: dimTargets,
