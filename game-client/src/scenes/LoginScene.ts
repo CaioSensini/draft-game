@@ -89,7 +89,9 @@ export default class LoginScene extends Phaser.Scene {
   private _showMainForm(initial: TabKey) {
     const { W } = SCREEN
     const panelW = 400
-    const panelH = 392
+    // ETAPA 6.7: panel taller so the register tab's 3-field layout has
+    // breathing room between the last field and the submit button.
+    const panelH = 432
     const panelX = W / 2
     const panelY = 224 + panelH / 2
 
@@ -120,8 +122,10 @@ export default class LoginScene extends Phaser.Scene {
     if (typeof anyTitle.setLetterSpacing === 'function') anyTitle.setLetterSpacing(2)
     container.add(titleText)
 
-    // Tabs row
-    const tabY = -panelH / 2 + 72
+    // Tabs row — sits clearly below the title so both LOGIN and REGISTRAR
+    // are always discoverable (ETAPA 6.7: before, login fields overlapped
+    // this row and hid the "registrar" entry point entirely).
+    const tabY = -panelH / 2 + 80
     const loginTab    = this._buildTab('LOGIN',    0 - 56, tabY, initial === 'login')
     const registerTab = this._buildTab('REGISTRAR', 0 + 56, tabY, initial === 'register')
     container.add(loginTab.container)
@@ -137,8 +141,11 @@ export default class LoginScene extends Phaser.Scene {
     let active: TabKey = initial
 
     // ── Build field sets for each tab ──
-    const loginFields   = this._buildLoginFields(panelX, panelY, tabY + 48, panelW)
-    const registerFields = this._buildRegisterFields(panelX, panelY, tabY + 48, panelW)
+    // panelTopToTab = (panelH / 2 + tabY) = distance from panel top to tab center.
+    // Fields start ~34px below the separator; register uses tighter stride
+    // to squeeze 3 rows into the available vertical space.
+    const loginFields    = this._buildLoginFields(panelX, panelY, panelW)
+    const registerFields = this._buildRegisterFields(panelX, panelY, panelW)
 
     const toggle = (next: TabKey) => {
       if (next === active) return
@@ -259,17 +266,17 @@ export default class LoginScene extends Phaser.Scene {
 
   // ── Field builders (absolute-positioned since DOM needs world coords) ─────
 
-  private _buildLoginFields(panelX: number, panelY: number, startY: number, panelW: number): Array<{
+  private _buildLoginFields(panelX: number, panelY: number, panelW: number): Array<{
     key: 'user' | 'pass'
     handle: InputFieldHandle
   }> {
     const fieldW = panelW - 48
-    const y0 = panelY + (startY - panelY * 0)  // startY is already relative to panelY
-    const worldY0 = panelY - (panelY) + startY + panelY  // compute in world coords
-    // Simpler: the panel container is at (panelX, panelY). The startY param
-    // above is already local to that container. We rebuild in world space.
-    const userY = panelY - 130
-    const passY = panelY - 56
+    // ETAPA 6.7: positions are world coords anchored to panelY. Sits
+    // clearly below the separator so the tabs above remain visible.
+    // panelH=432 → panelY offset −88 = world ~(panelY−88) is just below
+    // the separator line (tabY+16 ≈ panel top + 96 ≈ world −120).
+    const userY = panelY - 52
+    const passY = panelY + 24
     const userField = UI.inputField(this, panelX, userY, {
       label:       'USUÁRIO',
       placeholder: 'Nome do invocador',
@@ -293,19 +300,20 @@ export default class LoginScene extends Phaser.Scene {
       { key: 'pass' as const, handle: passField },
     ]
     this.fields.push(userField, passField)
-    // Silence unused: y0/worldY0 were a planning step; keep logic tidy.
-    void y0; void worldY0
     return fields
   }
 
-  private _buildRegisterFields(panelX: number, panelY: number, _startY: number, panelW: number): Array<{
+  private _buildRegisterFields(panelX: number, panelY: number, panelW: number): Array<{
     key: 'user' | 'email' | 'pass'
     handle: InputFieldHandle
   }> {
     const fieldW = panelW - 48
-    const userY  = panelY - 152
-    const emailY = panelY - 82
-    const passY  = panelY - 12
+    // ETAPA 6.7: 3 fields stack tightly between the tabs and the submit
+    // button. 58px center-to-center stride keeps every field clear of
+    // the button (world ~540) and the tabs (world ~310).
+    const userY  = panelY - 72
+    const emailY = panelY - 12
+    const passY  = panelY + 48
     const userField = UI.inputField(this, panelX, userY, {
       label:       'USUÁRIO',
       placeholder: 'Nome do invocador',
