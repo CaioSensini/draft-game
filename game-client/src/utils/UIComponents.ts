@@ -435,19 +435,38 @@ export const UI = {
        * sidebar that extends past the 90% width threshold (ETAPA 6.9).
        */
       vignette?: boolean
+      /**
+       * Subtle 45° gold diagonal pattern (1px lines at 1.2% alpha every
+       * 36px). Defaults to true. Some displays / zoom levels render
+       * these lines at higher perceived contrast; lobbies with content
+       * extending to the edges read them as dark diagonal streaks even
+       * though they sit below the opaque top bar. Pass false to skip.
+       */
+      diagonalPattern?: boolean
+      /**
+       * Ambient horizontal gold streaks at 30% / 70% height. Defaults
+       * to true. Rarely the source of visual clutter on its own, but
+       * the flag exists so scenes wanting a completely clean base can
+       * opt out of every decorative layer.
+       */
+      streaks?: boolean
     },
   ): void {
     const { W, H } = SCREEN
-    const withVignette = opts?.vignette ?? true
+    const withVignette   = opts?.vignette        ?? true
+    const withDiag       = opts?.diagonalPattern ?? true
+    const withStreaks    = opts?.streaks         ?? true
 
     // Layer 1: Solid dark base
     scene.add.rectangle(W / 2, H / 2, W, H, C.bg)
 
     // Layer 2: Subtle diagonal gold pattern (luxurious texture)
-    const diag = scene.add.graphics()
-    diag.lineStyle(1, C.goldDim, 0.012)
-    for (let i = -H; i < W + H; i += 36) {
-      diag.lineBetween(i, 0, i + H, H)
+    if (withDiag) {
+      const diag = scene.add.graphics()
+      diag.lineStyle(1, C.goldDim, 0.012)
+      for (let i = -H; i < W + H; i += 36) {
+        diag.lineBetween(i, 0, i + H, H)
+      }
     }
 
     // Layer 3: Radial vignette (darker edges create focus)
@@ -468,10 +487,12 @@ export const UI = {
     }
 
     // Layer 4: Ambient horizontal light streaks (very subtle)
-    const streaks = scene.add.graphics()
-    streaks.fillStyle(C.goldDim, 0.008)
-    streaks.fillRect(0, H * 0.3, W, 2)
-    streaks.fillRect(0, H * 0.7, W, 1)
+    if (withStreaks) {
+      const streaks = scene.add.graphics()
+      streaks.fillStyle(C.goldDim, 0.008)
+      streaks.fillRect(0, H * 0.3, W, 2)
+      streaks.fillRect(0, H * 0.7, W, 1)
+    }
   },
 
   /** Floating gold particles with randomized behavior */
