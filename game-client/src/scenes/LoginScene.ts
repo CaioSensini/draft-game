@@ -28,6 +28,10 @@ export default class LoginScene extends Phaser.Scene {
   private panelContainer:    Phaser.GameObjects.Container | null = null
   private fields:            InputFieldHandle[] = []
   private errorBanner:       Phaser.GameObjects.Container | null = null
+  // "Lembrar de mim" preference — persists auth token across sessions when
+  // true. Defaults to true so returning players stay logged in; cleared on
+  // successful login if the user unchecked the box.
+  private _rememberMe:       boolean = true
 
   constructor() {
     super('LoginScene')
@@ -37,6 +41,7 @@ export default class LoginScene extends Phaser.Scene {
     this.pendingUserId  = null
     this.panelContainer = null
     this.fields         = []
+    this._rememberMe    = localStorage.getItem('draft_remember_me') !== 'false'
 
     const { W, H } = SCREEN
 
@@ -159,6 +164,7 @@ export default class LoginScene extends Phaser.Scene {
       btnLogin.container.setVisible(isLogin)
       btnRegister.container.setVisible(!isLogin)
       forgotLink.setVisible(isLogin)
+      rememberRow.setVisible(isLogin)
       this._clearError()
     }
 
@@ -168,6 +174,60 @@ export default class LoginScene extends Phaser.Scene {
     // Initial visibility
     for (const f of registerFields) f.handle.container.setVisible(initial === 'register')
     for (const f of loginFields)    f.handle.container.setVisible(initial === 'login')
+
+    // ── "Lembrar de mim" checkbox (login only) ──
+    // Sits in the gap between the SENHA field and the submit button.
+    // Preference persists to localStorage so the toggle state survives
+    // scene restarts; the actual auto-login behavior lives in BootScene,
+    // which reads draft_token on boot. Unchecking removes draft_token
+    // right after login so the next launch returns to this form.
+    const rememberRow = this.add.container(panelX, panelY + 76)
+    rememberRow.setVisible(initial === 'login')
+
+    const boxSize = 18
+    const boxX = -84
+    const rememberBg = this.add.graphics()
+    const drawRememberBox = () => {
+      rememberBg.clear()
+      rememberBg.fillStyle(this._rememberMe ? accent.primary : surface.raised, 1)
+      rememberBg.fillRoundedRect(boxX - boxSize / 2, -boxSize / 2, boxSize, boxSize, radii.sm)
+      rememberBg.lineStyle(1,
+        this._rememberMe ? accent.primary : border.default,
+        this._rememberMe ? 1 : 0.9)
+      rememberBg.strokeRoundedRect(boxX - boxSize / 2, -boxSize / 2, boxSize, boxSize, radii.sm)
+      if (this._rememberMe) {
+        // Checkmark: two lines forming a ✓
+        rememberBg.lineStyle(2, fg.inverse, 1)
+        rememberBg.beginPath()
+        rememberBg.moveTo(boxX - 4, 0)
+        rememberBg.lineTo(boxX - 1, 3)
+        rememberBg.lineTo(boxX + 5, -4)
+        rememberBg.strokePath()
+      }
+    }
+    drawRememberBox()
+    rememberRow.add(rememberBg)
+
+    const rememberLabel = this.add.text(boxX + boxSize / 2 + 8, 0, 'Lembrar de mim', {
+      fontFamily: fontFamily.body,
+      fontSize:   typeScale.small,
+      color:      fg.secondaryHex,
+      fontStyle:  '500',
+    }).setOrigin(0, 0.5)
+    rememberRow.add(rememberLabel)
+
+    const rememberHit = this.add.rectangle(
+      boxX + 60, 0,
+      140 + boxSize, 32,
+      0x000000, 0.001,
+    ).setInteractive({ useHandCursor: true })
+    rememberHit.on('pointerover', () => rememberLabel.setColor(fg.primaryHex))
+    rememberHit.on('pointerout',  () => rememberLabel.setColor(fg.secondaryHex))
+    rememberHit.on('pointerdown', () => {
+      this._rememberMe = !this._rememberMe
+      drawRememberBox()
+    })
+    rememberRow.add(rememberHit)
 
     // ── Submit buttons ──
     const btnCy = panelY + panelH / 2 - 84
@@ -388,6 +448,11 @@ export default class LoginScene extends Phaser.Scene {
         this._showVerificationForm(result.userId)
         return
       }
+      // Persist the "Lembrar de mim" choice so the checkbox opens in the
+      // same state next visit. When unchecked, drop draft_token so
+      // BootScene falls back to LoginScene on the next launch — the
+      // in-memory token survives this session.
+      this._applyRememberPreference()
       const { playerData } = await import('../utils/PlayerDataManager')
       playerData.syncFromServer(result.user!)
       this._transitionOut('LobbyScene')
@@ -396,6 +461,13 @@ export default class LoginScene extends Phaser.Scene {
         (e instanceof Error ? e.message : null) ||
         'Erro ao conectar. Verifique se o servidor está rodando.',
       )
+    }
+  }
+
+  private _applyRememberPreference() {
+    localStorage.setItem('draft_remember_me', this._rememberMe ? 'true' : 'false')
+    if (!this._rememberMe) {
+      localStorage.removeItem('draft_token')
     }
   }
 
@@ -566,6 +638,7 @@ export default class LoginScene extends Phaser.Scene {
       this._clearError()
       const { authService } = await import('../services')
       const result = await authService.verifyCode(this.pendingUserId!, code)
+      this._applyRememberPreference()
       const { playerData } = await import('../utils/PlayerDataManager')
       playerData.syncFromServer(result.user!)
       this._transitionOut('LobbyScene')
