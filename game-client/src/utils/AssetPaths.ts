@@ -158,7 +158,7 @@ export function hasCharacterSprite(
 export type DesignSvgEntry = { key: string; path: string; width: number; height: number }
 
 export const DESIGN_SVG_ASSETS: readonly DesignSvgEntry[] = [
-  { key: 'logo-wordmark',          path: '/assets/logo/draft-game-wordmark.svg',        width: 240, height: 80 },
+  { key: 'logo-wordmark',          path: '/assets/logo/draft-game-wordmark.svg',        width: 1200, height: 400 },
   { key: 'sigil-rei',              path: '/assets/icons/classes/rei.svg',               width: 64,  height: 64 },
   { key: 'sigil-guerreiro',        path: '/assets/icons/classes/guerreiro.svg',         width: 64,  height: 64 },
   { key: 'sigil-executor',         path: '/assets/icons/classes/executor.svg',          width: 64,  height: 64 },
