@@ -330,3 +330,76 @@ Validado em todas as 5 sub-etapas:
 ---
 
 **ETAPA 6 fechada.** Projeto permanece 100% migrado no design system + 5 ajustes finos aplicados sem regressão. Próximas ações ficam a critério da usuária (preenchimento de `longDescription`, mobile landscape audit, bundle splitting, etc. — débitos do DESIGN_SYSTEM_FINAL_REPORT).
+
+---
+
+## Adendo (2026-04-23) — Sub 6.7, 6.8, 6.9
+
+Três ajustes adicionais identificados ao jogar o projeto após ETAPA 6:
+
+### Sub 6.7 — Login layout + acesso ao registro
+
+**Arquivo:** [LoginScene.ts](../game-client/src/scenes/LoginScene.ts)
+
+**Problema:** `_buildLoginFields` hardcode `userY = panelY - 130` (world ≈290), colidindo com a fileira de tabs LOGIN/REGISTRAR (world ≈296). O input frame cobria os tabs inteiros → usuária percebia o layout como "Título e USUÁRIO sobrepostos" e "sem opção de registrar".
+
+**Fix:**
+- `panelH` 392 → **432** para acomodar os 3 campos do register.
+- `tabY` push de `panelTop + 72` para `panelTop + 80` (respiro extra).
+- `_buildLoginFields` e `_buildRegisterFields` agora recebem só `(panelX, panelY, panelW)` e posicionam campos em world coords ancorados em `panelY`:
+  - Login: user `panelY-52`, pass `panelY+24`
+  - Register: user `panelY-72`, email `panelY-12`, pass `panelY+48`
+- Submit (`panelY + panelH/2 - 84`) e forgot link (`btnCy + 42`) escalam automaticamente com o novo panelH.
+
+Tabs agora claramente visíveis como entry-point para criar conta. Fluxo de auth/verificação preservado.
+
+**Commit:** `ca670ed`
+
+### Sub 6.8 — Battle Pass rewards caber no painel
+
+**Arquivo:** [BattlePassScene.ts](../game-client/src/scenes/BattlePassScene.ts)
+
+**Problema:** `trackGap=70` fazia `freeCardY = 562` + `FREE_CARD_H=158` = bottom em y=720 (bordo da tela) e 8px ABAIXO do painel (bottom=712). A faixa inferior de cada card do GRÁTIS ficava cortada.
+
+**Fix:** `trackGap` 70 → **50**.
+- `freeCardY` = 314 + 178 + 50 = 542
+- Card bottom = 700 (12px de gutter ao painel 712) ✓
+- `tierCircleY` continua usando `trackGap/2`, sem mudança de código ✓
+
+Cards mantêm tamanhos originais (PREMIUM 178, FREE 158).
+
+**Commit:** `8ffbb65`
+
+### Sub 6.9 — Remover vignette nos lobbies (listras pretas)
+
+**Arquivos:** [UIComponents.ts](../game-client/src/utils/UIComponents.ts) (background helper) + [PvPLobbyScene.ts](../game-client/src/scenes/PvPLobbyScene.ts) + [PvELobbyScene.ts](../game-client/src/scenes/PvELobbyScene.ts) + [CustomLobbyScene.ts](../game-client/src/scenes/CustomLobbyScene.ts) + [RankedScene.ts](../game-client/src/scenes/RankedScene.ts)
+
+**Problema (root-cause confirmado):** as "listras pretas" reportadas em sub 6.3 como ambíguas eram o **vignette** da função `UI.background`:
+- Colunas laterais: `C.black @ 0.35` cobrindo x=0..128 e x=1152..1280, altura completa (0..720)
+- Faixas topo/base: `C.black @ 0.25` cobrindo y=0..57.6 e y=662.4..720, largura completa
+- 4 quadrantes de canto: `C.black @ 0.15` 15%×15%
+
+Em scenes com top bar edge-to-edge e conteúdo próximo às laterais (exatamente PvP/PvE/Ranked), o vignette aparece como faixas pretas ao lado/abaixo dos elementos. A top bar cobre y=0..56 mas o vignette topo estende y=0..57.6 (1.6px visível abaixo). A coluna direita é visível entre os painéis à direita. A usuária interpretou como "listras pretas".
+
+**Fix:**
+- `UI.background(scene, opts?)` com novo opt `{ vignette?: boolean }` default `true`.
+- Layer 3 (vignette) só renderiza se `vignette !== false`.
+- Layers 1, 2, 4 (base fill, diagonal pattern, light streaks) continuam sempre — o background mantém profundidade mesmo sem vignette.
+- **Callers atualizados** (passam `{ vignette: false }`): PvPLobby, PvELobby (battle + torneio mesma scene), CustomLobby, RankedScene (ambos branches: locked header + normal).
+
+Cenas não-lobby (Menu, Lobby, BattleResult, Shop, BP, Profile, Ranking, Settings, SkillUpgrade, Deck, Bracket) **mantêm vignette** — se a usuária notar stripes em alguma delas, fix é one-liner por scene.
+
+**Commit:** `1cbfd42`
+
+### Métricas do adendo
+
+- **Commits:** 3 atômicos (6.7, 6.8, 6.9)
+- **LOC delta:** +66 líquido (helper opt + reorg login + 9 call sites)
+- **Tests:** 529/529 verdes em cada checkpoint
+- **Tempo:** ~1h para as 3 subs
+- **Regressões:** 0
+
+### Débito técnico remanescente
+
+- **Vignette em outras cenas não-lobby:** se o efeito aparecer como "stripe" em Shop/BP/Profile/Ranking/etc., basta adicionar `{ vignette: false }` no call de `UI.background` respectivo.
+- **Lobby principal (LobbyScene):** mantém vignette porque o layout tem painel central + sidebars com margens — o efeito funciona como moldura cinemática ali. Se a usuária quiser consistência total, disable também.

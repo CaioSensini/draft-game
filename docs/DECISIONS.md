@@ -4,6 +4,32 @@
 
 ---
 
+## 2026-04-23 — ETAPA 6 adendo: 3 ajustes pós-jogo (sub 6.7/6.8/6.9)
+
+**Contexto:** Ao jogar o projeto após ETAPA 6, a usuária identificou 3 bugs visuais adicionais. Sessão única entrega 3 commits em ~1h. Finalmente identificado o root cause das "listras pretas" que eram ambíguas em sub 6.3.
+
+**Decisões aplicadas:**
+
+- **Sub 6.7 — Login layout:** `_buildLoginFields` hardcode `userY = panelY-130` causava colisão com tabs LOGIN/REGISTRAR. Input frame cobria tabs → usuária achava que não havia opção de registrar. Fix: `panelH` 392→432, tabY push para `panelTop+80`, field positions refatoradas em world coords ancoradas em panelY. Tabs agora claramente visíveis como entry-point para criar conta.
+
+- **Sub 6.8 — Battle Pass rewards:** `trackGap=70` causava `free row` bottom em y=720 (bordo da tela) e 8px abaixo do painel (bottom=712). Cards do GRÁTIS eram cortados. Fix: `trackGap` 70→50. `freeCardY` agora 542, bottom 700, gutter 12px ao painel. Cards mantêm tamanhos originais.
+
+- **Sub 6.9 — Vignette nos lobbies (root cause das "listras pretas"):** o vignette em `UI.background` desenhava `C.black @ 0.35` em colunas laterais (x=0..128 e x=1152..1280) e `C.black @ 0.25` em faixas topo/base. Em scenes com top bar edge-to-edge, o vignette aparecia como "faixas pretas" ao redor dos elementos. Fix: `UI.background(scene, { vignette?: boolean })` opt default true. Callers atualizados (PvPLobby, PvELobby, CustomLobby, RankedScene) passam `{ vignette: false }`. Cenas não-lobby (Menu, Lobby, BattleResult, Shop, BP, Profile, etc.) mantêm vignette — se usuária notar em alguma, fix é one-liner por scene.
+
+**Esclarecimento sub 6.3:** o audit anterior não encontrou "riscos decorativos" no drawHeader porque NÃO estavam lá — eram o vignette de `UI.background` cobrindo a top bar por 1.6px (topo do vignette em y=57.6 vs top bar em y=0..56) E o vignette lateral direito visível entre painéis. Agora resolvido.
+
+**Resultado numérico:**
+
+- 3 commits atômicos (`etapa6-sub6.7/.8/.9`)
+- LOC +66 líquido
+- 529 tests verdes em cada checkpoint
+- Tempo real ~1h
+- Stop rules acionadas: 0
+
+**Relatório:** adendo em `docs/ETAPA6_REPORT.md`.
+
+---
+
 ## 2026-04-22 — ETAPA 6: Polish pós-design (5 ajustes)
 
 **Contexto:** ETAPA 6 fecha o polish pós-ETAPA 5b com 5 ajustes finos identificados pela usuária ao jogar o projeto — não é refactor, é consistency + clareza visual. Sessão única entrega 5 commits atômicos em ~3.5h (vs estimativa 4.5-5.5h).
