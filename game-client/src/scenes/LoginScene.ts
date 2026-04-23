@@ -45,19 +45,15 @@ export default class LoginScene extends Phaser.Scene {
     UI.particles(this, 18)
 
     // ── Logo wordmark (SVG preloaded) ──
-    const wordmark = this.add.image(W / 2, 104, 'logo-wordmark')
-      .setDisplaySize(240, 80)
+    // ETAPA 6.7 addendum: scaled up 240×80 → 400×134 for extra impact
+    // on the entry screen; keeps the 3:1 aspect of the original SVG.
+    const wordmark = this.add.image(W / 2, 110, 'logo-wordmark')
+      .setDisplaySize(400, 134)
       .setAlpha(0)
+    wordmark.setY(86)
     this.tweens.add({
       targets: wordmark,
-      alpha: 1, y: 104,
-      from: { alpha: 0, y: 80 } as unknown as object,
-      duration: 500, delay: 120, ease: motion.easeOut,
-    })
-    wordmark.setY(80)
-    this.tweens.add({
-      targets: wordmark,
-      alpha: 1, y: 104,
+      alpha: 1, y: 110,
       duration: 500, delay: 120, ease: motion.easeOut,
     })
 
