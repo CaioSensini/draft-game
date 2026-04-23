@@ -91,7 +91,9 @@ export default class LoginScene extends Phaser.Scene {
     const panelW = 400
     // ETAPA 6.7: panel taller so the register tab's 3-field layout has
     // breathing room between the last field and the submit button.
-    const panelH = 432
+    // Bumped again in the 6.7 addendum (2026-04-23) so register can match
+    // login's 76px field stride without crowding the submit button.
+    const panelH = 448
     const panelX = W / 2
     const panelY = 224 + panelH / 2
 
@@ -308,12 +310,12 @@ export default class LoginScene extends Phaser.Scene {
     handle: InputFieldHandle
   }> {
     const fieldW = panelW - 48
-    // ETAPA 6.7: 3 fields stack tightly between the tabs and the submit
-    // button. 58px center-to-center stride keeps every field clear of
-    // the button (world ~540) and the tabs (world ~310).
-    const userY  = panelY - 72
-    const emailY = panelY - 12
-    const passY  = panelY + 48
+    // ETAPA 6.7 addendum (2026-04-23): 76px stride matches the login
+    // form exactly so the register fields have the same breathing room
+    // between them that the user already liked on login.
+    const userY  = panelY - 76
+    const emailY = panelY
+    const passY  = panelY + 76
     const userField = UI.inputField(this, panelX, userY, {
       label:       'USUÁRIO',
       placeholder: 'Nome do invocador',
