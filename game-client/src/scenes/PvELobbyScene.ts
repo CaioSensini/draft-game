@@ -120,7 +120,7 @@ export default class PvELobbyScene extends Phaser.Scene {
 
     this.initRoom()
 
-    UI.background(this)
+    UI.background(this, { vignette: false })
     UI.fadeIn(this)
 
     this.drawHeader()

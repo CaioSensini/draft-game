@@ -423,8 +423,22 @@ export const UI = {
   // BACKGROUND — 4-layer depth system
   // ═══════════════════════════════════════════════════════════════════════════
 
-  background(scene: Phaser.Scene): void {
+  background(
+    scene: Phaser.Scene,
+    opts?: {
+      /**
+       * Radial vignette layer that darkens the top/bottom strips and the
+       * left/right columns. Defaults to true for legacy scenes (Menu,
+       * Lobby, Battle result) that want the cinematic framing. Lobby
+       * layouts with content hugging the edges should pass `false` —
+       * the darkened side columns render as "stripes" on any top bar or
+       * sidebar that extends past the 90% width threshold (ETAPA 6.9).
+       */
+      vignette?: boolean
+    },
+  ): void {
     const { W, H } = SCREEN
+    const withVignette = opts?.vignette ?? true
 
     // Layer 1: Solid dark base
     scene.add.rectangle(W / 2, H / 2, W, H, C.bg)
@@ -437,19 +451,21 @@ export const UI = {
     }
 
     // Layer 3: Radial vignette (darker edges create focus)
-    const vig = scene.add.graphics()
-    vig.fillStyle(C.black, 0.35)
-    vig.fillRect(0, 0, W * 0.1, H)
-    vig.fillRect(W * 0.9, 0, W * 0.1, H)
-    vig.fillStyle(C.black, 0.25)
-    vig.fillRect(0, 0, W, H * 0.08)
-    vig.fillRect(0, H * 0.92, W, H * 0.08)
-    // Corner darkening (extra depth)
-    vig.fillStyle(C.black, 0.15)
-    vig.fillRect(0, 0, W * 0.15, H * 0.15)
-    vig.fillRect(W * 0.85, 0, W * 0.15, H * 0.15)
-    vig.fillRect(0, H * 0.85, W * 0.15, H * 0.15)
-    vig.fillRect(W * 0.85, H * 0.85, W * 0.15, H * 0.15)
+    if (withVignette) {
+      const vig = scene.add.graphics()
+      vig.fillStyle(C.black, 0.35)
+      vig.fillRect(0, 0, W * 0.1, H)
+      vig.fillRect(W * 0.9, 0, W * 0.1, H)
+      vig.fillStyle(C.black, 0.25)
+      vig.fillRect(0, 0, W, H * 0.08)
+      vig.fillRect(0, H * 0.92, W, H * 0.08)
+      // Corner darkening (extra depth)
+      vig.fillStyle(C.black, 0.15)
+      vig.fillRect(0, 0, W * 0.15, H * 0.15)
+      vig.fillRect(W * 0.85, 0, W * 0.15, H * 0.15)
+      vig.fillRect(0, H * 0.85, W * 0.15, H * 0.15)
+      vig.fillRect(W * 0.85, H * 0.85, W * 0.15, H * 0.15)
+    }
 
     // Layer 4: Ambient horizontal light streaks (very subtle)
     const streaks = scene.add.graphics()

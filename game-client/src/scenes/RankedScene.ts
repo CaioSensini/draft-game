@@ -123,7 +123,7 @@ export default class RankedScene extends Phaser.Scene {
   create(): void {
     // Guard: Ranked requires LVL 100
     if (playerData.getLevel() < 100) {
-      UI.background(this)
+      UI.background(this, { vignette: false })
       this.drawLockedHeader()
       this.add.text(W / 2, H / 2 - 20, 'ARENA RANKEADA', {
         fontFamily: fontFamily.display,
@@ -155,7 +155,7 @@ export default class RankedScene extends Phaser.Scene {
 
     this.initRoom()
 
-    UI.background(this)
+    UI.background(this, { vignette: false })
     UI.fadeIn(this)
 
     this.drawHeader()
