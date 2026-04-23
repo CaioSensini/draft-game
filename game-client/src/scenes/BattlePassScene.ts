@@ -447,8 +447,12 @@ export default class BattlePassScene extends Phaser.Scene {
     // in the gap between the two rows. Premium card is taller AND wider so
     // it visually outranks the free card; the free track is pushed further
     // down to keep the tier circle perfectly centered between them.
+    // ETAPA 6.8: trackGap 70 → 50 so the free row's bottom edge stays
+    // within the panel. With TRACK_Y=284, PREMIUM_H=178, FREE_H=158 and
+    // the old 70px gap, free bottom landed at world 720 (screen edge)
+    // and overflowed the panel by 8px, clipping the value/label strip.
     const premCardY   = TRACK_Y + 30                                       // top of premium cards
-    const trackGap    = 70                                                 // vertical breathing room between rows
+    const trackGap    = 50                                                 // vertical breathing room between rows
     const freeCardY   = premCardY + PREMIUM_CARD_H + trackGap              // top of free cards
     const tierCircleY = premCardY + PREMIUM_CARD_H + trackGap / 2          // dead center of the gap
 
