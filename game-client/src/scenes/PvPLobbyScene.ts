@@ -121,9 +121,6 @@ export default class PvPLobbyScene extends Phaser.Scene {
 
     this.initRoom()
 
-    // Camera-level clear color guarantees the underlying pixels are
-    // surface.deepest even if any decorative layer somehow leaks.
-    this.cameras.main.setBackgroundColor(surface.deepest)
     UI.background(this, { vignette: false, diagonalPattern: false, streaks: false })
     UI.fadeIn(this)
 
