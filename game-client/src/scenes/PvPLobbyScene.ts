@@ -179,12 +179,15 @@ export default class PvPLobbyScene extends Phaser.Scene {
       fontStyle:  '700',
     }).setOrigin(0.5).setLetterSpacing(1.8)
 
+    // letterSpacing 1.5 (was 3) — short titles expose wide spacing as
+    // perceived "decorative stripes" between letters. Custom keeps 3
+    // because its long title fills horizontally and reads as a word.
     this.add.text(W / 2, TOP_H / 2 + 10, 'BATALHA', {
       fontFamily: fontFamily.display,
       fontSize:   typeScale.h2,
       color:      fg.primaryHex,
       fontStyle:  '600',
-    }).setOrigin(0.5).setLetterSpacing(3)
+    }).setOrigin(0.5).setLetterSpacing(1.5)
 
     // Mode switcher (left) — mirrors CustomLobby layout per ETAPA 6.3
     UI.buttonGhost(this, 156, TOP_H / 2, 'ALTERAR MODO', {
