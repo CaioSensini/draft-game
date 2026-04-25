@@ -817,7 +817,16 @@ export const UI = {
     const statColor = STAT_COLOR[statKind]
 
     // ── Constants ──
-    const TOP_H_BAND = 32
+    // ETAPA 6.10 layout:
+    //   - top band (24px): CAT · CLASSE only
+    //   - middle (~98px): icon + skill name
+    //   - footer row 1 (top): stat · TIPO  (CD readout retired per user
+    //     request — info still in the catalog, just not shown here)
+    //   - footer row 2 (bottom): NV X + 5 progress dots, OR UPAR overlay
+    //     "↑ UPAR PARA NV {N+1} · {cost}g" when the skill is eligible
+    //     and the caller wires opts.upgrade. Battle hand never passes
+    //     opts.upgrade so the level info always shows there.
+    const TOP_H_BAND = 24
     const FOOTER_H   = 38
     const R          = radii.md
     const showUpar   = !!(opts?.upgrade && opts.upgrade.canUpgrade)
@@ -831,10 +840,9 @@ export const UI = {
     g.fillStyle(surface.panel, 1)
     g.fillRoundedRect(-hw, -hh, w, h, R)
 
-    // ── Layer 3: top band (class-color wash, 32px) ──
+    // ── Layer 3: top band (class-color wash, 24px) ──
     g.fillStyle(classColor, 0.95)
     g.fillRoundedRect(-hw, -hh, w, TOP_H_BAND, { tl: R, tr: R, bl: 0, br: 0 })
-    // Bottom divider line of the band
     g.fillStyle(0x000000, 0.28)
     g.fillRect(-hw, -hh + TOP_H_BAND, w, 1)
 
@@ -842,45 +850,23 @@ export const UI = {
     g.lineStyle(1.5, classColor, 0.95)
     g.strokeRoundedRect(-hw, -hh, w, h, R)
 
-    // ── Top band — line 1: CAT · CLASSE ──
-    // Starts at meta (~11px) and shrinks if the class name is long
-    // ("ESPECIALISTA" combined with category overflows at default size).
+    // ── Top band — CAT · CLASSE (centered vertically) ──
     let catFontSize = 11
-    const catText = scene.add.text(-hw + 8, -hh + 8, `${catLabel} · ${className}`, {
+    const catText = scene.add.text(-hw + 8, -hh + TOP_H_BAND / 2, `${catLabel} · ${className}`, {
       fontFamily: fontFamily.body, fontSize: `${catFontSize}px`,
       color: fg.inverseHex, fontStyle: 'bold',
-    }).setOrigin(0, 0).setLetterSpacing(1.4)
+    }).setOrigin(0, 0.5).setLetterSpacing(1.4)
     while (catText.width > w - 16 && catFontSize > 8) {
       catFontSize--
       catText.setFontSize(catFontSize)
-    }
-
-    // ── Top band — line 2: NV X + progress dots ──
-    const maxLvl = skill.maxLevel ?? 5
-    const nvY = -hh + 22
-    const nvText = scene.add.text(-hw + 8, nvY, `NV ${skill.level}`, {
-      fontFamily: fontFamily.mono, fontSize: typeScale.meta,
-      color: fg.inverseHex, fontStyle: 'bold',
-    }).setOrigin(0, 0.5)
-
-    const dotEls: Phaser.GameObjects.GameObject[] = []
-    const dotStartX = -hw + 8 + nvText.width + 6
-    const dotGap = 7
-    for (let i = 0; i < maxLvl; i++) {
-      const filled = i < skill.level
-      const dotX = dotStartX + i * dotGap
-      const dot = scene.add.circle(dotX, nvY, 2.2,
-        filled ? fg.inverse : 0x000000, filled ? 1 : 0.25)
-      if (!filled) dot.setStrokeStyle(1, fg.inverse, 0.45)
-      dotEls.push(dot)
     }
 
     // ── Icon circle (centered middle) ──
     const iconCx = 0
     const middleTop = -hh + TOP_H_BAND + 6
     const footerTop = hh - FOOTER_H
-    const iconCy = middleTop + 24
-    const iconR = 20
+    const iconCy = middleTop + 26
+    const iconR = 22
     const iconG = scene.add.graphics()
     iconG.fillStyle(surface.raised, 1)
     iconG.fillCircle(iconCx, iconCy, iconR)
@@ -933,7 +919,7 @@ export const UI = {
     footerG.fillStyle(0xffffff, 0.04)
     footerG.fillRect(-hw, footerTop, w, 1)
 
-    // Footer row 1: stat · TYPE (left) + CD (right)
+    // Footer row 1: stat · TIPO (full width, left-aligned)
     const row1Y = footerTop + 10
     const statStr = statValue ? `${statLabel} ${statValue}` : statLabel
     const typeStr = typeLabel ? ` · ${typeLabel}` : ''
@@ -942,42 +928,75 @@ export const UI = {
       color: statColor, fontStyle: 'bold',
     }).setOrigin(0, 0.5)
 
-    const cdVal = skill.cooldownTurns ?? 0
-    const cdText = scene.add.text(hw - 8, row1Y, `CD ${cdVal}`, {
-      fontFamily: fontFamily.mono, fontSize: typeScale.meta,
-      color: fg.tertiaryHex, fontStyle: 'bold',
-    }).setOrigin(1, 0.5)
+    // Footer row 2: NV X + dots (default), or UPAR overlay (when canUpgrade)
+    const maxLvl = skill.maxLevel ?? 5
+    const row2Y = footerTop + 26
 
-    // Footer row 2: UPAR button (conditional)
+    // Always lay down the level + dots first; the UPAR overlay covers
+    // them when present so a single pixel position drives both states.
+    const nvText = scene.add.text(-hw + 8, row2Y, `NV ${skill.level}`, {
+      fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+      color: fg.primaryHex, fontStyle: 'bold',
+    }).setOrigin(0, 0.5)
+
+    const dotEls: Phaser.GameObjects.GameObject[] = []
+    const dotStartX = -hw + 8 + nvText.width + 8
+    const dotGap = 8
+    for (let i = 0; i < maxLvl; i++) {
+      const filled = i < skill.level
+      const dotX = dotStartX + i * dotGap
+      const dot = scene.add.circle(dotX, row2Y, 2.5,
+        filled ? accent.primary : surface.raised, 1)
+      if (!filled) dot.setStrokeStyle(1, border.default, 0.8)
+      dotEls.push(dot)
+    }
+
+    // UPAR overlay — appears ON TOP of NV+dots when the skill is ready
+    // to level up (filled all dots). Spans full width of the footer row,
+    // calling out the next level the player will reach.
     const uparEls: Phaser.GameObjects.GameObject[] = []
     let uparHit: Phaser.GameObjects.Rectangle | null = null
     if (showUpar && opts?.upgrade) {
       const up = opts.upgrade
-      const uparY = footerTop + 26
-      const uparBtnW = w - 16
-      const uparBtnH = 16
+      const uparBtnW = w - 12
+      const uparBtnH = 20
       const uparBg = scene.add.graphics()
       if (up.canAfford) {
-        uparBg.fillStyle(dsState.success, 0.88)
-        uparBg.fillRoundedRect(-uparBtnW / 2, uparY - uparBtnH / 2, uparBtnW, uparBtnH, radii.sm)
-        uparBg.lineStyle(1, dsState.success, 1)
-        uparBg.strokeRoundedRect(-uparBtnW / 2, uparY - uparBtnH / 2, uparBtnW, uparBtnH, radii.sm)
+        // Soft shadow + accent fill so the CTA pops above the row
+        uparBg.fillStyle(0x000000, 0.35)
+        uparBg.fillRoundedRect(-uparBtnW / 2 + 1, row2Y - uparBtnH / 2 + 2, uparBtnW, uparBtnH, radii.sm)
+        uparBg.fillStyle(accent.primary, 0.95)
+        uparBg.fillRoundedRect(-uparBtnW / 2, row2Y - uparBtnH / 2, uparBtnW, uparBtnH, radii.sm)
+        uparBg.fillStyle(0xffffff, 0.10)
+        uparBg.fillRoundedRect(-uparBtnW / 2 + 1, row2Y - uparBtnH / 2 + 1, uparBtnW - 2, uparBtnH * 0.45,
+          { tl: radii.sm, tr: radii.sm, bl: 0, br: 0 })
+        uparBg.lineStyle(1, accent.hot, 1)
+        uparBg.strokeRoundedRect(-uparBtnW / 2, row2Y - uparBtnH / 2, uparBtnW, uparBtnH, radii.sm)
       } else {
         uparBg.fillStyle(surface.panel, 1)
-        uparBg.fillRoundedRect(-uparBtnW / 2, uparY - uparBtnH / 2, uparBtnW, uparBtnH, radii.sm)
+        uparBg.fillRoundedRect(-uparBtnW / 2, row2Y - uparBtnH / 2, uparBtnW, uparBtnH, radii.sm)
         uparBg.lineStyle(1, border.default, 0.7)
-        uparBg.strokeRoundedRect(-uparBtnW / 2, uparY - uparBtnH / 2, uparBtnW, uparBtnH, radii.sm)
+        uparBg.strokeRoundedRect(-uparBtnW / 2, row2Y - uparBtnH / 2, uparBtnW, uparBtnH, radii.sm)
       }
       uparEls.push(uparBg)
-      const uparLabel = up.canAfford ? `↑ UPAR ${up.cost}g` : `${up.cost}g`
-      const uparTx = scene.add.text(0, uparY, uparLabel, {
-        fontFamily: fontFamily.mono, fontSize: typeScale.meta,
-        color: up.canAfford ? fg.primaryHex : fg.disabledHex, fontStyle: 'bold',
+
+      const nextLvl = skill.level + 1
+      const uparLabel = up.canAfford
+        ? `↑ UPAR PARA NV ${nextLvl} · ${up.cost}g`
+        : `NV ${nextLvl} · ${up.cost}g`
+      let uparFontSize = 10
+      const uparTx = scene.add.text(0, row2Y, uparLabel, {
+        fontFamily: fontFamily.mono, fontSize: `${uparFontSize}px`,
+        color: up.canAfford ? fg.inverseHex : fg.disabledHex, fontStyle: 'bold',
       }).setOrigin(0.5)
+      while (uparTx.width > uparBtnW - 8 && uparFontSize > 8) {
+        uparFontSize--
+        uparTx.setFontSize(uparFontSize)
+      }
       uparEls.push(uparTx)
 
       if (up.canAfford) {
-        uparHit = scene.add.rectangle(0, uparY, uparBtnW, uparBtnH + 6, 0, 0.001)
+        uparHit = scene.add.rectangle(0, row2Y, uparBtnW, uparBtnH + 6, 0, 0.001)
           .setInteractive({ useHandCursor: true })
         uparHit.on('pointerdown', (_p: Phaser.Input.Pointer, _lx: number, _ly: number, ev: Phaser.Types.Input.EventData) => {
           ev.stopPropagation()
@@ -988,10 +1007,11 @@ export const UI = {
     }
 
     // ── Assemble container ──
+    // NV + dots first, then UPAR (which visually covers them when active)
     const children: Phaser.GameObjects.GameObject[] = [
-      g, catText, nvText, ...dotEls,
+      g, catText,
       iconG, iconContent, titleText,
-      footerG, statPill, cdText, ...uparEls,
+      footerG, statPill, nvText, ...dotEls, ...uparEls,
     ]
     const container = scene.add.container(x, y, children).setDepth(d)
 
