@@ -827,7 +827,7 @@ export const UI = {
     //     and the caller wires opts.upgrade. Battle hand never passes
     //     opts.upgrade so the level info always shows there.
     const TOP_H_BAND = 24
-    const FOOTER_H   = 38
+    const FOOTER_H   = 42
     const R          = radii.md
     const showUpar   = !!(opts?.upgrade && opts.upgrade.canUpgrade)
 
@@ -920,7 +920,7 @@ export const UI = {
     footerG.fillRect(-hw, footerTop, w, 1)
 
     // Footer row 1: stat · TIPO (full width, left-aligned)
-    const row1Y = footerTop + 10
+    const row1Y = footerTop + 11
     const statStr = statValue ? `${statLabel} ${statValue}` : statLabel
     const typeStr = typeLabel ? ` · ${typeLabel}` : ''
     const statPill = scene.add.text(-hw + 8, row1Y, `${statStr}${typeStr}`, {
@@ -930,7 +930,7 @@ export const UI = {
 
     // Footer row 2: NV X + dots (default), or UPAR overlay (when canUpgrade)
     const maxLvl = skill.maxLevel ?? 5
-    const row2Y = footerTop + 26
+    const row2Y = footerTop + 30
 
     // Always lay down the level + dots first; the UPAR overlay covers
     // them when present so a single pixel position drives both states.
@@ -958,31 +958,34 @@ export const UI = {
     let uparHit: Phaser.GameObjects.Rectangle | null = null
     if (showUpar && opts?.upgrade) {
       const up = opts.upgrade
-      const uparBtnW = w - 12
-      const uparBtnH = 20
+      const uparBtnW = w - 14
+      const uparBtnH = 18
+      const uparTop  = row2Y - uparBtnH / 2
       const uparBg = scene.add.graphics()
       if (up.canAfford) {
         // Soft shadow + accent fill so the CTA pops above the row
         uparBg.fillStyle(0x000000, 0.35)
-        uparBg.fillRoundedRect(-uparBtnW / 2 + 1, row2Y - uparBtnH / 2 + 2, uparBtnW, uparBtnH, radii.sm)
+        uparBg.fillRoundedRect(-uparBtnW / 2 + 1, uparTop + 2, uparBtnW, uparBtnH, radii.sm)
         uparBg.fillStyle(accent.primary, 0.95)
-        uparBg.fillRoundedRect(-uparBtnW / 2, row2Y - uparBtnH / 2, uparBtnW, uparBtnH, radii.sm)
+        uparBg.fillRoundedRect(-uparBtnW / 2, uparTop, uparBtnW, uparBtnH, radii.sm)
         uparBg.fillStyle(0xffffff, 0.10)
-        uparBg.fillRoundedRect(-uparBtnW / 2 + 1, row2Y - uparBtnH / 2 + 1, uparBtnW - 2, uparBtnH * 0.45,
+        uparBg.fillRoundedRect(-uparBtnW / 2 + 1, uparTop + 1, uparBtnW - 2, uparBtnH * 0.45,
           { tl: radii.sm, tr: radii.sm, bl: 0, br: 0 })
         uparBg.lineStyle(1, accent.hot, 1)
-        uparBg.strokeRoundedRect(-uparBtnW / 2, row2Y - uparBtnH / 2, uparBtnW, uparBtnH, radii.sm)
+        uparBg.strokeRoundedRect(-uparBtnW / 2, uparTop, uparBtnW, uparBtnH, radii.sm)
       } else {
         uparBg.fillStyle(surface.panel, 1)
-        uparBg.fillRoundedRect(-uparBtnW / 2, row2Y - uparBtnH / 2, uparBtnW, uparBtnH, radii.sm)
+        uparBg.fillRoundedRect(-uparBtnW / 2, uparTop, uparBtnW, uparBtnH, radii.sm)
         uparBg.lineStyle(1, border.default, 0.7)
-        uparBg.strokeRoundedRect(-uparBtnW / 2, row2Y - uparBtnH / 2, uparBtnW, uparBtnH, radii.sm)
+        uparBg.strokeRoundedRect(-uparBtnW / 2, uparTop, uparBtnW, uparBtnH, radii.sm)
       }
       uparEls.push(uparBg)
 
+      // Concise label: "↑ UPAR NV 3 · 300g" — drops the redundant "PARA"
+      // the user flagged. Falls back to "NV 3 · 300g" disabled when broke.
       const nextLvl = skill.level + 1
       const uparLabel = up.canAfford
-        ? `↑ UPAR PARA NV ${nextLvl} · ${up.cost}g`
+        ? `↑ UPAR NV ${nextLvl} · ${up.cost}g`
         : `NV ${nextLvl} · ${up.cost}g`
       let uparFontSize = 10
       const uparTx = scene.add.text(0, row2Y, uparLabel, {
@@ -996,7 +999,7 @@ export const UI = {
       uparEls.push(uparTx)
 
       if (up.canAfford) {
-        uparHit = scene.add.rectangle(0, row2Y, uparBtnW, uparBtnH + 6, 0, 0.001)
+        uparHit = scene.add.rectangle(0, row2Y, uparBtnW, uparBtnH + 4, 0, 0.001)
           .setInteractive({ useHandCursor: true })
         uparHit.on('pointerdown', (_p: Phaser.Input.Pointer, _lx: number, _ly: number, ev: Phaser.Types.Input.EventData) => {
           ev.stopPropagation()
@@ -1600,8 +1603,16 @@ export const UI = {
       // docs/DECISIONS.md 2026-04-21 "Bloco 3 Parte 1".
       secondaryEffect?: { effectType: string; power: number; ticks?: number } | null;
     },
+    opts?: {
+      /** Override the default card dimensions (310×460). Used by scenes
+       *  that render the detail card inside an existing panel area
+       *  (SkillUpgradeScene left column) so the layout fits cleanly. */
+      width?: number
+      height?: number
+    },
   ): Phaser.GameObjects.Container {
-    const cardW = 310; const cardH = 460
+    const cardW = opts?.width ?? 310
+    const cardH = opts?.height ?? 460
     const hw = cardW / 2; const hh = cardH / 2
 
     // Class colour comes straight from the canonical tokens. We keep a small

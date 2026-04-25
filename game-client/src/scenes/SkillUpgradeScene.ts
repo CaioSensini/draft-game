@@ -43,6 +43,15 @@ const INV_CARD_H = DECK_CARD_H
 const MAX_SKILL_LEVEL = 5
 const GROUP_ORDER = ['attack1', 'attack2', 'defense1', 'defense2']
 
+// Left column geometry — split into a compact stats panel up top and a
+// taller sprite/detail panel below. The sprite panel hosts the hover
+// detail card on click; both must share the same dimensions so the
+// detail card fits the panel cleanly (ETAPA 6.10 addendum).
+const LEFT_STATS_TOP    = TOP_BAR_H + 106
+const LEFT_STATS_H      = 200
+const LEFT_SPRITE_TOP   = LEFT_STATS_TOP + LEFT_STATS_H + 8   // 370
+const LEFT_SPRITE_H     = SCREEN.H - LEFT_SPRITE_TOP - 8       // 342 with H=720
+
 interface ClassMeta {
   role: UnitRole
   label: string
@@ -218,13 +227,13 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     this.leftGroup.forEach(o => o.destroy()); this.leftGroup = []
     const cls = CLASSES.find(c => c.role === this.activeRole)!
     const stats = unitStatsByRole[this.activeRole]
-    const px = 4; const pw = LEFT_W - 2
+    const { x: px, w: pw } = this._leftPanelGeometry()
 
-    // ── Stats panel — aligned with SKILLS EQUIPADAS deck panel ──
-    const deckTop = TOP_BAR_H + 8
-    const deckH2 = this._deckPanelHeight()
-    const py = TOP_BAR_H + 106      // below enlarged hex tabs
-    const statsH = (deckTop + deckH2) - py
+    // ── Stats panel — fixed compact height so the sprite/detail panel
+    //    below has enough room to host the 320×360 hover detail card
+    //    without overflowing (ETAPA 6.10 addendum).
+    const py = TOP_BAR_H + 106
+    const statsH = LEFT_STATS_H
 
     const bg = this.add.graphics()
     bg.fillStyle(surface.panel, 0.92); bg.fillRoundedRect(px, py, pw, statsH, radii.lg)
@@ -292,10 +301,8 @@ export default class SkillUpgradeScene extends Phaser.Scene {
       }).setOrigin(1, 0.5))
     })
 
-    // ── Character sprite panel (aligned with INVENTARIO panel below) ──
-    const invTopY = TOP_BAR_H + 8 + deckH2 + 6
-    const spriteY = invTopY
-    const spriteH = H - spriteY - 8
+    // ── Character sprite panel (sized to host the click detail card) ──
+    const { y: spriteY, h: spriteH } = this._spritePanelRect()
 
     const spriteBg = this.add.graphics()
     spriteBg.fillStyle(surface.panel, 0.88)
@@ -356,6 +363,20 @@ export default class SkillUpgradeScene extends Phaser.Scene {
   private _deckPanelHeight(): number {
     // header + rows — UPAR is now in the card footer so no extra reserve.
     return 36 + DECK_ROWS * DECK_CARD_H + (DECK_ROWS - 1) * DECK_GAP + 12
+  }
+
+  /** Left column dims — shared by the stats panel, the sprite/portrait
+   *  panel, AND the click-to-show skill detail card so they all line up
+   *  (ETAPA 6.10 addendum). */
+  private _leftPanelGeometry() {
+    return { x: 4, w: LEFT_W - 2 }
+  }
+
+  /** Sprite/detail panel rect inside the left column — also the click
+   *  detail card target rect (matching dimensions, no overflow). */
+  private _spritePanelRect() {
+    const { x, w } = this._leftPanelGeometry()
+    return { x, y: LEFT_SPRITE_TOP, w, h: LEFT_SPRITE_H }
   }
 
   /** Deck grid origin — shared source of truth for drawDeck + highlight helpers */
@@ -521,14 +542,13 @@ export default class SkillUpgradeScene extends Phaser.Scene {
 
               // Click-select with highlight + show detail (no drag from deck)
               this.onDeckCardClick(capturedSid, capturedSlot, capturedCat, capturedGroup)
-              // Show detail card
+              // Show detail card sized to the sprite panel rect so it
+              // overlays the panel cleanly without overflowing.
               const clickDef = this.getSkillDef(capturedSid)
               if (clickDef) {
                 this._clickTooltip?.destroy(true)
-                const dkH2 = this._deckPanelHeight()
-                const spY2 = TOP_BAR_H + 8 + dkH2 + 6
-                const spH2 = H - spY2 - 8
-                this._clickTooltip = UI.skillDetailCard(this, LEFT_W / 2, spY2 + spH2 / 2, {
+                const sp = this._spritePanelRect()
+                this._clickTooltip = UI.skillDetailCard(this, sp.x + sp.w / 2, sp.y + sp.h / 2, {
                   skillId: capturedSid,
                   name: clickDef.name, effectType: clickDef.effectType, power: clickDef.power,
                   group: clickDef.group, unitClass: capturedOwned.unitClass, level: capturedOwned.level,
@@ -536,7 +556,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
                   longDescription: clickDef.longDescription,
                   targetType: clickDef.targetType, range: clickDef.range,
                   secondaryEffect: clickDef.secondaryEffect ?? null,
-                })
+                }, { width: sp.w, height: sp.h })
               }
             })
           }
@@ -734,13 +754,9 @@ export default class SkillUpgradeScene extends Phaser.Scene {
       const def = this.getSkillDef(skillId)
       if (!def) return
       const owned = this.findOwnedSkill(skillId)
-      // Show in left panel — below stats, centered in sprite area
-      const deckH2 = 32 + 2 * DECK_CARD_H + DECK_GAP + 10
-      const spriteAreaY = TOP_BAR_H + 8 + deckH2 + 6
-      const spriteAreaH = H - spriteAreaY - 8
-      const ttX = LEFT_W / 2
-      const ttY = spriteAreaY + spriteAreaH / 2
-      this._clickTooltip = UI.skillDetailCard(this, ttX, ttY, {
+      // Show in left sprite/detail panel sized to its rect.
+      const sp = this._spritePanelRect()
+      this._clickTooltip = UI.skillDetailCard(this, sp.x + sp.w / 2, sp.y + sp.h / 2, {
         skillId,
         name: def.name, effectType: def.effectType, power: def.power,
         group: def.group, unitClass: owned?.unitClass ?? 'king', level: owned?.level ?? 1,
@@ -748,7 +764,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
         longDescription: def.longDescription,
         targetType: def.targetType, range: def.range,
         secondaryEffect: def.secondaryEffect ?? null,
-      })
+      }, { width: sp.w, height: sp.h })
     }
 
     // ── Interaction zone for inventory ──
