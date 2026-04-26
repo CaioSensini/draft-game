@@ -123,7 +123,7 @@ export default class RankedScene extends Phaser.Scene {
   create(): void {
     // Guard: Ranked requires LVL 100
     if (playerData.getLevel() < 100) {
-      UI.background(this, { vignette: false, diagonalPattern: false, streaks: false })
+      UI.background(this, { vignette: false })
       this.drawLockedHeader()
       this.add.text(W / 2, H / 2 - 20, 'ARENA RANKEADA', {
         fontFamily: fontFamily.display,
@@ -155,7 +155,7 @@ export default class RankedScene extends Phaser.Scene {
 
     this.initRoom()
 
-    UI.background(this, { vignette: false, diagonalPattern: false, streaks: false })
+    UI.background(this, { vignette: false })
     UI.fadeIn(this)
 
     this.drawHeader()
@@ -229,16 +229,12 @@ export default class RankedScene extends Phaser.Scene {
       fontStyle:  '700',
     }).setOrigin(0.5).setLetterSpacing(1.8)
 
-    // letterSpacing 1.5 (was 3) — short-ish title; ETAPA 6.10 fix to
-    // stop the wide letter spread reading as 'decorative stripes' next
-    // to the title (matches PvP/PvE; Custom keeps 3 — long title fills
-    // horizontally and reads as a flowing word).
     this.add.text(W / 2, TOP_H / 2 + 10, 'ARENA RANKEADA', {
       fontFamily: fontFamily.display,
       fontSize:   typeScale.h2,
       color:      fg.primaryHex,
       fontStyle:  '600',
-    }).setOrigin(0.5).setLetterSpacing(1.5)
+    }).setOrigin(0.5).setLetterSpacing(3)
 
     // Mode switcher (left)
     UI.buttonGhost(this, 156, TOP_H / 2, 'ALTERAR MODO', {

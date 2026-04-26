@@ -88,7 +88,7 @@ export default class CustomLobbyScene extends Phaser.Scene {
       this._rebuildSlots()
     }
 
-    UI.background(this, { vignette: false, diagonalPattern: false, streaks: false })
+    UI.background(this, { vignette: false })
     UI.fadeIn(this)
 
     this._drawHeader()
