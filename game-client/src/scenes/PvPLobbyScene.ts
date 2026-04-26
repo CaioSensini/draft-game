@@ -158,7 +158,14 @@ export default class PvPLobbyScene extends Phaser.Scene {
   // ── Header ────────────────────────────────────────────────────────────────
 
   private drawHeader(): void {
-    const bar = this.add.graphics()
+    // ETAPA 6.9i: every top-bar element (bar + back arrow + texts + pill)
+    // sits at depth 100. The user reported perceived dark stripes on the
+    // bar that pixel sampling could not find — instead of fighting the
+    // root cause, we lift the bar above any other scene content so the
+    // text always reads cleanly on top.
+    const TBD = 100
+
+    const bar = this.add.graphics().setDepth(TBD)
     bar.fillStyle(surface.panel, 1)
     bar.fillRect(0, 0, W, TOP_H)
     bar.lineStyle(1, border.subtle, 1)
@@ -170,6 +177,7 @@ export default class PvPLobbyScene extends Phaser.Scene {
     this.backBtn = UI.backArrow(this, () => {
       if (!this.searching) transitionTo(this, 'LobbyScene')
     })
+    this.backBtn.setDepth(TBD + 1)
 
     // Eyebrow + title
     this.add.text(W / 2, TOP_H / 2 - 10, 'PVP', {
@@ -177,27 +185,28 @@ export default class PvPLobbyScene extends Phaser.Scene {
       fontSize:   typeScale.meta,
       color:      accent.primaryHex,
       fontStyle:  '700',
-    }).setOrigin(0.5).setLetterSpacing(1.8)
+    }).setOrigin(0.5).setLetterSpacing(1.8).setDepth(TBD + 1)
 
     this.add.text(W / 2, TOP_H / 2 + 10, 'BATALHA', {
       fontFamily: fontFamily.display,
       fontSize:   typeScale.h2,
       color:      fg.primaryHex,
       fontStyle:  '600',
-    }).setOrigin(0.5).setLetterSpacing(3)
+    }).setOrigin(0.5).setLetterSpacing(3).setDepth(TBD + 1)
 
     // Mode switcher (left) — mirrors CustomLobby layout per ETAPA 6.3
-    UI.buttonGhost(this, 156, TOP_H / 2, 'ALTERAR MODO', {
+    const altModoBtn = UI.buttonGhost(this, 156, TOP_H / 2, 'ALTERAR MODO', {
       w: 160,
       h: 32,
       onPress: () => this.showModeSwitcher(),
     })
+    altModoBtn.container.setDepth(TBD + 1)
 
     // Mode pill (right) — single derivedMode indicator, CustomLobby-aligned
     const pillW = 72
     const pillX = W - 60
     const pillY = TOP_H / 2
-    const pillBg = this.add.graphics()
+    const pillBg = this.add.graphics().setDepth(TBD + 1)
     pillBg.fillStyle(surface.deepest, 1)
     pillBg.fillRoundedRect(pillX - pillW / 2, pillY - 12, pillW, 24, radii.pill)
     pillBg.lineStyle(1, accent.primary, 1)
@@ -207,7 +216,7 @@ export default class PvPLobbyScene extends Phaser.Scene {
       fontSize:   typeScale.meta,
       color:      accent.primaryHex,
       fontStyle:  '700',
-    }).setOrigin(0.5).setLetterSpacing(1.4)
+    }).setOrigin(0.5).setLetterSpacing(1.4).setDepth(TBD + 2)
   }
 
   private refreshModePill(): void {

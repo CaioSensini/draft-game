@@ -162,7 +162,12 @@ export default class CustomLobbyScene extends Phaser.Scene {
   // ═══════════════════════════════════════════════════════════════════════════
 
   private _drawHeader(): void {
-    const bar = this.add.graphics()
+    // ETAPA 6.9i: every top-bar element lifted to depth 100+ so it
+    // renders above any other scene content (consistency with the
+    // other lobbies after the "riscos pretos" fix).
+    const TBD = 100
+
+    const bar = this.add.graphics().setDepth(TBD)
     bar.fillStyle(surface.panel, 1)
     bar.fillRect(0, 0, W, TOP_H)
     bar.lineStyle(1, border.subtle, 1)
@@ -175,7 +180,7 @@ export default class CustomLobbyScene extends Phaser.Scene {
       _savedMode = 'solo'; _savedSide = 'blue'
       _savedBlue = null; _savedRed = null
       transitionTo(this, 'LobbyScene')
-    })
+    }).setDepth(TBD + 1)
 
     // Eyebrow + title (centered)
     this.add.text(W / 2, TOP_H / 2 - 10, 'CUSTOM', {
@@ -183,21 +188,22 @@ export default class CustomLobbyScene extends Phaser.Scene {
       fontSize:   typeScale.meta,
       color:      accent.primaryHex,
       fontStyle:  '700',
-    }).setOrigin(0.5).setLetterSpacing(1.8)
+    }).setOrigin(0.5).setLetterSpacing(1.8).setDepth(TBD + 1)
 
     this.add.text(W / 2, TOP_H / 2 + 10, 'PARTIDA PERSONALIZADA', {
       fontFamily: fontFamily.display,
       fontSize:   typeScale.h2,
       color:      fg.primaryHex,
       fontStyle:  '600',
-    }).setOrigin(0.5).setLetterSpacing(3)
+    }).setOrigin(0.5).setLetterSpacing(3).setDepth(TBD + 1)
 
     // Mode switcher "ALTERAR MODO" (left-center)
-    UI.buttonGhost(this, 156, TOP_H / 2, 'ALTERAR MODO', {
+    const altModoBtn = UI.buttonGhost(this, 156, TOP_H / 2, 'ALTERAR MODO', {
       w: 160,
       h: 32,
       onPress: () => this._showModeSwitcher(),
     })
+    altModoBtn.container.setDepth(TBD + 1)
 
     // Mode selector (right) — 3 pill segments: SOLO / DUO / SQUAD
     const modes: Array<{ key: MatchMode; label: string }> = [
@@ -218,7 +224,7 @@ export default class CustomLobbyScene extends Phaser.Scene {
       const available = this._isModeAvailable(m.key)
       const locked = !available && !active
 
-      const bg = this.add.graphics()
+      const bg = this.add.graphics().setDepth(TBD + 1)
       const drawSeg = (hover: boolean) => {
         bg.clear()
         bg.fillStyle(active ? surface.raised : surface.panel, locked ? 0.5 : 1)
@@ -234,11 +240,11 @@ export default class CustomLobbyScene extends Phaser.Scene {
         fontSize:   typeScale.meta,
         color:      labelColor,
         fontStyle:  '700',
-      }).setOrigin(0.5).setLetterSpacing(1.4)
+      }).setOrigin(0.5).setLetterSpacing(1.4).setDepth(TBD + 2)
 
       if (!locked) {
         const hit = this.add.rectangle(mx + segW / 2, segY, segW, segH, 0, 0.001)
-          .setInteractive({ useHandCursor: true })
+          .setInteractive({ useHandCursor: true }).setDepth(TBD + 3)
         hit.on('pointerover', () => { if (!active) { drawSeg(true); label.setColor(fg.primaryHex) } })
         hit.on('pointerout',  () => { if (!active) { drawSeg(false); label.setColor(fg.secondaryHex) } })
         hit.on('pointerdown', () => {

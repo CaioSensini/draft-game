@@ -158,7 +158,11 @@ export default class PvELobbyScene extends Phaser.Scene {
   // ── Header ────────────────────────────────────────────────────────────────
 
   private drawHeader(): void {
-    const bar = this.add.graphics()
+    // ETAPA 6.9i: every top-bar element lifted to depth 100+ so it
+    // renders above any other scene content (see PvPLobbyScene comment).
+    const TBD = 100
+
+    const bar = this.add.graphics().setDepth(TBD)
     bar.fillStyle(surface.panel, 1)
     bar.fillRect(0, 0, W, TOP_H)
     bar.lineStyle(1, border.subtle, 1)
@@ -167,7 +171,7 @@ export default class PvELobbyScene extends Phaser.Scene {
     bar.lineTo(W, TOP_H - 0.5)
     bar.strokePath()
 
-    UI.backArrow(this, () => transitionTo(this, 'LobbyScene'))
+    UI.backArrow(this, () => transitionTo(this, 'LobbyScene')).setDepth(TBD + 1)
 
     // Title (eyebrow + h2)
     this.add.text(W / 2, TOP_H / 2 - 10, 'PVE', {
@@ -175,7 +179,7 @@ export default class PvELobbyScene extends Phaser.Scene {
       fontSize:   typeScale.meta,
       color:      accent.primaryHex,
       fontStyle:  '700',
-    }).setOrigin(0.5).setLetterSpacing(1.8)
+    }).setOrigin(0.5).setLetterSpacing(1.8).setDepth(TBD + 1)
 
     const titleWord = this.pveType === 'battle' ? 'BATALHA' : 'TORNEIO'
     this.add.text(W / 2, TOP_H / 2 + 10, titleWord, {
@@ -183,20 +187,21 @@ export default class PvELobbyScene extends Phaser.Scene {
       fontSize:   typeScale.h2,
       color:      fg.primaryHex,
       fontStyle:  '600',
-    }).setOrigin(0.5).setLetterSpacing(3)
+    }).setOrigin(0.5).setLetterSpacing(3).setDepth(TBD + 1)
 
     // Mode switcher button (left) — mirrors CustomLobby layout per ETAPA 6.3
-    UI.buttonGhost(this, 156, TOP_H / 2, 'ALTERAR MODO', {
+    const altModoBtn = UI.buttonGhost(this, 156, TOP_H / 2, 'ALTERAR MODO', {
       w: 160,
       h: 32,
       onPress: () => this.showModeSwitcher(),
     })
+    altModoBtn.container.setDepth(TBD + 1)
 
     // Mode pill (right) — single derivedMode indicator, CustomLobby-aligned
     const pillW = 72
     const pillX = W - 60
     const pillY = TOP_H / 2
-    const pillBg = this.add.graphics()
+    const pillBg = this.add.graphics().setDepth(TBD + 1)
     pillBg.fillStyle(surface.deepest, 1)
     pillBg.fillRoundedRect(pillX - pillW / 2, pillY - 12, pillW, 24, radii.pill)
     pillBg.lineStyle(1, accent.primary, 1)
@@ -206,7 +211,7 @@ export default class PvELobbyScene extends Phaser.Scene {
       fontSize:   typeScale.meta,
       color:      accent.primaryHex,
       fontStyle:  '700',
-    }).setOrigin(0.5).setLetterSpacing(1.4)
+    }).setOrigin(0.5).setLetterSpacing(1.4).setDepth(TBD + 2)
   }
 
   // ── Team panel ────────────────────────────────────────────────────────────
