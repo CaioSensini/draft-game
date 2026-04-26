@@ -61,6 +61,24 @@
         height: 100%;
       }
 
+      /*
+       * Canvas image-rendering hints — Phaser's 1280×720 canvas is upscaled
+       * by the browser on most monitors (1920×1080 desktop = 1.5× scale).
+       * Default bilinear filtering produces visible "ringing" halos around
+       * high-contrast Cinzel display text on the navy top bar — which
+       * reads as decorative angled stripes flanking short titles.
+       *
+       * Hint the browser to prefer crisp upscaling; the game is largely
+       * pixel art so pixelated is appropriate, with -webkit-optimize-
+       * contrast as the legacy fallback for browsers that ignore the
+       * modern keyword.
+       */
+      #game canvas {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+        image-rendering: pixelated;
+      }
+
       /* Hide scrollbars defensively if the canvas ever overflows */
       ::-webkit-scrollbar { display: none; }
     </style>
