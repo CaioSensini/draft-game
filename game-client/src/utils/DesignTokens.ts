@@ -669,6 +669,15 @@ export const letterSpacing = {
 } as const
 
 // ── Radii (CSS --r-*). NOTE: numerically different from legacy sizes.radius.*. ──
+//
+// ⚠️ FOOTGUN: `radii.pill` is the CSS idiom for "fully rounded" but Phaser's
+// Graphics.fillRoundedRect / strokeRoundedRect does NOT clamp the radius to
+// half the smallest dimension. Passing 999 to a small rect makes the corner
+// arcs extend across the canvas, drawing the fill color in unintended areas.
+//
+// For Phaser pill shapes, ALWAYS pass `Math.floor(rectHeight / 2)` or a
+// concrete number ≤ rectHeight/2 instead of `radii.pill`. This token is kept
+// only for CSS / DOM-side consumers (UI.inputField, etc.) where it works.
 export const radii = {
   sm:   4,
   md:   6,

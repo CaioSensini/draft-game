@@ -255,9 +255,13 @@ export default class RankedScene extends Phaser.Scene {
     const pillY = TOP_H / 2
     const pillBg = this.add.graphics().setDepth(TBD + 1)
     pillBg.fillStyle(surface.deepest, 1)
-    pillBg.fillRoundedRect(pillX - pillW / 2, pillY - 12, pillW, 24, radii.pill)
+    // ETAPA 6.9j root cause: radii.pill (999) overflows Phaser's
+    // fillRoundedRect — the arc geometry extends across the canvas
+    // and renders surface.deepest as visible "stripes" on the bar.
+    // Use a sane radius equal to half the height instead.
+    pillBg.fillRoundedRect(pillX - pillW / 2, pillY - 12, pillW, 24, 12)
     pillBg.lineStyle(1, accent.primary, 1)
-    pillBg.strokeRoundedRect(pillX - pillW / 2, pillY - 12, pillW, 24, radii.pill)
+    pillBg.strokeRoundedRect(pillX - pillW / 2, pillY - 12, pillW, 24, 12)
     this.modePillLabel = this.add.text(pillX, pillY, this.derivedMode.toUpperCase(), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
