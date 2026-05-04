@@ -26,6 +26,8 @@
  *     listener on the owning scene's `shutdown` event. Memory-safe.
  */
 
+import { waitForDesignFontsReady } from './fontLoading'
+
 export type Lang =
   | 'pt-BR' | 'en-US' | 'es' | 'fr' | 'de' | 'it' | 'tr' | 'ru'
   | 'ja' | 'zh-CN' | 'ko'
@@ -190,8 +192,14 @@ export async function setLang(lang: Lang): Promise<void> {
     // ignore storage errors
   }
 
+  await waitForDesignFontsReady()
+
   for (const cb of listeners) {
     try { cb(lang) } catch (err) { console.error('[i18n] listener threw', err) }
+  }
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('draft:i18n-language-changed', { detail: { lang } }))
   }
 }
 
