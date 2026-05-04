@@ -37,11 +37,16 @@ const H = SCREEN.H
 
 const ROLES: UnitRole[] = ['king', 'warrior', 'specialist', 'executor']
 
-const ROLE_LABELS: Record<UnitRole, string> = {
-  king: 'REI',
-  warrior: 'GUERREIRO',
-  specialist: 'ESPECIALISTA',
-  executor: 'EXECUTOR',
+const MODE_I18N_KEY: Record<DerivedMode, 'solo' | 'duo' | 'squad'> = {
+  Solo: 'solo', Duo: 'duo', Squad: 'squad',
+}
+
+function roleLabel(role: UnitRole): string {
+  return t(`skills.roles.${role}`)
+}
+
+function modeLabel(mode: DerivedMode): string {
+  return t(`scenes.lobby-shared.modes.${MODE_I18N_KEY[mode]}`)
 }
 
 const CLASS_ACCENT: Record<UnitRole, number> = {
@@ -196,7 +201,7 @@ export default class PvPLobbyScene extends Phaser.Scene {
     }).setOrigin(0.5).setLetterSpacing(3).setDepth(TBD + 1)
 
     // Mode switcher (left) — mirrors CustomLobby layout per ETAPA 6.3
-    const altModoBtn = UI.buttonGhost(this, 156, TOP_H / 2, 'ALTERAR MODO', {
+    const altModoBtn = UI.buttonGhost(this, 156, TOP_H / 2, t('scenes.lobby-shared.change-mode'), {
       w: 160,
       h: 32,
       onPress: () => this.showModeSwitcher(),
@@ -216,7 +221,7 @@ export default class PvPLobbyScene extends Phaser.Scene {
     pillBg.fillRoundedRect(pillX - pillW / 2, pillY - 12, pillW, 24, 12)
     pillBg.lineStyle(1, accent.primary, 1)
     pillBg.strokeRoundedRect(pillX - pillW / 2, pillY - 12, pillW, 24, 12)
-    this.modePillLabel = this.add.text(pillX, pillY, this.derivedMode.toUpperCase(), {
+    this.modePillLabel = this.add.text(pillX, pillY, modeLabel(this.derivedMode), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      accent.primaryHex,
@@ -225,7 +230,7 @@ export default class PvPLobbyScene extends Phaser.Scene {
   }
 
   private refreshModePill(): void {
-    if (this.modePillLabel) this.modePillLabel.setText(this.derivedMode.toUpperCase())
+    if (this.modePillLabel) this.modePillLabel.setText(modeLabel(this.derivedMode))
   }
 
   // ── Team panel ────────────────────────────────────────────────────────────
@@ -282,7 +287,7 @@ export default class PvPLobbyScene extends Phaser.Scene {
       bg.strokeRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, radii.lg)
       container.add(bg)
 
-      container.add(this.add.text(0, -cardH / 2 + 22, ROLE_LABELS[slot.role], {
+      container.add(this.add.text(0, -cardH / 2 + 22, roleLabel(slot.role), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.meta,
         color:      classAccentHex,
@@ -314,7 +319,7 @@ export default class PvPLobbyScene extends Phaser.Scene {
           fontStyle:  '600',
         }).setOrigin(0.5))
 
-        container.add(this.add.text(0, nameY + 20, `NV ${p.level}`, {
+        container.add(this.add.text(0, nameY + 20, t('scenes.lobby-shared.level-short', { level: p.level }), {
           fontFamily: fontFamily.body,
           fontSize:   typeScale.meta,
           color:      fg.tertiaryHex,
@@ -572,9 +577,9 @@ export default class PvPLobbyScene extends Phaser.Scene {
     }).setOrigin(0, 0.5).setLetterSpacing(1.8)
 
     const entries: { label: string; mode: DerivedMode }[] = [
-      { label: 'SOLO · sem bônus',          mode: 'Solo'  },
-      { label: 'DUO · +10% XP e Gold',      mode: 'Duo'   },
-      { label: 'SQUAD · +20% XP e Gold',    mode: 'Squad' },
+      { label: t('scenes.lobby-shared.mode-bonus.solo'), mode: 'Solo' },
+      { label: t('scenes.lobby-shared.mode-bonus.duo'), mode: 'Duo' },
+      { label: t('scenes.lobby-shared.mode-bonus.squad'), mode: 'Squad' },
     ]
 
     this.bonusTextObjs = []
@@ -642,10 +647,10 @@ export default class PvPLobbyScene extends Phaser.Scene {
     }).setOrigin(0, 0.5).setLetterSpacing(1.8)
 
     const bullets = [
-      'Sem custo de entrada',
-      'Matchmaking aleatório por nível',
-      'Enfrenta qualquer tamanho de equipe',
-      'Recompensas de Gold por vitória',
+      t('scenes.pvp.info.no-entry-cost'),
+      t('scenes.pvp.info.level-matchmaking'),
+      t('scenes.pvp.info.any-team-size'),
+      t('scenes.pvp.info.gold-rewards'),
     ]
 
     bullets.forEach((b, i) => {
@@ -666,7 +671,7 @@ export default class PvPLobbyScene extends Phaser.Scene {
 
   private drawInviteButton(): void {
     const invY = LOG_Y + LOG_H + 20
-    UI.buttonSecondary(this, LOG_X, invY, 'CONVIDAR AMIGO', {
+    UI.buttonSecondary(this, LOG_X, invY, t('scenes.lobby-shared.invite-friend'), {
       w: 184,
       h: 36,
       onPress: () => this.showInvitePopup(),
@@ -679,7 +684,7 @@ export default class PvPLobbyScene extends Phaser.Scene {
     const btnX = W / 2
     const btnY = H - 56
 
-    this.searchBtnRef = UI.buttonPrimary(this, btnX, btnY, 'PROCURAR OPONENTES', {
+    this.searchBtnRef = UI.buttonPrimary(this, btnX, btnY, t('scenes.pvp.search-opponents'), {
       size: 'lg',
       w:    340,
       h:    56,
@@ -713,7 +718,7 @@ export default class PvPLobbyScene extends Phaser.Scene {
 
     if (!canSearch && !this.searching) {
       this.searchBtnRef.setDisabled(true)
-      if (this.searchBtnLabel) this.searchBtnLabel.setText('SALA INCOMPLETA (3/4)')
+      if (this.searchBtnLabel) this.searchBtnLabel.setText(t('scenes.lobby-shared.room-incomplete', { current: 3, max: 4 }))
       this.blockedLabel = this.add.text(W / 2, H - 102, t('scenes.pvp.squad-incomplete'), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.small,
@@ -722,7 +727,7 @@ export default class PvPLobbyScene extends Phaser.Scene {
       }).setOrigin(0.5)
     } else if (!this.searching) {
       this.searchBtnRef.setDisabled(false)
-      if (this.searchBtnLabel) this.searchBtnLabel.setText('PROCURAR OPONENTES')
+      if (this.searchBtnLabel) this.searchBtnLabel.setText(t('scenes.pvp.search-opponents'))
     }
   }
 
@@ -759,9 +764,9 @@ export default class PvPLobbyScene extends Phaser.Scene {
   private showInvitePopup(): void {
     if (this.searching) return
     UI.modal(this, {
-      eyebrow: 'PRÓXIMAMENTE',
-      title:   'CONVITE DE AMIGO',
-      body:    'O sistema de convites está em desenvolvimento. Por enquanto, use modo Solo para jogar.',
+      eyebrow: t('scenes.lobby-shared.invite-modal.eyebrow'),
+      title:   t('scenes.lobby-shared.invite-modal.title'),
+      body:    t('scenes.lobby-shared.invite-modal.body-solo'),
       actions: [{ label: 'OK', kind: 'primary', onClick: () => {} }],
     })
   }
@@ -771,7 +776,7 @@ export default class PvPLobbyScene extends Phaser.Scene {
   private showModeSwitcher(): void {
     if (this.searching) return
     showPlayModesOverlay(this, {
-      title: 'ALTERAR MODO',
+      title: t('scenes.lobby-shared.change-mode'),
       currentTarget: 'PvPLobbyScene',
       dimSceneBackground: true,
     })

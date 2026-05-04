@@ -1,5 +1,7 @@
 {
-  "_meta": { "lang": "ko" },
+  "_meta": {
+    "lang": "ko"
+  },
   "lobby-shared": {
     "your-team": "당신의 팀",
     "your-badge": "당신",
@@ -12,7 +14,31 @@
     "invite": "초대",
     "change-skin": "스킨 변경",
     "swap": "교체",
-    "level-range": "레벨 범위"
+    "level-range": "레벨 범위",
+    "change-mode": "?? ??",
+    "modes": {
+      "solo": "SOLO",
+      "duo": "DUO",
+      "squad": "SQUAD"
+    },
+    "mode-bonus": {
+      "solo": "SOLO ? ??? ??",
+      "duo": "DUO ? +10% XP & Gold",
+      "squad": "SQUAD ? +20% XP & Gold"
+    },
+    "invite-friend": "?? ??",
+    "room-incomplete": "? ??? ({current}/{max})",
+    "level-short": "LV {level}",
+    "player-fallback": "????",
+    "bot": "?",
+    "friend": "??",
+    "invite-modal": {
+      "eyebrow": "? ??",
+      "title": "?? ??",
+      "body-solo": "?? ???? ?? ????. ??? ?? ??? ??????.",
+      "body-ranked": "?? ???? ?? ????. ??? ??? ???? ??????.",
+      "body-custom": "?? ???? ?? ????. ??? ?? ?? ?????."
+    }
   },
   "shop": {
     "title": "상점",
@@ -49,7 +75,16 @@
     "subtitle": "랭크 아레나",
     "locked-title": "랭크 아레나",
     "locked-body": "레벨 100부터 사용 가능",
-    "ranks-eyebrow": "랭크"
+    "ranks-eyebrow": "랭크",
+    "queue": {
+      "duo": "DUO"
+    },
+    "start-battle": "?? ??",
+    "info": {
+      "real-player-tournament": "?? ???? 8? ????",
+      "double-elimination": "?? ??????: ???? ??",
+      "lp-placement": "?? ??? ?? LP ?? (1~8?)"
+    }
   },
   "bracket": {
     "live": "라이브",
@@ -59,14 +94,37 @@
   "pvp": {
     "title": "PVP",
     "subtitle": "전투",
-    "squad-incomplete": "스쿼드 완성을 위해 1명 더 초대하세요"
+    "squad-incomplete": "스쿼드 완성을 위해 1명 더 초대하세요",
+    "search-opponents": "?? ??",
+    "info": {
+      "no-entry-cost": "?? ?? ??",
+      "level-matchmaking": "??? ??? ??",
+      "any-team-size": "?? ? ??? ??",
+      "gold-rewards": "?? ? Gold ??"
+    }
   },
   "pve": {
-    "title": "PVE"
+    "title": "PVE",
+    "battle-title": "??",
+    "tournament-title": "????",
+    "start-match": "?? ??",
+    "cost-format": "?? {cost}G",
+    "info": {
+      "smart-bot": "? ??? ??? ?",
+      "gold-bonus": "?? ? Gold ???",
+      "eight-team-bracket": "8? ???",
+      "scaled-cost": "Gold ??? ???? ??",
+      "scaled-reward": "???? ?? ??"
+    }
   },
   "custom": {
     "title": "커스텀",
-    "subtitle": "커스텀 경기"
+    "subtitle": "커스텀 경기",
+    "blue-team": "?? ?",
+    "red-team": "?? ?",
+    "blue-team-short": "??",
+    "red-team-short": "??",
+    "switch-team": "?  ? ??"
   },
   "matchmaking": {
     "searching": "상대 검색 중",
@@ -111,7 +169,9 @@
     "log": {
       "skipped": "건너뜀",
       "stunned": "기절",
-      "dead": "사망"
+      "dead": "사망",
+      "no-targets": "? ??? ?? ??? ????!",
+      "death": "?? {name} ?? (??? {round})"
     },
     "outcome": {
       "victory": "승리!",
@@ -163,7 +223,20 @@
       "area": "범위",
       "heal": "치유",
       "shield": "방패"
-    }
+    },
+    "role-abbr": {
+      "king": "?",
+      "warrior": "?",
+      "executor": "?",
+      "specialist": "??"
+    },
+    "stats": {
+      "atk": "ATK",
+      "def": "DEF",
+      "mov": "MOV"
+    },
+    "round-heading": "??? {round}",
+    "dummy-name": "?? {role}"
   },
   "battle-result": {
     "title": {
@@ -388,6 +461,36 @@
     },
     "footer": {
       "credits": "Draft Game v1.0  ·  Caio Sensini 제작"
+    }
+  },
+  "play-modes": {
+    "sections": {
+      "pvp": "PVP",
+      "pve": "PVE",
+      "creation": "??"
+    },
+    "modes": {
+      "ranked": {
+        "title": "?? ???",
+        "desc": "?? ???? (Lv.100)",
+        "locked-desc": "Lv.100?? ?? ??"
+      },
+      "pvp": {
+        "title": "PvP ??",
+        "desc": "??? ??? ????? ??"
+      },
+      "pve-battle": {
+        "title": "PvE ??",
+        "desc": "? ??? ??? ?? ??"
+      },
+      "pve-tournament": {
+        "title": "PvE ????",
+        "desc": "?? ??? ???"
+      },
+      "custom": {
+        "title": "??? ??",
+        "desc": "??? ??? ? ??"
+      }
     }
   }
 }

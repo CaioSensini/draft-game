@@ -140,9 +140,13 @@ const TEAM_COLOR: Record<CharacterSide, Record<UnitRole, number>> = {
   right: { king: 0x8844cc, warrior: 0x7733bb, specialist: 0x9955dd, executor: 0x6622aa },
 }
 
-const ROLE_LABEL: Record<UnitRole, string> = {
-  king: 'REI', warrior: 'GUE', specialist: 'ESP', executor: 'EXE',
-}; void ROLE_LABEL
+function roleFull(role: string): string {
+  return t(`skills.roles.${role}`)
+}
+
+function roleAbbr(role: string): string {
+  return t(`scenes.battle.role-abbr.${role}`)
+}
 
 // ── Sprite shape ──────────────────────────────────────────────────────────────
 
@@ -1053,7 +1057,7 @@ export default class BattleScene extends Phaser.Scene {
           sprite.rect.setFillStyle(0x444444)
           this.tweens.add({ targets: sprite.container, alpha: 0.22, duration: 600, ease: 'Quad.Out' })
         })
-        this._addLog(`💀 ${this._name(e.unitId)} morreu (Round ${e.round})`, 'death')
+        this._addLog(t('scenes.battle.log.death', { name: this._name(e.unitId), round: e.round }), 'death')
       })
 
       // ── Victory overlay ────────────────────────────────────────────────────
@@ -1240,10 +1244,7 @@ export default class BattleScene extends Phaser.Scene {
     const role = char.role as UnitRole
     const classColor = dsColors.class[role]
     const classHex   = dsColors.class[`${role}Hex` as const] ?? fg.primaryHex
-    const ROLE_NAMES: Record<string, string> = {
-      king: 'REI', warrior: 'GUERREIRO', executor: 'EXECUTOR', specialist: 'ESPECIALISTA',
-    }
-    const roleName = ROLE_NAMES[char.role] ?? char.role.toUpperCase()
+    const roleName = roleFull(char.role)
     const unitName = char.name
 
     // ── Frame (surface.panel + subtle team border) ──
@@ -1375,9 +1376,9 @@ export default class BattleScene extends Phaser.Scene {
       }).setOrigin(0.5, 0).setDepth(6)
     }
 
-    const atkText = makeStat('ATK', atkDelta, 0)
-    const defText = makeStat('DEF', defDelta, 1)
-    const movText = makeStat('MOV', movDelta, 2)
+    const atkText = makeStat(t('scenes.battle.stats.atk'), atkDelta, 0)
+    const defText = makeStat(t('scenes.battle.stats.def'), defDelta, 1)
+    const movText = makeStat(t('scenes.battle.stats.mov'), movDelta, 2)
     this._statusStatTexts.set(unitId, { atk: atkText, def: defText, mov: movText })
 
     cy += 28
@@ -1619,8 +1620,7 @@ export default class BattleScene extends Phaser.Scene {
     if (phase === 'movement') {
       label = t('scenes.battle.phase.movement-label')
     } else if (actorRole) {
-      const ROLE_NAMES: Record<string, string> = { king: 'REI', warrior: 'GUE', executor: 'EXE', specialist: 'ESP' }
-      label = t('scenes.battle.phase.role-turn', { role: ROLE_NAMES[actorRole] ?? actorRole })
+      label = t('scenes.battle.phase.role-turn', { role: roleAbbr(actorRole) })
     } else {
       label = t('scenes.battle.phase.action-label')
     }
@@ -1863,7 +1863,7 @@ export default class BattleScene extends Phaser.Scene {
     const role = (ttActor?.role ?? 'king') as 'king' | 'warrior' | 'executor' | 'specialist'
 
     const CLASS_NAMES: Record<string, string> = {
-      king: 'Rei', warrior: 'Guerreiro', executor: 'Executor', specialist: 'Especialista',
+      king: roleFull('king'), warrior: roleFull('warrior'), executor: roleFull('executor'), specialist: roleFull('specialist'),
     }
     const CLASS_HEX: Record<string, string> = {
       king: '#fbbf24', warrior: '#8b5cf6', executor: '#dc2626', specialist: '#10b981',
@@ -1940,7 +1940,7 @@ export default class BattleScene extends Phaser.Scene {
         this._awaitingMode    = null
         this._awaitingSkillId = null
         this._ctrl.cancelAction()
-        this._addLog('\u26a0 Sem alvos ao alcance!')
+        this._addLog(t('scenes.battle.log.no-targets'))
         if (this._currentActorId) {
           this._ctrl.selectCharacter(this._currentActorId)
         }
@@ -1955,7 +1955,7 @@ export default class BattleScene extends Phaser.Scene {
         this._awaitingMode    = null
         this._awaitingSkillId = null
         this._ctrl.cancelAction()
-        this._addLog('\u26a0 Sem alvos ao alcance!')
+        this._addLog(t('scenes.battle.log.no-targets'))
         if (this._currentActorId) {
           this._ctrl.selectCharacter(this._currentActorId)
         }
@@ -2459,7 +2459,7 @@ export default class BattleScene extends Phaser.Scene {
         rg.fillStyle(0xc9a84c, 0.25); rg.fillRect(cX, cy2, cW, 1)
         contentContainer.add(rg)
         cy2 += 6
-        contentContainer.add(this.add.text(cX, cy2, `ROUND ${act.round}`, {
+        contentContainer.add(this.add.text(cX, cy2, t('scenes.battle.round-heading', { round: act.round }), {
           fontFamily: 'Arial Black', fontSize: '22px', color: '#f0c850', fontStyle: 'bold', ...stk,
         }))
         cy2 += 30
@@ -2632,9 +2632,8 @@ export default class BattleScene extends Phaser.Scene {
       const posText = this.add.text(0, -999, `(${u.col},${u.row})`, { fontSize: '1px' }).setVisible(false)
 
       // Role abbreviation above the unit (team-coloured)
-      const ROLE_ABBR: Record<string, string> = { king: 'REI', warrior: 'GUE', executor: 'EXE', specialist: 'ESP' }
       const teamHex = u.side === 'left' ? dsColors.team.allyHex : dsColors.team.enemyHex
-      const roleLabel = this.add.text(0, half - 2, ROLE_ABBR[u.role] ?? u.role, {
+      const roleLabel = this.add.text(0, half - 2, roleAbbr(u.role), {
         fontFamily: fontFamily.body, fontSize: typeScale.meta, color: teamHex, fontStyle: 'bold',
         stroke: '#000000', strokeThickness: 3,
       }).setOrigin(0.5, 1)
@@ -3747,12 +3746,11 @@ export default class BattleScene extends Phaser.Scene {
       findAlive(t1, 'specialist') ? { u: findAlive(t1, 'specialist')!, side: s1 } : null,
     ]
 
-    const ROLE_ABBR: Record<string, string> = { king: 'REI', warrior: 'GUE', executor: 'EXE', specialist: 'ESP' }
     return ordered
       .filter((x): x is { u: UnitSetup; side: string } => x !== null)
       .map(({ u, side }) => {
         const ch = this._ctrl.getCharacter(u.id)
-        const abbr = ROLE_ABBR[u.role] ?? u.role
+        const abbr = roleAbbr(u.role)
         const playerName = ch?.name ?? u.name
         return {
           unitId: u.id,
@@ -3775,7 +3773,7 @@ export default class BattleScene extends Phaser.Scene {
 
     // Update round text
     if (this._miniLogRoundText) {
-      this._miniLogRoundText.setText(this._miniLogRound > 0 ? `ROUND ${this._miniLogRound}` : '')
+      this._miniLogRoundText.setText(this._miniLogRound > 0 ? t('scenes.battle.round-heading', { round: this._miniLogRound }) : '')
     }
 
     const stk = { stroke: '#000000', strokeThickness: 2 }
@@ -3856,8 +3854,7 @@ export default class BattleScene extends Phaser.Scene {
   private _name(id: string): string {
     const char = this._ctrl.getCharacter(id)
     if (!char) return id
-    const ROLE_FULL: Record<string, string> = { king: 'REI', warrior: 'GUERREIRO', executor: 'EXECUTOR', specialist: 'ESPECIALISTA' }
-    const roleName = ROLE_FULL[char.role] ?? char.role
+    const roleName = roleFull(char.role)
     return `${roleName} (${char.name})`
   }
 }
@@ -3919,7 +3916,12 @@ function _buildController(
 
   // Training mode: dummies use same stats as left side (matched by role)
   const rightStats = trainingMode ? ROLE_STATS : undefined
-  const DUMMY_NAMES: Record<string, string> = { king: 'Dummy REI', warrior: 'Dummy GUE', executor: 'Dummy EXE', specialist: 'Dummy ESP' }
+  const DUMMY_NAMES: Record<string, string> = {
+    king: t('scenes.battle.dummy-name', { role: roleAbbr('king') }),
+    warrior: t('scenes.battle.dummy-name', { role: roleAbbr('warrior') }),
+    executor: t('scenes.battle.dummy-name', { role: roleAbbr('executor') }),
+    specialist: t('scenes.battle.dummy-name', { role: roleAbbr('specialist') }),
+  }
   const rightChars = RIGHT_UNITS.map((u) => {
     const stats = rightStats ? rightStats[u.role] : _scaleStats(ROLE_STATS[u.role], difficulty)
     const col = trainingMode ? u.col - 2 : u.col  // dummies 2 tiles closer
