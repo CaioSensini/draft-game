@@ -28,6 +28,14 @@ export default class LoginScene extends Phaser.Scene {
   private panelContainer:    Phaser.GameObjects.Container | null = null
   private fields:            InputFieldHandle[] = []
   private errorBanner:       Phaser.GameObjects.Container | null = null
+  /**
+   * Standalone scene-root elements built by _showMainForm — submit
+   * buttons, forgot link, "lembrar de mim" row. Tracked here so
+   * _showVerificationForm can destroy them when swapping to the
+   * verification screen (otherwise the ENTRAR button leaks under the
+   * VERIFICAR button).
+   */
+  private mainFormExtras:    Phaser.GameObjects.GameObject[] = []
   // "Lembrar de mim" preference — persists auth token across sessions when
   // true. Defaults to true so returning players stay logged in; cleared on
   // successful login if the user unchecked the box.
@@ -41,6 +49,7 @@ export default class LoginScene extends Phaser.Scene {
     this.pendingUserId  = null
     this.panelContainer = null
     this.fields         = []
+    this.mainFormExtras = []
     this._rememberMe    = localStorage.getItem('draft_remember_me') !== 'false'
 
     const { W, H } = SCREEN
@@ -183,6 +192,7 @@ export default class LoginScene extends Phaser.Scene {
     // right after login so the next launch returns to this form.
     const rememberRow = this.add.container(panelX, panelY + 76)
     rememberRow.setVisible(initial === 'login')
+    this.mainFormExtras.push(rememberRow)
 
     const boxSize = 18
     const boxX = -84
@@ -241,6 +251,7 @@ export default class LoginScene extends Phaser.Scene {
     })
     btnRegister.container.setVisible(initial === 'register')
     btnLogin.container.setVisible(initial === 'login')
+    this.mainFormExtras.push(btnLogin.container, btnRegister.container)
 
     // ── Forgot link (ghost, below submit) ──
     const forgotLink = this.add.text(panelX, btnCy + 42, 'Esqueceu a senha?', {
@@ -252,6 +263,7 @@ export default class LoginScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
     forgotLink.on('pointerover', () => forgotLink.setColor(fg.primaryHex))
     forgotLink.on('pointerout',  () => forgotLink.setColor(fg.tertiaryHex))
+    this.mainFormExtras.push(forgotLink)
 
     // Error banner container (hidden until needed)
     const errorBanner = this.add.container(panelX, panelY + panelH / 2 + 18).setVisible(false)
@@ -513,13 +525,18 @@ export default class LoginScene extends Phaser.Scene {
   private _showVerificationForm(userId: string) {
     this.pendingUserId = userId
     const { W } = SCREEN
-    // Dismiss main form (fields + panel)
+    // Dismiss main form (fields + panel + standalone extras)
     for (const f of this.fields) f.destroy()
     this.fields = []
     this.panelContainer?.destroy()
     this.panelContainer = null
     this.errorBanner?.destroy()
     this.errorBanner = null
+    // Tear down scene-root extras (ENTRAR/CRIAR CONTA buttons, forgot
+    // link, remember-me row) so they don't bleed under the verification
+    // form (sub 7.2 fix — ENTRAR was leaking under VERIFICAR).
+    for (const obj of this.mainFormExtras) obj.destroy()
+    this.mainFormExtras = []
 
     const panelW = 400
     const panelH = 320
