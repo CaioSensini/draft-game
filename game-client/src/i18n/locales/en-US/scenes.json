@@ -1,5 +1,97 @@
 {
   "_meta": { "lang": "en-US" },
+  "battle": {
+    "phase": {
+      "movement-title-line-1": "TURN OF",
+      "movement-title-line-2": "MOVEMENT",
+      "movement-sub": "Move your\ncharacters",
+      "action-title": "ACTION",
+      "action-sub": "Choose your skills",
+      "movement-label": "Movement turn",
+      "action-label": "Action turn",
+      "role-turn": "{role}'s turn",
+      "phase-movement": "Movement",
+      "phase-action": "Action"
+    },
+    "team": {
+      "ally-eyebrow": "ALLY",
+      "enemy-eyebrow": "ENEMY",
+      "ally-name-fallback": "You",
+      "enemy-name-fallback": "Opponent",
+      "left-color": "Blue",
+      "right-color": "Purple"
+    },
+    "phase-side-format": "{phase} — {side}",
+    "tracker-side-movement": "{side} — Movement",
+    "log-round-marker": "— Round {round} —",
+    "tracker": {
+      "round": "Round {round}",
+      "round-label-default": "Round 1",
+      "header-both": "Action — Both",
+      "title": "ACTION ORDER",
+      "history-button": "VIEW HISTORY",
+      "history-popup-title": "ACTION HISTORY",
+      "history-popup-hint": "Click outside to close",
+      "wait-indicator": "· · ·",
+      "placeholder": "…"
+    },
+    "log": {
+      "skipped": "Skipped",
+      "stunned": "Stunned",
+      "dead": "Dead"
+    },
+    "outcome": {
+      "victory": "Victory!",
+      "defeat": "Defeat!",
+      "draw": "Draw!",
+      "opponent-forfeit": "Opponent forfeited!",
+      "self-forfeit": "You forfeited!"
+    },
+    "victory-overlay": {
+      "reasons": {
+        "king_slain": "King slain",
+        "simultaneous_kings": "Simultaneous draw",
+        "timeout": "Time's up",
+        "forfeit": "Forfeit"
+      },
+      "detail-forfeit": "{reason} — Opponent forfeited the match",
+      "detail-normal": "{reason} — Round {round}"
+    },
+    "actions": {
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "skip": "Skip",
+      "end-movement": "End Movement",
+      "main-menu": "Main Menu"
+    },
+    "popup": {
+      "confirmation-eyebrow": "Confirmation",
+      "warning-eyebrow": "Warning",
+      "vote-eyebrow": "Vote",
+      "skip-title": "Skip turn?",
+      "skip-body": "Your character won't act this turn.",
+      "skip-confirm": "Skip",
+      "confirm-action-title": "Confirm action?",
+      "confirm-action-body": "The selected skills will queue and resolve this turn.",
+      "surrender-title": "Surrender?",
+      "surrender-body-solo": "Forfeiting affects your rank and cannot be undone.",
+      "surrender-vote-title": "Vote to surrender?",
+      "surrender-vote-body": "Your vote counts toward {required}. All teammates must agree to surrender.",
+      "surrender-vote-button": "Vote",
+      "surrender-confirm": "Surrender",
+      "surrender-button-label": "  Surrender"
+    },
+    "status": {
+      "shield-suffix": "SH +{amount}",
+      "wall-bonus": "WALL +{pct}%"
+    },
+    "effect-shorthand": {
+      "damage": "Damage",
+      "area": "Area",
+      "heal": "Heal",
+      "shield": "Shield"
+    }
+  },
   "battle-result": {
     "title": {
       "victory": "VICTORY",
@@ -25,6 +117,60 @@
       "level-up": "LEVEL {from}  ›  {to}",
       "gain-suffix": "+{xp} XP",
       "fraction": "{current} / {max} XP"
+    }
+  },
+  "deck-build": {
+    "title": "DECK BUILDER",
+    "subtitle": "Choose 2 cards per group for each class.",
+    "difficulty-eyebrow": "DIFFICULTY",
+    "difficulty": {
+      "easy": "Easy",
+      "normal": "Normal",
+      "hard": "Hard"
+    },
+    "groups": {
+      "attack1": "ATTACK · DAMAGE",
+      "attack2": "ATTACK · CONTROL",
+      "defense1": "DEFENSE · STRONG",
+      "defense2": "DEFENSE · LIGHT",
+      "attack1-tooltip": "Attack - Damage",
+      "attack2-tooltip": "Attack - Control",
+      "defense1-tooltip": "Defense - Strong",
+      "defense2-tooltip": "Defense - Light"
+    },
+    "targets": {
+      "single": "Target: 1 Enemy",
+      "self": "Target: Self",
+      "lowest_ally": "Target: Lowest HP Ally",
+      "all_allies": "Target: All Allies",
+      "area": "Target: 3x3 Area"
+    },
+    "tooltip": {
+      "power-with": "Power {power}",
+      "power-none": "Power —",
+      "target-prefix": "TARGET · {target}"
+    },
+    "footer": {
+      "deck-label": "DECK",
+      "atk-label": "ATK",
+      "def-label": "DEF",
+      "empty-slot": "—",
+      "power-prefix": "PWR {power}",
+      "shortcuts": "Shortcuts · 1-4 select · Tab switch class · Enter play",
+      "progress": "UNITS READY · {done} / 4    PICK 2 CARDS PER COLUMN"
+    },
+    "buttons": {
+      "random": "Random",
+      "default": "Default",
+      "restore": "Restore",
+      "start": "START"
+    },
+    "tab-ready-suffix": "{role} ✓",
+    "passives": {
+      "king": "Passive: Royal Protection — Shield refreshed each turn, -15% damage taken.",
+      "warrior": "Passive: Protector — Adjacent allies gain -15% damage mitigation.",
+      "specialist": "Passive: Burning — Attacks reduce enemy healing by 20% for 1 turn.",
+      "executor": "Passive: Isolated — +15% damage when no one is adjacent."
     }
   },
   "lobby": {
@@ -94,6 +240,50 @@
     "tagline-2": "Build your deck and defeat the enemy King in 4v4 battles",
     "hint": "Click to enter",
     "version-tag": "v1.0"
+  },
+  "profile": {
+    "title": "PROFILE",
+    "tagline": "SUMMONER OF THE REALM",
+    "stats": {
+      "wins": "WINS",
+      "losses": "LOSSES",
+      "win-rate": "WIN RATE",
+      "gold": "GOLD",
+      "dg": "DG",
+      "ranked-points": "RANKED POINTS"
+    },
+    "mastery-eyebrow": "MASTERY",
+    "mastery": {
+      "attack": "ATTACK",
+      "defense": "DEFENSE"
+    }
+  },
+  "skill-upgrade": {
+    "title": "MANAGE SKILLS",
+    "deck-section": {
+      "header": "EQUIPPED SKILLS",
+      "equipped-counter": "{equipped} / 8",
+      "empty-slot": "Empty",
+      "slots": {
+        "atk1": "ATK 1",
+        "atk2": "ATK 2",
+        "def1": "DEF 1",
+        "def2": "DEF 2"
+      }
+    },
+    "inventory-section": {
+      "header": "INVENTORY",
+      "hint": "Click or drag to equip",
+      "all-equipped": "All equipped",
+      "owned-counter": "{owned} / {max}"
+    },
+    "groups": {
+      "attack1": "ATTACK · DAMAGE",
+      "attack2": "ATTACK · CONTROL",
+      "defense1": "DEFENSE · STRONG",
+      "defense2": "DEFENSE · LIGHT"
+    },
+    "level-up-banner": "LEVEL UP!"
   },
   "settings": {
     "title": "SETTINGS",

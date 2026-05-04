@@ -1,5 +1,97 @@
 {
   "_meta": { "lang": "de" },
+  "battle": {
+    "phase": {
+      "movement-title-line-1": "ZUG VON",
+      "movement-title-line-2": "BEWEGUNG",
+      "movement-sub": "Bewege deine\nCharaktere",
+      "action-title": "AKTION",
+      "action-sub": "Wähle deine Skills",
+      "movement-label": "Bewegungsrunde",
+      "action-label": "Aktionsrunde",
+      "role-turn": "Zug von {role}",
+      "phase-movement": "Bewegung",
+      "phase-action": "Aktion"
+    },
+    "team": {
+      "ally-eyebrow": "VERBÜNDET",
+      "enemy-eyebrow": "GEGNER",
+      "ally-name-fallback": "Du",
+      "enemy-name-fallback": "Gegner",
+      "left-color": "Blau",
+      "right-color": "Lila"
+    },
+    "phase-side-format": "{phase} — {side}",
+    "tracker-side-movement": "{side} — Bewegung",
+    "log-round-marker": "— Runde {round} —",
+    "tracker": {
+      "round": "Runde {round}",
+      "round-label-default": "Runde 1",
+      "header-both": "Aktion — Beide",
+      "title": "AKTIONSREIHENFOLGE",
+      "history-button": "VERLAUF ANSEHEN",
+      "history-popup-title": "AKTIONSVERLAUF",
+      "history-popup-hint": "Außerhalb klicken zum Schließen",
+      "wait-indicator": "· · ·",
+      "placeholder": "…"
+    },
+    "log": {
+      "skipped": "Übersprungen",
+      "stunned": "Betäubt",
+      "dead": "Tot"
+    },
+    "outcome": {
+      "victory": "Sieg!",
+      "defeat": "Niederlage!",
+      "draw": "Unentschieden!",
+      "opponent-forfeit": "Gegner hat aufgegeben!",
+      "self-forfeit": "Du hast aufgegeben!"
+    },
+    "victory-overlay": {
+      "reasons": {
+        "king_slain": "König gefallen",
+        "simultaneous_kings": "Gleichzeitiges Unentschieden",
+        "timeout": "Zeit abgelaufen",
+        "forfeit": "Aufgabe"
+      },
+      "detail-forfeit": "{reason} — Gegner hat das Match aufgegeben",
+      "detail-normal": "{reason} — Runde {round}"
+    },
+    "actions": {
+      "confirm": "Bestätigen",
+      "cancel": "Abbrechen",
+      "skip": "Überspringen",
+      "end-movement": "Ende Bewegung",
+      "main-menu": "Hauptmenü"
+    },
+    "popup": {
+      "confirmation-eyebrow": "Bestätigung",
+      "warning-eyebrow": "Achtung",
+      "vote-eyebrow": "Abstimmung",
+      "skip-title": "Zug überspringen?",
+      "skip-body": "Dein Charakter handelt diese Runde nicht.",
+      "skip-confirm": "Überspringen",
+      "confirm-action-title": "Aktion bestätigen?",
+      "confirm-action-body": "Die gewählten Skills werden in die Warteschlange gestellt und diese Runde aufgelöst.",
+      "surrender-title": "Aufgeben?",
+      "surrender-body-solo": "Aufgabe beeinflusst deinen Rang und kann nicht rückgängig gemacht werden.",
+      "surrender-vote-title": "Für Aufgabe stimmen?",
+      "surrender-vote-body": "Deine Stimme zählt für {required}. Alle Teammates müssen zustimmen, um aufzugeben.",
+      "surrender-vote-button": "Abstimmen",
+      "surrender-confirm": "Aufgeben",
+      "surrender-button-label": "  Aufgeben"
+    },
+    "status": {
+      "shield-suffix": "SC +{amount}",
+      "wall-bonus": "MAUER +{pct}%"
+    },
+    "effect-shorthand": {
+      "damage": "Schaden",
+      "area": "Bereich",
+      "heal": "Heilung",
+      "shield": "Schild"
+    }
+  },
   "battle-result": {
     "title": {
       "victory": "SIEG",
@@ -25,6 +117,60 @@
       "level-up": "STUFE {from}  ›  {to}",
       "gain-suffix": "+{xp} XP",
       "fraction": "{current} / {max} XP"
+    }
+  },
+  "deck-build": {
+    "title": "DECKBAU",
+    "subtitle": "Wähle 2 Karten pro Gruppe für jede Klasse.",
+    "difficulty-eyebrow": "SCHWIERIGKEIT",
+    "difficulty": {
+      "easy": "Leicht",
+      "normal": "Normal",
+      "hard": "Schwer"
+    },
+    "groups": {
+      "attack1": "ANGRIFF · SCHADEN",
+      "attack2": "ANGRIFF · KONTROLLE",
+      "defense1": "VERTEIDIGUNG · STARK",
+      "defense2": "VERTEIDIGUNG · LEICHT",
+      "attack1-tooltip": "Angriff - Schaden",
+      "attack2-tooltip": "Angriff - Kontrolle",
+      "defense1-tooltip": "Verteidigung - Stark",
+      "defense2-tooltip": "Verteidigung - Leicht"
+    },
+    "targets": {
+      "single": "Ziel: 1 Feind",
+      "self": "Ziel: Selbst",
+      "lowest_ally": "Ziel: Verbündeter mit niedrigster HP",
+      "all_allies": "Ziel: Alle Verbündeten",
+      "area": "Ziel: 3x3 Bereich"
+    },
+    "tooltip": {
+      "power-with": "Stärke {power}",
+      "power-none": "Stärke —",
+      "target-prefix": "ZIEL · {target}"
+    },
+    "footer": {
+      "deck-label": "DECK",
+      "atk-label": "ANG",
+      "def-label": "VER",
+      "empty-slot": "—",
+      "power-prefix": "STR {power}",
+      "shortcuts": "Tastenkürzel · 1-4 wählen · Tab Klasse wechseln · Enter spielen",
+      "progress": "EINHEITEN BEREIT · {done} / 4    WÄHLE 2 KARTEN PRO SPALTE"
+    },
+    "buttons": {
+      "random": "Zufällig",
+      "default": "Standard",
+      "restore": "Wiederherstellen",
+      "start": "STARTEN"
+    },
+    "tab-ready-suffix": "{role} ✓",
+    "passives": {
+      "king": "Passive: Königlicher Schutz — Schild jede Runde erneuert, -15% erlittener Schaden.",
+      "warrior": "Passive: Beschützer — Benachbarte Verbündete erhalten -15% Schadensreduzierung.",
+      "specialist": "Passive: Verbrennung — Angriffe reduzieren feindliche Heilung um 20% für 1 Runde.",
+      "executor": "Passive: Isoliert — +15% Schaden, wenn niemand benachbart ist."
     }
   },
   "lobby": {
@@ -94,6 +240,50 @@
     "tagline-2": "Stelle dein Deck zusammen und besiege den feindlichen König in 4v4-Schlachten",
     "hint": "Klicken zum Eintreten",
     "version-tag": "v1.0"
+  },
+  "profile": {
+    "title": "PROFIL",
+    "tagline": "BESCHWÖRER DES KÖNIGREICHS",
+    "stats": {
+      "wins": "SIEGE",
+      "losses": "NIEDERLAGEN",
+      "win-rate": "SIEGRATE",
+      "gold": "GOLD",
+      "dg": "DG",
+      "ranked-points": "RANKED-PUNKTE"
+    },
+    "mastery-eyebrow": "MEISTERSCHAFT",
+    "mastery": {
+      "attack": "ANGRIFF",
+      "defense": "VERTEIDIGUNG"
+    }
+  },
+  "skill-upgrade": {
+    "title": "SKILLS VERWALTEN",
+    "deck-section": {
+      "header": "AUSGERÜSTETE SKILLS",
+      "equipped-counter": "{equipped} / 8",
+      "empty-slot": "Leer",
+      "slots": {
+        "atk1": "ANG 1",
+        "atk2": "ANG 2",
+        "def1": "VER 1",
+        "def2": "VER 2"
+      }
+    },
+    "inventory-section": {
+      "header": "INVENTAR",
+      "hint": "Klicken oder ziehen zum Ausrüsten",
+      "all-equipped": "Alle ausgerüstet",
+      "owned-counter": "{owned} / {max}"
+    },
+    "groups": {
+      "attack1": "ANGRIFF · SCHADEN",
+      "attack2": "ANGRIFF · KONTROLLE",
+      "defense1": "VERTEIDIGUNG · STARK",
+      "defense2": "VERTEIDIGUNG · LEICHT"
+    },
+    "level-up-banner": "STUFE AUFGESTIEGEN!"
   },
   "settings": {
     "title": "EINSTELLUNGEN",

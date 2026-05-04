@@ -1,5 +1,97 @@
 {
   "_meta": { "lang": "fr" },
+  "battle": {
+    "phase": {
+      "movement-title-line-1": "TOUR DE",
+      "movement-title-line-2": "MOUVEMENT",
+      "movement-sub": "Déplacez vos\npersonnages",
+      "action-title": "ACTION",
+      "action-sub": "Choisissez vos compétences",
+      "movement-label": "Tour de mouvement",
+      "action-label": "Tour d'action",
+      "role-turn": "Tour du {role}",
+      "phase-movement": "Mouvement",
+      "phase-action": "Action"
+    },
+    "team": {
+      "ally-eyebrow": "ALLIÉ",
+      "enemy-eyebrow": "ENNEMI",
+      "ally-name-fallback": "Vous",
+      "enemy-name-fallback": "Adversaire",
+      "left-color": "Bleu",
+      "right-color": "Violet"
+    },
+    "phase-side-format": "{phase} — {side}",
+    "tracker-side-movement": "{side} — Mouvement",
+    "log-round-marker": "— Manche {round} —",
+    "tracker": {
+      "round": "Manche {round}",
+      "round-label-default": "Manche 1",
+      "header-both": "Action — Les deux",
+      "title": "ORDRE D'ACTION",
+      "history-button": "VOIR HISTORIQUE",
+      "history-popup-title": "HISTORIQUE D'ACTIONS",
+      "history-popup-hint": "Cliquez ailleurs pour fermer",
+      "wait-indicator": "· · ·",
+      "placeholder": "…"
+    },
+    "log": {
+      "skipped": "Passé",
+      "stunned": "Étourdi",
+      "dead": "Mort"
+    },
+    "outcome": {
+      "victory": "Victoire !",
+      "defeat": "Défaite !",
+      "draw": "Égalité !",
+      "opponent-forfeit": "L'adversaire a abandonné !",
+      "self-forfeit": "Vous avez abandonné !"
+    },
+    "victory-overlay": {
+      "reasons": {
+        "king_slain": "Roi abattu",
+        "simultaneous_kings": "Égalité simultanée",
+        "timeout": "Temps écoulé",
+        "forfeit": "Abandon"
+      },
+      "detail-forfeit": "{reason} — L'adversaire a abandonné le match",
+      "detail-normal": "{reason} — Manche {round}"
+    },
+    "actions": {
+      "confirm": "Confirmer",
+      "cancel": "Annuler",
+      "skip": "Passer",
+      "end-movement": "Fin Mouvement",
+      "main-menu": "Menu Principal"
+    },
+    "popup": {
+      "confirmation-eyebrow": "Confirmation",
+      "warning-eyebrow": "Attention",
+      "vote-eyebrow": "Vote",
+      "skip-title": "Passer le tour ?",
+      "skip-body": "Votre personnage n'agit pas ce tour.",
+      "skip-confirm": "Passer",
+      "confirm-action-title": "Confirmer l'action ?",
+      "confirm-action-body": "Les compétences sélectionnées sont mises en file et résolues ce tour.",
+      "surrender-title": "Abandonner ?",
+      "surrender-body-solo": "Abandonner affecte votre rang et ne peut être annulé.",
+      "surrender-vote-title": "Voter pour abandonner ?",
+      "surrender-vote-body": "Votre vote compte pour {required}. Toute l'équipe doit accepter pour abandonner.",
+      "surrender-vote-button": "Voter",
+      "surrender-confirm": "Abandonner",
+      "surrender-button-label": "  Abandonner"
+    },
+    "status": {
+      "shield-suffix": "BC +{amount}",
+      "wall-bonus": "MUR +{pct}%"
+    },
+    "effect-shorthand": {
+      "damage": "Dégâts",
+      "area": "Zone",
+      "heal": "Soin",
+      "shield": "Bouclier"
+    }
+  },
   "battle-result": {
     "title": {
       "victory": "VICTOIRE",
@@ -25,6 +117,60 @@
       "level-up": "NIVEAU {from}  ›  {to}",
       "gain-suffix": "+{xp} XP",
       "fraction": "{current} / {max} XP"
+    }
+  },
+  "deck-build": {
+    "title": "CONSTRUCTION DE DECK",
+    "subtitle": "Choisissez 2 cartes par groupe pour chaque classe.",
+    "difficulty-eyebrow": "DIFFICULTÉ",
+    "difficulty": {
+      "easy": "Facile",
+      "normal": "Normal",
+      "hard": "Difficile"
+    },
+    "groups": {
+      "attack1": "ATTAQUE · DÉGÂTS",
+      "attack2": "ATTAQUE · CONTRÔLE",
+      "defense1": "DÉFENSE · FORTE",
+      "defense2": "DÉFENSE · LÉGÈRE",
+      "attack1-tooltip": "Attaque - Dégâts",
+      "attack2-tooltip": "Attaque - Contrôle",
+      "defense1-tooltip": "Défense - Forte",
+      "defense2-tooltip": "Défense - Légère"
+    },
+    "targets": {
+      "single": "Cible : 1 Ennemi",
+      "self": "Cible : Soi-même",
+      "lowest_ally": "Cible : Allié au plus bas PV",
+      "all_allies": "Cible : Tous les Alliés",
+      "area": "Cible : Zone 3x3"
+    },
+    "tooltip": {
+      "power-with": "Puissance {power}",
+      "power-none": "Puissance —",
+      "target-prefix": "CIBLE · {target}"
+    },
+    "footer": {
+      "deck-label": "DECK",
+      "atk-label": "ATQ",
+      "def-label": "DÉF",
+      "empty-slot": "—",
+      "power-prefix": "PUI {power}",
+      "shortcuts": "Raccourcis · 1-4 sélectionner · Tab changer classe · Entrée jouer",
+      "progress": "UNITÉS PRÊTES · {done} / 4    CHOISISSEZ 2 CARTES PAR COLONNE"
+    },
+    "buttons": {
+      "random": "Aléatoire",
+      "default": "Défaut",
+      "restore": "Restaurer",
+      "start": "DÉMARRER"
+    },
+    "tab-ready-suffix": "{role} ✓",
+    "passives": {
+      "king": "Passive : Protection Royale — Bouclier renouvelé chaque tour, -15% dégâts subis.",
+      "warrior": "Passive : Protecteur — Alliés adjacents -15% de mitigation des dégâts.",
+      "specialist": "Passive : Brûlure — Les attaques réduisent de 20% le soin ennemi pendant 1 tour.",
+      "executor": "Passive : Isolé — +15% de dégâts quand personne n'est adjacent."
     }
   },
   "lobby": {
@@ -94,6 +240,50 @@
     "tagline-2": "Composez votre deck et vainquez le Roi ennemi en combats 4v4",
     "hint": "Cliquez pour entrer",
     "version-tag": "v1.0"
+  },
+  "profile": {
+    "title": "PROFIL",
+    "tagline": "INVOCATEUR DU ROYAUME",
+    "stats": {
+      "wins": "VICTOIRES",
+      "losses": "DÉFAITES",
+      "win-rate": "WIN RATE",
+      "gold": "OR",
+      "dg": "DG",
+      "ranked-points": "POINTS CLASSÉS"
+    },
+    "mastery-eyebrow": "MAÎTRISE",
+    "mastery": {
+      "attack": "ATTAQUE",
+      "defense": "DÉFENSE"
+    }
+  },
+  "skill-upgrade": {
+    "title": "GÉRER COMPÉTENCES",
+    "deck-section": {
+      "header": "COMPÉTENCES ÉQUIPÉES",
+      "equipped-counter": "{equipped} / 8",
+      "empty-slot": "Vide",
+      "slots": {
+        "atk1": "ATQ 1",
+        "atk2": "ATQ 2",
+        "def1": "DÉF 1",
+        "def2": "DÉF 2"
+      }
+    },
+    "inventory-section": {
+      "header": "INVENTAIRE",
+      "hint": "Cliquez ou glissez pour équiper",
+      "all-equipped": "Toutes équipées",
+      "owned-counter": "{owned} / {max}"
+    },
+    "groups": {
+      "attack1": "ATTAQUE · DÉGÂTS",
+      "attack2": "ATTAQUE · CONTRÔLE",
+      "defense1": "DÉFENSE · FORTE",
+      "defense2": "DÉFENSE · LÉGÈRE"
+    },
+    "level-up-banner": "MONTÉE DE NIVEAU !"
   },
   "settings": {
     "title": "PARAMÈTRES",

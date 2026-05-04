@@ -1,5 +1,97 @@
 {
   "_meta": { "lang": "it" },
+  "battle": {
+    "phase": {
+      "movement-title-line-1": "TURNO DI",
+      "movement-title-line-2": "MOVIMENTO",
+      "movement-sub": "Muovi i tuoi\npersonaggi",
+      "action-title": "AZIONE",
+      "action-sub": "Scegli le tue abilità",
+      "movement-label": "Turno di movimento",
+      "action-label": "Turno di azione",
+      "role-turn": "Turno del {role}",
+      "phase-movement": "Movimento",
+      "phase-action": "Azione"
+    },
+    "team": {
+      "ally-eyebrow": "ALLEATO",
+      "enemy-eyebrow": "NEMICO",
+      "ally-name-fallback": "Tu",
+      "enemy-name-fallback": "Avversario",
+      "left-color": "Blu",
+      "right-color": "Viola"
+    },
+    "phase-side-format": "{phase} — {side}",
+    "tracker-side-movement": "{side} — Movimento",
+    "log-round-marker": "— Round {round} —",
+    "tracker": {
+      "round": "Round {round}",
+      "round-label-default": "Round 1",
+      "header-both": "Azione — Entrambi",
+      "title": "ORDINE D'AZIONE",
+      "history-button": "VEDI CRONOLOGIA",
+      "history-popup-title": "CRONOLOGIA AZIONI",
+      "history-popup-hint": "Clicca fuori per chiudere",
+      "wait-indicator": "· · ·",
+      "placeholder": "…"
+    },
+    "log": {
+      "skipped": "Saltato",
+      "stunned": "Stordito",
+      "dead": "Morto"
+    },
+    "outcome": {
+      "victory": "Vittoria!",
+      "defeat": "Sconfitta!",
+      "draw": "Pareggio!",
+      "opponent-forfeit": "L'avversario si è arreso!",
+      "self-forfeit": "Ti sei arreso!"
+    },
+    "victory-overlay": {
+      "reasons": {
+        "king_slain": "Re abbattuto",
+        "simultaneous_kings": "Pareggio simultaneo",
+        "timeout": "Tempo scaduto",
+        "forfeit": "Resa"
+      },
+      "detail-forfeit": "{reason} — L'avversario ha abbandonato la partita",
+      "detail-normal": "{reason} — Round {round}"
+    },
+    "actions": {
+      "confirm": "Conferma",
+      "cancel": "Annulla",
+      "skip": "Salta",
+      "end-movement": "Fine Movimento",
+      "main-menu": "Menu Principale"
+    },
+    "popup": {
+      "confirmation-eyebrow": "Conferma",
+      "warning-eyebrow": "Attenzione",
+      "vote-eyebrow": "Votazione",
+      "skip-title": "Saltare il turno?",
+      "skip-body": "Il tuo personaggio non agisce in questo turno.",
+      "skip-confirm": "Salta",
+      "confirm-action-title": "Confermare l'azione?",
+      "confirm-action-body": "Le abilità selezionate entrano in coda e vengono risolte in questo turno.",
+      "surrender-title": "Arrendersi?",
+      "surrender-body-solo": "Arrendersi influenza il tuo rango e non può essere annullato.",
+      "surrender-vote-title": "Votare per arrendersi?",
+      "surrender-vote-body": "Il tuo voto conta per {required}. Tutta la squadra deve essere d'accordo per arrendersi.",
+      "surrender-vote-button": "Vota",
+      "surrender-confirm": "Arrendersi",
+      "surrender-button-label": "  Arrendersi"
+    },
+    "status": {
+      "shield-suffix": "SC +{amount}",
+      "wall-bonus": "MURO +{pct}%"
+    },
+    "effect-shorthand": {
+      "damage": "Danno",
+      "area": "Area",
+      "heal": "Cura",
+      "shield": "Scudo"
+    }
+  },
   "battle-result": {
     "title": {
       "victory": "VITTORIA",
@@ -25,6 +117,60 @@
       "level-up": "LIVELLO {from}  ›  {to}",
       "gain-suffix": "+{xp} XP",
       "fraction": "{current} / {max} XP"
+    }
+  },
+  "deck-build": {
+    "title": "COSTRUZIONE MAZZO",
+    "subtitle": "Scegli 2 carte per gruppo per ogni classe.",
+    "difficulty-eyebrow": "DIFFICOLTÀ",
+    "difficulty": {
+      "easy": "Facile",
+      "normal": "Normale",
+      "hard": "Difficile"
+    },
+    "groups": {
+      "attack1": "ATTACCO · DANNO",
+      "attack2": "ATTACCO · CONTROLLO",
+      "defense1": "DIFESA · FORTE",
+      "defense2": "DIFESA · LEGGERA",
+      "attack1-tooltip": "Attacco - Danno",
+      "attack2-tooltip": "Attacco - Controllo",
+      "defense1-tooltip": "Difesa - Forte",
+      "defense2-tooltip": "Difesa - Leggera"
+    },
+    "targets": {
+      "single": "Bersaglio: 1 Nemico",
+      "self": "Bersaglio: Sé stesso",
+      "lowest_ally": "Bersaglio: Alleato con HP più bassi",
+      "all_allies": "Bersaglio: Tutti gli Alleati",
+      "area": "Bersaglio: Area 3x3"
+    },
+    "tooltip": {
+      "power-with": "Potenza {power}",
+      "power-none": "Potenza —",
+      "target-prefix": "BERSAGLIO · {target}"
+    },
+    "footer": {
+      "deck-label": "MAZZO",
+      "atk-label": "ATT",
+      "def-label": "DIF",
+      "empty-slot": "—",
+      "power-prefix": "POT {power}",
+      "shortcuts": "Scorciatoie · 1-4 selezionare · Tab cambiare classe · Invio giocare",
+      "progress": "UNITÀ PRONTE · {done} / 4    SCEGLI 2 CARTE PER COLONNA"
+    },
+    "buttons": {
+      "random": "Casuale",
+      "default": "Predefinito",
+      "restore": "Ripristina",
+      "start": "INIZIA"
+    },
+    "tab-ready-suffix": "{role} ✓",
+    "passives": {
+      "king": "Passiva: Protezione Reale — Scudo rinnovato ogni turno, -15% danni ricevuti.",
+      "warrior": "Passiva: Protettore — Alleati adiacenti ricevono -15% di mitigazione del danno.",
+      "specialist": "Passiva: Bruciatura — Gli attacchi riducono la cura nemica del 20% per 1 turno.",
+      "executor": "Passiva: Isolato — +15% danno quando nessuno è adiacente."
     }
   },
   "lobby": {
@@ -94,6 +240,50 @@
     "tagline-2": "Costruisci il tuo mazzo e sconfiggi il Re nemico in battaglie 4v4",
     "hint": "Clicca per entrare",
     "version-tag": "v1.0"
+  },
+  "profile": {
+    "title": "PROFILO",
+    "tagline": "EVOCATORE DEL REGNO",
+    "stats": {
+      "wins": "VITTORIE",
+      "losses": "SCONFITTE",
+      "win-rate": "WIN RATE",
+      "gold": "ORO",
+      "dg": "DG",
+      "ranked-points": "PUNTI CLASSIFICATI"
+    },
+    "mastery-eyebrow": "MAESTRIA",
+    "mastery": {
+      "attack": "ATTACCO",
+      "defense": "DIFESA"
+    }
+  },
+  "skill-upgrade": {
+    "title": "GESTISCI ABILITÀ",
+    "deck-section": {
+      "header": "ABILITÀ EQUIPAGGIATE",
+      "equipped-counter": "{equipped} / 8",
+      "empty-slot": "Vuoto",
+      "slots": {
+        "atk1": "ATT 1",
+        "atk2": "ATT 2",
+        "def1": "DIF 1",
+        "def2": "DIF 2"
+      }
+    },
+    "inventory-section": {
+      "header": "INVENTARIO",
+      "hint": "Clicca o trascina per equipaggiare",
+      "all-equipped": "Tutte equipaggiate",
+      "owned-counter": "{owned} / {max}"
+    },
+    "groups": {
+      "attack1": "ATTACCO · DANNO",
+      "attack2": "ATTACCO · CONTROLLO",
+      "defense1": "DIFESA · FORTE",
+      "defense2": "DIFESA · LEGGERA"
+    },
+    "level-up-banner": "LIVELLO SU!"
   },
   "settings": {
     "title": "IMPOSTAZIONI",
