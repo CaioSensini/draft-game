@@ -692,12 +692,13 @@ export default class LobbyScene extends Phaser.Scene {
     }).setOrigin(0, 0.5)
     container.add(desc)
 
-    // Lock pill badge — positioned between the icon area (left) and text area (right)
+    // Lock pill badge — anchored to the card's right edge with 10px
+    // padding so it sits cleanly inside the card (sub 7.3 fix).
     if (!available) {
-      const pillCx = -28  // between icon (~x=-40) and text (~x=10)
-      const pillCy = 0
       const pillW = 60
       const pillH = 18
+      const pillCx = btnW / 2 - pillW / 2 - 10   // right edge minus padding
+      const pillCy = 0
 
       const pillGfx = this.add.graphics()
       pillGfx.fillStyle(0x1a1a2a, 0.9)
