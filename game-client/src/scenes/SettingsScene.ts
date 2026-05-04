@@ -13,8 +13,24 @@ import {
 } from '../i18n'
 
 const W = SCREEN.W
+const H = SCREEN.H
 
 const TOP_BAR_H = 56
+
+// ── Card geometry ────────────────────────────────────────────────────────────
+// Three independent cards stacked vertically; each renders its own surface +
+// border so the language picker is visually distinct from the audio toggle
+// and the logout panel (the previous monolithic single-panel made the two
+// segmented controls indistinguishable from each other).
+const CARD_W       = 600
+const CARD_PADDING = 24
+const CARD_GAP     = 28
+const SECTION_LABEL_GAP = 12   // gap between section eyebrow and card top
+const FIRST_CARD_TOP = TOP_BAR_H + 36
+
+const AUDIO_CARD_H   = 88
+const LANG_CARD_H    = 96
+const ACCOUNT_CARD_H = 92
 
 export default class SettingsScene extends Phaser.Scene {
   constructor() {
@@ -26,11 +42,12 @@ export default class SettingsScene extends Phaser.Scene {
     UI.particles(this, 14)
 
     this._drawTopBar()
-    this._drawCentralPanel()
+    this._drawCards()
+    this._drawFooter()
     UI.fadeIn(this)
   }
 
-  // ── Top bar ──
+  // ── Top bar ────────────────────────────────────────────────────────────────
 
   private _drawTopBar() {
     const bg = this.add.graphics()
@@ -50,152 +67,183 @@ export default class SettingsScene extends Phaser.Scene {
     }).setOrigin(0, 0.5).setLetterSpacing(3)
   }
 
-  // ── Central panel containing all sections ──
+  // ── Card layout ────────────────────────────────────────────────────────────
 
-  private _drawCentralPanel() {
-    const panelW = 600
-    // i18n.5: panel grew from 540 to 620 to fit the new "IDIOMA" section
-    // between GAMEPLAY and CONTA. Layout below is incremental, so adding a
-    // section just pushes everything after it down by its height.
-    const panelH = 620
-    const panelX = W / 2
-    const panelY = TOP_BAR_H + 8 + panelH / 2
+  private _drawCards() {
+    const cx = W / 2
 
-    // Panel — surface.panel + border.default + radii.xl + drop shadow
-    const panelBg = this.add.graphics()
-    panelBg.fillStyle(0x000000, 0.5)
-    panelBg.fillRoundedRect(panelX - panelW / 2 + 4, panelY - panelH / 2 + 8, panelW, panelH, radii.xl)
-    panelBg.fillStyle(surface.panel, 1)
-    panelBg.fillRoundedRect(panelX - panelW / 2, panelY - panelH / 2, panelW, panelH, radii.xl)
-    panelBg.fillStyle(0xffffff, 0.04)
-    panelBg.fillRoundedRect(panelX - panelW / 2 + 2, panelY - panelH / 2 + 2, panelW - 4, 22,
-      { tl: radii.xl - 1, tr: radii.xl - 1, bl: 0, br: 0 })
-    panelBg.lineStyle(1, border.default, 1)
-    panelBg.strokeRoundedRect(panelX - panelW / 2, panelY - panelH / 2, panelW, panelH, radii.xl)
+    // Section eyebrow heights are folded into the cumulative offset so each
+    // card pair (eyebrow + card) advances the cursor by the same amount.
+    let cursorY = FIRST_CARD_TOP
 
-    // ── Section: ÁUDIO (sound toggle only — sliders pending volume API) ──
-    let cursorY = panelY - panelH / 2 + 36
+    // Card 1 — ÁUDIO
+    cursorY = this._drawSectionEyebrow(cx, cursorY, t('scenes.settings.sections.audio'))
+    this._drawAudioCard(cx, cursorY)
+    cursorY += AUDIO_CARD_H + CARD_GAP
 
-    this._drawSectionHeader(panelX, cursorY, t('scenes.settings.sections.audio'))
-    cursorY += 30
+    // Card 2 — IDIOMA (language)
+    cursorY = this._drawSectionEyebrow(cx, cursorY, t('scenes.settings.sections.language'))
+    this._drawLanguageCard(cx, cursorY)
+    cursorY += LANG_CARD_H + CARD_GAP
 
+    // Card 3 — CONTA (account)
+    cursorY = this._drawSectionEyebrow(cx, cursorY, t('scenes.settings.sections.account'))
+    this._drawAccountCard(cx, cursorY)
+  }
+
+  /**
+   * Section eyebrow (uppercase meta + thin gold underline). Returns the y
+   * coordinate where the corresponding card should start (eyebrow height +
+   * gap already added).
+   */
+  private _drawSectionEyebrow(cx: number, y: number, label: string): number {
+    this.add.text(cx, y, label, {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: accent.primaryHex, fontStyle: '700',
+    }).setOrigin(0.5, 0).setLetterSpacing(2)
+
+    this.add.rectangle(cx, y + 22, 32, 1, accent.primary, 0.55)
+
+    return y + 30 + SECTION_LABEL_GAP
+  }
+
+  /**
+   * Card surface — surface.panel + border.default + radii.xl + drop shadow +
+   * 1px inset top highlight. Matches ProfileScene/RankingScene panel style.
+   */
+  private _drawCardSurface(cx: number, top: number, h: number): void {
+    const left = cx - CARD_W / 2
+
+    const g = this.add.graphics()
+    // Drop shadow (4 down)
+    g.fillStyle(0x000000, 0.45)
+    g.fillRoundedRect(left + 3, top + 6, CARD_W, h, radii.xl)
+    // Main fill
+    g.fillStyle(surface.panel, 1)
+    g.fillRoundedRect(left, top, CARD_W, h, radii.xl)
+    // Top inset highlight
+    g.fillStyle(0xffffff, 0.045)
+    g.fillRoundedRect(left + 2, top + 2, CARD_W - 4, 16,
+      { tl: radii.xl, tr: radii.xl, bl: 0, br: 0 })
+    // Border
+    g.lineStyle(1, border.default, 1)
+    g.strokeRoundedRect(left, top, CARD_W, h, radii.xl)
+  }
+
+  // ── Audio card ─────────────────────────────────────────────────────────────
+
+  private _drawAudioCard(cx: number, top: number) {
+    this._drawCardSurface(cx, top, AUDIO_CARD_H)
     soundManager.init()
-    const soundCardH = 64
-    this._drawCard(panelX, cursorY + soundCardH / 2, panelW - 48, soundCardH)
 
-    // Sound icon + label on the left
-    const soundIcon = UI.lucideIcon(this, 'settings', panelX - panelW / 2 + 36, cursorY + soundCardH / 2, 22, fg.secondary)
-    void soundIcon
-    this.add.text(panelX - panelW / 2 + 64, cursorY + soundCardH / 2 - 8, t('scenes.settings.audio.sound-label'), {
+    const cy = top + AUDIO_CARD_H / 2
+    const left = cx - CARD_W / 2
+
+    // Lucide speaker icon at left
+    UI.lucideIcon(this, 'settings', left + CARD_PADDING + 14, cy, 24, fg.secondary)
+
+    // Label + state text stacked vertically
+    const textX = left + CARD_PADDING + 40
+    this.add.text(textX, cy - 12, t('scenes.settings.audio.sound-label'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: fg.tertiaryHex, fontStyle: '700',
-    }).setLetterSpacing(1.6)
-    const soundStateLabel = this.add.text(panelX - panelW / 2 + 64, cursorY + soundCardH / 2 + 10,
+    }).setOrigin(0, 0.5).setLetterSpacing(1.6)
+
+    const stateLabel = this.add.text(textX, cy + 12,
       t(soundManager.isEnabled() ? 'scenes.settings.audio.sound-on' : 'scenes.settings.audio.sound-off'), {
         fontFamily: fontFamily.body, fontSize: typeScale.small,
         color: fg.secondaryHex, fontStyle: '500',
-      })
+      }).setOrigin(0, 0.5)
 
-    UI.toggle(this, panelX + panelW / 2 - 60, cursorY + soundCardH / 2, {
+    // Toggle on the right
+    UI.toggle(this, cx + CARD_W / 2 - CARD_PADDING - 28, cy, {
       value: soundManager.isEnabled(),
       onChange: (v) => {
-        soundManager.toggle()  // soundManager.toggle returns bool but we already have v
-        soundStateLabel.setText(t(v ? 'scenes.settings.audio.sound-on' : 'scenes.settings.audio.sound-off'))
+        soundManager.toggle()
+        stateLabel.setText(t(v ? 'scenes.settings.audio.sound-on' : 'scenes.settings.audio.sound-off'))
         soundManager.playClick()
       },
     })
+  }
 
-    // Volume sliders are not yet exposed by SoundManager — keep the audio
-    // section to just the on/off toggle until the slider API lands.
-    cursorY += soundCardH + 28
+  // ── Language card ──────────────────────────────────────────────────────────
+  // Volume sliders are intentionally not yet rendered — SoundManager doesn't
+  // expose the volume API, so the audio card stays toggle-only for now.
 
-    // ── Section: IDIOMA ──
-    this._drawSectionHeader(panelX, cursorY, t('scenes.settings.sections.language'))
-    cursorY += 30
+  private _drawLanguageCard(cx: number, top: number) {
+    this._drawCardSurface(cx, top, LANG_CARD_H)
 
-    const langCardH = 56
-    this._drawCard(panelX, cursorY + langCardH / 2, panelW - 48, langCardH)
+    const left = cx - CARD_W / 2
 
-    UI.segmentedControl<Lang>(this, panelX, cursorY + langCardH / 2, {
+    // In-card label (small uppercase) — describes what the segmented control
+    // below does, so the picker is unambiguously the LANGUAGE picker.
+    this.add.text(left + CARD_PADDING, top + 18, t('scenes.settings.language.field-label'), {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: fg.tertiaryHex, fontStyle: '700',
+    }).setOrigin(0, 0).setLetterSpacing(1.6)
+
+    // Segmented control with the 6 supported languages
+    UI.segmentedControl<Lang>(this, cx, top + LANG_CARD_H - 28, {
       options: getSupportedLangs().map(l => ({ key: l, label: LANG_LABELS[l] })),
       value: getCurrentLang(),
-      width: panelW - 96,
-      height: 32,
+      width: CARD_W - 2 * CARD_PADDING,
+      height: 36,
       onChange: (lang) => {
         soundManager.playClick()
         // setLang persists, mutates SKILL_CATALOG via the registered listener,
-        // and notifies any bound texts. We restart the scene so all visible
-        // labels (sections, cards, footer) are re-rendered in the new lang
-        // without trying to wire reactive bindings on every text object.
+        // then we restart the scene so every label re-renders in the new lang
+        // (avoids wiring reactive bindings on every text object).
         void setLang(lang).then(() => {
           if (this.scene.isActive('SettingsScene')) this.scene.restart()
         })
       },
     })
+  }
 
-    // ── Section: CONTA ──
-    cursorY += langCardH + 24
-    this._drawSectionHeader(panelX, cursorY, t('scenes.settings.sections.account'))
-    cursorY += 30
+  // ── Account card ───────────────────────────────────────────────────────────
 
-    const accountCardH = 64
-    this._drawCard(panelX, cursorY + accountCardH / 2, panelW - 48, accountCardH)
-    this.add.text(panelX - panelW / 2 + 36, cursorY + accountCardH / 2 - 8, t('scenes.settings.account.session-label'), {
+  private _drawAccountCard(cx: number, top: number) {
+    this._drawCardSurface(cx, top, ACCOUNT_CARD_H)
+
+    const cy = top + ACCOUNT_CARD_H / 2
+    const left = cx - CARD_W / 2
+
+    this.add.text(left + CARD_PADDING, cy - 12, t('scenes.settings.account.session-label'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: fg.tertiaryHex, fontStyle: '700',
-    }).setLetterSpacing(1.6)
-    this.add.text(panelX - panelW / 2 + 36, cursorY + accountCardH / 2 + 10,
-      t('scenes.settings.account.session-description'), {
-        fontFamily: fontFamily.body, fontSize: typeScale.small,
-        color: fg.secondaryHex, fontStyle: '500',
-      })
+    }).setOrigin(0, 0.5).setLetterSpacing(1.6)
 
-    UI.buttonDestructive(this, panelX + panelW / 2 - 90, cursorY + accountCardH / 2,
+    this.add.text(left + CARD_PADDING, cy + 12, t('scenes.settings.account.session-description'), {
+      fontFamily: fontFamily.body, fontSize: typeScale.small,
+      color: fg.secondaryHex, fontStyle: '500',
+    }).setOrigin(0, 0.5)
+
+    UI.buttonDestructive(this, cx + CARD_W / 2 - CARD_PADDING - 70, cy,
       t('scenes.settings.account.logout-button'), {
         w: 140, h: 36,
         onPress: () => this._confirmLogout(),
       },
     )
+  }
 
-    // ── Footer credits ──
-    cursorY = panelY + panelH / 2 - 50
-    this.add.text(panelX, cursorY, t('common.studio-name'), {
+  // ── Footer credits ─────────────────────────────────────────────────────────
+
+  private _drawFooter() {
+    const cx = W / 2
+    const cy = H - 32
+
+    this.add.text(cx, cy, t('common.studio-name'), {
       fontFamily: fontFamily.display, fontSize: typeScale.meta,
       color: accent.primaryHex, fontStyle: '700',
     }).setOrigin(0.5).setLetterSpacing(2.4)
-    this.add.text(panelX, cursorY + 16, t('scenes.settings.footer.credits'), {
+
+    this.add.text(cx, cy + 16, t('scenes.settings.footer.credits'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: fg.disabledHex, fontStyle: '500',
     }).setOrigin(0.5)
   }
 
-  // ── Section header — UPPER eyebrow with thin gold underline ──
-
-  private _drawSectionHeader(cx: number, y: number, text: string) {
-    this.add.text(cx, y, text, {
-      fontFamily: fontFamily.body, fontSize: typeScale.meta,
-      color: accent.primaryHex, fontStyle: '700',
-    }).setOrigin(0.5).setLetterSpacing(2)
-
-    const ruleW = 24
-    this.add.rectangle(cx, y + 14, ruleW, 1, accent.primary, 0.5)
-  }
-
-  // ── Card — surface.raised + border.default + radii.md ──
-
-  private _drawCard(cx: number, cy: number, w: number, h: number) {
-    const g = this.add.graphics()
-    g.fillStyle(surface.raised, 1)
-    g.fillRoundedRect(cx - w / 2, cy - h / 2, w, h, radii.md)
-    g.lineStyle(1, border.default, 1)
-    g.strokeRoundedRect(cx - w / 2, cy - h / 2, w, h, radii.md)
-    // Top inset highlight
-    g.fillStyle(0xffffff, 0.025)
-    g.fillRoundedRect(cx - w / 2 + 2, cy - h / 2 + 2, w - 4, 14,
-      { tl: radii.md - 1, tr: radii.md - 1, bl: 0, br: 0 })
-  }
-
-  // ── Logout confirmation via UI.modal ──
+  // ── Logout confirmation via UI.modal ──────────────────────────────────────
 
   private _confirmLogout() {
     soundManager.playClick()

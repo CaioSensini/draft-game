@@ -107,6 +107,9 @@
       "sound-on": "Soundeffekte an",
       "sound-off": "Soundeffekte aus"
     },
+    "language": {
+      "field-label": "WÄHLE DEINE SPRACHE"
+    },
     "account": {
       "session-label": "SITZUNG",
       "session-description": "Vom aktuellen Konto abmelden",

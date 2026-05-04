@@ -107,6 +107,9 @@
       "sound-on": "Efeitos sonoros ligados",
       "sound-off": "Efeitos sonoros desligados"
     },
+    "language": {
+      "field-label": "ESCOLHA SEU IDIOMA"
+    },
     "account": {
       "session-label": "SESSÃO",
       "session-description": "Sair da conta atual",

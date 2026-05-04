@@ -107,6 +107,9 @@
       "sound-on": "Sound effects on",
       "sound-off": "Sound effects off"
     },
+    "language": {
+      "field-label": "CHOOSE YOUR LANGUAGE"
+    },
     "account": {
       "session-label": "SESSION",
       "session-description": "Sign out of current account",
