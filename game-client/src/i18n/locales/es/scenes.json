@@ -1,5 +1,7 @@
 {
-  "_meta": { "lang": "es" },
+  "_meta": {
+    "lang": "es"
+  },
   "lobby-shared": {
     "your-team": "TU EQUIPO",
     "your-badge": "TÚ",
@@ -12,7 +14,31 @@
     "invite": "INVITAR",
     "change-skin": "CAMBIAR SKIN",
     "swap": "CAMBIAR",
-    "level-range": "RANGO DE NIVEL"
+    "level-range": "RANGO DE NIVEL",
+    "change-mode": "CAMBIAR MODO",
+    "modes": {
+      "solo": "SOLO",
+      "duo": "DUO",
+      "squad": "SQUAD"
+    },
+    "mode-bonus": {
+      "solo": "SOLO ? sin bonificaci?n",
+      "duo": "DUO ? +10% XP & Gold",
+      "squad": "SQUAD ? +20% XP & Gold"
+    },
+    "invite-friend": "INVITAR AMIGO",
+    "room-incomplete": "SALA INCOMPLETA ({current}/{max})",
+    "level-short": "NV {level}",
+    "player-fallback": "Jugador",
+    "bot": "Bot",
+    "friend": "Amigo",
+    "invite-modal": {
+      "eyebrow": "PR?XIMAMENTE",
+      "title": "INVITACI?N DE AMIGO",
+      "body-solo": "El sistema de invitaciones est? en desarrollo. Por ahora, usa el modo Solo para jugar.",
+      "body-ranked": "El sistema de invitaciones est? en desarrollo. Por ahora, usa Solo para jugar ranked.",
+      "body-custom": "El sistema de invitaciones est? en desarrollo. Por ahora, a?ade bots a tu equipo."
+    }
   },
   "shop": {
     "title": "TIENDA",
@@ -49,7 +75,16 @@
     "subtitle": "ARENA RANKED",
     "locked-title": "ARENA RANKED",
     "locked-body": "Disponible a partir del Nivel 100",
-    "ranks-eyebrow": "RANGOS"
+    "ranks-eyebrow": "RANGOS",
+    "queue": {
+      "duo": "DUO"
+    },
+    "start-battle": "INICIAR BATALLA",
+    "info": {
+      "real-player-tournament": "Torneo entre 8 jugadores reales",
+      "double-elimination": "Doble eliminaci?n: perdedores juegan entre s?",
+      "lp-placement": "LP seg?n posici?n final (1.? a 8.?)"
+    }
   },
   "bracket": {
     "live": "EN VIVO",
@@ -59,14 +94,37 @@
   "pvp": {
     "title": "PVP",
     "subtitle": "BATALLA",
-    "squad-incomplete": "Invita 1 jugador más para completar el squad"
+    "squad-incomplete": "Invita 1 jugador más para completar el squad",
+    "search-opponents": "BUSCAR OPONENTES",
+    "info": {
+      "no-entry-cost": "Sin costo de entrada",
+      "level-matchmaking": "Matchmaking aleatorio por nivel",
+      "any-team-size": "Enfrenta cualquier tama?o de equipo",
+      "gold-rewards": "Recompensas de Gold por victoria"
+    }
   },
   "pve": {
-    "title": "PVE"
+    "title": "PVE",
+    "battle-title": "BATALLA",
+    "tournament-title": "TORNEO",
+    "start-match": "INICIAR PARTIDA",
+    "cost-format": "COSTO {cost}G",
+    "info": {
+      "smart-bot": "Bot inteligente de tu nivel",
+      "gold-bonus": "Bono de Gold por victoria",
+      "eight-team-bracket": "Llave de 8 equipos",
+      "scaled-cost": "El costo en Gold var?a por rango",
+      "scaled-reward": "Recompensa escalada por ronda"
+    }
   },
   "custom": {
     "title": "CUSTOM",
-    "subtitle": "PARTIDA PERSONALIZADA"
+    "subtitle": "PARTIDA PERSONALIZADA",
+    "blue-team": "EQUIPO AZUL",
+    "red-team": "EQUIPO ROJO",
+    "blue-team-short": "AZUL",
+    "red-team-short": "ROJO",
+    "switch-team": "?  CAMBIAR EQUIPO"
   },
   "matchmaking": {
     "searching": "BUSCANDO ADVERSARIO",
@@ -111,7 +169,9 @@
     "log": {
       "skipped": "Saltó",
       "stunned": "Aturdido",
-      "dead": "Muerto"
+      "dead": "Muerto",
+      "no-targets": "? ?No hay objetivos al alcance!",
+      "death": "?? {name} muri? (Ronda {round})"
     },
     "outcome": {
       "victory": "¡Victoria!",
@@ -163,7 +223,20 @@
       "area": "Área",
       "heal": "Cura",
       "shield": "Escudo"
-    }
+    },
+    "role-abbr": {
+      "king": "REY",
+      "warrior": "GUE",
+      "executor": "EJE",
+      "specialist": "ESP"
+    },
+    "stats": {
+      "atk": "ATK",
+      "def": "DEF",
+      "mov": "MOV"
+    },
+    "round-heading": "RONDA {round}",
+    "dummy-name": "Mu?eco {role}"
   },
   "battle-result": {
     "title": {
@@ -385,6 +458,36 @@
     },
     "footer": {
       "credits": "Draft Game v1.0  ·  por Caio Sensini"
+    }
+  },
+  "play-modes": {
+    "sections": {
+      "pvp": "PVP",
+      "pve": "PVE",
+      "creation": "CREACI?N"
+    },
+    "modes": {
+      "ranked": {
+        "title": "Arena Ranked",
+        "desc": "Torneos ranked (Nv.100)",
+        "locked-desc": "Disponible desde Nv.100"
+      },
+      "pvp": {
+        "title": "Batalla PvP",
+        "desc": "Enfrenta jugadores de nivel similar"
+      },
+      "pve-battle": {
+        "title": "Batalla PvE",
+        "desc": "Enfrenta un bot inteligente de tu nivel"
+      },
+      "pve-tournament": {
+        "title": "Torneo PvE",
+        "desc": "Llave por rango de nivel"
+      },
+      "custom": {
+        "title": "Partida personalizada",
+        "desc": "Arma equipos con amigos y bots"
+      }
     }
   }
 }

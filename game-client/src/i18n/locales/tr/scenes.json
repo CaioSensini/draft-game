@@ -1,5 +1,7 @@
 {
-  "_meta": { "lang": "tr" },
+  "_meta": {
+    "lang": "tr"
+  },
   "lobby-shared": {
     "your-team": "TAKIMIN",
     "your-badge": "SEN",
@@ -12,7 +14,31 @@
     "invite": "DAVET ET",
     "change-skin": "SKİN DEĞİŞTİR",
     "swap": "DEĞİŞTİR",
-    "level-range": "SEVİYE ARALIĞI"
+    "level-range": "SEVİYE ARALIĞI",
+    "change-mode": "MOD DE???T?R",
+    "modes": {
+      "solo": "SOLO",
+      "duo": "DUO",
+      "squad": "SQUAD"
+    },
+    "mode-bonus": {
+      "solo": "SOLO ? bonus yok",
+      "duo": "DUO ? +10% XP & Gold",
+      "squad": "SQUAD ? +20% XP & Gold"
+    },
+    "invite-friend": "ARKADA? DAVET ET",
+    "room-incomplete": "ODA EKS?K ({current}/{max})",
+    "level-short": "SV {level}",
+    "player-fallback": "Oyuncu",
+    "bot": "Bot",
+    "friend": "Arkada?",
+    "invite-modal": {
+      "eyebrow": "YAKINDA",
+      "title": "ARKADA? DAVET?",
+      "body-solo": "Davet sistemi geli?tiriliyor. ?imdilik Solo modunu kullan.",
+      "body-ranked": "Davet sistemi geli?tiriliyor. ?imdilik ranked i?in Solo oyna.",
+      "body-custom": "Davet sistemi geli?tiriliyor. ?imdilik tak?m?na bot ekle."
+    }
   },
   "shop": {
     "title": "MAĞAZA",
@@ -49,7 +75,16 @@
     "subtitle": "DERECELİ ARENA",
     "locked-title": "DERECELİ ARENA",
     "locked-body": "Seviye 100'den itibaren",
-    "ranks-eyebrow": "RÜTBELER"
+    "ranks-eyebrow": "RÜTBELER",
+    "queue": {
+      "duo": "DUO"
+    },
+    "start-battle": "SAVA?I BA?LAT",
+    "info": {
+      "real-player-tournament": "8 ger?ek oyunculu turnuva",
+      "double-elimination": "?ifte eleme: kaybedenler kendi aras?nda oynar",
+      "lp-placement": "LP final s?ras?na g?re (1-8)"
+    }
   },
   "bracket": {
     "live": "CANLI",
@@ -59,14 +94,37 @@
   "pvp": {
     "title": "PVP",
     "subtitle": "SAVAŞ",
-    "squad-incomplete": "Squad'ı tamamlamak için 1 oyuncu daha davet et"
+    "squad-incomplete": "Squad'ı tamamlamak için 1 oyuncu daha davet et",
+    "search-opponents": "RAK?P ARA",
+    "info": {
+      "no-entry-cost": "Giri? ?creti yok",
+      "level-matchmaking": "Seviyeye g?re rastgele e?le?me",
+      "any-team-size": "Her tak?m boyutuyla e?le?ir",
+      "gold-rewards": "Zafer i?in Gold ?d?l?"
+    }
   },
   "pve": {
-    "title": "PVE"
+    "title": "PVE",
+    "battle-title": "SAVA?",
+    "tournament-title": "TURNUVA",
+    "start-match": "MA?I BA?LAT",
+    "cost-format": "?CRET {cost}G",
+    "info": {
+      "smart-bot": "Seviyendeki ak?ll? bot",
+      "gold-bonus": "Zafer i?in Gold bonusu",
+      "eight-team-bracket": "8 tak?ml? e?le?me",
+      "scaled-cost": "Gold ?creti aral??a g?re de?i?ir",
+      "scaled-reward": "?d?l raunta g?re artar"
+    }
   },
   "custom": {
     "title": "ÖZEL",
-    "subtitle": "ÖZEL MAÇ"
+    "subtitle": "ÖZEL MAÇ",
+    "blue-team": "MAV? TAKIM",
+    "red-team": "KIRMIZI TAKIM",
+    "blue-team-short": "MAV?",
+    "red-team-short": "KIRM",
+    "switch-team": "?  TAKIM DE???T?R"
   },
   "matchmaking": {
     "searching": "RAKİP ARANIYOR",
@@ -111,7 +169,9 @@
     "log": {
       "skipped": "Atladı",
       "stunned": "Sersem",
-      "dead": "Ölü"
+      "dead": "Ölü",
+      "no-targets": "? Menzilde hedef yok!",
+      "death": "?? {name} ?ld? (Raunt {round})"
     },
     "outcome": {
       "victory": "Zafer!",
@@ -163,7 +223,20 @@
       "area": "Alan",
       "heal": "İyileştirme",
       "shield": "Kalkan"
-    }
+    },
+    "role-abbr": {
+      "king": "KRL",
+      "warrior": "SV?",
+      "executor": "?NF",
+      "specialist": "UZM"
+    },
+    "stats": {
+      "atk": "ATK",
+      "def": "DEF",
+      "mov": "MOV"
+    },
+    "round-heading": "RAUNT {round}",
+    "dummy-name": "Manken {role}"
   },
   "battle-result": {
     "title": {
@@ -388,6 +461,36 @@
     },
     "footer": {
       "credits": "Draft Game v1.0  ·  Caio Sensini tarafından"
+    }
+  },
+  "play-modes": {
+    "sections": {
+      "pvp": "PVP",
+      "pve": "PVE",
+      "creation": "OLU?TURMA"
+    },
+    "modes": {
+      "ranked": {
+        "title": "Ranked Arena",
+        "desc": "Ranked turnuvalar (Sv.100)",
+        "locked-desc": "Sv.100?den itibaren a??k"
+      },
+      "pvp": {
+        "title": "PvP Sava??",
+        "desc": "Benzer seviyedeki oyuncularla sava?"
+      },
+      "pve-battle": {
+        "title": "PvE Sava??",
+        "desc": "Seviyendeki ak?ll? botla sava?"
+      },
+      "pve-tournament": {
+        "title": "PvE Turnuvas?",
+        "desc": "Seviye aral???na g?re e?le?me"
+      },
+      "custom": {
+        "title": "?zel Ma?",
+        "desc": "Arkada?lar ve botlarla tak?m kur"
+      }
     }
   }
 }

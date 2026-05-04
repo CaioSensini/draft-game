@@ -1,5 +1,7 @@
 {
-  "_meta": { "lang": "en-US" },
+  "_meta": {
+    "lang": "en-US"
+  },
   "lobby-shared": {
     "your-team": "YOUR TEAM",
     "your-badge": "YOU",
@@ -12,7 +14,31 @@
     "invite": "INVITE",
     "change-skin": "CHANGE SKIN",
     "swap": "SWAP",
-    "level-range": "LEVEL RANGE"
+    "level-range": "LEVEL RANGE",
+    "change-mode": "CHANGE MODE",
+    "modes": {
+      "solo": "SOLO",
+      "duo": "DUO",
+      "squad": "SQUAD"
+    },
+    "mode-bonus": {
+      "solo": "SOLO ? no bonus",
+      "duo": "DUO ? +10% XP and Gold",
+      "squad": "SQUAD ? +20% XP and Gold"
+    },
+    "invite-friend": "INVITE FRIEND",
+    "room-incomplete": "ROOM INCOMPLETE ({current}/{max})",
+    "level-short": "LV {level}",
+    "player-fallback": "Player",
+    "bot": "Bot",
+    "friend": "Friend",
+    "invite-modal": {
+      "eyebrow": "COMING SOON",
+      "title": "FRIEND INVITE",
+      "body-solo": "The invite system is in development. For now, use Solo mode to play.",
+      "body-ranked": "The invite system is in development. For now, use Solo mode to play ranked.",
+      "body-custom": "The invite system is in development. For now, add bots to your team."
+    }
   },
   "shop": {
     "title": "SHOP",
@@ -49,7 +75,16 @@
     "subtitle": "RANKED ARENA",
     "locked-title": "RANKED ARENA",
     "locked-body": "Available from Level 100",
-    "ranks-eyebrow": "RANKS"
+    "ranks-eyebrow": "RANKS",
+    "queue": {
+      "duo": "DUO"
+    },
+    "start-battle": "START BATTLE",
+    "info": {
+      "real-player-tournament": "Tournament with 8 real players",
+      "double-elimination": "Double elimination: losers play each other",
+      "lp-placement": "LP based on final placement (1st to 8th)"
+    }
   },
   "bracket": {
     "live": "LIVE",
@@ -59,14 +94,37 @@
   "pvp": {
     "title": "PVP",
     "subtitle": "BATTLE",
-    "squad-incomplete": "Invite 1 more player to complete the squad"
+    "squad-incomplete": "Invite 1 more player to complete the squad",
+    "search-opponents": "FIND OPPONENTS",
+    "info": {
+      "no-entry-cost": "No entry cost",
+      "level-matchmaking": "Random matchmaking by level",
+      "any-team-size": "Faces any team size",
+      "gold-rewards": "Gold rewards for victory"
+    }
   },
   "pve": {
-    "title": "PVE"
+    "title": "PVE",
+    "battle-title": "BATTLE",
+    "tournament-title": "TOURNAMENT",
+    "start-match": "START MATCH",
+    "cost-format": "COST {cost}G",
+    "info": {
+      "smart-bot": "Smart bot at your level",
+      "gold-bonus": "Gold bonus for victory",
+      "eight-team-bracket": "8-team bracket",
+      "scaled-cost": "Gold cost varies by range",
+      "scaled-reward": "Reward scales by round"
+    }
   },
   "custom": {
     "title": "CUSTOM",
-    "subtitle": "CUSTOM MATCH"
+    "subtitle": "CUSTOM MATCH",
+    "blue-team": "BLUE TEAM",
+    "red-team": "RED TEAM",
+    "blue-team-short": "BLUE",
+    "red-team-short": "RED",
+    "switch-team": "?  SWITCH TEAM"
   },
   "matchmaking": {
     "searching": "SEARCHING FOR OPPONENT",
@@ -111,7 +169,9 @@
     "log": {
       "skipped": "Skipped",
       "stunned": "Stunned",
-      "dead": "Dead"
+      "dead": "Dead",
+      "no-targets": "? No targets in range!",
+      "death": "?? {name} died (Round {round})"
     },
     "outcome": {
       "victory": "Victory!",
@@ -163,7 +223,20 @@
       "area": "Area",
       "heal": "Heal",
       "shield": "Shield"
-    }
+    },
+    "role-abbr": {
+      "king": "KNG",
+      "warrior": "WAR",
+      "executor": "EXE",
+      "specialist": "SPC"
+    },
+    "stats": {
+      "atk": "ATK",
+      "def": "DEF",
+      "mov": "MOV"
+    },
+    "round-heading": "ROUND {round}",
+    "dummy-name": "Dummy {role}"
   },
   "battle-result": {
     "title": {
@@ -385,6 +458,36 @@
     },
     "footer": {
       "credits": "Draft Game v1.0  ·  by Caio Sensini"
+    }
+  },
+  "play-modes": {
+    "sections": {
+      "pvp": "PVP",
+      "pve": "PVE",
+      "creation": "CREATION"
+    },
+    "modes": {
+      "ranked": {
+        "title": "Ranked Arena",
+        "desc": "Ranked tournaments (Lv.100)",
+        "locked-desc": "Available from Lv.100"
+      },
+      "pvp": {
+        "title": "PvP Battle",
+        "desc": "Face players at a similar level"
+      },
+      "pve-battle": {
+        "title": "PvE Battle",
+        "desc": "Face a smart bot at your level"
+      },
+      "pve-tournament": {
+        "title": "PvE Tournament",
+        "desc": "Bracket by level range"
+      },
+      "custom": {
+        "title": "Custom Match",
+        "desc": "Build teams with friends and bots"
+      }
     }
   }
 }
