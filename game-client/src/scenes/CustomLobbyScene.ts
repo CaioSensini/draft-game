@@ -22,6 +22,7 @@ import {
   SCREEN, surface, border, fg, accent, state,
   colors, fontFamily, typeScale, radii,
 } from '../utils/DesignTokens'
+import { t } from '../i18n'
 
 const W = SCREEN.W
 const H = SCREEN.H
@@ -183,14 +184,14 @@ export default class CustomLobbyScene extends Phaser.Scene {
     }).setDepth(TBD + 1)
 
     // Eyebrow + title (centered)
-    this.add.text(W / 2, TOP_H / 2 - 10, 'CUSTOM', {
+    this.add.text(W / 2, TOP_H / 2 - 10, t('scenes.custom.title'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      accent.primaryHex,
       fontStyle:  '700',
     }).setOrigin(0.5).setLetterSpacing(1.8).setDepth(TBD + 1)
 
-    this.add.text(W / 2, TOP_H / 2 + 10, 'PARTIDA PERSONALIZADA', {
+    this.add.text(W / 2, TOP_H / 2 + 10, t('scenes.custom.subtitle'), {
       fontFamily: fontFamily.display,
       fontSize:   typeScale.h2,
       color:      fg.primaryHex,
@@ -320,7 +321,7 @@ export default class CustomLobbyScene extends Phaser.Scene {
 
     // Playing-side indicator
     if (this.playerSide === side) {
-      this.add.text(panelX + TEAM_PANEL_W - 24, panelY + 20, 'SEU TIME', {
+      this.add.text(panelX + TEAM_PANEL_W - 24, panelY + 20, t('scenes.lobby-shared.your-team'), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.meta,
         color:      accent.primaryHex,
@@ -449,7 +450,7 @@ export default class CustomLobbyScene extends Phaser.Scene {
         drawPill(false)
         container.add(pillG)
 
-        const pillLabel = this.add.text(0, pillY, 'ALTERAR SKIN', {
+        const pillLabel = this.add.text(0, pillY, t('scenes.lobby-shared.change-skin'), {
           fontFamily: fontFamily.body,
           fontSize:   typeScale.meta,
           color:      fg.secondaryHex,
@@ -553,7 +554,7 @@ export default class CustomLobbyScene extends Phaser.Scene {
       this.tweens.add({ targets: hl, alpha: { from: 0.08, to: 0.22 }, duration: 520, yoyo: true, repeat: -1 })
       this._swapHighlights.push(hl)
 
-      const txt = this.add.text(x, y + 64, 'TROCAR', {
+      const txt = this.add.text(x, y + 64, t('scenes.lobby-shared.swap'), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.meta,
         color:      accent.primaryHex,

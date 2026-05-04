@@ -11,6 +11,7 @@ import type { BattlePassMission } from '../utils/PlayerDataManager'
 import { SEASON_TIERS, PASS_XP_PER_TIER, PASS_MAX_TIER, PASS_PREMIUM_PRICE_LABEL, CURRENT_SEASON } from '../data/battlePass'
 import type { TierReward, RewardType } from '../data/battlePass'
 import { getCharacterKey } from '../utils/AssetPaths'
+import { t } from '../i18n'
 
 // ── Battle Pass violet identity (Decision C — preserved per Print 11) ──
 //
@@ -90,7 +91,7 @@ export default class BattlePassScene extends Phaser.Scene {
     UI.backArrow(this, () => transitionTo(this, 'LobbyScene'))
 
     // Title — Cinzel h2 violet
-    this.add.text(70, TOP_H / 2 - 6, 'PASSE DE BATALHA', {
+    this.add.text(70, TOP_H / 2 - 6, t('scenes.battle-pass.title'), {
       fontFamily: fontFamily.display, fontSize: typeScale.h2,
       color: BP.lightHex, fontStyle: '700',
     }).setOrigin(0, 0.5).setLetterSpacing(2.4)
@@ -160,7 +161,7 @@ export default class BattlePassScene extends Phaser.Scene {
     pg.fillRoundedRect(px, py, pw, 2, { tl: radii.lg, tr: radii.lg, bl: 0, br: 0 })
 
     // Title — Manrope meta letterSpacing 1.8 violet
-    this.add.text(px + 16, py + 20, 'MISSÕES DA TEMPORADA', {
+    this.add.text(px + 16, py + 20, t('scenes.battle-pass.season-missions'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: BP.lightHex, fontStyle: '700',
     }).setOrigin(0, 0.5).setLetterSpacing(1.8)
@@ -222,7 +223,7 @@ export default class BattlePassScene extends Phaser.Scene {
       btnGfx.lineStyle(1, BP.light, 0.45)
       btnGfx.strokeRoundedRect(btnX - btnW / 2 + 3, btnY - btnH / 2 + 3, btnW - 6, btnH - 6, radii.md)
 
-      this.add.text(btnX, btnY - 24, 'OBTER PREMIUM', {
+      this.add.text(btnX, btnY - 24, t('scenes.battle-pass.buy-premium'), {
         fontFamily: fontFamily.body, fontSize: typeScale.meta,
         color: fg.primaryHex, fontStyle: '700',
       }).setOrigin(0.5).setLetterSpacing(1.8)
@@ -230,7 +231,7 @@ export default class BattlePassScene extends Phaser.Scene {
         fontFamily: fontFamily.display, fontSize: typeScale.h3,
         color: accent.primaryHex, fontStyle: '700',
       }).setOrigin(0.5).setLetterSpacing(1.4)
-      this.add.text(btnX, btnY + 22, 'Desbloqueia trilha premium', {
+      this.add.text(btnX, btnY + 22, t('scenes.battle-pass.premium-tagline'), {
         fontFamily: fontFamily.body, fontSize: typeScale.meta,
         color: fg.tertiaryHex, fontStyle: '500',
       }).setOrigin(0.5)
@@ -261,11 +262,11 @@ export default class BattlePassScene extends Phaser.Scene {
       badgeGfx.strokeRoundedRect(badgeX - badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH, radii.md)
       badgeGfx.lineStyle(1, BP.light, 0.45)
       badgeGfx.strokeRoundedRect(badgeX - badgeW / 2 + 3, badgeY - badgeH / 2 + 3, badgeW - 6, badgeH - 6, radii.sm)
-      this.add.text(badgeX, badgeY - 8, 'PREMIUM ATIVO', {
+      this.add.text(badgeX, badgeY - 8, t('scenes.battle-pass.premium-active'), {
         fontFamily: fontFamily.body, fontSize: typeScale.meta,
         color: BP.lightHex, fontStyle: '700',
       }).setOrigin(0.5).setLetterSpacing(2)
-      this.add.text(badgeX, badgeY + 10, 'Obrigado por apoiar!', {
+      this.add.text(badgeX, badgeY + 10, t('scenes.battle-pass.premium-thanks'), {
         fontFamily: fontFamily.serif, fontSize: typeScale.small,
         color: fg.tertiaryHex, fontStyle: 'italic',
       }).setOrigin(0.5)
@@ -351,7 +352,7 @@ export default class BattlePassScene extends Phaser.Scene {
       const cGfx = this.add.graphics()
       cGfx.fillStyle(state.successDim, 0.7)
       cGfx.fillRoundedRect(x + 8, cy - 4, w - 16, 8, 4)
-      this.add.text(x + 8, cy, 'CADEIA COMPLETA', {
+      this.add.text(x + 8, cy, t('scenes.battle-pass.complete-chain'), {
         fontFamily: fontFamily.body, fontSize: typeScale.meta,
         color: state.successHex, fontStyle: '700',
       }).setOrigin(0, 0.5).setLetterSpacing(1.4)
@@ -437,7 +438,7 @@ export default class BattlePassScene extends Phaser.Scene {
     panelGfx.fillRoundedRect(trackX, TRACK_Y, trackW, 2, { tl: radii.lg, tr: radii.lg, bl: 0, br: 0 })
 
     // Title — Manrope meta accent letterSpacing 1.8
-    this.add.text(trackX + 16, TRACK_Y + 18, 'RECOMPENSAS', {
+    this.add.text(trackX + 16, TRACK_Y + 18, t('scenes.battle-pass.rewards'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: accent.primaryHex, fontStyle: '700',
     }).setOrigin(0, 0.5).setLetterSpacing(1.8)

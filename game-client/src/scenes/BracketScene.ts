@@ -16,6 +16,7 @@ import Phaser from 'phaser'
 import { UI } from '../utils/UIComponents'
 import { transitionTo } from '../utils/SceneTransition'
 import { playerData } from '../utils/PlayerDataManager'
+import { t } from '../i18n'
 import {
   SCREEN, surface, border, fg, accent, state, currency,
   fontFamily, typeScale, radii,
@@ -696,7 +697,7 @@ export default class BracketScene extends Phaser.Scene {
     panelG.fillRect(W / 2 - panelW / 2 + 16, H / 2 - panelH / 2, panelW - 32, 1)
     this.spectateOverlay.add(panelG)
 
-    this.spectateOverlay.add(this.add.text(W / 2, H / 2 - panelH / 2 + 22, 'AO VIVO', {
+    this.spectateOverlay.add(this.add.text(W / 2, H / 2 - panelH / 2 + 22, t('scenes.bracket.live'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      state.errorHex,
@@ -824,7 +825,7 @@ export default class BracketScene extends Phaser.Scene {
     }).setOrigin(0.5)
     this.championContainer.add(champName)
 
-    const champTitle = this.add.text(glowX, glowY - 58, 'CAMPEÃO', {
+    const champTitle = this.add.text(glowX, glowY - 58, t('scenes.bracket.champion'), {
       fontFamily: fontFamily.display,
       fontSize:   typeScale.displayMd,
       color:      accent.primaryHex,
@@ -839,7 +840,7 @@ export default class BracketScene extends Phaser.Scene {
     })
 
     if (isPlayerChamp) {
-      const youWin = this.add.text(glowX, glowY + 52, 'VOCÊ VENCEU!', {
+      const youWin = this.add.text(glowX, glowY + 52, t('scenes.bracket.you-won'), {
         fontFamily: fontFamily.display,
         fontSize:   typeScale.h2,
         color:      state.successHex,

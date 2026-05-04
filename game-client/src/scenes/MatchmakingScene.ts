@@ -7,6 +7,7 @@ import {
   fontFamily, typeScale, radii,
 } from '../utils/DesignTokens'
 import { getClassSigilKey } from '../utils/AssetPaths'
+import { t } from '../i18n'
 
 // ─── Layout ─────────────────────────────────────────────────────────────────
 
@@ -200,7 +201,7 @@ export default class MatchmakingScene extends Phaser.Scene {
 
     // Title (h1 Cinzel) — "PROCURANDO ADVERSÁRIO"
     const titleY = sigilY + sigilSize / 2 + 26
-    this.add.text(cardX, titleY, 'PROCURANDO ADVERSÁRIO', {
+    this.add.text(cardX, titleY, t('scenes.matchmaking.searching'), {
       fontFamily: fontFamily.display,
       fontSize:   typeScale.h1,
       color:      fg.primaryHex,
@@ -243,7 +244,7 @@ export default class MatchmakingScene extends Phaser.Scene {
       color:      fg.primaryHex,
       fontStyle:  '700',
     }).setOrigin(1, 1).setDepth(5)
-    this.add.text(cardX - barW / 2, barY - 22, 'TEMPO NA FILA', {
+    this.add.text(cardX - barW / 2, barY - 22, t('scenes.matchmaking.queue-time'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      fg.tertiaryHex,
@@ -278,7 +279,7 @@ export default class MatchmakingScene extends Phaser.Scene {
 
   private _drawTipRow() {
     const y = H - 130
-    this.add.text(W / 2, y - 16, 'DICA', {
+    this.add.text(W / 2, y - 16, t('scenes.matchmaking.tip-eyebrow'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      accent.dimHex,

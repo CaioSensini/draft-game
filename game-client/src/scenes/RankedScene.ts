@@ -22,6 +22,7 @@ import { RANKED_TIERS } from '../data/tournaments'
 import type { RankedQueue } from '../data/tournaments'
 import type { UnitRole } from '../engine/types'
 import type { CharClass } from '../utils/AssetPaths'
+import { t } from '../i18n'
 import {
   SCREEN, surface, border, fg, accent, state,
   colors, fontFamily, typeScale, radii,
@@ -125,13 +126,13 @@ export default class RankedScene extends Phaser.Scene {
     if (playerData.getLevel() < 100) {
       UI.background(this, { vignette: false })
       this.drawLockedHeader()
-      this.add.text(W / 2, H / 2 - 20, 'ARENA RANKEADA', {
+      this.add.text(W / 2, H / 2 - 20, t('scenes.ranked.locked-title'), {
         fontFamily: fontFamily.display,
         fontSize:   typeScale.displayMd,
         color:      accent.primaryHex,
         fontStyle:  '900',
       }).setOrigin(0.5).setLetterSpacing(4)
-      this.add.text(W / 2, H / 2 + 18, 'Disponível a partir do Nível 100', {
+      this.add.text(W / 2, H / 2 + 18, t('scenes.ranked.locked-body'), {
         fontFamily: fontFamily.serif,
         fontSize:   typeScale.body,
         color:      fg.tertiaryHex,
@@ -227,14 +228,14 @@ export default class RankedScene extends Phaser.Scene {
     this.backBtn.setDepth(TBD + 1)
 
     // Eyebrow + title
-    this.add.text(W / 2, TOP_H / 2 - 10, 'RANKED', {
+    this.add.text(W / 2, TOP_H / 2 - 10, t('scenes.ranked.title'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      accent.primaryHex,
       fontStyle:  '700',
     }).setOrigin(0.5).setLetterSpacing(1.8).setDepth(TBD + 1)
 
-    this.add.text(W / 2, TOP_H / 2 + 10, 'ARENA RANKEADA', {
+    this.add.text(W / 2, TOP_H / 2 + 10, t('scenes.ranked.subtitle'), {
       fontFamily: fontFamily.display,
       fontSize:   typeScale.h2,
       color:      fg.primaryHex,
@@ -294,7 +295,7 @@ export default class RankedScene extends Phaser.Scene {
     bg.fillRect(SIDEBAR_X + 16, sideY, SIDEBAR_W - 32, 1)
 
     // Header
-    this.add.text(sideX, sideY + 18, 'RANKS', {
+    this.add.text(sideX, sideY + 18, t('scenes.ranked.ranks-eyebrow'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      accent.primaryHex,
@@ -417,7 +418,7 @@ export default class RankedScene extends Phaser.Scene {
     bg.fillStyle(accent.primary, 0.45)
     bg.fillRect(TEAM_PANEL_X + 16, TEAM_PANEL_Y, TEAM_PANEL_W - 32, 1)
 
-    this.add.text(TEAM_PANEL_X + 24, TEAM_PANEL_Y + 20, 'SEU TIME', {
+    this.add.text(TEAM_PANEL_X + 24, TEAM_PANEL_Y + 20, t('scenes.lobby-shared.your-team'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      accent.primaryHex,
@@ -509,7 +510,7 @@ export default class RankedScene extends Phaser.Scene {
           badge.lineStyle(1, state.success, 1)
           badge.strokeRoundedRect(-badgeW / 2, badgeY - 10, badgeW, 20, radii.md)
           container.add(badge)
-          container.add(this.add.text(0, badgeY, 'VOCÊ', {
+          container.add(this.add.text(0, badgeY, t('scenes.lobby-shared.your-badge'), {
             fontFamily: fontFamily.body,
             fontSize:   typeScale.meta,
             color:      state.successHex,
@@ -521,14 +522,14 @@ export default class RankedScene extends Phaser.Scene {
           this.drawSwapButton(container, cardH, i)
         }
       } else {
-        container.add(this.add.text(0, nameY, 'Vazio', {
+        container.add(this.add.text(0, nameY, t('scenes.lobby-shared.empty-slot'), {
           fontFamily: fontFamily.serif,
           fontSize:   typeScale.h3,
           color:      fg.tertiaryHex,
           fontStyle:  'italic',
         }).setOrigin(0.5))
 
-        container.add(this.add.text(0, nameY + 18, 'Aguardando…', {
+        container.add(this.add.text(0, nameY + 18, t('scenes.lobby-shared.waiting'), {
           fontFamily: fontFamily.body,
           fontSize:   typeScale.small,
           color:      fg.disabledHex,
@@ -544,7 +545,7 @@ export default class RankedScene extends Phaser.Scene {
         invG.strokeRoundedRect(-invW / 2, invY - invH / 2, invW, invH, radii.md)
         container.add(invG)
 
-        const invText = this.add.text(0, invY, 'CONVIDAR', {
+        const invText = this.add.text(0, invY, t('scenes.lobby-shared.invite'), {
           fontFamily: fontFamily.body,
           fontSize:   typeScale.meta,
           color:      state.infoHex,
@@ -635,7 +636,7 @@ export default class RankedScene extends Phaser.Scene {
       this.tweens.add({ targets: hl, alpha: { from: 0.08, to: 0.22 }, duration: 520, yoyo: true, repeat: -1 })
       this._swapHLs.push(hl)
 
-      const txt = this.add.text(card.x, card.y + 70, 'TROCAR', {
+      const txt = this.add.text(card.x, card.y + 70, t('scenes.lobby-shared.swap'), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.meta,
         color:      accent.primaryHex,
@@ -758,7 +759,7 @@ export default class RankedScene extends Phaser.Scene {
     bg.lineStyle(1, border.default, 1)
     bg.strokeRoundedRect(panelX, panelY, panelW, panelH, radii.lg)
 
-    this.add.text(panelX + 20, panelY + 20, 'BÔNUS DE EQUIPE', {
+    this.add.text(panelX + 20, panelY + 20, t('scenes.lobby-shared.team-bonus'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      fg.tertiaryHex,
@@ -790,7 +791,7 @@ export default class RankedScene extends Phaser.Scene {
       }).setOrigin(0, 0.5)
       this.bonusTextObjs.push(txt)
 
-      const badge = this.add.text(panelX + panelW - 20, ly, 'ATUAL', {
+      const badge = this.add.text(panelX + panelW - 20, ly, t('scenes.lobby-shared.current-badge'), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.meta,
         color:      state.successHex,
@@ -831,7 +832,7 @@ export default class RankedScene extends Phaser.Scene {
     bg.lineStyle(1, border.default, 1)
     bg.strokeRoundedRect(panelX, panelY, panelW, panelH, radii.lg)
 
-    this.add.text(panelX + 20, panelY + 20, 'INFORMAÇÕES', {
+    this.add.text(panelX + 20, panelY + 20, t('scenes.lobby-shared.team-info'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      fg.tertiaryHex,

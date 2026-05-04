@@ -28,6 +28,7 @@ import {
   SCREEN, surface, border, fg, accent, state, currency,
   colors, fontFamily, typeScale, radii, motion,
 } from '../utils/DesignTokens'
+import { t } from '../i18n'
 
 const W = SCREEN.W
 const H = SCREEN.H
@@ -174,7 +175,7 @@ export default class PvELobbyScene extends Phaser.Scene {
     UI.backArrow(this, () => transitionTo(this, 'LobbyScene')).setDepth(TBD + 1)
 
     // Title (eyebrow + h2)
-    this.add.text(W / 2, TOP_H / 2 - 10, 'PVE', {
+    this.add.text(W / 2, TOP_H / 2 - 10, t('scenes.pve.title'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      accent.primaryHex,
@@ -236,7 +237,7 @@ export default class PvELobbyScene extends Phaser.Scene {
     bg.fillRect(panelX + 16, panelY, panelW - 32, 1)
 
     // Eyebrow
-    this.add.text(panelX + 24, panelY + 20, 'SEU TIME', {
+    this.add.text(panelX + 24, panelY + 20, t('scenes.lobby-shared.your-team'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      accent.primaryHex,
@@ -342,7 +343,7 @@ export default class PvELobbyScene extends Phaser.Scene {
           drawPill(false)
           container.add(pillG)
 
-          const pillLabel = this.add.text(0, pillY, 'ALTERAR SKIN', {
+          const pillLabel = this.add.text(0, pillY, t('scenes.lobby-shared.change-skin'), {
             fontFamily: fontFamily.body,
             fontSize:   typeScale.meta,
             color:      accent.primaryHex,
@@ -363,14 +364,14 @@ export default class PvELobbyScene extends Phaser.Scene {
           })
         }
       } else {
-        container.add(this.add.text(0, nameY, 'Vazio', {
+        container.add(this.add.text(0, nameY, t('scenes.lobby-shared.empty-slot'), {
           fontFamily: fontFamily.serif,
           fontSize:   typeScale.h3,
           color:      fg.tertiaryHex,
           fontStyle:  'italic',
         }).setOrigin(0.5))
 
-        container.add(this.add.text(0, nameY + 18, 'Aguardando…', {
+        container.add(this.add.text(0, nameY + 18, t('scenes.lobby-shared.waiting'), {
           fontFamily: fontFamily.body,
           fontSize:   typeScale.small,
           color:      fg.disabledHex,
@@ -463,7 +464,7 @@ export default class PvELobbyScene extends Phaser.Scene {
     bg.lineStyle(1, border.default, 1)
     bg.strokeRoundedRect(panelX, panelY, panelW, panelH, radii.lg)
 
-    this.add.text(panelX + 20, panelY + 20, 'BÔNUS DE EQUIPE', {
+    this.add.text(panelX + 20, panelY + 20, t('scenes.lobby-shared.team-bonus'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      fg.tertiaryHex,
@@ -491,7 +492,7 @@ export default class PvELobbyScene extends Phaser.Scene {
       }).setOrigin(0, 0.5)
 
       if (isActive) {
-        this.add.text(panelX + panelW - 20, ly, 'ATUAL', {
+        this.add.text(panelX + panelW - 20, ly, t('scenes.lobby-shared.current-badge'), {
           fontFamily: fontFamily.body,
           fontSize:   typeScale.meta,
           color:      state.successHex,
@@ -515,7 +516,7 @@ export default class PvELobbyScene extends Phaser.Scene {
     bg.lineStyle(1, border.default, 1)
     bg.strokeRoundedRect(panelX, panelY, panelW, panelH, radii.lg)
 
-    this.add.text(panelX + 20, panelY + 20, 'INFORMAÇÕES', {
+    this.add.text(panelX + 20, panelY + 20, t('scenes.lobby-shared.team-info'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      fg.tertiaryHex,
@@ -568,7 +569,7 @@ export default class PvELobbyScene extends Phaser.Scene {
     const container = this.add.container(baseX, baseY)
 
     // Eyebrow
-    container.add(this.add.text(-200, 0, 'FAIXA DE NÍVEL', {
+    container.add(this.add.text(-200, 0, t('scenes.lobby-shared.level-range'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      fg.tertiaryHex,

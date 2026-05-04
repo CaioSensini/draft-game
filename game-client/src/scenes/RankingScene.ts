@@ -8,6 +8,7 @@ import {
   SCREEN, surface, border, fg, accent, state,
   fontFamily, typeScale, radii, motion,
 } from '../utils/DesignTokens'
+import { t } from '../i18n'
 
 const W = SCREEN.W
 const H = SCREEN.H
@@ -98,14 +99,14 @@ export default class RankingScene extends Phaser.Scene {
 
     UI.backArrow(this, () => transitionTo(this, 'LobbyScene'))
 
-    this.add.text(W / 2, TOP_H / 2, 'RANKING GLOBAL', {
+    this.add.text(W / 2, TOP_H / 2, t('scenes.ranking.title'), {
       fontFamily: fontFamily.display,
       fontSize:   typeScale.h2,
       color:      accent.primaryHex,
       fontStyle:  '600',
     }).setOrigin(0.5).setLetterSpacing(3)
 
-    this.add.text(W / 2, TOP_H + 10, 'Os melhores jogadores do mundo', {
+    this.add.text(W / 2, TOP_H + 10, t('scenes.ranking.subtitle'), {
       fontFamily: fontFamily.serif,
       fontSize:   typeScale.small,
       color:      fg.tertiaryHex,
@@ -122,7 +123,7 @@ export default class RankingScene extends Phaser.Scene {
       { key: 'def_mastery', label: 'DEFESA' },
     ]
 
-    this.add.text(40, FILTER_Y - 16, 'ORDENAR', {
+    this.add.text(40, FILTER_Y - 16, t('scenes.ranking.sort-label'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      fg.tertiaryHex,
@@ -144,7 +145,7 @@ export default class RankingScene extends Phaser.Scene {
       { key: 'EU',  label: 'EU' },
     ]
 
-    this.add.text(W - 40, FILTER_Y - 16, 'REGIÃO', {
+    this.add.text(W - 40, FILTER_Y - 16, t('scenes.ranking.region-label'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      fg.tertiaryHex,
@@ -181,11 +182,11 @@ export default class RankingScene extends Phaser.Scene {
     const hy = TABLE_TOP + HEADER_H / 2
 
     this.add.text(COL.rank, hy, '#', headerStyle).setOrigin(0.5).setLetterSpacing(1.6)
-    this.add.text(COL.name, hy, 'JOGADOR', headerStyle).setOrigin(0, 0.5).setLetterSpacing(1.6)
-    this.add.text(COL.elo + 18, hy, 'ELO', headerStyle).setOrigin(0, 0.5).setLetterSpacing(1.6)
-    this.add.text(COL.atkM, hy, 'M. ATAQUE', headerStyle).setOrigin(0.5).setLetterSpacing(1.6)
-    this.add.text(COL.defM, hy, 'M. DEFESA', headerStyle).setOrigin(0.5).setLetterSpacing(1.6)
-    this.add.text(COL.region, hy, 'REGIÃO', headerStyle).setOrigin(0.5).setLetterSpacing(1.6)
+    this.add.text(COL.name, hy, t('scenes.ranking.table.player'), headerStyle).setOrigin(0, 0.5).setLetterSpacing(1.6)
+    this.add.text(COL.elo + 18, hy, t('scenes.ranking.table.elo'), headerStyle).setOrigin(0, 0.5).setLetterSpacing(1.6)
+    this.add.text(COL.atkM, hy, t('scenes.ranking.table.atk-mastery'), headerStyle).setOrigin(0.5).setLetterSpacing(1.6)
+    this.add.text(COL.defM, hy, t('scenes.ranking.table.def-mastery'), headerStyle).setOrigin(0.5).setLetterSpacing(1.6)
+    this.add.text(COL.region, hy, t('scenes.ranking.table.region'), headerStyle).setOrigin(0.5).setLetterSpacing(1.6)
 
     this.drawRows()
   }
@@ -212,7 +213,7 @@ export default class RankingScene extends Phaser.Scene {
     const rowsStartY = TABLE_TOP + HEADER_H + 4
 
     if (visible.length === 0) {
-      this.add.text(W / 2, rowsStartY + 80, 'Nenhum jogador encontrado', {
+      this.add.text(W / 2, rowsStartY + 80, t('scenes.ranking.no-players'), {
         fontFamily: fontFamily.serif,
         fontSize:   typeScale.body,
         color:      fg.disabledHex,
@@ -343,7 +344,7 @@ export default class RankingScene extends Phaser.Scene {
 
     const cellY = fy + fh / 2
 
-    this.add.text(COL.rank, cellY, 'VOCÊ', {
+    this.add.text(COL.rank, cellY, t('scenes.lobby-shared.your-badge'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      accent.primaryHex,

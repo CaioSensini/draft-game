@@ -9,6 +9,7 @@ import {
 import { showPackOpen } from '../utils/PackOpenAnimation'
 import { SKILL_CATALOG } from '../data/skillCatalog'
 import { transitionTo } from '../utils/SceneTransition'
+import { t } from '../i18n'
 import {
   getPurchasableSkins,
   SKIN_RARITY_COLOR,
@@ -149,7 +150,7 @@ export default class ShopScene extends Phaser.Scene {
 
     UI.backArrow(this, () => transitionTo(this, 'LobbyScene'))
 
-    this.add.text(70, TOP_BAR_H / 2, 'LOJA', {
+    this.add.text(70, TOP_BAR_H / 2, t('scenes.shop.title'), {
       fontFamily: fontFamily.display, fontSize: typeScale.h2,
       color: accent.primaryHex, fontStyle: '700',
     }).setOrigin(0, 0.5).setLetterSpacing(3)
@@ -435,7 +436,7 @@ export default class ShopScene extends Phaser.Scene {
       // Lucide lock icon — 32px tinted fg.tertiary, centered
       const lockIcon = UI.lucideIcon(this, 'x', 0, -16, 32, fg.tertiary)
       lockElements.push(lockIcon)
-      lockElements.push(this.add.text(0, 22, 'JÁ POSSUI TODAS', {
+      lockElements.push(this.add.text(0, 22, t('scenes.shop.all-owned'), {
         fontFamily: fontFamily.body, fontSize: typeScale.meta,
         color: fg.tertiaryHex, fontStyle: '700',
       }).setOrigin(0.5).setLetterSpacing(1.6))
@@ -665,7 +666,7 @@ export default class ShopScene extends Phaser.Scene {
       )
 
       container.add(
-        this.add.text(actionW / 2 - 12, actionY, 'COMPRAR', {
+        this.add.text(actionW / 2 - 12, actionY, t('scenes.shop.buy'), {
           fontFamily: fontFamily.body, fontSize: typeScale.meta,
           color: priceHex, fontStyle: '700',
         }).setOrigin(1, 0.5).setLetterSpacing(1.6),
@@ -754,7 +755,7 @@ export default class ShopScene extends Phaser.Scene {
     bg.lineStyle(2, accentColor, 0.85)
     bg.strokeRoundedRect(W / 2 - tw / 2, 80, tw, th, radii.lg)
 
-    const txt = this.add.text(W / 2, 80 + th / 2 - 8, 'DESBLOQUEADO', {
+    const txt = this.add.text(W / 2, 80 + th / 2 - 8, t('scenes.shop.unlocked'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: accentHex, fontStyle: '700',
     }).setOrigin(0.5).setDepth(d + 1).setLetterSpacing(2)
