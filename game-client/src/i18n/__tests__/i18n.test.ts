@@ -67,6 +67,8 @@ describe('detectLang', () => {
       ['fr-CA', 'fr'],
       ['de-CH', 'de'],
       ['it-IT', 'it'],
+      ['tr-TR', 'tr'],
+      ['ru-RU', 'ru'],
     ]
     for (const [input, expected] of cases) {
       vi.stubGlobal('navigator', { language: input })
@@ -189,8 +191,8 @@ describe('t() interpolation', () => {
 // ── module exports ───────────────────────────────────────────────────────────
 
 describe('module surface', () => {
-  it('exports the canonical 6-language list', () => {
+  it('exports the canonical 8-language list', () => {
     expect(getSupportedLangs()).toEqual(SUPPORTED_LANGS)
-    expect(SUPPORTED_LANGS).toEqual(['pt-BR', 'en-US', 'es', 'fr', 'de', 'it'])
+    expect(SUPPORTED_LANGS).toEqual(['pt-BR', 'en-US', 'es', 'fr', 'de', 'it', 'tr', 'ru'])
   })
 })

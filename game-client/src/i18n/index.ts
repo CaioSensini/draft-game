@@ -26,9 +26,9 @@
  *     listener on the owning scene's `shutdown` event. Memory-safe.
  */
 
-export type Lang = 'pt-BR' | 'en-US' | 'es' | 'fr' | 'de' | 'it'
+export type Lang = 'pt-BR' | 'en-US' | 'es' | 'fr' | 'de' | 'it' | 'tr' | 'ru'
 
-export const SUPPORTED_LANGS: readonly Lang[] = ['pt-BR', 'en-US', 'es', 'fr', 'de', 'it'] as const
+export const SUPPORTED_LANGS: readonly Lang[] = ['pt-BR', 'en-US', 'es', 'fr', 'de', 'it', 'tr', 'ru'] as const
 export const DEFAULT_LANG: Lang = 'pt-BR'
 const STORAGE_KEY = 'draft.lang'
 
@@ -39,6 +39,8 @@ export const LANG_LABELS: Record<Lang, string> = {
   'fr':    'FR',
   'de':    'DE',
   'it':    'IT',
+  'tr':    'TR',
+  'ru':    'RU',
 }
 
 export const LANG_NATIVE_NAMES: Record<Lang, string> = {
@@ -48,6 +50,8 @@ export const LANG_NATIVE_NAMES: Record<Lang, string> = {
   'fr':    'Français',
   'de':    'Deutsch',
   'it':    'Italiano',
+  'tr':    'Türkçe',
+  'ru':    'Русский',
 }
 
 type Bundle = Record<string, unknown>
@@ -80,6 +84,8 @@ export function detectLang(): Lang {
   if (nav.startsWith('fr')) return 'fr'
   if (nav.startsWith('de')) return 'de'
   if (nav.startsWith('it')) return 'it'
+  if (nav.startsWith('tr')) return 'tr'
+  if (nav.startsWith('ru')) return 'ru'
 
   // (3) fallback
   return DEFAULT_LANG

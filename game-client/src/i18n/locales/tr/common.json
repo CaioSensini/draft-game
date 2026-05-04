@@ -1,0 +1,27 @@
+{
+  "_meta": { "lang": "tr", "name": "Türkçe" },
+  "actions": {
+    "confirm": "ONAYLA",
+    "cancel": "İPTAL",
+    "back": "GERİ",
+    "close": "KAPAT",
+    "play": "OYNA",
+    "ok": "TAMAM",
+    "save": "KAYDET",
+    "yes": "EVET",
+    "no": "HAYIR"
+  },
+  "studio-name": "CODEFORJE VIO",
+  "section": {
+    "description": "AÇIKLAMA",
+    "long-description": "DETAYLI AÇIKLAMA"
+  },
+  "labels": {
+    "level-cap-max": "MAX",
+    "level-short": "Sv {level}",
+    "level-long": "Sv.{level}",
+    "gold-cost": "{cost}a",
+    "upgrade-action-affordable": "↑ YÜKSELT SV {level} · {cost}a",
+    "upgrade-action-broke": "SV {level} · {cost}a"
+  }
+}

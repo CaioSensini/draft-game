@@ -1,0 +1,339 @@
+{
+  "_meta": { "lang": "tr" },
+  "roles": {
+    "specialist": "Uzman",
+    "warrior": "Savaşçı",
+    "executor": "İnfazcı",
+    "king": "Kral"
+  },
+  "passives": {
+    "specialist-name": "Yanma",
+    "specialist-text": "Uzman yetenekleriyle vurulan hedefler 2 tur boyunca -30% iyileştirme alır.",
+    "warrior-name": "Koruyucu",
+    "warrior-text": "Savaşçıya bitişik müttefikler -15% hasar alır.",
+    "executor-name": "İzole",
+    "executor-text": "Bitişik müttefik yokken İnfazcı +20% hasar verir ve +10% hasar alır.",
+    "king-name": "Kraliyet Koruması",
+    "king-text": "Kral, true damage dahil tüm hasardan -20% alır. Krallar doğrudan iyileştirmeye karşı bağışıktır — yalnızca regen ve self-skill onları iyileştirir."
+  },
+  "ls_a1": {
+    "name": "Ateş Topu",
+    "description": "Düşman alanında 2x2'lik alanda 28 hasar. 2 tur boyunca turn başına 6 yanma uygular.",
+    "long-description": "Uzman alev küresi atar ve düşman alanında 2x2 kare alanda 28 fiziksel hasar verir. Etkilenen her hedef Yanma alır — turn başına 6 hasar veren 2 turluk DoT. Sınıf pasifi Yanma comboyu güçlendirir: vurulan hedefler 2 tur boyunca -30% iyileştirme alır. Toplulukları parçalamak için standart açılış."
+  },
+  "ls_a2": {
+    "name": "Mana Yağmuru",
+    "description": "Düşman alanında 3 kare dikey hatta 2 vuruşta (11+11) 22 hasar.",
+    "long-description": "Uzman büyülü enerji yağmuru çağırır — 3 kare dikey hatta aynı hedefi arka arkaya iki kez vurur (vuruş başına 11, toplam 22). Her vuruş ayrı çözülür; kalkanlar ve kaçışlar yalnızca ilgili vuruşu emer. Vuruş başına hasar normal DEF azaltmasından geçer."
+  },
+  "ls_a3": {
+    "name": "Arındırıcı Işın",
+    "description": "Hattaki düşmanlara 25 hasar + arındırma. Vurulan müttefikler 10 kalkan kazanır.",
+    "long-description": "Bir ışık ışını 6 kare yatay hatta tüm sahnede ilerler — yoldaki her düşmana 25 hasar verir ve Arındırma uygular (atk_up, def_up, regen, kalkan vs. tüm aktif buff'ları kaldırır). Hattaki müttefikler 10 kalkan alır ve hasar almaz. Buff yığma kompozisyonlarını iptal etmek için çok yönlü bir yetenek."
+  },
+  "ls_a4": {
+    "name": "Merkezi Patlama",
+    "description": "1. kullanım: hedefi işaretler (kaldırılamaz). 2. kullanım: 50 hasar + debuff varsa +%50. Kaçışı ve bağışıklıkları yok sayar.",
+    "long-description": "İki aşamalı yetenek. İlk kullanım düşmanı Detonasyon İşareti ile işaretler — arındırma, cleanse veya bağışıklıkla KALDIRILAMAYAN kalıcı bir işaret. İkinci kullanım işareti patlatarak 50 doğrudan hasar verir. Hedefte aktif debuff varsa patlama +%50 artar (75 hasar). Patlama Kaçış, kalkan ve bağışıklıkları tamamen yok sayar — garantili hasar."
+  },
+  "ls_a5": {
+    "name": "Yavaşlatma Küresi",
+    "description": "3x3 alanda 12 hasar. 1 tur def_down %25 + mov_down 1.",
+    "long-description": "Uzman 3x3 alanda patlayan bir yerçekimi küresi yansıtır — 12 hasar verir ve tüm vurulan hedeflere iki debuff uygular: def_down %25 (savunmayı %25 azaltır) ve mov_down 1 (1 turluk hareket azalması). Savunma kurulumu yeteneği: takım saldırganlarının düşük DEF'li hedefleri bitirmesi için zemin hazırlar."
+  },
+  "ls_a6": {
+    "name": "Sert Zincirler",
+    "description": "+ şeklinde (5 kare) 10 hasar. Düşmanları 1 tur snare yapar.",
+    "long-description": "Büyülü zincirler yerden + deseninde fışkırır (merkez + 4 bitişik = 5 kare), her vurulan düşmana 10 hasar verir ve 1 tur Snare uygular. Snare hareketi engeller ama yetenek kullanımını engellemez — Stun'dan farklı. Pozisyonel kontrol: takımın alan saldırıları için düşmanları kötü pozisyonlarda kilitler."
+  },
+  "ls_a7": {
+    "name": "Sis",
+    "description": "Tüm düşman sahası. Müttefikler: def_up %15. Düşmanlar: 2 tur def_down %15 + alınan iyileştirme -%30.",
+    "long-description": "Uzman 2 tur boyunca tüm sahayı kaplayan yoğun bir sis çağırır. İçindeki müttefikler +%15 DEF alır. İçindeki düşmanlar -%15 DEF ve -%30 alınan iyileştirme alır (tüm kaynaklar — heal, regen, lifesteal). Hasar vermeden maç temposunu değiştiren saha yeteneği."
+  },
+  "ls_a8": {
+    "name": "Donma",
+    "description": "18 hasar + 1 tur stun + 1 tur def_down %20.",
+    "long-description": "Yoğun bir buz dalgası tek hedefe vurur — 18 hasar verir, 1 tur Stun ve 1 tur def_down %20 uygular. Stun hem hareketi HEM yetenek kullanımını engeller — oyundaki en güçlü kontrol. Pick yeteneği: bir öncelik hedefini izole eder ve sonraki turdan tamamen çıkarır."
+  },
+  "ls_d1": {
+    "name": "Yüce İyileştirme",
+    "description": "1 müttefiği 35 HP iyileştirir (kral değil).",
+    "long-description": "Uzman tek bir müttefiğe iyileştirici enerji dalgası yöneltir, anında 35 HP geri kazandırır. İyileştirme Kralları ETKİLEMEZ — Kraliyet Bağışıklığı kuralına göre doğrudan iyileştirmeye bağışıktırlar. Heal Cap'e tabi ve hedef Yanma altındaysa %30 azalır."
+  },
+  "ls_d2": {
+    "name": "Kısmi Yeniden Doğuş",
+    "description": "En düşük HP'li müttefik (kral değil) üzerinde 2 tur uyuyan diriliş. Ölürse 25 HP ile dirilir. Müttefik başına maksimum 1.",
+    "long-description": "Uzman en düşük HP'li müttefiği (Kral hariç) 2 tur süren uyuyan Diriliş tampon ile işaretler. Müttefik bu pencerede ölürse aynı karede 25 HP ile anında dirilir, tüm debuff ve DoT'lar temizlenir. Her müttefik maç başına yalnızca bir kez diriltilebilir."
+  },
+  "ls_d3": {
+    "name": "İyileştirme Alanı",
+    "description": "3x3 alanda 12 HP iyileştirme + 10 (1t) kalkan. Kral yalnızca kalkan alır.",
+    "long-description": "Uzman 3x3 alanda iyileştirici ışık alanı yaratır — 12 HP geri kazandırır ve alanda tüm müttefiklere 10 kalkan (1 tur) uygular. Krallar Kraliyet Bağışıklığı nedeniyle YALNIZCA kalkan alır. Kalkan hedef başına 100 HP ile sınırlıdır."
+  },
+  "ls_d4": {
+    "name": "Koruma",
+    "description": "+ şekli (5 kare). Tüm müttefik debuff'larını kaldırır + 1 tur yeni debuff'lara bağışıklık.",
+    "long-description": "+ şeklinde alan cleanse (merkez + 4 bitişik), etkilenen müttefiklerin tüm aktif debuff'larını kaldırır (bleed, burn, poison, stun, snare, silence, def_down, mov_down, atk_down, işaretler) ve 1 tur boyunca yeni debuff'lara tam bağışıklık verir. Hasar vermez ve iyileştirmez."
+  },
+  "ls_d5": {
+    "name": "Sürekli İyileştirme Alanı",
+    "description": "3x3 alanda 2 tur boyunca turn başına 6 HP regen. Kral almaz. Müttefik hasar alırsa iptal olur.",
+    "long-description": "Sabit bir regen alanı 3x3 alanı 2 tur kaplar. İçindeki her müttefik turn başına 6 HP Regen alır — Krallar almaz. Önemli madde: müttefik alanda HERHANGİ bir hasar alırsa o müttefik için regen iptal olur. Savaş sonrası sustain."
+  },
+  "ls_d6": {
+    "name": "Kaçış",
+    "description": "Sonraki turdaki ilk doğrudan saldırıdan tamamen kaçar.",
+    "long-description": "Uzman kaçış duruşu alır ve sonraki turda alınan ilk doğrudan saldırıdan tamamen kaçar. Kaçış yalnızca bir vuruşu emer, sonra tükenir. Doğrudan hasara (damage, true_damage) ve caster'ı vuran alana karşı çalışır. Önceden uygulanmış DoT'ları engellemez. Uzman, İnfazcı ve Kral arasında paylaşılan kart."
+  },
+  "ls_d7": {
+    "name": "Tam Engel",
+    "description": "60 kalkan. Kırılana veya 2 tur dolana kadar dayanır.",
+    "long-description": "Caster'a 60 HP kalkan verir, tamamen tükenene veya 2 turda sona erene kadar dayanır. Kalkan birim başına 100 HP'lik global Shield Cap'e tabidir. Uzman ve İnfazcı arasında paylaşılan kart. DoT'lar (bleed, burn, poison) kalkanı yok sayar ve doğrudan HP'ye vurur."
+  },
+  "ls_d8": {
+    "name": "Koruma Aurası",
+    "description": "r2 elmas alanda 12 kalkan + 1 tur atk_up %10.",
+    "long-description": "Caster'ın etrafında yarıçap 2 elmas şeklinde (~13 kare) koruyucu bir aura. Alandaki tüm müttefikler 12 kalkan (Shield Cap 100) ve 1 tur atk_up %10 alır. Koordineli bir saldırı turu hazırlayan saldırgan-savunma yeteneği."
+  },
+  "lw_a1": {
+    "name": "Devasa Çarpışma",
+    "description": "Dikey 6x2 dikdörtgende 22 hasar + 1 kare itme. Engellenirse: snare 1t.",
+    "long-description": "Savaşçı hareketli bir duvar gibi ilerler — öndeki dikey 6x2 dikdörtgende tüm düşmanlara vurur, 22 hasar verir ve onları 1 kare geri iter. Bir hedefin itilmesi duvar veya başka düşman tarafından engellenirse, o hedef 1 tur Snare alır. Tüm bir düşman hattını yeniden konumlandıran saldırgan açılış."
+  },
+  "lw_a2": {
+    "name": "Çarpışma",
+    "description": "3x3 alanda 28 hasar. 1 tur def_down %18 + mov_down 1.",
+    "long-description": "Hedef etrafında 3x3 alanda ağır bir darbe patlar, vurulan tüm hedeflere 28 hasar verir ve 1 tur boyunca iki debuff uygular: def_down %18 ve mov_down 1. Koordineli baskı: bir grupun savunmasını zayıflatır ve geri çekilmesini sınırlar."
+  },
+  "lw_a3": {
+    "name": "Yıkıcı Darbe",
+    "description": "2x2 alanda 30 hasar. Vurulanların buff'larını kaldırır ve kalkanlarını kırar.",
+    "long-description": "Savaşçı 2x2 alanda devasa bir darbe vurur, 30 hasar verir ve vurulan tüm hedeflere Arındırma uygular: tüm aktif buff'ları kaldırır ve Shield Cap'i yok sayarak kalkanları tamamen kırar. Savunma kompozisyonlarına karşı mükemmel anti-bunker yeteneği."
+  },
+  "lw_a4": {
+    "name": "Vahşi Hücum",
+    "description": "Dikey 3 kare hatta 24 hasar. Merkez hat: itme 1 + engellenirse snare 1t. Üst/alt hatlar: dik itilir.",
+    "long-description": "Savaşçı 3 karelik düz dikey hatta hücum eder, vurulan tüm hedeflere 24 hasar verir. İtme hat başına bölünür: merkez hat hücum yönünde 1 kare itilir (engellenirse snare 1t), üst ve alt hatlar dik olarak itilir, bir koridor açar."
+  },
+  "lw_a5": {
+    "name": "Tahrik",
+    "description": "1 düşmanda 10 hasar + 1 tur def_down %15 + 1 tur silence_defense.",
+    "long-description": "Savaşçı tek düşmanı tahrik eder, 10 hasar verir ve iki debuff uygular: 1 tur def_down %15 ve 1 tur silence_defense (savunma yetenek kullanımını engeller). Ağır bait yeteneği: bir Uzman veya İnfazcıyı Kaçış, Tam Engel veya Yansıtma kullanamadan infaz etmeye zorlar."
+  },
+  "lw_a6": {
+    "name": "Yaşayan Duvar",
+    "description": "Düşman alanında 2 kare dikey duvar 2t dayanır. Bitişik düşmanlar: def_down %15, mov_down 1, turn başına 3 hasar.",
+    "long-description": "Savaşçı düşman alanında 2 kare dikey yaşayan bir duvar çağırır, 2 tur boyunca dayanır. Duvara bitişik düşmanlar def_down %15, mov_down 1 ve bitişik kaldıkları sürece turn başına 3 hasar alır. Duvar 2 turdan sonra VEYA herhangi atk1 yetenekle yıkılır."
+  },
+  "lw_a7": {
+    "name": "Hücum",
+    "description": "Dikey 3 kare hatta 12 hasar. 1 tur def_down %15 + mov_down 1.",
+    "long-description": "Vahşi Hücum'un daha hafif versiyonu: Savaşçı 3 karelik dikey hatta ilerler, vurulan tüm hedeflere 12 hasar verir ve 1 tur def_down %15 ve mov_down 1 uygular. İtme yok, snare yok. Sürekli baskı."
+  },
+  "lw_a8": {
+    "name": "Ölü Duvar Hapishanesi",
+    "description": "Merkezde 12 hasar + etrafa 8 geçici duvar. İçindeki düşmanlar: snare 2t. Duvarlar herhangi atk1 ile kırılır.",
+    "long-description": "Savaşçı ölü duvarlardan bir hapishane yaratır: merkezi karede 12 hasar verir ve etrafa halka oluşturan 8 duvar diker (yarıçap 1). Hapishane içindeki düşmanlar 2 tur boyunca Snare alır — hareket edemez ama yine de yetenek kullanabilir. Hapishane duvarları kırılgandır."
+  },
+  "lw_d1": {
+    "name": "Koruyucunun Kalkanı",
+    "description": "2 kareye kadar hareket + önde dikey 3 kare kalkan duvarı. Arkadaki 6 kare dikdörtgendeki müttefikler: 1 tur -%50 hasar.",
+    "long-description": "Savaşçı yetenek kullanmadan önce 2 kareye kadar hareket edebilir (preMovement), sonra önde 3 kare dikey kalkan duvarı yaratır. Duvarın arkasındaki 6x2 dikdörtgendeki tüm müttefikler 1 tur boyunca -%50 hasar alır."
+  },
+  "lw_d2": {
+    "name": "Muhafız",
+    "description": "Müttefiğin aldığı hasarın %60'ı savaşçıya yönlendirilir, savaşçıda %30 azaltılır (1 tur).",
+    "long-description": "Savaşçı en düşük HP'li müttefiği (kral hariç) korumalı olarak işaretler. 1 tur boyunca o müttefiğin aldığı hasarın %60'ı Savaşçıya yönlendirilir ve bu yönlendirilen hasar Savaşçıda ek %30 azaltmadan geçer."
+  },
+  "lw_d3": {
+    "name": "Mutlak Direnç",
+    "description": "Savaşçı + arkadaki müttefik: 1 tur -%65 hasar. Önceden 1 kare hareket edebilir.",
+    "long-description": "Savaşçı yetenek kullanmadan önce 1 kareye kadar hareket edebilir (preMovement), sonra mutlak direnç duruşu alır. 1 tur boyunca kendisi ve hemen arkasındaki müttefik tüm hasardan -%65 alır (true damage dahil, ama önceden uygulanmış DoT'lar dahil değil)."
+  },
+  "lw_d4": {
+    "name": "Sarsılmaz Kale",
+    "description": "1 tur boyunca alınan hasar -%80. Sonraki hareket turunda hareket edemez.",
+    "long-description": "Savaşçı yaşayan bir kale formuna girer. 1 tur boyunca tüm hasardan -%80 alır (true damage dahil). Bedeli: sonraki hareket turunda hareket EDEMEZ, yerinde kilitli kalır. Savaşçı ve Kral arasında paylaşılan kart."
+  },
+  "lw_d5": {
+    "name": "Grup Kalkanı",
+    "description": "Tüm müttefiklere 2 tur boyunca 15 kalkan.",
+    "long-description": "Savaşçı kolektif bir kalkan dağıtır: tüm 4 müttefik (kendisi ve Kral dahil) 15 kalkan alır, 2 tur boyunca dayanır veya kırılana kadar. Her kalkan bağımsızdır — Krallar normal şekilde alır, iyileştirmelerin aksine."
+  },
+  "lw_d6": {
+    "name": "Savunma Duruşu",
+    "description": "3x3 alandaki müttefikler: 1 tur -%25 hasar.",
+    "long-description": "Savaşçı savunma duruşu alır. Etrafında 3x3 alandaki müttefikler (kendisi dahil) 1 tur boyunca -%25 hasar alır. Kalkan veya iyileştirme yok — saf hasar azaltma. Koruyucu pasifiyle (-%15) birleşerek bitişik müttefiklerde efektif -%40."
+  },
+  "lw_d7": {
+    "name": "İlerleme",
+    "description": "4x4'teki müttefikleri 1 kare ileri taşır. 1 tur +1 mov + -%10 hasar + +%10 ATK.",
+    "long-description": "Savaşçı takımın ilerlemesini yönetir. Etrafındaki 4x4 çeyrekteki tüm müttefikler 1 kare ileri (düşman alanına doğru) hareket eder ve 1 tur boyunca üç buff alır: +1 mov, -%10 alınan hasar ve +%10 ATK."
+  },
+  "lw_d8": {
+    "name": "Geri Çekilme",
+    "description": "4x4'teki tüm müttefikleri 1 kare geri taşır. Sonraki tur +1 mov + 1 tur -%15 hasar.",
+    "long-description": "Savaşçı taktiksel geri çekilmeyi emreder. Etrafındaki 4x4 çeyrekteki tüm müttefikler 1 kare geri (kendi alanına doğru) hareket eder ve sonraki turda +1 mov ve 1 tur boyunca -%15 hasar alır. Tamamen savunma-yeniden konumlanma yeteneği."
+  },
+  "le_a1": {
+    "name": "Ölümcül Kesik",
+    "description": "45 hasar + hedefin debuff'larını kaldırır. Bleed varsa: +%50 hasar (toplam 67).",
+    "long-description": "İnfazcı tek hedefe hassas ve ölümcül bir kesik atar — 45 doğrudan hasar verir ve hedefe Cleanse uygular. Hedefte kesik anında aktif Bleed varsa hasar +%50 artar (toplam 67). Ağır infaz yeteneği."
+  },
+  "le_a2": {
+    "name": "Bıçak Fırtınası",
+    "description": "3x3 alanda 26 hasar. Hedefler bleed altındaysa: üzerlerinde +%50 hasar.",
+    "long-description": "İnfazcı 3x3 alanda bir bıçak fırtınası salıverir, vurulan tüm düşmanlara 26 hasar verir. Her hedef vuruş anında Bleed altındaysa bireysel olarak +%50 hasar alır."
+  },
+  "le_a3": {
+    "name": "Hassas Atış",
+    "description": "30 true damage (DEF'i yok sayar). Hedef bleed altındaysa: kalkanları da yok sayar.",
+    "long-description": "İnfazcı tek hedefe ölümcül bir hassasiyet mermisi atar — 30 True Damage verir, tüm DEF azaltma, pasifler ve yüzde hasar azaltmalarını YOK SAYAR. Hedefte atış anında Bleed varsa atış aktif tüm kalkanları da YOK SAYAR."
+  },
+  "le_a4": {
+    "name": "Hassas Kesik",
+    "description": "2 yatay karede 22 hasar + arındırma.",
+    "long-description": "İnfazcı yatay 2 kare hatta art arda iki kesik atar, 22 hasar verir ve vurulan tüm hedeflere Arındırma uygular. Buff sustain'e dayalı kompozisyonları iptal eder."
+  },
+  "le_a5": {
+    "name": "Kanama Kesiği",
+    "description": "2 yatay karede 8 hasar + 3t boyunca turn başına 4 bleed. Yeniden uygulanırsa birikir.",
+    "long-description": "İnfazcı yatay 2 kare hatta sıyrıcı bir kesik atar, 8 başlangıç hasarı verir ve Bleed uygular: 3 tur boyunca turn başına 4 hasar (toplam 12). Bleed kalkanı yok sayan fiziksel DoT'tur. Yeniden uygulanırsa STACK olur."
+  },
+  "le_a6": {
+    "name": "Diken Bombası",
+    "description": "r2 elmas alanda 10 hasar + 2t boyunca turn başına 5 bleed.",
+    "long-description": "İnfazcı r2 elmas şeklinde (~13 kare) patlayan bir diken bombası atar, vurulan tüm hedeflere 10 başlangıç hasarı verir ve 2 tur boyunca turn başına 5 Bleed uygular (toplam 10 DoT). Birden fazla hedefe bleed uygulamak için geniş kapsama."
+  },
+  "le_a7": {
+    "name": "Ölüm İşareti",
+    "description": "Dikey 8 karede 12 hasar. Kalkanları kaldırır (HP olarak %20'sini iyileştirir). 2t boyunca turn başına 8 bleed.",
+    "long-description": "İnfazcı 8 karelik dikey dikdörtgen alanda Ölüm İşareti'ni yöneltir (4 derin × 2 geniş). Vurulan tüm hedeflere 12 hasar verir, hedeflerin tüm kalkanlarını KALDIRIR (ve İnfazcıyı kaldırılan kalkanın %20'si kadar HP iyileştirir) ve 2 tur boyunca turn başına 8 Bleed uygular."
+  },
+  "le_a8": {
+    "name": "Gizli Tuzak",
+    "description": "Bir kareyi silahlandırır (dolu kareye değil). Üzerine basınca: 15 hasar + snare 1t + 3t boyunca turn başına 4 bleed.",
+    "long-description": "İnfazcı boş bir kareye görünmez tuzak yerleştirir. Tuzak etkinleştirilene kadar kalır. HERHANGİ bir düşman karelere girince patlar: 15 hasar verir, 1 tur Snare ve 3 tur boyunca turn başına 4 Bleed uygular."
+  },
+  "le_d1": {
+    "name": "Yansıtma",
+    "description": "Alınan hasar -%25 + sonraki turda azaltılanı saldırgana yansıtır.",
+    "long-description": "1 tur boyunca İnfazcı tüm hasardan -%25 alır ve azaltılan değeri TAM olarak saldırgana yansıtır. Örnek: 40 saldırı → 30 alır, saldırgan 10 yansıma alır. Birden fazla saldırgan birden fazla yansıma üretir."
+  },
+  "le_d2": {
+    "name": "Adrenalin",
+    "description": "2 tur +%25 ATK. Sonunda: %15 max HP kaybeder (kalkanla bloke edilebilir).",
+    "long-description": "İnfazcı aşırı adrenalin moduna girer: 2 tur boyunca +%25 ATK kazanır. İkinci turun SONUNDA %15 max HP'yi geri tepme hasarı olarak alır (o anda aktif kalkanla bloke edilebilir). Risk/ödül yeteneği."
+  },
+  "le_d3": {
+    "name": "Çift Saldırı",
+    "description": "Sonraki tur: 2 atk yeteneği, 0 def. Cooldown: 2 tur (arka arkaya kullanılamaz).",
+    "long-description": "1 tur boyunca (sonraki) İnfazcı 1 yerine 2 saldırı yeteneği kullanabilir, ama o turda herhangi savunma yeteneği kullanma şansını kaybeder. 2 tur cooldown."
+  },
+  "le_d4": {
+    "name": "Işınlanma",
+    "description": "5 kareye kadar ışınlanır. Sonraki hareket turunu tüketir.",
+    "long-description": "İnfazcı 5 menzilindeki herhangi bir kareye anında ışınlanır, yoldaki engelleri, duvarları ve birimleri YOK SAYAR. Bedeli: sonraki hareket turunu tüketir. Aşırı taktiksel hareketlilik yeteneği."
+  },
+  "le_d5": {
+    "name": "Hızlı Geri Çekilme",
+    "description": "2 kareye kadar geri hareket + 1 tur 20 kalkan.",
+    "long-description": "İnfazcı 2 kareye kadar geri (yalnızca kendi alanına doğru) çekilir ve 1 tur boyunca 20 kalkan kazanır. Hareket ve kalkan aynı eylemin parçasıdır. Hafif kaçış yeteneği."
+  },
+  "le_d6": {
+    "name": "Kaçış",
+    "description": "Sonraki turdaki ilk doğrudan saldırıdan tamamen kaçar.",
+    "long-description": "İnfazcı kaçış duruşu alır ve sonraki turda alınan ilk doğrudan saldırıdan tamamen kaçar. Kaçış yalnızca bir vuruşu emer, sonra tükenir. Uzman, İnfazcı ve Kral arasında paylaşılan kart."
+  },
+  "le_d7": {
+    "name": "Tam Engel",
+    "description": "60 kalkan. Kırılana veya 2 tur dolana kadar dayanır.",
+    "long-description": "İnfazcıya 60 HP kalkan verir, tamamen tükenene veya 2 turda sona erene kadar dayanır. Birim başına 100 HP'lik global Shield Cap'e tabidir. Uzman ve İnfazcı arasında paylaşılan kart."
+  },
+  "le_d8": {
+    "name": "Kalkan",
+    "description": "1 tur boyunca 25 kalkan.",
+    "long-description": "İnfazcıya 1 tur boyunca hızlı 25 HP kalkan verir. 100 HP'lik Shield Cap'e tabidir. Tam Engel'den daha hafif ve daha ucuzdur."
+  },
+  "lk_a1": {
+    "name": "Kraliyet Yumruğu",
+    "description": "2 yatay karede 25 hasar + 2 tur 15 self kalkan.",
+    "long-description": "Kral öndeki 2 kare yatay hatta kraliyet yumruğu atar, vurulan tüm düşmanlara 25 hasar verir. Aynı turda 2 tur boyunca 15 self kalkan alır (Shield Cap 100). Hibrit saldırı-savunma baskısı yeteneği."
+  },
+  "lk_a2": {
+    "name": "Kraliyet Tekmesi",
+    "description": "2 dikey karede 27 hasar + 2 tur 15 self kalkan.",
+    "long-description": "Kral öndeki 2 kare dikey hatta kraliyet tekmesi atar, vurulan tüm düşmanlara 27 hasar verir. 2 tur boyunca 15 self kalkan alır. Kraliyet Yumruğu'nun dikey varyantı."
+  },
+  "lk_a3": {
+    "name": "Yumruk Kombosu",
+    "description": "3x2'de 15 hasar + lifesteal %30. Kral bağışıklık kuralının istisnası.",
+    "long-description": "Kral bir yumruk kombosu salıverir, önde 3x2 alanda 15 hasar verir. Verilen hasarın %30'unu iyileştirme olarak geri alır (Lifesteal) — yetenek self-cast olduğu için Kraliyet Bağışıklığı kuralının açık istisnası."
+  },
+  "lk_a4": {
+    "name": "Kraliyet Egemenliği",
+    "description": "3x3'te 18 hasar + self kalkan = 1 tur verilen toplam hasarın %25'i.",
+    "long-description": "Kral 3x3 alanda hakimiyetini gösterir, vurulan her hedefe 18 hasar verir (en fazla 9 hedef). Toplam hasar hesaplamasından sonra bu toplamın %25'ini 1 tur self kalkan olarak alır. Ölçeklenir saldırı-savunma."
+  },
+  "lk_a5": {
+    "name": "Kraliyet İtmesi",
+    "description": "Harita sonuna kadar dikey 3 kare hatta 12 hasar + 3 kareye kadar itme.",
+    "long-description": "Kral Krald'an harita sonuna kadar dikey hatta vahşi güçle iter (3 kare genişlik). Yoldaki tüm düşmanlara 12 hasar verir ve onları 3 kareye kadar geri iter. Devasa zoning yeteneği."
+  },
+  "lk_a6": {
+    "name": "Karşı Saldırı",
+    "description": "3x3'te 15 hasar + merkezden uzaklaştırarak 1 kare itme. Merkez hareket etmez.",
+    "long-description": "Kral etrafında 3x3 alanda karşı saldırı patlar (kendisi merkez). Alandaki tüm düşmanlara 15 hasar verir ve her birini 1 kare radyal yönde (merkezden uzağa) iter. Kral (merkez) hareket ETMEZ."
+  },
+  "lk_a7": {
+    "name": "Korkutma",
+    "description": "10 hasar + hedefi ve bitişikleri seçilen yere ışınlar. Kenarlara yerleştirilemez.",
+    "long-description": "Kral bir hedefi korkutur: 10 hasar verir ve hedefi ARTI ona bitişik tüm düşmanları (en fazla 5 birim) caster tarafından seçilen bir konuma ışınlar (haritanın sahasında, kenarlar hariç). Aşırı saldırgan yeniden konumlandırma yeteneği."
+  },
+  "lk_a8": {
+    "name": "Silahsızlandırma",
+    "description": "6 hasar + hedefin atk yeteneğini iptal eder + 1t silence_attack. Kralları etkilemez.",
+    "long-description": "Kral bir düşmanı silahsızlandırır: 6 hasar verir ve hedefin o tur için seçtiği herhangi saldırı yeteneğini ANINDA İPTAL eder. Ek olarak 1 tur silence_attack uygular. Cerrahi karşı oyun yeteneği."
+  },
+  "lk_d1": {
+    "name": "Gölge Kaçışı",
+    "description": "Müttefik yarısında herhangi bir yere ışınlanır. Hasar alana veya hareket edene kadar tek hedef yeteneklerine karşı untargetable olur.",
+    "long-description": "Kral bir an görünmez olur ve kendi alanının (haritanın müttefik yarısı) herhangi bir karesine ışınlanır. Işınlanmadan sonra tek hedef yeteneklerine karşı UNTARGETABLE olur. Görünmezlik Kral hasar (alan veya DoT) alırsa veya sonraki turda gönüllü olarak hareket ederse kırılır."
+  },
+  "lk_d2": {
+    "name": "Kraliyet İyileşmesi",
+    "description": "2 turda %20 max HP geri kazanır (%10 şimdi, hasar almazsa sonraki tur %10). Kralın iyileştirme bağışıklığının istisnası.",
+    "long-description": "Kral Kraliyet İyileşmesi'ni yöneltir: anında (bu tur) max HP'nin %10'unu iyileştirme olarak alır ve o turda hasar ALMAZSA sonraki turda max HP'nin %10'unu daha alır. Maksimum: max HP'nin %20'si. Self-cast olduğu için Kraliyet Bağışıklığı'nın açık istisnası."
+  },
+  "lk_d3": {
+    "name": "Kraliyet Gölgesi",
+    "description": "Boş hücrelerde 2 klon yaratır. Kral biriyle pozisyon değiştirebilir. Klonlar 2 tur dayanır. Düşmanlar hangisinin gerçek olduğunu bilmez.",
+    "long-description": "Kral yakındaki boş karelerde 2 görsel klon yaratır. Klonlar 2 tur dayanır ve gerçek Krala görsel olarak özdeştir. Düşmanlar saldırana kadar hangisinin gerçek olduğunu bilmez — klonlar vuruşu emer ve vurulursa kaybolur."
+  },
+  "lk_d4": {
+    "name": "Hayatta Kalma Ruhu",
+    "description": "HP ≤ %50 ise: +%15 max HP + 1 tur %10 max HP kalkan. HP > %50 ise: +%10 max HP.",
+    "long-description": "Adapte olabilen hayatta kalma yeteneği. Kullanım anında Kral HP ≤ %50 ise, +%15 max HP (kalıcı artış) ARTI 1 tur boyunca max HP'nin %10'u kadar kalkan kazanır. HP > %50 ise yalnızca +%10 max HP alır (kalkan yok)."
+  },
+  "lk_d5": {
+    "name": "Self Kalkan",
+    "description": "2 tur boyunca 30 kalkan.",
+    "long-description": "Kral kendisine 2 tur boyunca 30 HP kalkan verir (Shield Cap 100). Tamamen tükenene veya sona erene kadar dayanır. Kralın genel bakım yeteneği."
+  },
+  "lk_d6": {
+    "name": "Sarsılmaz Kale",
+    "description": "1 tur boyunca alınan hasar -%80. Sonraki hareket turunda hareket edemez.",
+    "long-description": "Kral yaşayan bir kaleye dönüşür. 1 tur boyunca tüm hasardan -%80 alır (true damage dahil). Bedeli: sonraki hareket turunda hareket EDEMEZ. Savaşçı ve Kral arasında paylaşılan kart."
+  },
+  "lk_d7": {
+    "name": "Kaçış",
+    "description": "Sonraki turdaki ilk doğrudan saldırıdan tamamen kaçar.",
+    "long-description": "Kral kaçış duruşu alır ve sonraki turda alınan ilk doğrudan saldırıdan tamamen kaçar. Uzman, İnfazcı ve Kral arasında paylaşılan kart. Kral için Kraliyet Koruması pasifini yok sayan Hassas Atış'a (true damage) karşı en iyi savunma."
+  },
+  "lk_d8": {
+    "name": "Kraliyet Emri",
+    "description": "Kral başlangıç pozisyonuna döner, müttefikler bitişik pozisyonlara ışınlanır. Bitişik müttefikler: -%15 hasar. Kral: bitişik müttefik başına -%15 (max -%45) 1 tur.",
+    "long-description": "En yüksek yeniden gruplama yeteneği. Kral başlangıç pozisyonuna (müttefik yarısının köşesi) ışınlanır ve 3 müttefiği (Kral değil) Krala bitişik karelere çeker. 1 tur boyunca tüm bitişik müttefikler -%15 hasar alır ve Kral her bitişik müttefik için -%15 ek alır (en fazla 3 müttefik = Kralda -%45). Stratejik reset."
+  }
+}

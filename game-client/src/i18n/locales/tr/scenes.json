@@ -1,0 +1,320 @@
+{
+  "_meta": { "lang": "tr" },
+  "battle": {
+    "phase": {
+      "movement-title-line-1": "SIRA",
+      "movement-title-line-2": "HAREKET",
+      "movement-sub": "Karakterlerini\nhareket ettir",
+      "action-title": "EYLEM",
+      "action-sub": "Yeteneklerini seç",
+      "movement-label": "Hareket turu",
+      "action-label": "Eylem turu",
+      "role-turn": "{role} sırası",
+      "phase-movement": "Hareket",
+      "phase-action": "Eylem"
+    },
+    "team": {
+      "ally-eyebrow": "MÜTTEFİK",
+      "enemy-eyebrow": "DÜŞMAN",
+      "ally-name-fallback": "Sen",
+      "enemy-name-fallback": "Rakip",
+      "left-color": "Mavi",
+      "right-color": "Mor"
+    },
+    "phase-side-format": "{phase} — {side}",
+    "tracker-side-movement": "{side} — Hareket",
+    "log-round-marker": "— Round {round} —",
+    "tracker": {
+      "round": "Round {round}",
+      "round-label-default": "Round 1",
+      "header-both": "Eylem — Her İkisi",
+      "title": "EYLEM SIRASI",
+      "history-button": "GEÇMİŞİ GÖR",
+      "history-popup-title": "EYLEM GEÇMİŞİ",
+      "history-popup-hint": "Kapatmak için dışarı tıklayın",
+      "wait-indicator": "· · ·",
+      "placeholder": "…"
+    },
+    "log": {
+      "skipped": "Atladı",
+      "stunned": "Sersem",
+      "dead": "Ölü"
+    },
+    "outcome": {
+      "victory": "Zafer!",
+      "defeat": "Yenilgi!",
+      "draw": "Beraberlik!",
+      "opponent-forfeit": "Rakip pes etti!",
+      "self-forfeit": "Pes ettin!"
+    },
+    "victory-overlay": {
+      "reasons": {
+        "king_slain": "Kral düştü",
+        "simultaneous_kings": "Eşzamanlı beraberlik",
+        "timeout": "Süre doldu",
+        "forfeit": "Pes etme"
+      },
+      "detail-forfeit": "{reason} — Rakip maçtan çekildi",
+      "detail-normal": "{reason} — Round {round}"
+    },
+    "actions": {
+      "confirm": "Onayla",
+      "cancel": "İptal",
+      "skip": "Atla",
+      "end-movement": "Hareketi Bitir",
+      "main-menu": "Ana Menü"
+    },
+    "popup": {
+      "confirmation-eyebrow": "Onay",
+      "warning-eyebrow": "Uyarı",
+      "vote-eyebrow": "Oylama",
+      "skip-title": "Sırayı atla?",
+      "skip-body": "Karakterin bu turda eylemde bulunmaz.",
+      "skip-confirm": "Atla",
+      "confirm-action-title": "Eylemi onayla?",
+      "confirm-action-body": "Seçilen yetenekler kuyruğa girer ve bu turda çözülür.",
+      "surrender-title": "Pes mi?",
+      "surrender-body-solo": "Pes etmek rütbeni etkiler ve geri alınamaz.",
+      "surrender-vote-title": "Pes etmek için oy ver?",
+      "surrender-vote-body": "Oyun {required}'e sayılır. Tüm takımın pes etmesi için anlaşması gerekir.",
+      "surrender-vote-button": "Oy Ver",
+      "surrender-confirm": "Pes Et",
+      "surrender-button-label": "  Pes Et"
+    },
+    "status": {
+      "shield-suffix": "KL +{amount}",
+      "wall-bonus": "DUVAR +{pct}%"
+    },
+    "effect-shorthand": {
+      "damage": "Hasar",
+      "area": "Alan",
+      "heal": "İyileştirme",
+      "shield": "Kalkan"
+    }
+  },
+  "battle-result": {
+    "title": {
+      "victory": "ZAFER",
+      "defeat": "YENİLGİ",
+      "draw": "BERABERLİK"
+    },
+    "reasons": {
+      "king-slain": "Kral düştü",
+      "simultaneous-kings": "Eşzamanlı beraberlik",
+      "timeout": "Süre doldu",
+      "forfeit": "Pes etme"
+    },
+    "opponent-fallback": "Rakip",
+    "sub-meta": "Round {round}  ·  vs {enemy}  ·  {reason}",
+    "rewards-header": "ÖDÜLLER",
+    "new-skill": "Yeni yetenek: {name}!",
+    "next-match": "SONRAKİ MAÇ",
+    "try-again": "TEKRAR DENE",
+    "play-again": "TEKRAR OYNA",
+    "back-to-lobby": "LOBİYE DÖN",
+    "xp": {
+      "level-current": "SEVİYE {level}",
+      "level-up": "SEVİYE {from}  ›  {to}",
+      "gain-suffix": "+{xp} XP",
+      "fraction": "{current} / {max} XP"
+    }
+  },
+  "deck-build": {
+    "title": "DESTE OLUŞTURUCU",
+    "subtitle": "Her sınıf için her gruptan 2 kart seç.",
+    "difficulty-eyebrow": "ZORLUK",
+    "difficulty": {
+      "easy": "Kolay",
+      "normal": "Normal",
+      "hard": "Zor"
+    },
+    "groups": {
+      "attack1": "SALDIRI · HASAR",
+      "attack2": "SALDIRI · KONTROL",
+      "defense1": "SAVUNMA · GÜÇLÜ",
+      "defense2": "SAVUNMA · HAFİF",
+      "attack1-tooltip": "Saldırı - Hasar",
+      "attack2-tooltip": "Saldırı - Kontrol",
+      "defense1-tooltip": "Savunma - Güçlü",
+      "defense2-tooltip": "Savunma - Hafif"
+    },
+    "targets": {
+      "single": "Hedef: 1 Düşman",
+      "self": "Hedef: Kendisi",
+      "lowest_ally": "Hedef: En Düşük HP'li Müttefik",
+      "all_allies": "Hedef: Tüm Müttefikler",
+      "area": "Hedef: 3x3 Alan"
+    },
+    "tooltip": {
+      "power-with": "Güç {power}",
+      "power-none": "Güç —",
+      "target-prefix": "HEDEF · {target}"
+    },
+    "footer": {
+      "deck-label": "DESTE",
+      "atk-label": "SAL",
+      "def-label": "SAV",
+      "empty-slot": "—",
+      "power-prefix": "GÜÇ {power}",
+      "shortcuts": "Kısayollar · 1-4 seç · Tab sınıf değiştir · Enter oyna",
+      "progress": "BİRİMLER HAZIR · {done} / 4    SÜTUN BAŞINA 2 KART SEÇ"
+    },
+    "buttons": {
+      "random": "Rastgele",
+      "default": "Varsayılan",
+      "restore": "Geri Yükle",
+      "start": "BAŞLAT"
+    },
+    "tab-ready-suffix": "{role} ✓",
+    "passives": {
+      "king": "Pasif: Kraliyet Koruması — Her tur kalkan yenilenir, -15% alınan hasar.",
+      "warrior": "Pasif: Koruyucu — Bitişik müttefikler -15% hasar azaltma alır.",
+      "specialist": "Pasif: Yanma — Saldırılar düşman iyileştirmesini 1 tur boyunca %20 azaltır.",
+      "executor": "Pasif: İzole — Bitişik kimse yokken +15% hasar."
+    }
+  },
+  "lobby": {
+    "central-play-title": "OYNA",
+    "central-play-subtitle": "Savaş modunu seç",
+    "play-modes-title": "OYUN MODLARI",
+    "nav": {
+      "shop": "MAĞAZA",
+      "skills": "YETENEKLER",
+      "training": "ANTRENMAN",
+      "ranking": "SIRALAMA"
+    },
+    "battlepass": {
+      "line-1": "SAVAŞ",
+      "line-2": "GEÇİDİ",
+      "rewards-max": "ÖDÜLLER MAX"
+    },
+    "offline": {
+      "title": "Takım baskınları",
+      "subtitle": "Çevrimdışı",
+      "popup-eyebrow": "YAKINDA",
+      "popup-body": "Takım saldırı sistemi"
+    },
+    "sound-toggle": {
+      "on": "Ses",
+      "muted": "Sessiz"
+    },
+    "news-ticker": "     Draft Game'e hoş geldin!  •  Mağazada yeni paketler!  •  PvP savaşı açıldı!  •  Antrenman mevcut!     "
+  },
+  "login": {
+    "tab": {
+      "login": "GİRİŞ",
+      "register": "KAYIT"
+    },
+    "title-login": "OTURUM AÇ",
+    "title-register": "HESAP OLUŞTUR",
+    "submit-login": "OTURUM AÇ",
+    "submit-register": "HESAP OLUŞTUR",
+    "fields": {
+      "username-label": "KULLANICI",
+      "username-placeholder": "Nick",
+      "password-label": "ŞİFRE",
+      "password-placeholder": "••••••••",
+      "email-label": "EPOSTA",
+      "email-placeholder": "sen@ornek.com",
+      "register-password-hint": "En az 6 karakter"
+    },
+    "remember-me": "Beni hatırla",
+    "forgot-password": "Şifreni mi unuttun?",
+    "verify": {
+      "eyebrow": "DOĞRULAMA",
+      "title": "EPOSTA KODU",
+      "body": "Epostana 6 haneli bir kod gönderildi.\nAşağıya gir.",
+      "code-label": "KOD",
+      "code-placeholder": "000000",
+      "submit": "DOĞRULA",
+      "resend": "Kodu yeniden gönder",
+      "sending": "Gönderiliyor…"
+    }
+  },
+  "menu": {
+    "title": "DRAFT",
+    "subtitle": "TAKTİK SAVAŞLAR",
+    "studio-credit": "Codeforje VIO tarafından",
+    "studio-name": "Codeforje VIO",
+    "tagline-1": "Strateji. Taktik. Fetih.",
+    "tagline-2": "Desteni kur ve 4v4 savaşlarda düşman Kralı yen",
+    "hint": "Girmek için tıkla",
+    "version-tag": "v1.0"
+  },
+  "profile": {
+    "title": "PROFİL",
+    "tagline": "KRALLIĞIN ÇAĞIRICISI",
+    "stats": {
+      "wins": "GALİBİYETLER",
+      "losses": "MAĞLUBİYETLER",
+      "win-rate": "WIN RATE",
+      "gold": "ALTIN",
+      "dg": "DG",
+      "ranked-points": "SIRALAMA PUANI"
+    },
+    "mastery-eyebrow": "USTALIK",
+    "mastery": {
+      "attack": "SALDIRI",
+      "defense": "SAVUNMA"
+    }
+  },
+  "skill-upgrade": {
+    "title": "YETENEKLERİ YÖNET",
+    "deck-section": {
+      "header": "DONANIMLI YETENEKLER",
+      "equipped-counter": "{equipped} / 8",
+      "empty-slot": "Boş",
+      "slots": {
+        "atk1": "SAL 1",
+        "atk2": "SAL 2",
+        "def1": "SAV 1",
+        "def2": "SAV 2"
+      }
+    },
+    "inventory-section": {
+      "header": "ENVANTER",
+      "hint": "Donatmak için tıkla veya sürükle",
+      "all-equipped": "Hepsi donatıldı",
+      "owned-counter": "{owned} / {max}"
+    },
+    "groups": {
+      "attack1": "SALDIRI · HASAR",
+      "attack2": "SALDIRI · KONTROL",
+      "defense1": "SAVUNMA · GÜÇLÜ",
+      "defense2": "SAVUNMA · HAFİF"
+    },
+    "level-up-banner": "SEVİYE YÜKSELDİ!"
+  },
+  "settings": {
+    "title": "AYARLAR",
+    "sections": {
+      "audio": "SES",
+      "language": "DİL",
+      "account": "HESAP"
+    },
+    "audio": {
+      "sound-label": "SES",
+      "sound-on": "Ses efektleri açık",
+      "sound-off": "Ses efektleri kapalı"
+    },
+    "language": {
+      "field-label": "DİLİNİZİ SEÇİN"
+    },
+    "gameplay": {
+      "bot-difficulty-label": "BOT ZORLUĞU"
+    },
+    "account": {
+      "session-label": "OTURUM",
+      "session-description": "Mevcut hesaptan çıkış yap",
+      "logout-button": "ÇIKIŞ"
+    },
+    "logout-modal": {
+      "title": "Çıkış yap",
+      "body": "Krallıktan ayrılacaksın. Devam edilsin mi?",
+      "confirm": "ÇIKIŞ YAP"
+    },
+    "footer": {
+      "credits": "Draft Game v1.0  ·  Caio Sensini tarafından"
+    }
+  }
+}

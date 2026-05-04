@@ -1,0 +1,12 @@
+{
+  "_meta": { "lang": "tr" },
+  "auth": {
+    "fill-all-fields": "Lütfen tüm alanları doldurun.",
+    "password-too-short": "Şifre en az 6 karakter olmalı.",
+    "login-server-error": "Bağlantı hatası. Sunucunun çalıştığından emin olun.",
+    "register-server-error": "Kayıt hatası. Sunucunun çalıştığından emin olun.",
+    "verify-need-6-digits": "6 haneli kodu girin.",
+    "verify-invalid-code": "Geçersiz kod. Lütfen tekrar deneyin.",
+    "verify-resend-failed": "Yeniden gönderme başarısız. Lütfen tekrar deneyin."
+  }
+}
