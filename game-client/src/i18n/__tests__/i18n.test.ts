@@ -69,6 +69,10 @@ describe('detectLang', () => {
       ['it-IT', 'it'],
       ['tr-TR', 'tr'],
       ['ru-RU', 'ru'],
+      ['ja-JP', 'ja'],
+      ['zh-CN', 'zh-CN'],
+      ['zh-TW', 'zh-CN'],
+      ['ko-KR', 'ko'],
     ]
     for (const [input, expected] of cases) {
       vi.stubGlobal('navigator', { language: input })
@@ -77,7 +81,7 @@ describe('detectLang', () => {
   })
 
   it('falls back to PT-BR for unsupported navigator languages', () => {
-    vi.stubGlobal('navigator', { language: 'ja-JP' })
+    vi.stubGlobal('navigator', { language: 'xx-YY' })
     expect(detectLang()).toBe(DEFAULT_LANG)
   })
 })
@@ -191,8 +195,11 @@ describe('t() interpolation', () => {
 // ── module exports ───────────────────────────────────────────────────────────
 
 describe('module surface', () => {
-  it('exports the canonical 8-language list', () => {
+  it('exports the canonical 11-language list', () => {
     expect(getSupportedLangs()).toEqual(SUPPORTED_LANGS)
-    expect(SUPPORTED_LANGS).toEqual(['pt-BR', 'en-US', 'es', 'fr', 'de', 'it', 'tr', 'ru'])
+    expect(SUPPORTED_LANGS).toEqual([
+      'pt-BR', 'en-US', 'es', 'fr', 'de', 'it', 'tr', 'ru',
+      'ja', 'zh-CN', 'ko',
+    ])
   })
 })

@@ -33,6 +33,17 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
     />
+    <!--
+      CJK font fallbacks (Sessão 3). Cinzel/Cormorant/Manrope/JetBrains Mono
+      do not include CJK glyphs; the canvas renderer falls through the
+      font-family stack per glyph and picks Noto Sans/Serif CJK when the
+      character is outside Latin/Cyrillic/Greek. Unicode-range partitioning
+      means PT/EN/RU users never download the CJK subsets.
+    -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+JP:wght@400;500;600;700;900&family=Noto+Serif+SC:wght@400;500;600;700;900&family=Noto+Serif+KR:wght@400;500;600;700;900&display=swap"
+    />
 
     <title>Draft Game</title>
     <style>

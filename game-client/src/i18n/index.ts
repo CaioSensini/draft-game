@@ -26,9 +26,14 @@
  *     listener on the owning scene's `shutdown` event. Memory-safe.
  */
 
-export type Lang = 'pt-BR' | 'en-US' | 'es' | 'fr' | 'de' | 'it' | 'tr' | 'ru'
+export type Lang =
+  | 'pt-BR' | 'en-US' | 'es' | 'fr' | 'de' | 'it' | 'tr' | 'ru'
+  | 'ja' | 'zh-CN' | 'ko'
 
-export const SUPPORTED_LANGS: readonly Lang[] = ['pt-BR', 'en-US', 'es', 'fr', 'de', 'it', 'tr', 'ru'] as const
+export const SUPPORTED_LANGS: readonly Lang[] = [
+  'pt-BR', 'en-US', 'es', 'fr', 'de', 'it', 'tr', 'ru',
+  'ja', 'zh-CN', 'ko',
+] as const
 export const DEFAULT_LANG: Lang = 'pt-BR'
 const STORAGE_KEY = 'draft.lang'
 
@@ -41,6 +46,9 @@ export const LANG_LABELS: Record<Lang, string> = {
   'it':    'IT',
   'tr':    'TR',
   'ru':    'RU',
+  'ja':    'JA',
+  'zh-CN': 'ZH',
+  'ko':    'KO',
 }
 
 export const LANG_NATIVE_NAMES: Record<Lang, string> = {
@@ -52,6 +60,9 @@ export const LANG_NATIVE_NAMES: Record<Lang, string> = {
   'it':    'Italiano',
   'tr':    'Türkçe',
   'ru':    'Русский',
+  'ja':    '日本語',
+  'zh-CN': '简体中文',
+  'ko':    '한국어',
 }
 
 type Bundle = Record<string, unknown>
@@ -86,6 +97,11 @@ export function detectLang(): Lang {
   if (nav.startsWith('it')) return 'it'
   if (nav.startsWith('tr')) return 'tr'
   if (nav.startsWith('ru')) return 'ru'
+  if (nav.startsWith('ja')) return 'ja'
+  // Disambiguate Chinese variants: anything zh-* maps to zh-CN for now
+  // (Sessão 3 ships Simplified only; Traditional is future work).
+  if (nav.startsWith('zh')) return 'zh-CN'
+  if (nav.startsWith('ko')) return 'ko'
 
   // (3) fallback
   return DEFAULT_LANG

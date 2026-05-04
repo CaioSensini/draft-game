@@ -639,11 +639,17 @@ export const tile = {
 // falls back to Cormorant Garamond (which DOES ship Cyrillic) before any
 // generic serif, so Russian (and any other Cyrillic-script language we add
 // later) renders in a cohesive serif rather than the browser's default.
+//
+// Sessão 3 CJK fallbacks: none of the Latin/Cyrillic fonts cover CJK
+// glyphs, so the stack ends with Noto Sans/Serif CJK (JP, SC, KR). Canvas2D
+// font fallback is per-glyph: Latin chars stay in Cinzel/Cormorant, CJK
+// chars get the matching Noto family. Unicode-range partitioning at the
+// @font-face level means non-CJK locales never download those subsets.
 export const fontFamily = {
-  display: "'Cinzel', 'Trajan Pro', 'Cormorant Garamond', serif",
-  serif:   "'Cormorant Garamond', 'Cinzel', serif",
-  body:    "'Manrope', 'Inter', system-ui, sans-serif",
-  mono:    "'JetBrains Mono', ui-monospace, monospace",
+  display: "'Cinzel', 'Trajan Pro', 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif SC', 'Noto Serif KR', serif",
+  serif:   "'Cormorant Garamond', 'Cinzel', 'Noto Serif JP', 'Noto Serif SC', 'Noto Serif KR', serif",
+  body:    "'Manrope', 'Inter', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', system-ui, sans-serif",
+  mono:    "'JetBrains Mono', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', ui-monospace, monospace",
 } as const
 
 // ── Type scale (CSS --fs-*). Values in px as numeric strings for Phaser. ──
