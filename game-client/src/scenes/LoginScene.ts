@@ -339,7 +339,7 @@ export default class LoginScene extends Phaser.Scene {
     const passY = panelY + 24
     const userField = UI.inputField(this, panelX, userY, {
       label:       'USUÁRIO',
-      placeholder: 'Nome do invocador',
+      placeholder: 'Nick',
       type:        'text',
       width:       fieldW,
       name:        'login-user',
@@ -376,7 +376,7 @@ export default class LoginScene extends Phaser.Scene {
     const passY  = panelY + 76
     const userField = UI.inputField(this, panelX, userY, {
       label:       'USUÁRIO',
-      placeholder: 'Nome do invocador',
+      placeholder: 'Nick',
       type:        'text',
       width:       fieldW,
       name:        'reg-user',
