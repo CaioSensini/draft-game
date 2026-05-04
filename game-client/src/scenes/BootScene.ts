@@ -1,7 +1,8 @@
 import Phaser from 'phaser'
 import { getAllCharacterAssets, getAllDesignSvgAssets, getAllLucideIconAssets, getAllSkillAssets } from '../utils/AssetPaths'
-import { colors, fonts, fontFamily, sizes } from '../utils/DesignTokens'
+import { colors, fonts, sizes } from '../utils/DesignTokens'
 import { initI18n } from '../i18n'
+import { FONT_WARMUP_SAMPLE, getWarmupFontFamilies, waitForDesignFontsReady } from '../i18n/fontLoading'
 import { registerSkillI18n } from '../i18n/skillI18n'
 
 /**
@@ -14,9 +15,9 @@ import { registerSkillI18n } from '../i18n/skillI18n'
  */
 function warmUpDesignSystemFonts(scene: Phaser.Scene): void {
   const probes: Phaser.GameObjects.Text[] = []
-  const families = [fontFamily.display, fontFamily.serif, fontFamily.body, fontFamily.mono]
+  const families = getWarmupFontFamilies()
   for (const family of families) {
-    const t = scene.add.text(-9999, -9999, 'Ag', {
+    const t = scene.add.text(-9999, -9999, FONT_WARMUP_SAMPLE, {
       fontFamily: family,
       fontSize: '16px',
       color: '#000000',
@@ -76,7 +77,7 @@ export default class BootScene extends Phaser.Scene {
     // below awaits this promise so the next scene never renders with the
     // fallback face. Fails open (resolves) if the API is unavailable.
     if (typeof document !== 'undefined' && 'fonts' in document) {
-      this._fontsReady = document.fonts.ready
+      this._fontsReady = waitForDesignFontsReady()
         .then(() => {
           warmUpDesignSystemFonts(this)
           console.log('[BootScene] design fonts ready')
@@ -131,111 +132,108 @@ export default class BootScene extends Phaser.Scene {
     const lineTop = this.add.rectangle(width / 2, height / 2 - 50, 180, 1, colors.ui.goldDim, 0).setAlpha(0)
     const lineBot = this.add.rectangle(width / 2, height / 2 + 50, 180, 1, colors.ui.goldDim, 0).setAlpha(0)
 
-    // === STUDIO LOGO ===
-    const logo = this.add
-      .text(width / 2, height / 2 - 14, 'CODEFORJE VIO', {
-        fontFamily: fonts.heading,
-        fontSize: '28px',
-        color: colors.ui.goldDimHex,
-        fontStyle: 'bold',
-        shadow: {
-          offsetX: 0,
-          offsetY: 2,
-          color: colors.shadow.darkGoldHex,
-          blur: 6,
-          fill: true,
-        },
-      })
-      .setOrigin(0.5)
-      .setAlpha(0)
+    void this._fontsReady.then(() => {
+      if (!this.scene.isActive('BootScene')) return
 
-    const sub = this.add
-      .text(width / 2, height / 2 + 22, 'presents', {
-        fontFamily: fonts.body,
-        fontSize: sizes.text.small,
-        color: colors.ui.dimHex,
-        shadow: {
-          offsetX: 0,
-          offsetY: 1,
-          color: colors.shadow.blackHex,
-          blur: 2,
-          fill: true,
-        },
-      })
-      .setOrigin(0.5)
-      .setAlpha(0)
+      // === STUDIO LOGO ===
+      const logo = this.add
+        .text(width / 2, height / 2 - 14, 'CODEFORJE VIO', {
+          fontFamily: fonts.heading,
+          fontSize: '28px',
+          color: colors.ui.goldDimHex,
+          fontStyle: 'bold',
+          shadow: {
+            offsetX: 0,
+            offsetY: 2,
+            color: colors.shadow.darkGoldHex,
+            blur: 6,
+            fill: true,
+          },
+        })
+        .setOrigin(0.5)
+        .setAlpha(0)
 
-    // === ENTRANCE ANIMATIONS ===
-    // Fade in decorative lines
-    this.tweens.add({
-      targets: lineTop,
-      alpha: 0.3,
-      scaleX: 1,
-      duration: 500,
-      delay: 100,
-      ease: 'Quad.Out',
-    })
-    this.tweens.add({
-      targets: lineBot,
-      alpha: 0.3,
-      scaleX: 1,
-      duration: 500,
-      delay: 100,
-      ease: 'Quad.Out',
-    })
-
-    // Fade in logo with slight upward drift
-    logo.setY(height / 2 - 6)
-    this.tweens.add({
-      targets: logo,
-      alpha: 1,
-      y: height / 2 - 14,
-      duration: 600,
-      delay: 200,
-      ease: 'Quad.Out',
-    })
-
-    // Fade in subtitle
-    this.tweens.add({
-      targets: sub,
-      alpha: 1,
-      duration: 600,
-      delay: 500,
-      ease: 'Quad.Out',
-    })
-
-    // === AFTER 1.5s: Fade to black and navigate ===
-    this.time.delayedCall(1500, () => {
-      const overlay = this.add
-        .rectangle(width / 2, height / 2, width, height, colors.ui.black, 0)
-        .setDepth(999)
+      const sub = this.add
+        .text(width / 2, height / 2 + 22, 'presents', {
+          fontFamily: fonts.body,
+          fontSize: sizes.text.small,
+          color: colors.ui.dimHex,
+          shadow: {
+            offsetX: 0,
+            offsetY: 1,
+            color: colors.shadow.blackHex,
+            blur: 2,
+            fill: true,
+          },
+        })
+        .setOrigin(0.5)
+        .setAlpha(0)
 
       this.tweens.add({
-        targets: overlay,
-        alpha: 1,
-        duration: 400,
-        onComplete: async () => {
-          // Block transition until design-system fonts are cached AND the i18n
-          // bundles are loaded. Both kicked off at the start of create(); the
-          // 1.5s intro normally absorbs both latencies.
-          await Promise.all([this._fontsReady, this._i18nReady])
+        targets: lineTop,
+        alpha: 0.3,
+        scaleX: 1,
+        duration: 500,
+        delay: 100,
+        ease: 'Quad.Out',
+      })
+      this.tweens.add({
+        targets: lineBot,
+        alpha: 0.3,
+        scaleX: 1,
+        duration: 500,
+        delay: 100,
+        ease: 'Quad.Out',
+      })
 
-          const token = localStorage.getItem('draft_token')
-          if (token) {
-            try {
-              const { authService } = await import('../services')
-              const user = await authService.getProfile()
-              const { playerData } = await import('../utils/PlayerDataManager')
-              playerData.syncFromServer(user)
-              this.scene.start('LobbyScene')
-            } catch {
-              localStorage.removeItem('draft_token')
+      logo.setY(height / 2 - 6)
+      this.tweens.add({
+        targets: logo,
+        alpha: 1,
+        y: height / 2 - 14,
+        duration: 600,
+        delay: 200,
+        ease: 'Quad.Out',
+      })
+
+      this.tweens.add({
+        targets: sub,
+        alpha: 1,
+        duration: 600,
+        delay: 500,
+        ease: 'Quad.Out',
+      })
+
+      // === AFTER 1.5s: Fade to black and navigate ===
+      this.time.delayedCall(1500, () => {
+        const overlay = this.add
+          .rectangle(width / 2, height / 2, width, height, colors.ui.black, 0)
+          .setDepth(999)
+
+        this.tweens.add({
+          targets: overlay,
+          alpha: 1,
+          duration: 400,
+          onComplete: async () => {
+            await this._i18nReady
+
+            const token = localStorage.getItem('draft_token')
+            if (token) {
+              try {
+                const { authService } = await import('../services')
+                const user = await authService.getProfile()
+                const { playerData } = await import('../utils/PlayerDataManager')
+                playerData.syncFromServer(user)
+                this.scene.start('LobbyScene')
+              } catch {
+                localStorage.removeItem('draft_token')
+                this.scene.start('LoginScene')
+              }
+            } else {
               this.scene.start('LoginScene')
             }
-          } else {
-            this.scene.start('LoginScene')
-          }
-        },
+          },
+        })
       })
     })
   }

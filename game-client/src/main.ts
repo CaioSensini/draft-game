@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { gameConfig } from './core/gameConfig'
+import { rerenderActiveTextObjects } from './utils/PhaserTextRerender'
 
 // ── Mobile orientation lock (Sprint 0.6) ────────────────────────────────────
 // Android + PWAs: Screen Orientation API locks landscape. iOS Safari doesn't
@@ -26,4 +27,10 @@ function lockLandscape(): void {
 
 lockLandscape()
 
-new Phaser.Game(gameConfig)
+const game = new Phaser.Game(gameConfig)
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('draft:i18n-language-changed', () => {
+    rerenderActiveTextObjects(game)
+  })
+}
