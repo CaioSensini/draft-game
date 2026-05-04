@@ -7,7 +7,10 @@ import {
   surface, border, accent, fg,
   fontFamily, typeScale, radii,
 } from '../utils/DesignTokens'
-import { t } from '../i18n'
+import {
+  t, setLang, getCurrentLang, getSupportedLangs, LANG_LABELS,
+  type Lang,
+} from '../i18n'
 
 const W = SCREEN.W
 
@@ -58,7 +61,10 @@ export default class SettingsScene extends Phaser.Scene {
 
   private _drawCentralPanel() {
     const panelW = 600
-    const panelH = 540
+    // i18n.5: panel grew from 540 to 620 to fit the new "IDIOMA" section
+    // between GAMEPLAY and CONTA. Layout below is incremental, so adding a
+    // section just pushes everything after it down by its height.
+    const panelH = 620
     const panelX = W / 2
     const panelY = TOP_BAR_H + 8 + panelH / 2
 
@@ -143,8 +149,33 @@ export default class SettingsScene extends Phaser.Scene {
       },
     })
 
-    // ── Section: CONTA ──
+    // ── Section: IDIOMA ──
     cursorY += diffCardH + 24
+    this._drawSectionHeader(panelX, cursorY, t('scenes.settings.sections.language'))
+    cursorY += 30
+
+    const langCardH = 56
+    this._drawCard(panelX, cursorY + langCardH / 2, panelW - 48, langCardH)
+
+    UI.segmentedControl<Lang>(this, panelX, cursorY + langCardH / 2, {
+      options: getSupportedLangs().map(l => ({ key: l, label: LANG_LABELS[l] })),
+      value: getCurrentLang(),
+      width: panelW - 96,
+      height: 32,
+      onChange: (lang) => {
+        soundManager.playClick()
+        // setLang persists, mutates SKILL_CATALOG via the registered listener,
+        // and notifies any bound texts. We restart the scene so all visible
+        // labels (sections, cards, footer) are re-rendered in the new lang
+        // without trying to wire reactive bindings on every text object.
+        void setLang(lang).then(() => {
+          if (this.scene.isActive('SettingsScene')) this.scene.restart()
+        })
+      },
+    })
+
+    // ── Section: CONTA ──
+    cursorY += langCardH + 24
     this._drawSectionHeader(panelX, cursorY, t('scenes.settings.sections.account'))
     cursorY += 30
 
