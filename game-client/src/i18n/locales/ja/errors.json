@@ -1,3 +1,12 @@
 {
-  "_meta": { "lang": "ja" }
+  "_meta": { "lang": "ja" },
+  "auth": {
+    "fill-all-fields": "すべての項目を入力してください。",
+    "password-too-short": "パスワードは6文字以上で入力してください。",
+    "login-server-error": "接続エラー。サーバーが起動しているか確認してください。",
+    "register-server-error": "登録エラー。サーバーが起動しているか確認してください。",
+    "verify-need-6-digits": "6桁のコードを入力してください。",
+    "verify-invalid-code": "コードが無効です。もう一度お試しください。",
+    "verify-resend-failed": "再送信に失敗しました。もう一度お試しください。"
+  }
 }

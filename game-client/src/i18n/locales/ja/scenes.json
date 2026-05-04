@@ -1,3 +1,320 @@
 {
-  "_meta": { "lang": "ja" }
+  "_meta": { "lang": "ja" },
+  "battle": {
+    "phase": {
+      "movement-title-line-1": "ターン",
+      "movement-title-line-2": "移動",
+      "movement-sub": "キャラクターを\n動かそう",
+      "action-title": "アクション",
+      "action-sub": "スキルを選択",
+      "movement-label": "移動ターン",
+      "action-label": "アクションターン",
+      "role-turn": "{role}のターン",
+      "phase-movement": "移動",
+      "phase-action": "アクション"
+    },
+    "team": {
+      "ally-eyebrow": "味方",
+      "enemy-eyebrow": "敵",
+      "ally-name-fallback": "あなた",
+      "enemy-name-fallback": "相手",
+      "left-color": "青",
+      "right-color": "紫"
+    },
+    "phase-side-format": "{phase} — {side}",
+    "tracker-side-movement": "{side} — 移動",
+    "log-round-marker": "— ラウンド {round} —",
+    "tracker": {
+      "round": "ラウンド {round}",
+      "round-label-default": "ラウンド 1",
+      "header-both": "アクション — 両陣営",
+      "title": "アクション順",
+      "history-button": "履歴を見る",
+      "history-popup-title": "アクション履歴",
+      "history-popup-hint": "外をクリックで閉じる",
+      "wait-indicator": "· · ·",
+      "placeholder": "…"
+    },
+    "log": {
+      "skipped": "スキップ",
+      "stunned": "気絶",
+      "dead": "死亡"
+    },
+    "outcome": {
+      "victory": "勝利！",
+      "defeat": "敗北！",
+      "draw": "引き分け！",
+      "opponent-forfeit": "相手が降参！",
+      "self-forfeit": "あなたは降参しました！"
+    },
+    "victory-overlay": {
+      "reasons": {
+        "king_slain": "王が倒れた",
+        "simultaneous_kings": "同時引き分け",
+        "timeout": "時間切れ",
+        "forfeit": "降参"
+      },
+      "detail-forfeit": "{reason} — 相手は試合を放棄した",
+      "detail-normal": "{reason} — ラウンド {round}"
+    },
+    "actions": {
+      "confirm": "確認",
+      "cancel": "キャンセル",
+      "skip": "スキップ",
+      "end-movement": "移動終了",
+      "main-menu": "メインメニュー"
+    },
+    "popup": {
+      "confirmation-eyebrow": "確認",
+      "warning-eyebrow": "注意",
+      "vote-eyebrow": "投票",
+      "skip-title": "ターンをスキップ？",
+      "skip-body": "このターン、キャラクターは行動しません。",
+      "skip-confirm": "スキップ",
+      "confirm-action-title": "アクションを確認？",
+      "confirm-action-body": "選択したスキルはキューに入り、このターンで解決されます。",
+      "surrender-title": "降参する？",
+      "surrender-body-solo": "降参はランクに影響し、取り消せません。",
+      "surrender-vote-title": "降参に投票？",
+      "surrender-vote-body": "あなたの票は{required}に数えられます。降参にはチーム全員の同意が必要です。",
+      "surrender-vote-button": "投票",
+      "surrender-confirm": "降参",
+      "surrender-button-label": "  降参"
+    },
+    "status": {
+      "shield-suffix": "盾 +{amount}",
+      "wall-bonus": "壁 +{pct}%"
+    },
+    "effect-shorthand": {
+      "damage": "ダメージ",
+      "area": "範囲",
+      "heal": "回復",
+      "shield": "盾"
+    }
+  },
+  "battle-result": {
+    "title": {
+      "victory": "勝利",
+      "defeat": "敗北",
+      "draw": "引き分け"
+    },
+    "reasons": {
+      "king-slain": "王が倒れた",
+      "simultaneous-kings": "同時引き分け",
+      "timeout": "時間切れ",
+      "forfeit": "降参"
+    },
+    "opponent-fallback": "相手",
+    "sub-meta": "ラウンド {round}  ·  vs {enemy}  ·  {reason}",
+    "rewards-header": "報酬",
+    "new-skill": "新しいスキル: {name}！",
+    "next-match": "次の試合",
+    "try-again": "再挑戦",
+    "play-again": "もう一度プレイ",
+    "back-to-lobby": "ロビーへ戻る",
+    "xp": {
+      "level-current": "レベル {level}",
+      "level-up": "レベル {from}  ›  {to}",
+      "gain-suffix": "+{xp} XP",
+      "fraction": "{current} / {max} XP"
+    }
+  },
+  "deck-build": {
+    "title": "デッキ構築",
+    "subtitle": "各クラスのグループごとに2枚のカードを選択。",
+    "difficulty-eyebrow": "難易度",
+    "difficulty": {
+      "easy": "簡単",
+      "normal": "ノーマル",
+      "hard": "難しい"
+    },
+    "groups": {
+      "attack1": "攻撃 · ダメージ",
+      "attack2": "攻撃 · 制御",
+      "defense1": "防御 · 強",
+      "defense2": "防御 · 軽",
+      "attack1-tooltip": "攻撃 - ダメージ",
+      "attack2-tooltip": "攻撃 - 制御",
+      "defense1-tooltip": "防御 - 強",
+      "defense2-tooltip": "防御 - 軽"
+    },
+    "targets": {
+      "single": "対象: 敵1体",
+      "self": "対象: 自身",
+      "lowest_ally": "対象: HP最少の味方",
+      "all_allies": "対象: 味方全員",
+      "area": "対象: 3x3範囲"
+    },
+    "tooltip": {
+      "power-with": "威力 {power}",
+      "power-none": "威力 —",
+      "target-prefix": "対象 · {target}"
+    },
+    "footer": {
+      "deck-label": "デッキ",
+      "atk-label": "攻",
+      "def-label": "防",
+      "empty-slot": "—",
+      "power-prefix": "威力 {power}",
+      "shortcuts": "ショートカット · 1-4選択 · Tabクラス切替 · Enterプレイ",
+      "progress": "ユニット準備完了 · {done} / 4    各列で2枚ずつ選択"
+    },
+    "buttons": {
+      "random": "ランダム",
+      "default": "デフォルト",
+      "restore": "復元",
+      "start": "開始"
+    },
+    "tab-ready-suffix": "{role} ✓",
+    "passives": {
+      "king": "パッシブ: 王の保護 — 毎ターン盾が更新、被ダメージ-15%。",
+      "warrior": "パッシブ: 守護者 — 隣接する味方は被ダメージ-15%軽減。",
+      "specialist": "パッシブ: 燃焼 — 攻撃で敵の回復を1ターン20%減少。",
+      "executor": "パッシブ: 孤立 — 隣接者がいない時、ダメージ+15%。"
+    }
+  },
+  "lobby": {
+    "central-play-title": "プレイ",
+    "central-play-subtitle": "戦闘モードを選択",
+    "play-modes-title": "ゲームモード",
+    "nav": {
+      "shop": "ショップ",
+      "skills": "スキル",
+      "training": "訓練",
+      "ranking": "ランキング"
+    },
+    "battlepass": {
+      "line-1": "バトル",
+      "line-2": "パス",
+      "rewards-max": "報酬MAX"
+    },
+    "offline": {
+      "title": "チームレイド",
+      "subtitle": "オフライン",
+      "popup-eyebrow": "近日公開",
+      "popup-body": "チームレイドシステム"
+    },
+    "sound-toggle": {
+      "on": "音声",
+      "muted": "ミュート"
+    },
+    "news-ticker": "     Draft Gameへようこそ！  •  ショップに新しいパック！  •  PvPバトル解禁！  •  訓練モード利用可能！     "
+  },
+  "login": {
+    "tab": {
+      "login": "ログイン",
+      "register": "登録"
+    },
+    "title-login": "サインイン",
+    "title-register": "アカウント作成",
+    "submit-login": "サインイン",
+    "submit-register": "アカウント作成",
+    "fields": {
+      "username-label": "ユーザー",
+      "username-placeholder": "Nick",
+      "password-label": "パスワード",
+      "password-placeholder": "••••••••",
+      "email-label": "メール",
+      "email-placeholder": "you@example.com",
+      "register-password-hint": "6文字以上"
+    },
+    "remember-me": "ログイン状態を保持",
+    "forgot-password": "パスワードをお忘れ？",
+    "verify": {
+      "eyebrow": "認証",
+      "title": "メールコード",
+      "body": "6桁のコードがメールに送信されました。\n下に入力してください。",
+      "code-label": "コード",
+      "code-placeholder": "000000",
+      "submit": "認証",
+      "resend": "コードを再送信",
+      "sending": "送信中…"
+    }
+  },
+  "menu": {
+    "title": "DRAFT",
+    "subtitle": "戦術バトル",
+    "studio-credit": "Codeforje VIO 制作",
+    "studio-name": "Codeforje VIO",
+    "tagline-1": "戦略。戦術。征服。",
+    "tagline-2": "デッキを構築し、4対4のバトルで敵の王を倒せ",
+    "hint": "クリックして入る",
+    "version-tag": "v1.0"
+  },
+  "profile": {
+    "title": "プロフィール",
+    "tagline": "王国の召喚士",
+    "stats": {
+      "wins": "勝利",
+      "losses": "敗北",
+      "win-rate": "勝率",
+      "gold": "ゴールド",
+      "dg": "DG",
+      "ranked-points": "ランクポイント"
+    },
+    "mastery-eyebrow": "熟練度",
+    "mastery": {
+      "attack": "攻撃",
+      "defense": "防御"
+    }
+  },
+  "skill-upgrade": {
+    "title": "スキル管理",
+    "deck-section": {
+      "header": "装備中のスキル",
+      "equipped-counter": "{equipped} / 8",
+      "empty-slot": "空",
+      "slots": {
+        "atk1": "攻 1",
+        "atk2": "攻 2",
+        "def1": "防 1",
+        "def2": "防 2"
+      }
+    },
+    "inventory-section": {
+      "header": "インベントリ",
+      "hint": "クリックまたはドラッグで装備",
+      "all-equipped": "すべて装備済み",
+      "owned-counter": "{owned} / {max}"
+    },
+    "groups": {
+      "attack1": "攻撃 · ダメージ",
+      "attack2": "攻撃 · 制御",
+      "defense1": "防御 · 強",
+      "defense2": "防御 · 軽"
+    },
+    "level-up-banner": "レベルアップ！"
+  },
+  "settings": {
+    "title": "設定",
+    "sections": {
+      "audio": "サウンド",
+      "language": "言語",
+      "account": "アカウント"
+    },
+    "audio": {
+      "sound-label": "サウンド",
+      "sound-on": "効果音オン",
+      "sound-off": "効果音オフ"
+    },
+    "language": {
+      "field-label": "言語を選択"
+    },
+    "gameplay": {
+      "bot-difficulty-label": "ボット難易度"
+    },
+    "account": {
+      "session-label": "セッション",
+      "session-description": "現在のアカウントからログアウト",
+      "logout-button": "ログアウト"
+    },
+    "logout-modal": {
+      "title": "ログアウト",
+      "body": "王国から切断されます。続行しますか？",
+      "confirm": "ログアウト"
+    },
+    "footer": {
+      "credits": "Draft Game v1.0  ·  Caio Sensini 制作"
+    }
+  }
 }

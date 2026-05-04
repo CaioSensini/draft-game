@@ -1,3 +1,27 @@
 {
-  "_meta": { "lang": "ja" }
+  "_meta": { "lang": "ja", "name": "日本語" },
+  "actions": {
+    "confirm": "確認",
+    "cancel": "キャンセル",
+    "back": "戻る",
+    "close": "閉じる",
+    "play": "プレイ",
+    "ok": "OK",
+    "save": "保存",
+    "yes": "はい",
+    "no": "いいえ"
+  },
+  "studio-name": "CODEFORJE VIO",
+  "section": {
+    "description": "説明",
+    "long-description": "詳細説明"
+  },
+  "labels": {
+    "level-cap-max": "MAX",
+    "level-short": "Lv {level}",
+    "level-long": "Lv.{level}",
+    "gold-cost": "{cost}g",
+    "upgrade-action-affordable": "↑ 強化 Lv {level} · {cost}g",
+    "upgrade-action-broke": "Lv {level} · {cost}g"
+  }
 }
