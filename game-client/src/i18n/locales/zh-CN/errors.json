@@ -1,3 +1,12 @@
 {
-  "_meta": { "lang": "zh-CN" }
+  "_meta": { "lang": "zh-CN" },
+  "auth": {
+    "fill-all-fields": "请填写所有字段。",
+    "password-too-short": "密码至少需要6个字符。",
+    "login-server-error": "连接错误。请确认服务器正在运行。",
+    "register-server-error": "注册错误。请确认服务器正在运行。",
+    "verify-need-6-digits": "请输入6位代码。",
+    "verify-invalid-code": "代码无效。请重试。",
+    "verify-resend-failed": "重新发送失败。请重试。"
+  }
 }

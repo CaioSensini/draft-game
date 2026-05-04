@@ -1,3 +1,320 @@
 {
-  "_meta": { "lang": "zh-CN" }
+  "_meta": { "lang": "zh-CN" },
+  "battle": {
+    "phase": {
+      "movement-title-line-1": "回合",
+      "movement-title-line-2": "移动",
+      "movement-sub": "移动你的\n角色",
+      "action-title": "行动",
+      "action-sub": "选择你的技能",
+      "movement-label": "移动回合",
+      "action-label": "行动回合",
+      "role-turn": "{role}的回合",
+      "phase-movement": "移动",
+      "phase-action": "行动"
+    },
+    "team": {
+      "ally-eyebrow": "盟友",
+      "enemy-eyebrow": "敌人",
+      "ally-name-fallback": "你",
+      "enemy-name-fallback": "对手",
+      "left-color": "蓝",
+      "right-color": "紫"
+    },
+    "phase-side-format": "{phase} — {side}",
+    "tracker-side-movement": "{side} — 移动",
+    "log-round-marker": "— 回合 {round} —",
+    "tracker": {
+      "round": "回合 {round}",
+      "round-label-default": "回合 1",
+      "header-both": "行动 — 双方",
+      "title": "行动顺序",
+      "history-button": "查看历史",
+      "history-popup-title": "行动历史",
+      "history-popup-hint": "点击外部关闭",
+      "wait-indicator": "· · ·",
+      "placeholder": "…"
+    },
+    "log": {
+      "skipped": "跳过",
+      "stunned": "眩晕",
+      "dead": "死亡"
+    },
+    "outcome": {
+      "victory": "胜利！",
+      "defeat": "失败！",
+      "draw": "平局！",
+      "opponent-forfeit": "对手投降！",
+      "self-forfeit": "你投降了！"
+    },
+    "victory-overlay": {
+      "reasons": {
+        "king_slain": "国王陨落",
+        "simultaneous_kings": "同时平局",
+        "timeout": "时间到",
+        "forfeit": "投降"
+      },
+      "detail-forfeit": "{reason} — 对手放弃了比赛",
+      "detail-normal": "{reason} — 回合 {round}"
+    },
+    "actions": {
+      "confirm": "确认",
+      "cancel": "取消",
+      "skip": "跳过",
+      "end-movement": "结束移动",
+      "main-menu": "主菜单"
+    },
+    "popup": {
+      "confirmation-eyebrow": "确认",
+      "warning-eyebrow": "警告",
+      "vote-eyebrow": "投票",
+      "skip-title": "跳过回合？",
+      "skip-body": "你的角色这回合不行动。",
+      "skip-confirm": "跳过",
+      "confirm-action-title": "确认行动？",
+      "confirm-action-body": "选定的技能进入队列，将在本回合解决。",
+      "surrender-title": "投降？",
+      "surrender-body-solo": "投降会影响你的排名且无法撤销。",
+      "surrender-vote-title": "投票投降？",
+      "surrender-vote-body": "你的票算入{required}。全体队员必须同意才能投降。",
+      "surrender-vote-button": "投票",
+      "surrender-confirm": "投降",
+      "surrender-button-label": "  投降"
+    },
+    "status": {
+      "shield-suffix": "盾 +{amount}",
+      "wall-bonus": "墙 +{pct}%"
+    },
+    "effect-shorthand": {
+      "damage": "伤害",
+      "area": "范围",
+      "heal": "治疗",
+      "shield": "护盾"
+    }
+  },
+  "battle-result": {
+    "title": {
+      "victory": "胜利",
+      "defeat": "失败",
+      "draw": "平局"
+    },
+    "reasons": {
+      "king-slain": "国王陨落",
+      "simultaneous-kings": "同时平局",
+      "timeout": "时间到",
+      "forfeit": "投降"
+    },
+    "opponent-fallback": "对手",
+    "sub-meta": "回合 {round}  ·  vs {enemy}  ·  {reason}",
+    "rewards-header": "奖励",
+    "new-skill": "新技能：{name}！",
+    "next-match": "下一场",
+    "try-again": "重试",
+    "play-again": "再玩一次",
+    "back-to-lobby": "返回大厅",
+    "xp": {
+      "level-current": "等级 {level}",
+      "level-up": "等级 {from}  ›  {to}",
+      "gain-suffix": "+{xp} XP",
+      "fraction": "{current} / {max} XP"
+    }
+  },
+  "deck-build": {
+    "title": "卡组构建",
+    "subtitle": "为每个职业每组选择2张卡。",
+    "difficulty-eyebrow": "难度",
+    "difficulty": {
+      "easy": "简单",
+      "normal": "普通",
+      "hard": "困难"
+    },
+    "groups": {
+      "attack1": "攻击 · 伤害",
+      "attack2": "攻击 · 控制",
+      "defense1": "防御 · 强力",
+      "defense2": "防御 · 轻型",
+      "attack1-tooltip": "攻击 - 伤害",
+      "attack2-tooltip": "攻击 - 控制",
+      "defense1-tooltip": "防御 - 强力",
+      "defense2-tooltip": "防御 - 轻型"
+    },
+    "targets": {
+      "single": "目标：1名敌人",
+      "self": "目标：自身",
+      "lowest_ally": "目标：最低HP盟友",
+      "all_allies": "目标：所有盟友",
+      "area": "目标：3x3范围"
+    },
+    "tooltip": {
+      "power-with": "威力 {power}",
+      "power-none": "威力 —",
+      "target-prefix": "目标 · {target}"
+    },
+    "footer": {
+      "deck-label": "卡组",
+      "atk-label": "攻",
+      "def-label": "防",
+      "empty-slot": "—",
+      "power-prefix": "威 {power}",
+      "shortcuts": "快捷键 · 1-4选择 · Tab切换职业 · Enter开始",
+      "progress": "单位就绪 · {done} / 4    每列选择2张卡"
+    },
+    "buttons": {
+      "random": "随机",
+      "default": "默认",
+      "restore": "恢复",
+      "start": "开始"
+    },
+    "tab-ready-suffix": "{role} ✓",
+    "passives": {
+      "king": "被动：王者保护 — 每回合护盾刷新，受到伤害-15%。",
+      "warrior": "被动：守护者 — 相邻盟友减伤-15%。",
+      "specialist": "被动：燃烧 — 攻击使敌方治疗减少20%持续1回合。",
+      "executor": "被动：孤立 — 没有相邻者时伤害+15%。"
+    }
+  },
+  "lobby": {
+    "central-play-title": "开始",
+    "central-play-subtitle": "选择战斗模式",
+    "play-modes-title": "游戏模式",
+    "nav": {
+      "shop": "商店",
+      "skills": "技能",
+      "training": "训练",
+      "ranking": "排名"
+    },
+    "battlepass": {
+      "line-1": "战斗",
+      "line-2": "通行证",
+      "rewards-max": "奖励MAX"
+    },
+    "offline": {
+      "title": "团队突袭",
+      "subtitle": "离线",
+      "popup-eyebrow": "即将推出",
+      "popup-body": "团队突袭系统"
+    },
+    "sound-toggle": {
+      "on": "声音",
+      "muted": "静音"
+    },
+    "news-ticker": "     欢迎来到Draft Game！  •  商店有新卡包！  •  PvP战斗已开放！  •  训练模式可用！     "
+  },
+  "login": {
+    "tab": {
+      "login": "登录",
+      "register": "注册"
+    },
+    "title-login": "登录",
+    "title-register": "创建账户",
+    "submit-login": "登录",
+    "submit-register": "创建账户",
+    "fields": {
+      "username-label": "用户名",
+      "username-placeholder": "Nick",
+      "password-label": "密码",
+      "password-placeholder": "••••••••",
+      "email-label": "邮箱",
+      "email-placeholder": "you@example.com",
+      "register-password-hint": "至少6个字符"
+    },
+    "remember-me": "记住我",
+    "forgot-password": "忘记密码？",
+    "verify": {
+      "eyebrow": "验证",
+      "title": "邮箱验证码",
+      "body": "已向你的邮箱发送6位验证码。\n请在下方输入。",
+      "code-label": "验证码",
+      "code-placeholder": "000000",
+      "submit": "验证",
+      "resend": "重新发送验证码",
+      "sending": "发送中…"
+    }
+  },
+  "menu": {
+    "title": "DRAFT",
+    "subtitle": "战术对战",
+    "studio-credit": "由 Codeforje VIO 出品",
+    "studio-name": "Codeforje VIO",
+    "tagline-1": "策略。战术。征服。",
+    "tagline-2": "组建你的卡组，在4v4战斗中击败敌方国王",
+    "hint": "点击进入",
+    "version-tag": "v1.0"
+  },
+  "profile": {
+    "title": "个人资料",
+    "tagline": "王国召唤师",
+    "stats": {
+      "wins": "胜利",
+      "losses": "失败",
+      "win-rate": "胜率",
+      "gold": "金币",
+      "dg": "DG",
+      "ranked-points": "排位分"
+    },
+    "mastery-eyebrow": "精通",
+    "mastery": {
+      "attack": "攻击",
+      "defense": "防御"
+    }
+  },
+  "skill-upgrade": {
+    "title": "管理技能",
+    "deck-section": {
+      "header": "已装备技能",
+      "equipped-counter": "{equipped} / 8",
+      "empty-slot": "空",
+      "slots": {
+        "atk1": "攻 1",
+        "atk2": "攻 2",
+        "def1": "防 1",
+        "def2": "防 2"
+      }
+    },
+    "inventory-section": {
+      "header": "背包",
+      "hint": "点击或拖动以装备",
+      "all-equipped": "全部已装备",
+      "owned-counter": "{owned} / {max}"
+    },
+    "groups": {
+      "attack1": "攻击 · 伤害",
+      "attack2": "攻击 · 控制",
+      "defense1": "防御 · 强力",
+      "defense2": "防御 · 轻型"
+    },
+    "level-up-banner": "升级！"
+  },
+  "settings": {
+    "title": "设置",
+    "sections": {
+      "audio": "音频",
+      "language": "语言",
+      "account": "账户"
+    },
+    "audio": {
+      "sound-label": "声音",
+      "sound-on": "音效已开启",
+      "sound-off": "音效已关闭"
+    },
+    "language": {
+      "field-label": "选择你的语言"
+    },
+    "gameplay": {
+      "bot-difficulty-label": "机器人难度"
+    },
+    "account": {
+      "session-label": "会话",
+      "session-description": "退出当前账户",
+      "logout-button": "退出"
+    },
+    "logout-modal": {
+      "title": "退出",
+      "body": "你将与王国断开连接。继续？",
+      "confirm": "退出登录"
+    },
+    "footer": {
+      "credits": "Draft Game v1.0  ·  由 Caio Sensini 制作"
+    }
+  }
 }
