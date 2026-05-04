@@ -1,3 +1,339 @@
 {
-  "_meta": { "lang": "pt-BR" }
+  "_meta": { "lang": "pt-BR" },
+  "roles": {
+    "specialist": "Especialista",
+    "warrior": "Guerreiro",
+    "executor": "Executor",
+    "king": "Rei"
+  },
+  "passives": {
+    "specialist-name": "Queimação",
+    "specialist-text": "Alvos atingidos pelas skills do Especialista recebem -30% de cura por 2 turnos.",
+    "warrior-name": "Protetor",
+    "warrior-text": "Aliados adjacentes ao Guerreiro recebem -15% de dano.",
+    "executor-name": "Isolado",
+    "executor-text": "Quando não há aliados adjacentes, o Executor causa +20% de dano e recebe +10% de dano.",
+    "king-name": "Proteção Real",
+    "king-text": "O Rei recebe -20% de todo dano, incluindo true damage. Reis são imunes a cura direta — apenas regen e self-skills os curam."
+  },
+  "ls_a1": {
+    "name": "Bola de Fogo",
+    "description": "28 dano em área 2x2 no campo inimigo. Aplica queimação 6/turno por 2 turnos.",
+    "long-description": "O Especialista canaliza uma esfera flamejante e a arremessa contra o campo adversário, detonando em uma área quadrada 2x2 e causando 28 de dano físico inicial em todos os alvos atingidos. Cada inimigo afetado também recebe Queimação, um DoT de fogo que aplica 6 de dano por turno durante 2 turnos. A passiva da classe, Queimação, reforça o combo: alvos atingidos têm sua cura recebida reduzida em 30% pelos próximos 2 turnos, dificultando que o time inimigo recupere o desgaste. Skill de abertura padrão para fragmentar agrupamentos e iniciar pressão sustentada no campo inimigo."
+  },
+  "ls_a2": {
+    "name": "Chuva de Mana",
+    "description": "22 dano em 2 ticks (11+11) em linha vertical de 3 tiles no campo inimigo.",
+    "long-description": "O Especialista invoca uma chuva de energia mágica que percorre uma linha vertical de 3 tiles no campo inimigo, batendo o mesmo alvo duas vezes consecutivas com 11 de dano por tick (22 no total). Cada tick é resolvido individualmente, então shields ou esquivas só absorvem o golpe correspondente — o segundo tick ainda atinge mesmo se o primeiro for evitado. O dano por tick passa pela mitigação de DEF normalmente. Boa ferramenta contra alvos com shields baixos ou para ativar gatilhos de dano que reagem a múltiplos hits no mesmo turno."
+  },
+  "ls_a3": {
+    "name": "Raio Purificador",
+    "description": "25 dano + purge em inimigos na linha. Aliados atingidos ganham shield 10.",
+    "long-description": "Um feixe luminoso atravessa toda a arena em uma linha horizontal de 6 tiles, causando 25 de dano em cada inimigo no caminho e aplicando Purge — remove todos os buffs ativos (atk_up, def_up, regen, shield, etc.) dos alvos atingidos. Aliados na trajetória recebem 10 de shield e não tomam dano. Skill versátil para anular composições baseadas em buffs sustentados (Adrenalina, Avançar, Aura de Proteção) e ao mesmo tempo proteger a frente do próprio time. Ideal contra inimigos que dependem de stack de buffs para sustentar combate prolongado."
+  },
+  "ls_a4": {
+    "name": "Explosão Central",
+    "description": "1º uso: marca o alvo (não-removível). 2º uso em marcado: 50 dano + 50% extra se alvo tem debuff. Ignora Esquiva e imunidades.",
+    "long-description": "Skill de duas fases. No primeiro uso, marca um inimigo com Marca da Detonação — uma marca permanente que NÃO pode ser removida por purge, cleanse ou imunidade. No segundo uso, detona a marca, causando 50 de dano direto. Se o alvo possuía qualquer debuff ativo no momento da detonação (bleed, burn, poison, stun, snare, silence, def_down, mov_down, atk_down), a explosão é amplificada em +50%, totalizando 75 de dano. A detonação ignora completamente Esquiva, shields e imunidades — é dano garantido. Ferramenta de execução pesada que recompensa setups com debuffs prévios do time."
+  },
+  "ls_a5": {
+    "name": "Orbe de Lentidão",
+    "description": "12 dano em área 3x3. def_down 25% + mov_down 1 por 1 turno.",
+    "long-description": "O Especialista projeta um orbe gravitacional que detona em uma área 3x3, causando 12 de dano e aplicando dois debuffs em todos os alvos atingidos: def_down de 25% (reduz a defesa em 25% por 1 turno) e mov_down de 1 (reduz a mobilidade em 1 casa por 1 turno). Skill de setup defensivo: prepara terreno para os atacantes do time finalizarem alvos com DEF reduzida e baixa capacidade de fuga. Combina especialmente bem com habilidades de dano em área que aproveitam a janela de def_down."
+  },
+  "ls_a6": {
+    "name": "Correntes Rígidas",
+    "description": "10 dano em formato + (5 casas). Prende inimigos por 1 turno.",
+    "long-description": "Correntes mágicas brotam do solo em padrão de cruz (5 casas: centro + 4 adjacentes), causando 10 de dano em cada inimigo atingido e aplicando Snare por 1 turno. Snare impede o movimento mas NÃO impede o uso de skills — diferente de Stun. Skill de controle posicional: trava inimigos em posições desfavoráveis para os ataques de área do time, ou impede o recuo de alvos prestes a serem finalizados. O formato em + cobre alvos centrais e adjacentes, ideal contra agrupamentos ou linhas inimigas."
+  },
+  "ls_a7": {
+    "name": "Névoa",
+    "description": "Toda arena inimiga. Aliados: def_up 15%. Inimigos: def_down 15% + cura recebida -30% por 2 turnos.",
+    "long-description": "O Especialista invoca uma névoa densa que cobre toda a arena por 2 turnos. Aliados dentro da névoa recebem +15% de DEF. Inimigos dentro da névoa recebem -15% de DEF e -30% de cura recebida (todas as fontes — heal direto, regen, lifesteal). Skill de campo que altera o ritmo da partida sem causar dano: cria uma janela de 2 turnos onde o time aplica mais pressão e o inimigo tem mais dificuldade de sustentar. Combina com qualquer composição de dano sustentado, especialmente DoTs e ataques múltiplos."
+  },
+  "ls_a8": {
+    "name": "Congelamento",
+    "description": "18 dano + stun 1t + def_down 20% por 1 turno.",
+    "long-description": "Um pulso de gelo concentrado atinge um único alvo, causando 18 de dano e aplicando Stun por 1 turno + def_down de 20% por 1 turno. Stun impede tanto movimento quanto uso de skills — é o controle mais forte do jogo. Skill de pick: isola um alvo prioritário (geralmente um Executor ou Especialista inimigo) e o tira completamente do próximo turno enquanto o time foca dano nele com a DEF reduzida. Stun não pode ser empilhado com outro Stun ativo, mas combina com qualquer outro debuff."
+  },
+  "ls_d1": {
+    "name": "Cura Suprema",
+    "description": "Cura 35 HP em 1 aliado (não-rei).",
+    "long-description": "O Especialista canaliza uma onda de energia restauradora em um único aliado, devolvendo 35 de HP instantaneamente. A cura NÃO afeta Reis — eles são imunes a cura direta pela regra global de Imunidade Real. Está sujeita ao Heal Cap (limite de cura recebida por turno) e tem sua eficácia reduzida em 30% se o alvo está sob Queimação. Skill de manutenção pesada para recuperar Guerreiros tanqueando dano ou Executores no limiar da execução. Sempre é resolvida após DoTs no turno, então nunca desperdiça cura em alvo prestes a sangrar."
+  },
+  "ls_d2": {
+    "name": "Renascimento Parcial",
+    "description": "Revive latente (2 turnos) no aliado de menor HP (não-rei). Revive com 25 HP se morrer. Máximo 1x por aliado por partida.",
+    "long-description": "O Especialista marca o aliado com menor HP atual (excluindo o Rei) com um buffer de Revive latente que dura 2 turnos. Se o aliado morrer durante essa janela, ele revive imediatamente com 25 de HP no mesmo tile, com todos os debuffs e DoTs limpos. Cada aliado só pode ser ressuscitado uma vez por partida, então o gatilho é consumido permanentemente após uso. Skill de sustain estratégico contra burst — força o inimigo a queimar duas execuções no mesmo alvo. Não funciona em Reis."
+  },
+  "ls_d3": {
+    "name": "Campo de Cura",
+    "description": "Cura 12 HP + shield 10 (1t) em área 3x3. Rei só recebe shield.",
+    "long-description": "O Especialista cria um campo de luz curativa em área 3x3, restaurando 12 de HP e aplicando 10 de shield (1 turno) em todos os aliados na área. Reis recebem APENAS o shield — não recebem a cura, conforme a regra de Imunidade Real à cura direta. O shield é capado em 100 HP total acumulado no alvo. Skill de manutenção em área para times agrupados, ideal logo após trocas de dano em pleno meio do mapa. Combina muito bem com formações compactas e composições com Guerreiros à frente."
+  },
+  "ls_d4": {
+    "name": "Proteção",
+    "description": "Formato + (5 casas). Remove todos debuffs aliados + imunidade a novos debuffs por 1 turno.",
+    "long-description": "Cleanse em área no formato de cruz (centro + 4 adjacentes), removendo todos os debuffs ativos dos aliados afetados (bleed, burn, poison, stun, snare, silence, def_down, mov_down, atk_down, marcas) e concedendo imunidade total a novos debuffs por 1 turno. Não causa dano e não cura — é puramente uma resposta a setups de controle e DoT pesados. Ideal contra times que dependem de stack de bleeds (Executor) ou disabilities (Stun de Congelamento, Snare de Correntes). A janela de imunidade dura apenas 1 turno, então timing é tudo."
+  },
+  "ls_d5": {
+    "name": "Campo de Cura Contínuo",
+    "description": "Regen 6 HP/turno por 2 turnos em área 3x3. Rei não recebe. Cancelado se aliado tomar dano.",
+    "long-description": "Um campo de regeneração estacionário cobre uma área 3x3 por 2 turnos. Cada aliado dentro recebe Regen de 6 HP por turno (12 total se ficar 2 turnos) — Reis não recebem. O regen tem uma cláusula importante: se o aliado tomar QUALQUER dano enquanto está no campo, o regen é cancelado para aquele aliado. Skill de sustain pós-luta — colocada em áreas seguras, longe do front, para recompor a equipe entre confrontos. Não é uma skill de manutenção em meio a troca de golpes."
+  },
+  "ls_d6": {
+    "name": "Esquiva",
+    "description": "Evita completamente o primeiro ataque direto no próximo turno.",
+    "long-description": "O Especialista assume postura evasiva e evita completamente o próximo ataque direto recebido no próximo turno. Esquiva absorve apenas um hit, depois é consumida — múltiplos atacantes podem ainda quebrá-la em sequência. Funciona contra dano direto (damage, true_damage) e área que atinge o caster. NÃO bloqueia DoTs já aplicados (bleed, burn, poison) nem efeitos sem dano (push, pull, stun, snare). Carta compartilhada entre Especialista, Executor e Rei — cada classe tem sua versão idêntica. Excelente carta de bait contra Executores em modo isolado."
+  },
+  "ls_d7": {
+    "name": "Bloqueio Total",
+    "description": "Shield 60. Persiste até ser quebrado ou 2 turnos.",
+    "long-description": "Concede um shield de 60 HP ao caster, persistindo até ser totalmente consumido ou expirar em 2 turnos — o que vier primeiro. O shield está sujeito ao Shield Cap global de 100 HP acumulado por unidade — se o caster já tem shield ativo, o excedente é descartado. O shield absorve dano antes do HP, mas DoTs (bleed, burn, poison) ignoram shield e batem direto no HP. Skill de proteção pesada compartilhada entre Especialista e Executor — a versão do Guerreiro é Fortaleza Inabalável (mecânica diferente)."
+  },
+  "ls_d8": {
+    "name": "Aura de Proteção",
+    "description": "Shield 12 + atk_up 10% por 1 turno em área diamante r2.",
+    "long-description": "Uma aura protetora cobre uma área em formato de diamante de raio 2 (cruz expandida, ~13 tiles) ao redor do caster. Todos os aliados na área recebem 12 de shield (sujeito ao Shield Cap de 100) e atk_up de 10% por 1 turno. Skill ofensivo-defensiva que prepara um turno de ataque coordenado: o time inteiro entra com mais sustentação e mais dano de saída. Boa em composições agressivas que querem trocar HP por kills, ou em rodadas de Overtime onde cada turno conta mais."
+  },
+  "lw_a1": {
+    "name": "Colisão Titânica",
+    "description": "22 dano em retângulo 6x2 vertical + push 1 sqm. Se bloqueado: snare 1t.",
+    "long-description": "O Guerreiro avança como uma muralha em movimento, atingindo todos os inimigos em um retângulo vertical 6x2 à frente, causando 22 de dano e empurrando-os 1 tile para trás. Se o push de algum alvo for bloqueado por uma parede ou outro inimigo, esse alvo recebe Snare por 1 turno (não pode mover). Skill de abertura agressiva que reposiciona toda uma fileira inimiga e separa flanco do core — ou trava alvos contra obstáculos. Combina com skills de controle que aproveitam alvos snared como Marca da Morte ou Bomba de Espinhos."
+  },
+  "lw_a2": {
+    "name": "Impacto",
+    "description": "28 dano em área 3x3. def_down 18% + mov_down 1 por 1 turno.",
+    "long-description": "Um golpe pesado de impacto detona em área 3x3 ao redor do alvo, causando 28 de dano em todos os atingidos e aplicando dois debuffs por 1 turno: def_down de 18% (reduz a defesa em 18%) e mov_down de 1 (reduz mobilidade em 1 casa). Skill de pressão coordenada: enfraquece a defesa de um agrupamento e limita o recuo, abrindo janela para os Executores do time finalizarem alvos com DEF reduzida no próximo turno."
+  },
+  "lw_a3": {
+    "name": "Golpe Devastador",
+    "description": "30 dano em área 2x2. Remove buffs e quebra shields dos atingidos.",
+    "long-description": "O Guerreiro desfere um golpe colossal em área 2x2, causando 30 de dano e aplicando Purge em todos os alvos atingidos: remove todos os buffs ativos (atk_up, def_up, regen, evade, reflect) e quebra shields completamente, ignorando o Shield Cap. Skill anti-bunker excelente contra composições defensivas — desmonta Bloqueio Total, Aura de Proteção, Escudo do Protetor de uma vez. O dano de 30 vem antes da remoção do shield, então o shield ainda absorve a primeira leva, mas qualquer dano subsequente do time naquele turno bate diretamente no HP."
+  },
+  "lw_a4": {
+    "name": "Investida Brutal",
+    "description": "24 dano em linha vertical 3 sqm. Linha central: push 1 + snare 1t se bloqueado. Linhas cima/baixo: empurradas perpendicular.",
+    "long-description": "O Guerreiro avança em linha reta vertical de 3 tiles, causando 24 de dano em todos os atingidos. O push é dividido por linha: a linha central é empurrada 1 tile na direção do avanço (snare 1t se o push for bloqueado), enquanto as linhas superior e inferior são empurradas perpendicularmente, abrindo um corredor. Skill de penetração que separa formações inimigas em três pedaços distintos, criando flancos isolados que podem ser eliminados individualmente nos próximos turnos."
+  },
+  "lw_a5": {
+    "name": "Provocação",
+    "description": "10 dano + def_down 15% + silence_defense 1t em 1 inimigo.",
+    "long-description": "O Guerreiro provoca um único inimigo, causando 10 de dano e aplicando dois debuffs: def_down de 15% por 1 turno e silence_defense por 1 turno (impede o uso de qualquer skill defensiva). Skill de bait pesado: forçar um Especialista ou Executor a ser executado sem poder usar Esquiva, Bloqueio Total ou Refletir. Combina perfeitamente com burst do time no turno seguinte — o alvo silenciado não consegue se proteger e a DEF reduzida amplifica o dano efetivo."
+  },
+  "lw_a6": {
+    "name": "Muralha Viva",
+    "description": "Parede de 2 sqm vertical no campo inimigo dura 2t. Inimigos adjacentes: def_down 15%, mov_down 1, 3 dano/turno.",
+    "long-description": "O Guerreiro invoca uma parede viva de 2 tiles verticais no campo inimigo, persistindo por 2 turnos. Inimigos adjacentes à parede recebem def_down de 15%, mov_down de 1 e tomam 3 de dano por turno enquanto permanecerem adjacentes. A parede é destruída automaticamente após 2 turnos OU se atingida por qualquer skill atk1 (alta prioridade). Skill de controle de zona: força o inimigo a desviar a formação ou pagar penalidades por permanecer perto, criando dilemas posicionais que beneficiam o time atacante."
+  },
+  "lw_a7": {
+    "name": "Investida",
+    "description": "12 dano em linha vertical 3 sqm. def_down 15% + mov_down 1 por 1 turno.",
+    "long-description": "Versão mais leve de Investida Brutal: o Guerreiro avança em linha vertical de 3 tiles, causando 12 de dano em todos os atingidos e aplicando def_down de 15% e mov_down de 1 por 1 turno. Sem push, sem snare. Skill de pressão sustentada e pickada: dano modesto mas com debuffs valiosos para preparar o follow-up do time. Boa em rotação com outras atk2 do Guerreiro para manter a frente inimiga sempre debilitada."
+  },
+  "lw_a8": {
+    "name": "Prisão de Muralha Morta",
+    "description": "12 dano no centro + 8 paredes temporárias ao redor. Inimigos dentro: snare 2t. Paredes quebram com qualquer atk1.",
+    "long-description": "O Guerreiro cria uma prisão de muralhas mortas: causa 12 de dano em um tile central e ergue 8 paredes formando um anel ao redor (raio 1). Inimigos dentro da prisão recebem Snare por 2 turnos — não podem mover, mas ainda podem usar skills. As paredes da prisão são frágeis: qualquer skill atk1 atravessando a parede a destrói. Skill de captura forte para isolar um Executor ou Especialista inimigo do resto do time, dando 2 turnos de janela para focá-lo enquanto seus aliados não conseguem chegar facilmente."
+  },
+  "lw_d1": {
+    "name": "Escudo do Protetor",
+    "description": "Move até 2 sqm + cria parede de escudo 3 casas à frente vertical. Aliados no retângulo 6 sqm atrás: -50% dano por 1 turno.",
+    "long-description": "O Guerreiro pode se mover até 2 tiles antes de canalizar a skill (preMovement), depois cria uma parede de escudo de 3 tiles verticais à sua frente. Todos os aliados em um retângulo 6x2 atrás da parede recebem -50% de dano por 1 turno. Skill defensiva de pico — prepara o time para um turno de absorção pesada antes de uma troca decisiva. O reposicionamento prévio é crucial: o Guerreiro escolhe a posição ideal para a parede cobrir o máximo de aliados. Não bloqueia DoTs."
+  },
+  "lw_d2": {
+    "name": "Guardião",
+    "description": "60% do dano recebido pelo aliado é redirecionado ao guerreiro, reduzido 30% no guerreiro (1 turno).",
+    "long-description": "O Guerreiro marca o aliado de menor HP (não-rei) como protegido. Por 1 turno, 60% de todo o dano que esse aliado receber é redirecionado para o Guerreiro, e esse dano redirecionado ainda passa por uma redução adicional de 30% no Guerreiro (efetivamente o aliado recebe 40% e o Guerreiro recebe 60% × 0.7 = 42% do dano original). Skill de salvamento contra burst — protege Especialistas e Executores na linha de fogo. Combina com a passiva Protetor (-15% dano em adjacentes) e Resistência Absoluta (-65% dano)."
+  },
+  "lw_d3": {
+    "name": "Resistência Absoluta",
+    "description": "Guerreiro + aliado atrás: -65% dano por 1 turno. Pode mover 1 sqm antes.",
+    "long-description": "O Guerreiro pode se mover até 1 tile antes de canalizar (preMovement), depois assume postura de resistência absoluta. Por 1 turno, ele e o aliado imediatamente atrás dele recebem -65% de todo dano (incluindo true damage, mas não DoTs já aplicados). Skill de absorção pesada — costuma sobreviver a Investida Brutal, Bola de Fogo e até burst de Marca da Morte. O reposicionamento prévio garante que o aliado certo (geralmente o Especialista ou Rei) fique protegido atrás. Funciona perfeitamente como contra-resposta a Domínio Real ou Tempestade de Lâminas."
+  },
+  "lw_d4": {
+    "name": "Fortaleza Inabalável",
+    "description": "-80% dano recebido por 1 turno. Não pode mover no próximo turno de movimento.",
+    "long-description": "O Guerreiro assume forma de fortaleza viva. Por 1 turno, recebe -80% de todo dano (incluindo true damage). O custo: ele NÃO pode se mover no próximo turno de movimento, ficando preso onde está. Skill de troca de tempo: imune a praticamente qualquer combo de burst, mas perde mobilidade tática por uma rodada. Combina mal com pushes inimigos (Empurrão Real, Colisão Titânica) que podem deslocá-lo de uma posição estratégica enquanto está parado. Carta compartilhada entre Guerreiro e Rei."
+  },
+  "lw_d5": {
+    "name": "Escudo de Grupo",
+    "description": "Shield 15 em todos aliados por 2 turnos.",
+    "long-description": "O Guerreiro distribui um escudo coletivo: todos os 4 aliados (incluindo ele mesmo e o Rei) recebem 15 de shield, persistindo por 2 turnos ou até ser quebrado. Cada shield é independente — Reis recebem normalmente, ao contrário das curas. Sujeito ao Shield Cap de 100 HP por unidade. Skill de manutenção em equipe — não é tão pesada quanto Escudo do Protetor, mas se aplica ao time inteiro e dura 2 turnos. Boa para sustentar trocas de área prolongadas ou turnos de Overtime."
+  },
+  "lw_d6": {
+    "name": "Postura Defensiva",
+    "description": "Aliados em 3x3 ao redor: -25% dano por 1 turno.",
+    "long-description": "O Guerreiro adota postura defensiva. Aliados em uma área 3x3 ao redor dele (incluindo ele mesmo) recebem -25% de dano por 1 turno. Não há shield, não há cura — é puramente uma redução de dano de saída no inimigo, aplicada a todos os hits recebidos pelos aliados na área no próximo turno. Mais leve que Resistência Absoluta mas com cobertura maior. Combina com a passiva Protetor (-15%) para um efetivo -40% em aliados adjacentes ao Guerreiro."
+  },
+  "lw_d7": {
+    "name": "Avançar",
+    "description": "Move aliados em 4x4 1 casa à frente. +1 mov + -10% dano + +10% ATK por 1 turno.",
+    "long-description": "O Guerreiro lidera o avanço do time. Todos os aliados em um quadrante 4x4 ao redor dele se movem 1 tile à frente (na direção do campo inimigo) e recebem três buffs por 1 turno: +1 mov (mobilidade extra), -10% dano recebido e +10% ATK. Skill ofensivo-coordenada que reposiciona o time inteiro mais perto do inimigo enquanto adiciona dano e proteção — perfeita para iniciar uma troca pesada ou pressionar o Rei adversário. Espelhada por Bater em Retirada, que faz o oposto."
+  },
+  "lw_d8": {
+    "name": "Bater em Retirada",
+    "description": "Move todos aliados 1 casa pra trás em 4x4. +1 mov próximo turno + -15% dano por 1 turno.",
+    "long-description": "O Guerreiro ordena recuo tático. Todos os aliados em um quadrante 4x4 ao redor dele se movem 1 tile para trás (em direção ao próprio campo) e recebem +1 mov no próximo turno e -15% de dano por 1 turno. Skill puramente defensiva-reposicional: evita um burst inimigo previsto, abre distância de Executores em modo Isolado, ou simplesmente refresca a formação após uma troca ruim. Espelha Avançar para times que precisam ceder espaço para sobreviver."
+  },
+  "le_a1": {
+    "name": "Corte Mortal",
+    "description": "45 dano + remove debuffs do alvo. Se alvo tinha bleed: +50% dano (67 total).",
+    "long-description": "O Executor desfere um corte preciso e letal em um único alvo, causando 45 de dano direto e aplicando Cleanse no alvo (remove todos os debuffs ativos dele). Se o alvo possuía Bleed ativo no momento do corte, o dano é amplificado em +50% (totalizando 67 de dano). Skill de execução pesada — recompensa setups onde um aliado aplicou bleed (Bomba de Espinhos, Corte Hemorragia) no turno anterior. A remoção de debuffs após o dano significa que se o alvo sobreviver, vai estar limpo para o próximo turno — variável tática a considerar."
+  },
+  "le_a2": {
+    "name": "Tempestade de Lâminas",
+    "description": "26 dano em área 3x3. Se alvos tinham bleed: +50% dano neles.",
+    "long-description": "O Executor desencadeia uma tempestade de lâminas em área 3x3, causando 26 de dano em todos os inimigos atingidos. Cada alvo individualmente recebe +50% de dano se estava sob efeito de Bleed no momento do hit (totalizando 39 de dano nesse alvo, mas mantendo 26 nos outros). Skill de cleanup em área que combina com qualquer fonte de bleed do time — especialmente Bomba de Espinhos do próprio Executor ou Marca da Morte. Pode pegar 4 alvos simultaneamente em formações compactas."
+  },
+  "le_a3": {
+    "name": "Disparo Preciso",
+    "description": "30 true damage (ignora DEF). Se alvo tinha bleed: ignora também shields.",
+    "long-description": "O Executor dispara um projétil de precisão letal em um único alvo, causando 30 de True Damage — dano puro que IGNORA toda mitigação por DEF, passivas (incluindo Proteção Real do Rei reduz, mas não anula) e qualquer redução percentual de dano. Se o alvo estava com Bleed ativo no momento do disparo, o tiro também IGNORA todos os shields ativos no alvo, batendo direto no HP. Skill de execução cirúrgica contra Reis defensivos ou Guerreiros tanqueando atrás de Bloqueio Total."
+  },
+  "le_a4": {
+    "name": "Corte Preciso",
+    "description": "22 dano em 2 sqm horizontal + purge.",
+    "long-description": "O Executor desfere dois cortes em sequência atingindo uma linha horizontal de 2 tiles, causando 22 de dano e aplicando Purge em todos os atingidos (remove todos os buffs ativos: atk_up, def_up, regen, evade, shield, etc.). Skill anti-buff: anula composições baseadas em sustentação de buffs (Adrenalina, Aura de Proteção, Escudo de Grupo). Sinergia clássica: aliado aplica Empurrão Real para alinhar inimigos em linha → Corte Preciso para purgar todos de uma vez."
+  },
+  "le_a5": {
+    "name": "Corte Hemorragia",
+    "description": "8 dano + bleed 4/turno por 3t em 2 sqm horizontal. Acumulativo se re-aplicado.",
+    "long-description": "O Executor desfere um corte rasante em uma linha horizontal de 2 tiles, causando 8 de dano inicial e aplicando Bleed: 4 de dano por turno durante 3 turnos (12 de dano total). Bleed é DoT físico que ignora shields e bate direto no HP. Se Corte Hemorragia for usado novamente em um alvo já sangrando, o bleed é STACKADO — duas aplicações simultâneas (8 de dano por turno). Skill de pressão sustentada que prepara setups para Corte Mortal e Tempestade de Lâminas (que dão +50% se o alvo está com bleed)."
+  },
+  "le_a6": {
+    "name": "Bomba de Espinhos",
+    "description": "10 dano + bleed 5/turno por 2t em diamante r2.",
+    "long-description": "O Executor arremessa uma bomba de espinhos que detona em formato de diamante de raio 2 (~13 tiles), causando 10 de dano inicial em todos os atingidos e aplicando Bleed de 5 por turno durante 2 turnos (10 de DoT total). Skill de cobertura larga para aplicar bleed em múltiplos alvos simultaneamente, preparando o terreno para Corte Mortal e Tempestade de Lâminas. Diferente de Corte Hemorragia, é em área e atinge mais alvos por vez, mas com duração menor — escolha pela cobertura, não pela duração."
+  },
+  "le_a7": {
+    "name": "Marca da Morte",
+    "description": "12 dano em 8 sqm vertical (4 de baixo, 2 grossura). Remove shields (cura 20% deles como HP). Bleed 8/turno por 2t.",
+    "long-description": "O Executor canaliza Marca da Morte em uma área retangular vertical de 8 tiles (4 de profundidade × 2 de largura). Causa 12 de dano em todos os atingidos, REMOVE todos os shields dos alvos (e cura o Executor em 20% do shield removido como HP) e aplica Bleed de 8 por turno durante 2 turnos (16 de DoT). Skill de execução em área anti-shield + sustento próprio + DoT pesado. Uma das skills mais punitivas contra times defensivos com Escudo de Grupo ou Bloqueio Total ativos. Combina com Corte Mortal no turno seguinte para finalizar alvos sangrando."
+  },
+  "le_a8": {
+    "name": "Armadilha Oculta",
+    "description": "Arma tile (não em casa ocupada). Ao pisar: 15 dano + snare 1t + bleed 4/turno por 3t.",
+    "long-description": "O Executor planta uma armadilha invisível em um tile vazio (não pode ser onde já tem unidade). A armadilha permanece até ser ativada. Quando QUALQUER inimigo entra no tile, é detonada: causa 15 de dano, aplica Snare por 1 turno (impede movimento) e Bleed de 4 por turno durante 3 turnos. Skill de zoneamento — força o inimigo a alterar sua rota ou pagar o preço. Combina com pushes do time (Empurrão Real, Colisão Titânica) que podem empurrar inimigos diretamente para a armadilha. Apenas 1 armadilha por Executor por vez."
+  },
+  "le_d1": {
+    "name": "Refletir",
+    "description": "-25% dano recebido + reflete o mitigado ao atacante no próximo turno.",
+    "long-description": "Por 1 turno, o Executor recebe -25% de todo dano e reflete EXATAMENTE o valor mitigado de volta ao atacante. Por exemplo: ataque de 40 → recebe 30, atacante leva 10 de reflect. Múltiplos atacantes geram múltiplos reflects, cada um proporcional ao dano original. Skill de bait perfeita contra Especialistas e Executores agressivos — eles se machucam tentando matar o caster. Não funciona contra DoTs já aplicados (bleed, burn, poison) nem contra true damage que ignora a redução percentual completamente em alguns casos."
+  },
+  "le_d2": {
+    "name": "Adrenalina",
+    "description": "+25% ATK por 2 turnos. Ao final: perde 15% HP máximo (bloqueável por shield).",
+    "long-description": "O Executor entra em modo de adrenalina extrema: ganha +25% de ATK por 2 turnos. No FINAL do segundo turno, sofre 15% do HP máximo como dano backlash (bloqueável por shield ativo no momento). Skill de risco/recompensa — produz dois turnos de burst extremo (especialmente em sinergia com Adrenalina + Ataque em Dobro), mas custa HP no final. Combina com aliados que possam aplicar shield no Executor antes do segundo turno expirar (Aura de Proteção, Escudo de Grupo) para anular o backlash."
+  },
+  "le_d3": {
+    "name": "Ataque em Dobro",
+    "description": "Próximo turno: 2 skills atk, 0 def. Cooldown: 2 turnos (não usável consecutivamente).",
+    "long-description": "Por 1 turno (o próximo), o Executor pode usar 2 skills de ataque em vez de 1, mas perde a possibilidade de usar qualquer skill defensiva nesse turno. Cooldown de 2 turnos — não pode ser ativado novamente até 2 turnos completos terem passado. Skill de pico de pressão — sobretudo combinada com Adrenalina (+25% ATK) e bleed prévios para amplificar dois Cortes Mortais ou um Corte Mortal + Disparo Preciso. Vulnerabilidade clara: o Executor não pode se proteger no turno do dobro de ataques, então deve estar em posição segura ou ter aliados protegendo."
+  },
+  "le_d4": {
+    "name": "Teleport",
+    "description": "Teleporta até 5 sqm. Consome próximo turno de movimento.",
+    "long-description": "O Executor teleporta instantaneamente para qualquer tile dentro de um raio de 5, IGNORANDO obstáculos, paredes e unidades pelo caminho. O custo: consome o próximo turno de movimento — ele não pode se mover livremente na próxima rodada. Skill de mobilidade tática extrema: aproxima rapidamente para finalizar alvos isolados ou foge de um cerco. Combina com o passivo Isolado (+20% dano sem aliados adjacentes) para chegar em flanco e abater alvos de support sem comprometer a estrutura do time."
+  },
+  "le_d5": {
+    "name": "Recuo Rápido",
+    "description": "Move até 2 sqm pra trás + shield 20 por 1 turno.",
+    "long-description": "O Executor recua até 2 tiles para trás (apenas em direção ao próprio campo) e ganha 20 de shield por 1 turno. O movimento e o shield são parte da mesma ação — não pode mover para frente nem para os lados. Skill de fuga leve para sair de pressão imediata sem comprometer turnos futuros. Mais barata que Teleport (não consome próximo turno de movimento), mas com alcance e flexibilidade menores. Excelente para escapar de armadilhas ou de adjacência indesejada (perdendo o bônus de Isolado)."
+  },
+  "le_d6": {
+    "name": "Esquiva",
+    "description": "Evita completamente o primeiro ataque direto no próximo turno.",
+    "long-description": "O Executor assume postura evasiva e evita completamente o próximo ataque direto recebido no próximo turno. Esquiva absorve apenas um hit, depois é consumida — múltiplos atacantes podem ainda quebrá-la em sequência. Funciona contra dano direto (damage, true_damage) e área que atinge o caster. NÃO bloqueia DoTs já aplicados nem efeitos sem dano (push, pull, stun, snare). Carta compartilhada entre Especialista, Executor e Rei — todas com mecânica idêntica. Ferramenta crucial contra burst pesado em Executores, que têm pouca DEF base (8)."
+  },
+  "le_d7": {
+    "name": "Bloqueio Total",
+    "description": "Shield 60. Persiste até ser quebrado ou 2 turnos.",
+    "long-description": "Concede um shield de 60 HP ao Executor, persistindo até ser totalmente consumido ou expirar em 2 turnos — o que vier primeiro. O shield está sujeito ao Shield Cap global de 100 HP acumulado por unidade — se já há shield ativo, o excedente é descartado. Absorve dano antes do HP, mas DoTs (bleed, burn, poison) ignoram shield e batem direto no HP. Carta compartilhada entre Especialista e Executor. Para o Executor, é mais valioso porque a passiva Isolado fica vulnerável quando ele se distancia de aliados — o shield compensa a falta de cobertura."
+  },
+  "le_d8": {
+    "name": "Shield",
+    "description": "Shield 25 por 1 turno.",
+    "long-description": "Concede ao Executor um shield rápido de 25 HP por 1 turno. Sujeito ao Shield Cap de 100 HP acumulado. Mais leve e mais barato que Bloqueio Total — útil em rotações onde se quer absorver um único hit sem comprometer 2 turnos de shield ativo. Skill de manutenção fina para Executores que dependem de mobilidade e timing curto. Não absorve DoTs (bleed, burn, poison) — apenas dano direto."
+  },
+  "lk_a1": {
+    "name": "Soco Real",
+    "description": "25 dano em 2 sqm horizontal + self shield 15 por 2 turnos.",
+    "long-description": "O Rei desfere um soco real em uma linha horizontal de 2 tiles à sua frente, causando 25 de dano em todos os inimigos atingidos. No mesmo turno, ele recebe 15 de self shield por 2 turnos (sujeito ao Shield Cap de 100 HP). Skill de pressão híbrida ataque-defesa — o Rei mantém pressão na frente enquanto se sustenta. Combina com a passiva Proteção Real (-20% dano recebido) para um efetivo bunker móvel. Reis não podem ser curados diretamente, mas podem ganhar shield — então essa é a forma principal de manter o Rei vivo."
+  },
+  "lk_a2": {
+    "name": "Chute Real",
+    "description": "27 dano em 2 sqm vertical + self shield 15 por 2 turnos.",
+    "long-description": "O Rei desfere um chute real em uma linha vertical de 2 tiles à sua frente, causando 27 de dano em todos os inimigos atingidos. Recebe 15 de self shield por 2 turnos. Variante vertical de Soco Real — escolha de orientação táctica conforme a formação inimiga. Combinada com Soco Real em rotação, garante que o Rei sempre tenha shield ativo (eles não overlapam — o segundo uso descarta o anterior se ainda estiver de pé). Esses 2 ataques são o pilar de manutenção do Rei em modo agressivo."
+  },
+  "lk_a3": {
+    "name": "Sequência de Socos",
+    "description": "15 dano em 3x2 + lifesteal 30%. Exceção à regra de imunidade do rei (self-heal da própria skill).",
+    "long-description": "O Rei desfere uma sequência de socos em rajada, causando 15 de dano em uma área 3x2 à frente. Recebe 30% do dano causado de volta como cura (Lifesteal) — exceção explícita à regra de Imunidade Real à cura, porque a skill é self-cast. Se atingir 4 alvos a 15 cada (60 total), recupera 18 HP de volta. Skill principal de sustento do Rei agressivo. Sinergiza com a passiva Proteção Real para sobreviver enquanto continua canalizando dano e se curando."
+  },
+  "lk_a4": {
+    "name": "Domínio Real",
+    "description": "18 dano em 3x3 + self shield = 25% do dano total causado por 1 turno.",
+    "long-description": "O Rei impõe seu domínio em área 3x3, causando 18 de dano em cada alvo atingido (até 9 alvos). Após o cálculo do dano total causado, recebe 25% desse total como self shield por 1 turno. Por exemplo: atinge 4 alvos = 72 de dano total = 18 de shield (sujeito ao Shield Cap de 100). Skill ofensivo-defensiva escalável — quanto mais inimigos pegos, mais shield o Rei recebe. Excelente em meio a brigas multiplayer onde múltiplos inimigos estão ao alcance."
+  },
+  "lk_a5": {
+    "name": "Empurrão Real",
+    "description": "12 dano em linha vertical 3 sqm até fim do mapa + push até 3 sqm.",
+    "long-description": "O Rei empurra com força brutal em uma linha vertical que vai do Rei até o fim do mapa (largura de 3 tiles). Causa 12 de dano em todos os inimigos no caminho e os empurra até 3 tiles para trás (na direção do empurrão). Se o push for bloqueado por parede ou outro inimigo, o alvo bloqueado recebe dano adicional de colisão (não-listado mecanicamente, mas conceitual). Skill de zoneamento massivo — limpa frente inteira, separa flancos, joga inimigos contra obstáculos."
+  },
+  "lk_a6": {
+    "name": "Contra-ataque",
+    "description": "15 dano em 3x3 + push 1 sqm afastando do centro. Centro não move.",
+    "long-description": "O Rei detona um contra-ataque em área 3x3 ao seu redor (ele é o centro). Causa 15 de dano em todos os inimigos na área e empurra cada um 1 tile na direção radial (afastando do centro). O Rei (centro) NÃO se move. Skill de saneamento de adjacência — remove inimigos que cercaram o Rei, criando espaço para retomar posição segura ou seguir com outras skills. Combina com Bater em Retirada para um recuo coordenado do time inteiro."
+  },
+  "lk_a7": {
+    "name": "Intimidação",
+    "description": "10 dano + teleporta alvo e adjacentes pra local escolhido. Não pode colocar em bordas.",
+    "long-description": "O Rei intimida um alvo: causa 10 de dano e teleporta o alvo MAIS todos os inimigos adjacentes a ele (até 5 unidades) para uma localização escolhida pelo caster (no campo do mapa, exceto bordas). Skill de reposicionamento ofensivo extremo — pode forçar um agrupamento inimigo a sair de uma posição defensiva forte e cair em uma armadilha do time. Não funciona em Reis (eles são imunes a teleport_target). Combina com Marca da Morte ou Bola de Fogo no destino para detonar todos os teleportados de uma vez."
+  },
+  "lk_a8": {
+    "name": "Desarme",
+    "description": "6 dano + cancela skill atk do alvo no turno + silence_attack 1t. Não afeta reis.",
+    "long-description": "O Rei desarma um inimigo: causa 6 de dano e CANCELA imediatamente qualquer skill de ataque que o alvo tenha selecionado para esse turno (a skill é descartada, sem custo, sem efeito). Adicionalmente, aplica silence_attack por 1 turno — o alvo não pode usar skills de ataque no próximo turno também. Não funciona em Reis (eles são imunes a esse silence). Skill de contra-jogada cirúrgica — invalida o turno ofensivo de um inimigo crítico (Executor preparando Corte Mortal, Especialista canalizando Bola de Fogo)."
+  },
+  "lk_d1": {
+    "name": "Fuga Sombria",
+    "description": "Teleporta qualquer lugar da metade aliada. Rei fica untargetable por skills single-target até receber dano ou mover.",
+    "long-description": "O Rei se torna invisível por um momento e teleporta para qualquer tile do próprio campo (metade aliada do mapa). Após o teleport, fica UNTARGETABLE por skills de single-target — ataques single-target não podem mirá-lo. A invisibilidade é quebrada se o Rei receber dano (de área ou DoT) ou se ele mover voluntariamente no próximo turno. Skill de evasão suprema contra burst combinado em single-target (Disparo Preciso, Corte Mortal, Marca da Morte). Áreas ainda atingem normalmente."
+  },
+  "lk_d2": {
+    "name": "Recuperação Real",
+    "description": "Recupera 20% HP max em 2 turnos (10% agora, 10% próximo turno se não tomar dano). Exceção à imunidade de cura do rei.",
+    "long-description": "O Rei canaliza Recuperação Real: recebe 10% do HP máximo de cura imediatamente (este turno) e mais 10% do HP máximo no próximo turno SE NÃO tomar dano nesse turno. Total possível: 20% do HP máximo. É uma exceção explícita à regra de Imunidade Real à cura — a skill é self-cast, então funciona. Skill de sustain de longa duração — exige 2 turnos sem ser pressionado para o efeito completo. Se o Rei toma dano após o primeiro tick, perde a segunda metade da cura."
+  },
+  "lk_d3": {
+    "name": "Sombra Real",
+    "description": "Cria 2 clones em células vazias. Rei pode trocar de posição com um. Clones duram 2 turnos. Inimigos não sabem qual é real.",
+    "long-description": "O Rei cria 2 clones visuais em tiles vazios próximos. Os clones duram 2 turnos e são visualmente idênticos ao Rei real. Inimigos não sabem qual é o verdadeiro até atacar — clones tomam o hit e desaparecem se atingidos. O Rei real pode trocar instantaneamente de posição com qualquer um dos clones a qualquer momento (ação livre, fora do uso de skills). Skill de ofuscação suprema — força o inimigo a desperdiçar 2 ataques em alvos errados ou jogar safe e perder janelas de oportunidade."
+  },
+  "lk_d4": {
+    "name": "Espírito de Sobrevivência",
+    "description": "Se HP ≤ 50%: +15% HP max + shield 10% HP max por 1 turno. Se HP > 50%: +10% HP max.",
+    "long-description": "Skill de sobrevivência adaptativa. Se o Rei está com HP ≤ 50% no momento do uso, ele ganha +15% do HP máximo (aumento permanente do HP atual e máximo) MAIS shield equivalente a 10% do HP máximo por 1 turno. Se o Rei está com HP > 50%, ganha apenas +10% do HP máximo (sem shield). Skill de virada de chave — quanto mais ferido o Rei, mais valor ela entrega. Os Reis começam com 180 HP, então um boost de 15% = +27 HP é significativo perto do limiar de execução."
+  },
+  "lk_d5": {
+    "name": "Escudo Self",
+    "description": "Shield 30 por 2 turnos.",
+    "long-description": "O Rei concede a si mesmo um shield de 30 HP por 2 turnos (sujeito ao Shield Cap de 100). Persiste até ser totalmente consumido ou expirar. Skill de manutenção genérica do Rei — junto com Soco Real e Chute Real, é uma das principais formas de manter shield ativo no Rei (que é imune a cura direta). Não absorve DoTs (bleed, burn, poison)."
+  },
+  "lk_d6": {
+    "name": "Fortaleza Inabalável",
+    "description": "-80% dano recebido por 1 turno. Não pode mover no próximo turno de movimento.",
+    "long-description": "O Rei se transforma em fortaleza viva. Por 1 turno, recebe -80% de todo dano (incluindo true damage). O custo: NÃO pode se mover no próximo turno de movimento, ficando preso onde está. Skill de troca de tempo — sobrevive a praticamente qualquer combo de burst, mas perde mobilidade tática por uma rodada. Carta compartilhada entre Guerreiro e Rei. Vulnerabilidade óbvia: pushes inimigos podem deslocar o Rei imobilizado de uma posição segura. Combina mal com Empurrão Real do oponente."
+  },
+  "lk_d7": {
+    "name": "Esquiva",
+    "description": "Evita completamente o primeiro ataque direto no próximo turno.",
+    "long-description": "O Rei assume postura evasiva e evita completamente o próximo ataque direto recebido no próximo turno. Esquiva absorve apenas um hit, depois é consumida — múltiplos atacantes podem quebrá-la em sequência. Funciona contra dano direto (damage, true_damage) e área que atinge o Rei. NÃO bloqueia DoTs já aplicados nem efeitos sem dano (push, pull, stun, snare). Carta compartilhada entre Especialista, Executor e Rei. Para o Rei, é a melhor defesa contra Disparo Preciso (true damage) que ignora a passiva Proteção Real."
+  },
+  "lk_d8": {
+    "name": "Ordem Real",
+    "description": "Rei volta pra posição inicial, aliados teleportados pra posições adjacentes. Aliados adjacentes: -15% dano. Rei: -15% por aliado adjacente (máx -45%) por 1 turno.",
+    "long-description": "Skill suprema de reagrupamento. O Rei teleporta para sua posição inicial (canto da metade aliada) e arrasta todos os 3 aliados (não-Rei) para tiles adjacentes ao Rei. Por 1 turno, todos os aliados adjacentes recebem -15% de dano e o Rei recebe -15% adicional por cada aliado adjacente (até 3 aliados = -45% no Rei). Skill de reset estratégico — útil quando o time foi disperso pelo inimigo, ou quando o Rei está em risco de execução e precisa de cobertura imediata. Não funciona se algum tile adjacente estiver bloqueado."
+  }
 }

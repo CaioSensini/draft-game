@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import { getAllCharacterAssets, getAllDesignSvgAssets, getAllLucideIconAssets, getAllSkillAssets } from '../utils/AssetPaths'
 import { colors, fonts, fontFamily, sizes } from '../utils/DesignTokens'
 import { initI18n } from '../i18n'
+import { registerSkillI18n } from '../i18n/skillI18n'
 
 /**
  * Pre-instantiate one short Text object per design-system font family.
@@ -88,9 +89,11 @@ export default class BootScene extends Phaser.Scene {
     // === I18N READINESS GATE ===
     // Loads detected language + PT-BR fallback bundle. Fails open: a rejection
     // here only means UI text falls back to raw key strings — game still boots.
-    this._i18nReady = initI18n().catch((err: unknown) => {
-      console.warn('[BootScene] i18n init failed, falling back to keys', err)
-    })
+    this._i18nReady = initI18n()
+      .then(() => registerSkillI18n())
+      .catch((err: unknown) => {
+        console.warn('[BootScene] i18n init failed, falling back to keys', err)
+      })
 
     // === LAYER 1: Solid dark base ===
     this.add.rectangle(width / 2, height / 2, width, height, colors.ui.bg)
