@@ -28,8 +28,12 @@ const W = SCREEN.W
 const H = SCREEN.H
 
 const ROLES: UnitRole[] = ['king', 'warrior', 'specialist', 'executor']
-const ROLE_LABELS: Record<UnitRole, string> = {
-  king: 'REI', warrior: 'GUERREIRO', specialist: 'ESPECIALISTA', executor: 'EXECUTOR',
+function roleLabel(role: UnitRole): string {
+  return t(`skills.roles.${role}`)
+}
+
+function matchModeLabel(mode: MatchMode): string {
+  return t(`scenes.lobby-shared.modes.${mode}`)
 }
 const CLASS_ACCENT: Record<UnitRole, number> = {
   king:       colors.class.king,
@@ -105,7 +109,7 @@ export default class CustomLobbyScene extends Phaser.Scene {
   // ═══════════════════════════════════════════════════════════════════════════
 
   private _rebuildSlots(): void {
-    const name = playerData.get().username || 'Jogador'
+    const name = playerData.get().username || t('scenes.lobby-shared.player-fallback')
     this.blueSlots = ROLES.map(r => ({ role: r, occupant: 'empty' as SlotOccupant, playerName: null }))
     this.redSlots  = ROLES.map(r => ({ role: r, occupant: 'empty' as SlotOccupant, playerName: null }))
     const count = SLOTS_PER_PLAYER[this.matchMode]
@@ -129,7 +133,7 @@ export default class CustomLobbyScene extends Phaser.Scene {
     const fromSlots = this.playerSide === 'blue' ? this.blueSlots : this.redSlots
     const toSlots = newSide === 'blue' ? this.blueSlots : this.redSlots
     const count = SLOTS_PER_PLAYER[this.matchMode]
-    const name = playerData.get().username || 'Jogador'
+    const name = playerData.get().username || t('scenes.lobby-shared.player-fallback')
 
     const targetIdxs: number[] = []
     for (let i = 0; i < 4 && targetIdxs.length < count; i++) {
@@ -199,7 +203,7 @@ export default class CustomLobbyScene extends Phaser.Scene {
     }).setOrigin(0.5).setLetterSpacing(3).setDepth(TBD + 1)
 
     // Mode switcher "ALTERAR MODO" (left-center)
-    const altModoBtn = UI.buttonGhost(this, 156, TOP_H / 2, 'ALTERAR MODO', {
+    const altModoBtn = UI.buttonGhost(this, 156, TOP_H / 2, t('scenes.lobby-shared.change-mode'), {
       w: 160,
       h: 32,
       onPress: () => this._showModeSwitcher(),
@@ -208,9 +212,9 @@ export default class CustomLobbyScene extends Phaser.Scene {
 
     // Mode selector (right) — 3 pill segments: SOLO / DUO / SQUAD
     const modes: Array<{ key: MatchMode; label: string }> = [
-      { key: 'solo',  label: 'SOLO'  },
-      { key: 'duo',   label: 'DUO'   },
-      { key: 'squad', label: 'SQUAD' },
+      { key: 'solo',  label: t('scenes.lobby-shared.modes.solo')  },
+      { key: 'duo',   label: t('scenes.lobby-shared.modes.duo')   },
+      { key: 'squad', label: t('scenes.lobby-shared.modes.squad') },
     ]
     const segW = 68
     const segH = 28
@@ -267,7 +271,7 @@ export default class CustomLobbyScene extends Phaser.Scene {
       panelY: BLUE_PANEL_Y,
       teamColor: colors.team.ally,
       teamColorHex: colors.team.allyHex,
-      title: 'TIME AZUL',
+      title: t('scenes.custom.blue-team'),
       slots: this.blueSlots,
       cardContainers: this.blueCards,
       side: 'blue',
@@ -279,7 +283,7 @@ export default class CustomLobbyScene extends Phaser.Scene {
       panelY: RED_PANEL_Y,
       teamColor: colors.team.enemy,
       teamColorHex: colors.team.enemyHex,
-      title: 'TIME VERMELHO',
+      title: t('scenes.custom.red-team'),
       slots: this.redSlots,
       cardContainers: this.redCards,
       side: 'red',
@@ -374,7 +378,7 @@ export default class CustomLobbyScene extends Phaser.Scene {
       container.add(bg)
 
       // Class label
-      container.add(this.add.text(0, -cardH / 2 + 19, ROLE_LABELS[slot.role], {
+      container.add(this.add.text(0, -cardH / 2 + 19, roleLabel(slot.role), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.meta,
         color:      classAccentHex,
@@ -393,19 +397,19 @@ export default class CustomLobbyScene extends Phaser.Scene {
 
       // Name + status
       const nameY = -cardH / 2 + 128
-      let nameText = 'Bot'
+      let nameText = t('scenes.lobby-shared.bot')
       let nameColor: string = fg.tertiaryHex
       let subText: string | null = null
       if (isMe) {
-        nameText = slot.playerName ?? 'Jogador'
+        nameText = slot.playerName ?? t('scenes.lobby-shared.player-fallback')
         nameColor = fg.primaryHex
-        subText = 'VOCÊ'
+        subText = t('scenes.lobby-shared.your-badge')
       } else if (isFriend) {
-        nameText = slot.playerName ?? 'Amigo'
+        nameText = slot.playerName ?? t('scenes.lobby-shared.friend')
         nameColor = state.infoHex
-        subText = 'AMIGO'
+        subText = t('scenes.lobby-shared.friend').toUpperCase()
       } else {
-        subText = 'BOT'
+        subText = t('scenes.lobby-shared.bot').toUpperCase()
       }
 
       container.add(this.add.text(0, nameY, nameText, {
@@ -625,7 +629,7 @@ export default class CustomLobbyScene extends Phaser.Scene {
     }).setOrigin(0.5).setLetterSpacing(1.8)
 
     // Mode readout
-    this.add.text(logX, logY + 38, this.matchMode.toUpperCase(), {
+    this.add.text(logX, logY + 38, matchModeLabel(this.matchMode), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      fg.tertiaryHex,
@@ -649,7 +653,7 @@ export default class CustomLobbyScene extends Phaser.Scene {
         seen.add(s.playerName)
         const teamColor = s.side === 'blue' ? colors.team.ally : colors.team.enemy
         const teamColorHex = s.side === 'blue' ? colors.team.allyHex : colors.team.enemyHex
-        const teamLabel = s.side === 'blue' ? 'AZUL' : 'VERM'
+        const teamLabel = s.side === 'blue' ? t('scenes.custom.blue-team-short') : t('scenes.custom.red-team-short')
 
         const dot = this.add.graphics()
         dot.fillStyle(teamColor, 1)
@@ -675,7 +679,7 @@ export default class CustomLobbyScene extends Phaser.Scene {
 
     // Invite button below
     const invY = logY + LOG_H + 20
-    UI.buttonSecondary(this, logX, invY, 'CONVIDAR AMIGO', {
+    UI.buttonSecondary(this, logX, invY, t('scenes.lobby-shared.invite-friend'), {
       w: 184,
       h: 36,
       onPress: () => this._showInvitePopup(),
@@ -690,7 +694,7 @@ export default class CustomLobbyScene extends Phaser.Scene {
     const btnX = W / 2
     const btnY = H - 56
 
-    UI.buttonPrimary(this, btnX, btnY, 'INICIAR BATALHA', {
+    UI.buttonPrimary(this, btnX, btnY, t('scenes.ranked.start-battle'), {
       size: 'lg',
       w:    340,
       h:    56,
@@ -723,7 +727,7 @@ export default class CustomLobbyScene extends Phaser.Scene {
 
   private _showModeSwitcher(): void {
     showPlayModesOverlay(this, {
-      title: 'ALTERAR MODO',
+      title: t('scenes.lobby-shared.change-mode'),
       currentTarget: 'CustomLobbyScene',
       dimSceneBackground: true,
     })
@@ -735,9 +739,9 @@ export default class CustomLobbyScene extends Phaser.Scene {
 
   private _showInvitePopup(): void {
     UI.modal(this, {
-      eyebrow: 'PRÓXIMAMENTE',
-      title:   'CONVITE DE AMIGO',
-      body:    'O sistema de convites está em desenvolvimento. Por enquanto, adicione bots ao seu time.',
+      eyebrow: t('scenes.lobby-shared.invite-modal.eyebrow'),
+      title:   t('scenes.lobby-shared.invite-modal.title'),
+      body:    t('scenes.lobby-shared.invite-modal.body-custom'),
       actions: [{ label: 'OK', kind: 'primary', onClick: () => {} }],
     })
   }

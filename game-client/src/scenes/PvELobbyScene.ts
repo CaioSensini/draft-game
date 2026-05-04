@@ -37,11 +37,19 @@ const H = SCREEN.H
 
 const ROLES: UnitRole[] = ['king', 'warrior', 'specialist', 'executor']
 
-const ROLE_LABELS: Record<UnitRole, string> = {
-  king: 'REI',
-  warrior: 'GUERREIRO',
-  specialist: 'ESPECIALISTA',
-  executor: 'EXECUTOR',
+type DerivedMode = 'Solo' | 'Duo' | 'Squad'
+type PvEType = 'battle' | 'tournament'
+
+const MODE_I18N_KEY: Record<DerivedMode, 'solo' | 'duo' | 'squad'> = {
+  Solo: 'solo', Duo: 'duo', Squad: 'squad',
+}
+
+function roleLabel(role: UnitRole): string {
+  return t(`skills.roles.${role}`)
+}
+
+function modeLabel(mode: DerivedMode): string {
+  return t(`scenes.lobby-shared.modes.${MODE_I18N_KEY[mode]}`)
 }
 
 const CLASS_ACCENT: Record<UnitRole, number> = {
@@ -56,9 +64,6 @@ const CLASS_ACCENT_HEX: Record<UnitRole, string> = {
   specialist: colors.class.specialistHex,
   executor:   colors.class.executorHex,
 }
-
-type DerivedMode = 'Solo' | 'Duo' | 'Squad'
-type PvEType = 'battle' | 'tournament'
 
 // Level brackets for Torneio
 interface LevelBracket {
@@ -182,7 +187,7 @@ export default class PvELobbyScene extends Phaser.Scene {
       fontStyle:  '700',
     }).setOrigin(0.5).setLetterSpacing(1.8).setDepth(TBD + 1)
 
-    const titleWord = this.pveType === 'battle' ? 'BATALHA' : 'TORNEIO'
+    const titleWord = this.pveType === 'battle' ? t('scenes.pve.battle-title') : t('scenes.pve.tournament-title')
     this.add.text(W / 2, TOP_H / 2 + 10, titleWord, {
       fontFamily: fontFamily.display,
       fontSize:   typeScale.h2,
@@ -191,7 +196,7 @@ export default class PvELobbyScene extends Phaser.Scene {
     }).setOrigin(0.5).setLetterSpacing(3).setDepth(TBD + 1)
 
     // Mode switcher button (left) — mirrors CustomLobby layout per ETAPA 6.3
-    const altModoBtn = UI.buttonGhost(this, 156, TOP_H / 2, 'ALTERAR MODO', {
+    const altModoBtn = UI.buttonGhost(this, 156, TOP_H / 2, t('scenes.lobby-shared.change-mode'), {
       w: 160,
       h: 32,
       onPress: () => this.showModeSwitcher(),
@@ -211,7 +216,7 @@ export default class PvELobbyScene extends Phaser.Scene {
     pillBg.fillRoundedRect(pillX - pillW / 2, pillY - 12, pillW, 24, 12)
     pillBg.lineStyle(1, accent.primary, 1)
     pillBg.strokeRoundedRect(pillX - pillW / 2, pillY - 12, pillW, 24, 12)
-    this.add.text(pillX, pillY, this.derivedMode.toUpperCase(), {
+    this.add.text(pillX, pillY, modeLabel(this.derivedMode), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      accent.primaryHex,
@@ -284,13 +289,13 @@ export default class PvELobbyScene extends Phaser.Scene {
       container.add(bg)
 
       // Class label (top band)
-      const roleLabel = this.add.text(0, -cardH / 2 + 22, ROLE_LABELS[slot.role], {
+      const roleLabelText = this.add.text(0, -cardH / 2 + 22, roleLabel(slot.role), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.meta,
         color:      classAccentHex,
         fontStyle:  '700',
       }).setOrigin(0.5).setLetterSpacing(1.8)
-      container.add(roleLabel)
+      container.add(roleLabelText)
 
       // Preview sprite or class icon
       if (isFilled) {
@@ -320,7 +325,7 @@ export default class PvELobbyScene extends Phaser.Scene {
           fontStyle:  '600',
         }).setOrigin(0.5))
 
-        container.add(this.add.text(0, nameY + 20, `NV ${p.level}`, {
+        container.add(this.add.text(0, nameY + 20, t('scenes.lobby-shared.level-short', { level: p.level }), {
           fontFamily: fontFamily.body,
           fontSize:   typeScale.meta,
           color:      fg.tertiaryHex,
@@ -472,9 +477,9 @@ export default class PvELobbyScene extends Phaser.Scene {
     }).setOrigin(0, 0.5).setLetterSpacing(1.8)
 
     const entries: { label: string; mode: DerivedMode }[] = [
-      { label: 'SOLO · sem bônus',          mode: 'Solo'  },
-      { label: 'DUO · +10% XP e Gold',      mode: 'Duo'   },
-      { label: 'SQUAD · +20% XP e Gold',    mode: 'Squad' },
+      { label: t('scenes.lobby-shared.mode-bonus.solo'), mode: 'Solo' },
+      { label: t('scenes.lobby-shared.mode-bonus.duo'), mode: 'Duo' },
+      { label: t('scenes.lobby-shared.mode-bonus.squad'), mode: 'Squad' },
     ]
 
     entries.forEach((entry, i) => {
@@ -532,13 +537,13 @@ export default class PvELobbyScene extends Phaser.Scene {
 
     const bullets = this.pveType === 'battle'
       ? [
-          'Bot inteligente do seu nível',
-          'Bônus de Gold por vitória',
+          t('scenes.pve.info.smart-bot'),
+          t('scenes.pve.info.gold-bonus'),
         ]
       : [
-          'Chaveamento de 8 times',
-          'Custo em Gold varia por faixa',
-          'Recompensa escalada por round',
+          t('scenes.pve.info.eight-team-bracket'),
+          t('scenes.pve.info.scaled-cost'),
+          t('scenes.pve.info.scaled-reward'),
         ]
 
     bullets.forEach((b, i) => {
@@ -627,7 +632,7 @@ export default class PvELobbyScene extends Phaser.Scene {
     container.add(rightHit)
 
     // Cost
-    this.bracketCost = this.add.text(130, 0, `CUSTO ${this.currentBracket.cost}G`, {
+    this.bracketCost = this.add.text(130, 0, t('scenes.pve.cost-format', { cost: this.currentBracket.cost }), {
       fontFamily: fontFamily.mono,
       fontSize:   typeScale.small,
       color:      currency.goldCoinHex,
@@ -641,7 +646,7 @@ export default class PvELobbyScene extends Phaser.Scene {
   private changeBracket(dir: number): void {
     this.selectedBracketIndex = Math.max(0, Math.min(LEVEL_BRACKETS.length - 1, this.selectedBracketIndex + dir))
     if (this.bracketLabel) this.bracketLabel.setText(this.currentBracket.label)
-    if (this.bracketCost)  this.bracketCost.setText(`CUSTO ${this.currentBracket.cost}G`)
+    if (this.bracketCost)  this.bracketCost.setText(t('scenes.pve.cost-format', { cost: this.currentBracket.cost }))
     this.refreshInfoPanel()
   }
 
@@ -653,7 +658,7 @@ export default class PvELobbyScene extends Phaser.Scene {
     const logH = 300
     const invY = logY + logH + 20
 
-    UI.buttonSecondary(this, logX, invY, 'CONVIDAR AMIGO', {
+    UI.buttonSecondary(this, logX, invY, t('scenes.lobby-shared.invite-friend'), {
       w: 184,
       h: 36,
       onPress: () => this.showInvitePopup(),
@@ -666,7 +671,7 @@ export default class PvELobbyScene extends Phaser.Scene {
     const btnX = W / 2
     const btnY = H - 56
 
-    UI.buttonPrimary(this, btnX, btnY, 'INICIAR PARTIDA', {
+    UI.buttonPrimary(this, btnX, btnY, t('scenes.pve.start-match'), {
       size: 'lg',
       w:    320,
       h:    56,
@@ -695,9 +700,9 @@ export default class PvELobbyScene extends Phaser.Scene {
 
   private showInvitePopup(): void {
     UI.modal(this, {
-      eyebrow: 'PRÓXIMAMENTE',
-      title:   'CONVITE DE AMIGO',
-      body:    'O sistema de convites está em desenvolvimento. Por enquanto, use modo Solo para jogar.',
+      eyebrow: t('scenes.lobby-shared.invite-modal.eyebrow'),
+      title:   t('scenes.lobby-shared.invite-modal.title'),
+      body:    t('scenes.lobby-shared.invite-modal.body-solo'),
       actions: [{ label: 'OK', kind: 'primary', onClick: () => {} }],
     })
   }
@@ -706,7 +711,7 @@ export default class PvELobbyScene extends Phaser.Scene {
 
   private showModeSwitcher(): void {
     showPlayModesOverlay(this, {
-      title: 'ALTERAR MODO',
+      title: t('scenes.lobby-shared.change-mode'),
       currentTarget: 'PvELobbyScene',
       currentPveType: this.pveType,
       dimSceneBackground: true,

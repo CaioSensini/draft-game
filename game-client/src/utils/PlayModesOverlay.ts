@@ -14,12 +14,13 @@ import {
 } from './DesignTokens'
 import { playerData } from './PlayerDataManager'
 import { transitionTo } from './SceneTransition'
+import { t } from '../i18n'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export interface PlayMode {
-  label: string
-  desc: string
+  labelKey: string
+  descKey: string
   target: string
   color: number
   /** Static payload passed to `transitionTo`. e.g. `{ pveType: 'battle' }`. */
@@ -27,7 +28,7 @@ export interface PlayMode {
 }
 
 export interface PlayCategory {
-  title: string
+  titleKey: string
   titleColorHex: string
   titleColorNum: number
   modes: PlayMode[]
@@ -37,29 +38,29 @@ export interface PlayCategory {
 
 export const PLAY_CATEGORIES: PlayCategory[] = [
   {
-    title: 'PVP',
+    titleKey: 'scenes.play-modes.sections.pvp',
     titleColorHex: state.errorHex,
     titleColorNum: state.error,
     modes: [
-      { label: 'Arena Rankeada', desc: 'Torneios rankeados (Lv.100)',         target: 'RankedScene',     color: state.error,   data: {} },
-      { label: 'Batalha PvP',    desc: 'Enfrente jogadores de nivel similar', target: 'PvPLobbyScene',   color: state.success, data: {} },
+      { labelKey: 'scenes.play-modes.modes.ranked.title', descKey: 'scenes.play-modes.modes.ranked.desc', target: 'RankedScene', color: state.error, data: {} },
+      { labelKey: 'scenes.play-modes.modes.pvp.title', descKey: 'scenes.play-modes.modes.pvp.desc', target: 'PvPLobbyScene', color: state.success, data: {} },
     ],
   },
   {
-    title: 'PVE',
+    titleKey: 'scenes.play-modes.sections.pve',
     titleColorHex: state.infoHex,
     titleColorNum: state.info,
     modes: [
-      { label: 'Batalha PvE',    desc: 'Enfrente um bot inteligente do seu nivel', target: 'PvELobbyScene', color: state.info,      data: { pveType: 'battle' } },
-      { label: 'Torneio PvE',    desc: 'Chaveamento por faixa de nivel',           target: 'PvELobbyScene', color: accent.primary,  data: { pveType: 'tournament' } },
+      { labelKey: 'scenes.play-modes.modes.pve-battle.title', descKey: 'scenes.play-modes.modes.pve-battle.desc', target: 'PvELobbyScene', color: state.info, data: { pveType: 'battle' } },
+      { labelKey: 'scenes.play-modes.modes.pve-tournament.title', descKey: 'scenes.play-modes.modes.pve-tournament.desc', target: 'PvELobbyScene', color: accent.primary, data: { pveType: 'tournament' } },
     ],
   },
   {
-    title: 'CRIAÇÃO',
+    titleKey: 'scenes.play-modes.sections.creation',
     titleColorHex: currency.dgGemHex,
     titleColorNum: currency.dgGem,
     modes: [
-      { label: 'Partida Personalizada', desc: 'Monte times com amigos e bots', target: 'CustomLobbyScene', color: currency.dgGem, data: {} },
+      { labelKey: 'scenes.play-modes.modes.custom.title', descKey: 'scenes.play-modes.modes.custom.desc', target: 'CustomLobbyScene', color: currency.dgGem, data: {} },
     ],
   },
 ]
@@ -108,7 +109,7 @@ export function showPlayModesOverlay(
   const W = scene.scale.width
   const H = scene.scale.height
 
-  const title          = options.title         ?? 'MODOS DE JOGO'
+  const title          = options.title         ?? t('scenes.lobby.play-modes-title')
   const currentTarget  = options.currentTarget
   const currentPveType = options.currentPveType
 
@@ -204,7 +205,8 @@ export function showPlayModesOverlay(
     }
     overlayContainer.add(headerGfx)
 
-    overlayContainer.add(scene.add.text(-CARD_W / 2 + 4, headerY, cat.title, {
+    const categoryTitle = t(cat.titleKey)
+    overlayContainer.add(scene.add.text(-CARD_W / 2 + 4, headerY, categoryTitle, {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      cat.titleColorHex,
@@ -216,7 +218,7 @@ export function showPlayModesOverlay(
     cat.modes.forEach((rawMode) => {
       let mode = rawMode
       if (mode.target === 'RankedScene' && playerData.getLevel() < 100) {
-        mode = { ...mode, desc: 'Disponível a partir do Lv.100' }
+        mode = { ...mode, descKey: 'scenes.play-modes.modes.ranked.locked-desc' }
       }
       const isLocked  = mode.target === 'RankedScene' && playerData.getLevel() < 100
       const available = !isLocked
@@ -254,7 +256,7 @@ export function showPlayModesOverlay(
       overlayContainer.add(accentBar)
 
       // ── Label ──
-      const label = scene.add.text(-CARD_W / 2 + 26, cy - 14, mode.label, {
+      const label = scene.add.text(-CARD_W / 2 + 26, cy - 14, t(mode.labelKey), {
         fontFamily: fontFamily.serif,
         fontSize:   typeScale.h3,
         color:      available ? fg.primaryHex : fg.tertiaryHex,
@@ -263,7 +265,7 @@ export function showPlayModesOverlay(
       overlayContainer.add(label)
 
       // ── Description ──
-      overlayContainer.add(scene.add.text(-CARD_W / 2 + 26, cy + 14, mode.desc, {
+      overlayContainer.add(scene.add.text(-CARD_W / 2 + 26, cy + 14, t(mode.descKey), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.small,
         color:      available ? fg.secondaryHex : fg.disabledHex,
@@ -283,7 +285,7 @@ export function showPlayModesOverlay(
         pillGfx.strokeRoundedRect(pillCx - pillW / 2, cy - pillH / 2, pillW, pillH, pillH / 2)
         overlayContainer.add(pillGfx)
 
-        overlayContainer.add(scene.add.text(pillCx, cy, 'ATUAL', {
+        overlayContainer.add(scene.add.text(pillCx, cy, t('scenes.lobby-shared.current-badge'), {
           fontFamily: fontFamily.body,
           fontSize:   typeScale.meta,
           color:      accent.primaryHex,

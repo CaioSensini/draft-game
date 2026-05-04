@@ -1,5 +1,7 @@
 {
-  "_meta": { "lang": "pt-BR" },
+  "_meta": {
+    "lang": "pt-BR"
+  },
   "login": {
     "tab": {
       "login": "LOGIN",
@@ -43,7 +45,31 @@
     "invite": "CONVIDAR",
     "change-skin": "ALTERAR SKIN",
     "swap": "TROCAR",
-    "level-range": "FAIXA DE NÍVEL"
+    "level-range": "FAIXA DE NÍVEL",
+    "change-mode": "ALTERAR MODO",
+    "modes": {
+      "solo": "SOLO",
+      "duo": "DUO",
+      "squad": "SQUAD"
+    },
+    "mode-bonus": {
+      "solo": "SOLO ? sem b?nus",
+      "duo": "DUO ? +10% XP e Gold",
+      "squad": "SQUAD ? +20% XP e Gold"
+    },
+    "invite-friend": "CONVIDAR AMIGO",
+    "room-incomplete": "SALA INCOMPLETA ({current}/{max})",
+    "level-short": "NV {level}",
+    "player-fallback": "Jogador",
+    "bot": "Bot",
+    "friend": "Amigo",
+    "invite-modal": {
+      "eyebrow": "PR?XIMAMENTE",
+      "title": "CONVITE DE AMIGO",
+      "body-solo": "O sistema de convites est? em desenvolvimento. Por enquanto, use modo Solo para jogar.",
+      "body-ranked": "O sistema de convites est? em desenvolvimento. Por enquanto, use modo Solo para jogar ranqueada.",
+      "body-custom": "O sistema de convites est? em desenvolvimento. Por enquanto, adicione bots ao seu time."
+    }
   },
   "shop": {
     "title": "LOJA",
@@ -80,7 +106,16 @@
     "subtitle": "ARENA RANKEADA",
     "locked-title": "ARENA RANKEADA",
     "locked-body": "Disponível a partir do Nível 100",
-    "ranks-eyebrow": "RANKS"
+    "ranks-eyebrow": "RANKS",
+    "queue": {
+      "duo": "DUPLA"
+    },
+    "start-battle": "INICIAR BATALHA",
+    "info": {
+      "real-player-tournament": "Torneio entre 8 jogadores reais",
+      "double-elimination": "Double elimination: perdedores jogam entre si",
+      "lp-placement": "LP baseado na posi??o final (1? ao 8?)"
+    }
   },
   "bracket": {
     "live": "AO VIVO",
@@ -90,14 +125,37 @@
   "pvp": {
     "title": "PVP",
     "subtitle": "BATALHA",
-    "squad-incomplete": "Convide mais 1 jogador para completar o squad"
+    "squad-incomplete": "Convide mais 1 jogador para completar o squad",
+    "search-opponents": "PROCURAR OPONENTES",
+    "info": {
+      "no-entry-cost": "Sem custo de entrada",
+      "level-matchmaking": "Matchmaking aleat?rio por n?vel",
+      "any-team-size": "Enfrenta qualquer tamanho de equipe",
+      "gold-rewards": "Recompensas de Gold por vit?ria"
+    }
   },
   "pve": {
-    "title": "PVE"
+    "title": "PVE",
+    "battle-title": "BATALHA",
+    "tournament-title": "TORNEIO",
+    "start-match": "INICIAR PARTIDA",
+    "cost-format": "CUSTO {cost}G",
+    "info": {
+      "smart-bot": "Bot inteligente do seu n?vel",
+      "gold-bonus": "B?nus de Gold por vit?ria",
+      "eight-team-bracket": "Chaveamento de 8 times",
+      "scaled-cost": "Custo em Gold varia por faixa",
+      "scaled-reward": "Recompensa escalada por round"
+    }
   },
   "custom": {
     "title": "CUSTOM",
-    "subtitle": "PARTIDA PERSONALIZADA"
+    "subtitle": "PARTIDA PERSONALIZADA",
+    "blue-team": "TIME AZUL",
+    "red-team": "TIME VERMELHO",
+    "blue-team-short": "AZUL",
+    "red-team-short": "VERM",
+    "switch-team": "?  TROCAR DE TIME"
   },
   "matchmaking": {
     "searching": "PROCURANDO ADVERSÁRIO",
@@ -142,7 +200,9 @@
     "log": {
       "skipped": "Pulou",
       "stunned": "Atordoado",
-      "dead": "Morto"
+      "dead": "Morto",
+      "no-targets": "? Sem alvos ao alcance!",
+      "death": "?? {name} morreu (Round {round})"
     },
     "outcome": {
       "victory": "Vitória!",
@@ -194,7 +254,20 @@
       "area": "Área",
       "heal": "Cura",
       "shield": "Escudo"
-    }
+    },
+    "role-abbr": {
+      "king": "REI",
+      "warrior": "GUE",
+      "executor": "EXE",
+      "specialist": "ESP"
+    },
+    "stats": {
+      "atk": "ATK",
+      "def": "DEF",
+      "mov": "MOV"
+    },
+    "round-heading": "ROUND {round}",
+    "dummy-name": "Boneco {role}"
   },
   "battle-result": {
     "title": {
@@ -385,6 +458,36 @@
     },
     "footer": {
       "credits": "Draft Game v1.0  ·  por Caio Sensini"
+    }
+  },
+  "play-modes": {
+    "sections": {
+      "pvp": "PVP",
+      "pve": "PVE",
+      "creation": "CRIA??O"
+    },
+    "modes": {
+      "ranked": {
+        "title": "Arena Rankeada",
+        "desc": "Torneios rankeados (Lv.100)",
+        "locked-desc": "Dispon?vel a partir do Lv.100"
+      },
+      "pvp": {
+        "title": "Batalha PvP",
+        "desc": "Enfrente jogadores de n?vel similar"
+      },
+      "pve-battle": {
+        "title": "Batalha PvE",
+        "desc": "Enfrente um bot inteligente do seu n?vel"
+      },
+      "pve-tournament": {
+        "title": "Torneio PvE",
+        "desc": "Chaveamento por faixa de n?vel"
+      },
+      "custom": {
+        "title": "Partida Personalizada",
+        "desc": "Monte times com amigos e bots"
+      }
     }
   }
 }

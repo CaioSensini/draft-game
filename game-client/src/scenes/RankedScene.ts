@@ -33,11 +33,18 @@ const H = SCREEN.H
 
 const ROLES: UnitRole[] = ['king', 'warrior', 'specialist', 'executor']
 
-const ROLE_LABELS: Record<UnitRole, string> = {
-  king: 'REI',
-  warrior: 'GUERREIRO',
-  specialist: 'ESPECIALISTA',
-  executor: 'EXECUTOR',
+type DerivedMode = 'Solo' | 'Duo' | 'Squad'
+
+const MODE_I18N_KEY: Record<DerivedMode, 'solo' | 'duo' | 'squad'> = {
+  Solo: 'solo', Duo: 'duo', Squad: 'squad',
+}
+
+function roleLabel(role: UnitRole): string {
+  return t(`skills.roles.${role}`)
+}
+
+function modeLabel(mode: DerivedMode): string {
+  return t(`scenes.lobby-shared.modes.${MODE_I18N_KEY[mode]}`)
 }
 
 const CLASS_ACCENT: Record<UnitRole, number> = {
@@ -53,12 +60,10 @@ const CLASS_ACCENT_HEX: Record<UnitRole, string> = {
   executor:   colors.class.executorHex,
 }
 
-type DerivedMode = 'Solo' | 'Duo' | 'Squad'
-
 const QUEUE_MODE_NAMES: Record<RankedQueue, string> = {
-  '1v1': 'SOLO',
-  '2v2': 'DUPLA',
-  '4v4': 'SQUAD',
+  '1v1': 'scenes.lobby-shared.modes.solo',
+  '2v2': 'scenes.ranked.queue.duo',
+  '4v4': 'scenes.lobby-shared.modes.squad',
 }
 
 // ── Layout ───────────────────────────────────────────────────────────────────
@@ -243,7 +248,7 @@ export default class RankedScene extends Phaser.Scene {
     }).setOrigin(0.5).setLetterSpacing(3).setDepth(TBD + 1)
 
     // Mode switcher (left)
-    const altModoBtn = UI.buttonGhost(this, 156, TOP_H / 2, 'ALTERAR MODO', {
+    const altModoBtn = UI.buttonGhost(this, 156, TOP_H / 2, t('scenes.lobby-shared.change-mode'), {
       w: 160,
       h: 32,
       onPress: () => this.showModeSwitcher(),
@@ -263,7 +268,7 @@ export default class RankedScene extends Phaser.Scene {
     pillBg.fillRoundedRect(pillX - pillW / 2, pillY - 12, pillW, 24, 12)
     pillBg.lineStyle(1, accent.primary, 1)
     pillBg.strokeRoundedRect(pillX - pillW / 2, pillY - 12, pillW, 24, 12)
-    this.modePillLabel = this.add.text(pillX, pillY, this.derivedMode.toUpperCase(), {
+    this.modePillLabel = this.add.text(pillX, pillY, modeLabel(this.derivedMode), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      accent.primaryHex,
@@ -272,7 +277,7 @@ export default class RankedScene extends Phaser.Scene {
   }
 
   private refreshModePill(): void {
-    if (this.modePillLabel) this.modePillLabel.setText(this.derivedMode.toUpperCase())
+    if (this.modePillLabel) this.modePillLabel.setText(modeLabel(this.derivedMode))
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -334,7 +339,7 @@ export default class RankedScene extends Phaser.Scene {
       }
 
       // Queue name
-      this.add.text(sideX, y + 16, QUEUE_MODE_NAMES[q], {
+      this.add.text(sideX, y + 16, t(QUEUE_MODE_NAMES[q]), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.meta,
         color:      isActive ? accent.primaryHex : fg.tertiaryHex,
@@ -462,7 +467,7 @@ export default class RankedScene extends Phaser.Scene {
       container.add(bg)
 
       // Class label
-      container.add(this.add.text(0, -cardH / 2 + 20, ROLE_LABELS[slot.role], {
+      container.add(this.add.text(0, -cardH / 2 + 20, roleLabel(slot.role), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.meta,
         color:      classAccentHex,
@@ -494,7 +499,7 @@ export default class RankedScene extends Phaser.Scene {
           fontStyle:  '600',
         }).setOrigin(0.5))
 
-        container.add(this.add.text(0, nameY + 18, `NV ${p.level}`, {
+        container.add(this.add.text(0, nameY + 18, t('scenes.lobby-shared.level-short', { level: p.level }), {
           fontFamily: fontFamily.body,
           fontSize:   typeScale.meta,
           color:      fg.tertiaryHex,
@@ -736,7 +741,7 @@ export default class RankedScene extends Phaser.Scene {
 
     // Invite button below log
     const invY = LOG_Y + LOG_H + 20
-    UI.buttonSecondary(this, LOG_X, invY, 'CONVIDAR AMIGO', {
+    UI.buttonSecondary(this, LOG_X, invY, t('scenes.lobby-shared.invite-friend'), {
       w: 184,
       h: 36,
       onPress: () => this.showInvitePopup(),
@@ -767,9 +772,9 @@ export default class RankedScene extends Phaser.Scene {
     }).setOrigin(0, 0.5).setLetterSpacing(1.8)
 
     const entries: { label: string; mode: DerivedMode }[] = [
-      { label: 'SOLO · sem bônus',          mode: 'Solo'  },
-      { label: 'DUO · +10% XP e Gold',      mode: 'Duo'   },
-      { label: 'SQUAD · +20% XP e Gold',    mode: 'Squad' },
+      { label: t('scenes.lobby-shared.mode-bonus.solo'), mode: 'Solo' },
+      { label: t('scenes.lobby-shared.mode-bonus.duo'), mode: 'Duo' },
+      { label: t('scenes.lobby-shared.mode-bonus.squad'), mode: 'Squad' },
     ]
 
     this.bonusTextObjs = []
@@ -840,10 +845,10 @@ export default class RankedScene extends Phaser.Scene {
     }).setOrigin(0, 0.5).setLetterSpacing(1.8)
 
     const bullets = [
-      'Torneio entre 8 jogadores reais',
-      'Double elimination: perdedores jogam entre si',
-      'LP baseado na posição final (1º ao 8º)',
-      'Sem custo de entrada',
+      t('scenes.ranked.info.real-player-tournament'),
+      t('scenes.ranked.info.double-elimination'),
+      t('scenes.ranked.info.lp-placement'),
+      t('scenes.pvp.info.no-entry-cost'),
     ]
 
     bullets.forEach((b, i) => {
@@ -868,7 +873,7 @@ export default class RankedScene extends Phaser.Scene {
     const btnX = TEAM_PANEL_X + (TEAM_PANEL_W / 2)
     const btnY = H - 56
 
-    this.searchBtnRef = UI.buttonPrimary(this, btnX, btnY, 'INICIAR BATALHA', {
+    this.searchBtnRef = UI.buttonPrimary(this, btnX, btnY, t('scenes.ranked.start-battle'), {
       size: 'lg',
       w:    360,
       h:    56,
@@ -901,9 +906,9 @@ export default class RankedScene extends Phaser.Scene {
 
     if (!canSearch && !this.searching) {
       this.searchBtnRef.setDisabled(true)
-      if (this.searchBtnLabel) this.searchBtnLabel.setText('SALA INCOMPLETA (3/4)')
+      if (this.searchBtnLabel) this.searchBtnLabel.setText(t('scenes.lobby-shared.room-incomplete', { current: 3, max: 4 }))
       this.blockedLabel = this.add.text(TEAM_PANEL_X + TEAM_PANEL_W / 2, H - 102,
-        'Convide mais 1 jogador para completar o squad', {
+        t('scenes.pvp.squad-incomplete'), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.small,
         color:      state.errorHex,
@@ -911,7 +916,7 @@ export default class RankedScene extends Phaser.Scene {
       }).setOrigin(0.5)
     } else if (!this.searching) {
       this.searchBtnRef.setDisabled(false)
-      if (this.searchBtnLabel) this.searchBtnLabel.setText('INICIAR BATALHA')
+      if (this.searchBtnLabel) this.searchBtnLabel.setText(t('scenes.ranked.start-battle'))
     }
   }
 
@@ -950,9 +955,9 @@ export default class RankedScene extends Phaser.Scene {
   private showInvitePopup(): void {
     if (this.searching) return
     UI.modal(this, {
-      eyebrow: 'PRÓXIMAMENTE',
-      title:   'CONVITE DE AMIGO',
-      body:    'O sistema de convites está em desenvolvimento. Por enquanto, use modo Solo para jogar ranqueada.',
+      eyebrow: t('scenes.lobby-shared.invite-modal.eyebrow'),
+      title:   t('scenes.lobby-shared.invite-modal.title'),
+      body:    t('scenes.lobby-shared.invite-modal.body-ranked'),
       actions: [{ label: 'OK', kind: 'primary', onClick: () => {} }],
     })
   }
@@ -964,7 +969,7 @@ export default class RankedScene extends Phaser.Scene {
   private showModeSwitcher(): void {
     if (this.searching) return
     showPlayModesOverlay(this, {
-      title: 'ALTERAR MODO',
+      title: t('scenes.lobby-shared.change-mode'),
       currentTarget: 'RankedScene',
       dimSceneBackground: true,
     })
