@@ -14,13 +14,6 @@ import {
 
 const W = SCREEN.W
 
-const DIFFICULTIES = ['easy', 'normal', 'hard'] as const
-type Difficulty = typeof DIFFICULTIES[number]
-
-// Difficulty labels are looked up at render time so they react to language
-// switches without keeping a stale snapshot in module scope.
-const difficultyLabel = (d: Difficulty): string => t(`scenes.settings.difficulty.${d}`)
-
 const TOP_BAR_H = 56
 
 export default class SettingsScene extends Phaser.Scene {
@@ -112,45 +105,11 @@ export default class SettingsScene extends Phaser.Scene {
       },
     })
 
-    // Pending note about volume sliders
-    cursorY += soundCardH + 6
-    this.add.text(panelX, cursorY,
-      t('scenes.settings.audio.sliders-pending'), {
-        fontFamily: fontFamily.serif, fontSize: typeScale.small,
-        color: fg.disabledHex, fontStyle: 'italic',
-      }).setOrigin(0.5)
-
-    // ── Section: JOGABILIDADE ──
-    cursorY += 28
-    this._drawSectionHeader(panelX, cursorY, t('scenes.settings.sections.gameplay'))
-    cursorY += 30
-
-    const diffCardH = 80
-    this._drawCard(panelX, cursorY + diffCardH / 2, panelW - 48, diffCardH)
-
-    // Card label
-    this.add.text(panelX - panelW / 2 + 36, cursorY + 14, t('scenes.settings.gameplay.bot-difficulty-label'), {
-      fontFamily: fontFamily.body, fontSize: typeScale.meta,
-      color: fg.tertiaryHex, fontStyle: '700',
-    }).setLetterSpacing(1.6)
-
-    // Segmented control for difficulty
-    const savedDifficulty = (localStorage.getItem('draft_difficulty') || 'normal') as Difficulty
-    const validDifficulty: Difficulty = DIFFICULTIES.includes(savedDifficulty) ? savedDifficulty : 'normal'
-
-    UI.segmentedControl<Difficulty>(this, panelX, cursorY + diffCardH / 2 + 12, {
-      options: DIFFICULTIES.map(d => ({ key: d, label: difficultyLabel(d) })),
-      value: validDifficulty,
-      width: panelW - 96,
-      height: 32,
-      onChange: (key) => {
-        localStorage.setItem('draft_difficulty', key)
-        soundManager.playClick()
-      },
-    })
+    // Volume sliders are not yet exposed by SoundManager — keep the audio
+    // section to just the on/off toggle until the slider API lands.
+    cursorY += soundCardH + 28
 
     // ── Section: IDIOMA ──
-    cursorY += diffCardH + 24
     this._drawSectionHeader(panelX, cursorY, t('scenes.settings.sections.language'))
     cursorY += 30
 

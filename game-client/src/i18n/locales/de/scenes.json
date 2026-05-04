@@ -99,18 +99,13 @@
     "title": "EINSTELLUNGEN",
     "sections": {
       "audio": "AUDIO",
-      "gameplay": "SPIEL",
       "language": "SPRACHE",
       "account": "KONTO"
     },
     "audio": {
       "sound-label": "TON",
       "sound-on": "Soundeffekte an",
-      "sound-off": "Soundeffekte aus",
-      "sliders-pending": "Lautstärke-Regler warten auf SoundManager-API."
-    },
-    "gameplay": {
-      "bot-difficulty-label": "BOT-SCHWIERIGKEIT"
+      "sound-off": "Soundeffekte aus"
     },
     "account": {
       "session-label": "SITZUNG",
@@ -121,11 +116,6 @@
       "title": "Abmelden",
       "body": "Du wirst aus dem Königreich getrennt. Fortfahren?",
       "confirm": "ABMELDEN"
-    },
-    "difficulty": {
-      "easy": "Leicht",
-      "normal": "Normal",
-      "hard": "Schwer"
     },
     "footer": {
       "credits": "Draft Game v1.0  ·  von Caio Sensini"

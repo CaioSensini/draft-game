@@ -99,18 +99,13 @@
     "title": "SETTINGS",
     "sections": {
       "audio": "AUDIO",
-      "gameplay": "GAMEPLAY",
       "language": "LANGUAGE",
       "account": "ACCOUNT"
     },
     "audio": {
       "sound-label": "SOUND",
       "sound-on": "Sound effects on",
-      "sound-off": "Sound effects off",
-      "sliders-pending": "Volume sliders await SoundManager API."
-    },
-    "gameplay": {
-      "bot-difficulty-label": "BOT DIFFICULTY"
+      "sound-off": "Sound effects off"
     },
     "account": {
       "session-label": "SESSION",
@@ -121,11 +116,6 @@
       "title": "Sign out",
       "body": "You will be disconnected from the realm. Continue?",
       "confirm": "SIGN OUT"
-    },
-    "difficulty": {
-      "easy": "Easy",
-      "normal": "Normal",
-      "hard": "Hard"
     },
     "footer": {
       "credits": "Draft Game v1.0  ·  by Caio Sensini"

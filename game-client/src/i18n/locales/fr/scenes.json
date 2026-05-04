@@ -99,18 +99,13 @@
     "title": "PARAMÈTRES",
     "sections": {
       "audio": "AUDIO",
-      "gameplay": "JOUABILITÉ",
       "language": "LANGUE",
       "account": "COMPTE"
     },
     "audio": {
       "sound-label": "SON",
       "sound-on": "Effets sonores activés",
-      "sound-off": "Effets sonores désactivés",
-      "sliders-pending": "Les curseurs de volume attendent l'API SoundManager."
-    },
-    "gameplay": {
-      "bot-difficulty-label": "DIFFICULTÉ DU BOT"
+      "sound-off": "Effets sonores désactivés"
     },
     "account": {
       "session-label": "SESSION",
@@ -121,11 +116,6 @@
       "title": "Se déconnecter",
       "body": "Vous serez déconnecté du royaume. Continuer ?",
       "confirm": "SE DÉCONNECTER"
-    },
-    "difficulty": {
-      "easy": "Facile",
-      "normal": "Normal",
-      "hard": "Difficile"
     },
     "footer": {
       "credits": "Draft Game v1.0  ·  par Caio Sensini"

@@ -99,18 +99,13 @@
     "title": "AJUSTES",
     "sections": {
       "audio": "AUDIO",
-      "gameplay": "JUGABILIDAD",
       "language": "IDIOMA",
       "account": "CUENTA"
     },
     "audio": {
       "sound-label": "SONIDO",
       "sound-on": "Efectos de sonido activados",
-      "sound-off": "Efectos de sonido desactivados",
-      "sliders-pending": "Los controles de volumen esperan API de SoundManager."
-    },
-    "gameplay": {
-      "bot-difficulty-label": "DIFICULTAD DEL BOT"
+      "sound-off": "Efectos de sonido desactivados"
     },
     "account": {
       "session-label": "SESIÓN",
@@ -121,11 +116,6 @@
       "title": "Cerrar sesión",
       "body": "Serás desconectado del reino. ¿Continuar?",
       "confirm": "CERRAR SESIÓN"
-    },
-    "difficulty": {
-      "easy": "Fácil",
-      "normal": "Normal",
-      "hard": "Difícil"
     },
     "footer": {
       "credits": "Draft Game v1.0  ·  por Caio Sensini"

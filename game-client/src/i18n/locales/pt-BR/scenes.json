@@ -99,18 +99,13 @@
     "title": "CONFIGURAÇÕES",
     "sections": {
       "audio": "ÁUDIO",
-      "gameplay": "JOGABILIDADE",
       "language": "IDIOMA",
       "account": "CONTA"
     },
     "audio": {
       "sound-label": "SOM",
       "sound-on": "Efeitos sonoros ligados",
-      "sound-off": "Efeitos sonoros desligados",
-      "sliders-pending": "Sliders de volume aguardam API no SoundManager."
-    },
-    "gameplay": {
-      "bot-difficulty-label": "DIFICULDADE DO BOT"
+      "sound-off": "Efeitos sonoros desligados"
     },
     "account": {
       "session-label": "SESSÃO",
@@ -121,11 +116,6 @@
       "title": "Sair da conta",
       "body": "Você será desconectado do reino. Quer mesmo continuar?",
       "confirm": "SAIR DA CONTA"
-    },
-    "difficulty": {
-      "easy": "Fácil",
-      "normal": "Normal",
-      "hard": "Difícil"
     },
     "footer": {
       "credits": "Draft Game v1.0  ·  por Caio Sensini"

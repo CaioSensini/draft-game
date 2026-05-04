@@ -99,18 +99,13 @@
     "title": "IMPOSTAZIONI",
     "sections": {
       "audio": "AUDIO",
-      "gameplay": "GIOCO",
       "language": "LINGUA",
       "account": "ACCOUNT"
     },
     "audio": {
       "sound-label": "AUDIO",
       "sound-on": "Effetti sonori attivi",
-      "sound-off": "Effetti sonori disattivati",
-      "sliders-pending": "Cursori del volume in attesa dell'API SoundManager."
-    },
-    "gameplay": {
-      "bot-difficulty-label": "DIFFICOLTÀ DEL BOT"
+      "sound-off": "Effetti sonori disattivati"
     },
     "account": {
       "session-label": "SESSIONE",
@@ -121,11 +116,6 @@
       "title": "Disconnetti",
       "body": "Sarai disconnesso dal regno. Continuare?",
       "confirm": "DISCONNETTI"
-    },
-    "difficulty": {
-      "easy": "Facile",
-      "normal": "Normale",
-      "hard": "Difficile"
     },
     "footer": {
       "credits": "Draft Game v1.0  ·  di Caio Sensini"
