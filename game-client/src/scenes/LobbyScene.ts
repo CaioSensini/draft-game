@@ -10,6 +10,7 @@ import {
 } from '../utils/DesignTokens'
 import { PASS_XP_PER_TIER, PASS_MAX_TIER } from '../data/battlePass'
 import { showPlayModesOverlay, type PlayModesOverlayHandle } from '../utils/PlayModesOverlay'
+import { t } from '../i18n'
 
 // ---- Layout constants (1280 x 720) -----------------------------------------
 
@@ -27,17 +28,22 @@ const BTN_FILL     = surface.raised
 
 // ---- Bottom icons data ------------------------------------------------------
 
+type BottomIconId = 'shop' | 'skills' | 'training' | 'ranking'
+
 interface BottomIcon {
-  label: string
+  /** Internal stable id — used for nav-icon shape switch and route logic. */
+  id: BottomIconId
+  /** i18n key for the rendered label (translated at draw time). */
+  labelKey: string
   target: string
   color: number
 }
 
 const BOTTOM_ICONS: BottomIcon[] = [
-  { label: 'LOJA',    target: 'ShopScene',         color: 0xffa726 },
-  { label: 'SKILLS',  target: 'SkillUpgradeScene', color: 0x26c6da },
-  { label: 'TREINO',  target: 'BattleScene',        color: 0x4ade80 },
-  { label: 'RANKING', target: 'RankingScene',       color: 0xf0c850 },
+  { id: 'shop',     labelKey: 'scenes.lobby.nav.shop',     target: 'ShopScene',         color: 0xffa726 },
+  { id: 'skills',   labelKey: 'scenes.lobby.nav.skills',   target: 'SkillUpgradeScene', color: 0x26c6da },
+  { id: 'training', labelKey: 'scenes.lobby.nav.training', target: 'BattleScene',       color: 0x4ade80 },
+  { id: 'ranking',  labelKey: 'scenes.lobby.nav.ranking',  target: 'RankingScene',      color: 0xf0c850 },
 ]
 
 // ---- Scene ------------------------------------------------------------------
@@ -278,7 +284,7 @@ export default class LobbyScene extends Phaser.Scene {
     })
 
     // "JOGAR" title — Cinzel h1 via typeScale, accent.primary + letter-spacing
-    const title = this.add.text(0, -panelH / 2 + 52, 'JOGAR', {
+    const title = this.add.text(0, -panelH / 2 + 52, t('scenes.lobby.central-play-title'), {
       fontFamily: fontFamily.display, fontSize: '44px',
       color:      accent.primaryHex,
       fontStyle:  '900',
@@ -308,7 +314,7 @@ export default class LobbyScene extends Phaser.Scene {
     })
 
     // Subtitle (Manrope body, fg.secondary)
-    const subtitle = this.add.text(0, 92, 'Escolha seu modo de batalha', {
+    const subtitle = this.add.text(0, 92, t('scenes.lobby.central-play-subtitle'), {
       fontFamily: fontFamily.body, fontSize: typeScale.body,
       color:      fg.secondaryHex,
       fontStyle:  '500',
@@ -456,11 +462,11 @@ export default class LobbyScene extends Phaser.Scene {
     container.add(jewelGfx)
 
     // ── Header strip: "PASSE DE BATALHA" — Cinzel display ──
-    container.add(this.add.text(0, -btnH / 2 + 16, 'PASSE', {
+    container.add(this.add.text(0, -btnH / 2 + 16, t('scenes.lobby.battlepass.line-1'), {
       fontFamily: fontFamily.display, fontSize: '13px', color: '#ffffff', fontStyle: '700',
       shadow: { offsetX: 0, offsetY: 1, color: '#2a0a4a', blur: 6, fill: true },
     }).setOrigin(0.5))
-    container.add(this.add.text(0, -btnH / 2 + 30, 'DE BATALHA', {
+    container.add(this.add.text(0, -btnH / 2 + 30, t('scenes.lobby.battlepass.line-2'), {
       fontFamily: fontFamily.display, fontSize: '10px', color: '#cc88ff', fontStyle: '700',
       shadow: { offsetX: 0, offsetY: 1, color: '#2a0a4a', blur: 4, fill: true },
     }).setOrigin(0.5))
@@ -515,7 +521,9 @@ export default class LobbyScene extends Phaser.Scene {
     })
 
     // ── Tier badge (right side of emblem) — Mono tabular (Nv) / Cinzel (MAX) ──
-    const tierLabel = bp.tier >= PASS_MAX_TIER ? 'MAX' : `Nv${bp.tier}`
+    const tierLabel = bp.tier >= PASS_MAX_TIER
+      ? t('common.labels.level-cap-max')
+      : t('common.labels.level-short', { level: bp.tier })
     container.add(this.add.text(0, 18, tierLabel, {
       fontFamily: bp.tier >= PASS_MAX_TIER ? fontFamily.display : fontFamily.mono,
       fontSize: '13px', color: '#ffffff', fontStyle: '700',
@@ -546,7 +554,7 @@ export default class LobbyScene extends Phaser.Scene {
       container.add(barGfx)
     } else {
       // MAX label replaces bar
-      container.add(this.add.text(0, btnH / 2 - 13, 'RECOMPENSAS MAX', {
+      container.add(this.add.text(0, btnH / 2 - 13, t('scenes.lobby.battlepass.rewards-max'), {
         fontFamily: fontFamily.body, fontSize: '9px', color: accent.primaryHex,
         fontStyle: '700', shadow: SHADOW.text,
       }).setOrigin(0.5))
@@ -676,7 +684,7 @@ export default class LobbyScene extends Phaser.Scene {
     container.add(iconGfx)
 
     // Label (Cormorant h3)
-    const label = this.add.text(10, available ? -5 : -5, 'Ataques às equipes', {
+    const label = this.add.text(10, available ? -5 : -5, t('scenes.lobby.offline.title'), {
       fontFamily: fontFamily.serif, fontSize: '14px',
       color:      accentHex,
       fontStyle:  '600',
@@ -685,7 +693,7 @@ export default class LobbyScene extends Phaser.Scene {
     container.add(label)
 
     // Description (Manrope body)
-    const desc = this.add.text(10, 10, 'Offline', {
+    const desc = this.add.text(10, 10, t('scenes.lobby.offline.subtitle'), {
       fontFamily: fontFamily.body, fontSize: '11px',
       color:      available ? fg.tertiaryHex : fg.disabledHex,
       shadow:     SHADOW.text,
@@ -722,7 +730,7 @@ export default class LobbyScene extends Phaser.Scene {
       container.add(lockGfx)
 
       // "Lv.30" text (right side of pill) — Mono tabular for stat feel
-      container.add(this.add.text(pillCx + 3, pillCy, 'Lv.30', {
+      container.add(this.add.text(pillCx + 3, pillCy, t('common.labels.level-long', { level: 30 }), {
         fontFamily: fontFamily.mono, fontSize: '12px',
         color:      fg.disabledHex, fontStyle: '700',
         shadow:     SHADOW.text,
@@ -825,19 +833,19 @@ export default class LobbyScene extends Phaser.Scene {
     bg.strokeRoundedRect(-popW / 2, -popH / 2, popW, popH, radii.xl)
     popupContainer.add(bg)
 
-    popupContainer.add(this.add.text(0, -26, 'EM BREVE', {
+    popupContainer.add(this.add.text(0, -26, t('scenes.lobby.offline.popup-eyebrow'), {
       fontFamily: fontFamily.display, fontSize: typeScale.h2,
       color:      accent.primaryHex, fontStyle: '700',
       shadow:     SHADOW.goldGlow,
     }).setOrigin(0.5))
 
-    popupContainer.add(this.add.text(0, 4, 'Sistema de ataque equipes', {
+    popupContainer.add(this.add.text(0, 4, t('scenes.lobby.offline.popup-body'), {
       fontFamily: fontFamily.body, fontSize: typeScale.small,
       color:      fg.secondaryHex,
     }).setOrigin(0.5))
 
     // Confirm via UI.buttonPrimary (size sm)
-    const okBtn = UI.buttonPrimary(this, 0, popH / 2 - 28, 'OK', {
+    const okBtn = UI.buttonPrimary(this, 0, popH / 2 - 28, t('common.actions.ok'), {
       size: 'sm', w: 100, h: 32, depth: 102,
       onPress: () => this.closePlayModes(),
     })
@@ -865,7 +873,7 @@ export default class LobbyScene extends Phaser.Scene {
     if (this.battlePassContainer)  dimTargets.push(this.battlePassContainer)
 
     this.playModesHandle = showPlayModesOverlay(this, {
-      title: 'MODOS DE JOGO',
+      title: t('scenes.lobby.play-modes-title'),
       dimTargets,
       onClose: () => {
         this.overlayOpen      = false
@@ -946,11 +954,11 @@ export default class LobbyScene extends Phaser.Scene {
       container.add(iconGlow)
 
       // Draw icon
-      const iconGfx = this.drawBottomNavIcon(cfg.label, 0, -8, 16, cfg.color)
+      const iconGfx = this.drawBottomNavIcon(cfg.id, 0, -8, 16, cfg.color)
       container.add(iconGfx)
 
       // Label — Manrope meta (11/700 uppercase)
-      const label = this.add.text(0, iconH / 2 - 18, cfg.label, {
+      const label = this.add.text(0, iconH / 2 - 18, t(cfg.labelKey), {
         fontFamily: fontFamily.body, fontSize: typeScale.meta,
         color:      fg.tertiaryHex, fontStyle: '700',
         shadow:     SHADOW.text,
@@ -988,7 +996,7 @@ export default class LobbyScene extends Phaser.Scene {
           targets: container, scaleX: 0.95, scaleY: 0.95, duration: 60,
           yoyo: true, ease: 'Sine.InOut',
           onComplete: () => {
-            if (cfg.label === 'TREINO') {
+            if (cfg.id === 'training') {
               transitionTo(this, cfg.target, {
                 deckConfig: playerData.getDeckConfig(),
                 skinConfig: playerData.getSkinConfig(),
@@ -1030,7 +1038,7 @@ export default class LobbyScene extends Phaser.Scene {
     this.drawSoundToggle()
 
     // Version text — Manrope meta, fg.disabled
-    this.add.text(W - 16, H - 16, 'Codeforje VIO · v1.0', {
+    this.add.text(W - 16, H - 16, `${t('common.studio-name')} · ${t('scenes.menu.version-tag')}`, {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color:      fg.disabledHex, fontStyle: '700',
       shadow:     SHADOW.text,
@@ -1059,7 +1067,7 @@ export default class LobbyScene extends Phaser.Scene {
     }
     renderBg(false)
 
-    const label = this.add.text(bx + 4, by, muted ? 'Mudo' : 'Som', {
+    const label = this.add.text(bx + 4, by, t(muted ? 'scenes.lobby.sound-toggle.muted' : 'scenes.lobby.sound-toggle.on'), {
       fontFamily: fontFamily.body, fontSize: typeScale.small,
       color:      fg.tertiaryHex, fontStyle: '500',
       shadow:     SHADOW.text,
@@ -1080,7 +1088,7 @@ export default class LobbyScene extends Phaser.Scene {
     })
     hitZone.on('pointerdown', () => {
       muted = !soundManager.toggle()
-      label.setText(muted ? 'Mudo' : 'Som')
+      label.setText(t(muted ? 'scenes.lobby.sound-toggle.muted' : 'scenes.lobby.sound-toggle.on'))
       speakerGfx.destroy()
       this.drawSpeakerIcon(bx - 22, by, 7, muted)
       soundManager.playClick()
@@ -1089,7 +1097,7 @@ export default class LobbyScene extends Phaser.Scene {
 
   private drawNewsTicker() {
     const tickerY = H - 12
-    const message = '     Boas vindas ao Draft Game!  \u2022  Novos pacotes na loja!  \u2022  Batalha PvP liberada!  \u2022  Treinamento dispon\u00EDvel!     '
+    const message = t('scenes.lobby.news-ticker')
 
     // Subtle background strip for ticker
     this.add.rectangle(W / 2, tickerY, W, 16, 0x000000, 0.2)
@@ -1148,12 +1156,12 @@ export default class LobbyScene extends Phaser.Scene {
     return g
   }
 
-  private drawBottomNavIcon(label: string, x: number, y: number, size: number, color: number): Phaser.GameObjects.Graphics {
+  private drawBottomNavIcon(id: BottomIconId | 'deck', x: number, y: number, size: number, color: number): Phaser.GameObjects.Graphics {
     const g = this.add.graphics()
     const s = size
 
-    switch (label) {
-      case 'LOJA': {
+    switch (id) {
+      case 'shop': {
         g.fillStyle(color, 0.7)
         g.beginPath()
         g.moveTo(x - s * 0.7, y + s)
@@ -1170,7 +1178,7 @@ export default class LobbyScene extends Phaser.Scene {
         g.strokePath()
         break
       }
-      case 'DECK': {
+      case 'deck': {
         const cw = s * 0.8, ch = s * 1.2
         g.fillStyle(color, 0.4)
         g.fillRoundedRect(x - cw / 2 - 4, y - ch / 2 - 2, cw, ch, 3)
@@ -1184,7 +1192,7 @@ export default class LobbyScene extends Phaser.Scene {
         g.fillCircle(x + 4, y + 2, 3)
         break
       }
-      case 'TREINO': {
+      case 'training': {
         g.lineStyle(2, color, 0.9)
         g.strokeCircle(x, y, s * 0.8)
         g.lineStyle(1.5, color, 0.7)
@@ -1196,7 +1204,7 @@ export default class LobbyScene extends Phaser.Scene {
         g.lineBetween(x - s * 1.1, y, x + s * 1.1, y)
         break
       }
-      case 'RANKING': {
+      case 'ranking': {
         const barW = s * 0.35, gapR = s * 0.1, baseY = y + s * 0.7
         g.fillStyle(color, 0.6)
         g.fillRoundedRect(x - barW * 1.5 - gapR, baseY - s, barW, s, 2)
@@ -1214,7 +1222,7 @@ export default class LobbyScene extends Phaser.Scene {
         g.lineBetween(x - s, baseY, x + s, baseY)
         break
       }
-      case 'SKILLS': {
+      case 'skills': {
         // Book/spellbook icon
         const bw = s * 0.9, bh = s * 1.2
         g.fillStyle(color, 0.6)

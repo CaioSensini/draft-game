@@ -5,6 +5,7 @@ import {
   accent, border, fg, fontFamily,
   motion, radii, state as dsState, surface, typeScale,
 } from '../utils/DesignTokens'
+import { t } from '../i18n'
 
 type TabKey = 'login' | 'register'
 
@@ -80,13 +81,13 @@ export default class LoginScene extends Phaser.Scene {
     this._showMainForm('login')
 
     // ── Footer meta ──
-    this.add.text(W - 20, H - 16, 'v1.0', {
+    this.add.text(W - 20, H - 16, t('scenes.menu.version-tag'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      fg.disabledHex,
       fontStyle:  '700',
     }).setOrigin(1, 1)
-    this.add.text(20, H - 16, 'Codeforje VIO', {
+    this.add.text(20, H - 16, t('scenes.menu.studio-name'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      fg.disabledHex,
@@ -126,7 +127,7 @@ export default class LoginScene extends Phaser.Scene {
     container.add(bg)
 
     // Title "ENTRAR" / "CRIAR CONTA" (swaps per tab)
-    const titleText = this.add.text(0, -panelH / 2 + 34, 'ENTRAR', {
+    const titleText = this.add.text(0, -panelH / 2 + 34, t('scenes.login.title-login'), {
       fontFamily: fontFamily.display,
       fontSize:   typeScale.h2,
       color:      fg.primaryHex,
@@ -140,8 +141,8 @@ export default class LoginScene extends Phaser.Scene {
     // are always discoverable (ETAPA 6.7: before, login fields overlapped
     // this row and hid the "registrar" entry point entirely).
     const tabY = -panelH / 2 + 80
-    const loginTab    = this._buildTab('LOGIN',    0 - 56, tabY, initial === 'login')
-    const registerTab = this._buildTab('REGISTRAR', 0 + 56, tabY, initial === 'register')
+    const loginTab    = this._buildTab(t('scenes.login.tab.login'),    0 - 56, tabY, initial === 'login')
+    const registerTab = this._buildTab(t('scenes.login.tab.register'), 0 + 56, tabY, initial === 'register')
     container.add(loginTab.container)
     container.add(registerTab.container)
 
@@ -165,7 +166,7 @@ export default class LoginScene extends Phaser.Scene {
       if (next === active) return
       active = next
       const isLogin = next === 'login'
-      titleText.setText(isLogin ? 'ENTRAR' : 'CRIAR CONTA')
+      titleText.setText(t(isLogin ? 'scenes.login.title-login' : 'scenes.login.title-register'))
       loginTab.setActive(isLogin)
       registerTab.setActive(!isLogin)
       for (const f of loginFields)   f.handle.container.setVisible(isLogin)
@@ -218,7 +219,7 @@ export default class LoginScene extends Phaser.Scene {
     drawRememberBox()
     rememberRow.add(rememberBg)
 
-    const rememberLabel = this.add.text(boxX + boxSize / 2 + 8, 0, 'Lembrar de mim', {
+    const rememberLabel = this.add.text(boxX + boxSize / 2 + 8, 0, t('scenes.login.remember-me'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.small,
       color:      fg.secondaryHex,
@@ -241,11 +242,11 @@ export default class LoginScene extends Phaser.Scene {
 
     // ── Submit buttons ──
     const btnCy = panelY + panelH / 2 - 84
-    const btnLogin = UI.buttonPrimary(this, panelX, btnCy, 'ENTRAR', {
+    const btnLogin = UI.buttonPrimary(this, panelX, btnCy, t('scenes.login.submit-login'), {
       w: panelW - 48, h: 48, depth: 1,
       onPress: () => this._submitLogin(loginFields),
     })
-    const btnRegister = UI.buttonPrimary(this, panelX, btnCy, 'CRIAR CONTA', {
+    const btnRegister = UI.buttonPrimary(this, panelX, btnCy, t('scenes.login.submit-register'), {
       w: panelW - 48, h: 48, depth: 1,
       onPress: () => this._submitRegister(registerFields),
     })
@@ -254,7 +255,7 @@ export default class LoginScene extends Phaser.Scene {
     this.mainFormExtras.push(btnLogin.container, btnRegister.container)
 
     // ── Forgot link (ghost, below submit) ──
-    const forgotLink = this.add.text(panelX, btnCy + 42, 'Esqueceu a senha?', {
+    const forgotLink = this.add.text(panelX, btnCy + 42, t('scenes.login.forgot-password'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.small,
       color:      fg.tertiaryHex,
@@ -350,8 +351,8 @@ export default class LoginScene extends Phaser.Scene {
     const userY = panelY - 52
     const passY = panelY + 24
     const userField = UI.inputField(this, panelX, userY, {
-      label:       'USUÁRIO',
-      placeholder: 'Nick',
+      label:       t('scenes.login.fields.username-label'),
+      placeholder: t('scenes.login.fields.username-placeholder'),
       type:        'text',
       width:       fieldW,
       name:        'login-user',
@@ -359,8 +360,8 @@ export default class LoginScene extends Phaser.Scene {
       onEnter:     () => this._submitLogin(this.fields as never),
     })
     const passField = UI.inputField(this, panelX, passY, {
-      label:       'SENHA',
-      placeholder: '••••••••',
+      label:       t('scenes.login.fields.password-label'),
+      placeholder: t('scenes.login.fields.password-placeholder'),
       type:        'password',
       width:       fieldW,
       name:        'login-pass',
@@ -387,8 +388,8 @@ export default class LoginScene extends Phaser.Scene {
     const emailY = panelY
     const passY  = panelY + 76
     const userField = UI.inputField(this, panelX, userY, {
-      label:       'USUÁRIO',
-      placeholder: 'Nick',
+      label:       t('scenes.login.fields.username-label'),
+      placeholder: t('scenes.login.fields.username-placeholder'),
       type:        'text',
       width:       fieldW,
       name:        'reg-user',
@@ -396,8 +397,8 @@ export default class LoginScene extends Phaser.Scene {
       onEnter:     () => this._submitRegister(this.fields as never),
     })
     const emailField = UI.inputField(this, panelX, emailY, {
-      label:       'EMAIL',
-      placeholder: 'voce@exemplo.com',
+      label:       t('scenes.login.fields.email-label'),
+      placeholder: t('scenes.login.fields.email-placeholder'),
       type:        'email',
       width:       fieldW,
       name:        'reg-email',
@@ -405,8 +406,8 @@ export default class LoginScene extends Phaser.Scene {
       onEnter:     () => this._submitRegister(this.fields as never),
     })
     const passField = UI.inputField(this, panelX, passY, {
-      label:       'SENHA',
-      placeholder: 'Mínimo 6 caracteres',
+      label:       t('scenes.login.fields.password-label'),
+      placeholder: t('scenes.login.fields.register-password-hint'),
       type:        'password',
       width:       fieldW,
       name:        'reg-pass',
@@ -448,7 +449,7 @@ export default class LoginScene extends Phaser.Scene {
     const username = userField.input.value.trim()
     const password = passField.input.value
     if (!username || !password) {
-      this._showError('Preencha todos os campos.')
+      this._showError(t('errors.auth.fill-all-fields'))
       return
     }
     try {
@@ -471,7 +472,7 @@ export default class LoginScene extends Phaser.Scene {
     } catch (e: unknown) {
       this._showError(
         (e instanceof Error ? e.message : null) ||
-        'Erro ao conectar. Verifique se o servidor está rodando.',
+        t('errors.auth.login-server-error'),
       )
     }
   }
@@ -492,11 +493,11 @@ export default class LoginScene extends Phaser.Scene {
     const email    = emailField.input.value.trim()
     const password = passField.input.value
     if (!username || !email || !password) {
-      this._showError('Preencha todos os campos.')
+      this._showError(t('errors.auth.fill-all-fields'))
       return
     }
     if (password.length < 6) {
-      this._showError('Senha deve ter pelo menos 6 caracteres.')
+      this._showError(t('errors.auth.password-too-short'))
       return
     }
     try {
@@ -513,7 +514,7 @@ export default class LoginScene extends Phaser.Scene {
     } catch (e: unknown) {
       this._showError(
         (e instanceof Error ? e.message : null) ||
-        'Erro ao registrar. Verifique se o servidor está rodando.',
+        t('errors.auth.register-server-error'),
       )
     }
   }
@@ -559,7 +560,7 @@ export default class LoginScene extends Phaser.Scene {
     container.add(bg)
 
     // Eyebrow meta
-    const eyebrow = this.add.text(0, -panelH / 2 + 28, 'VERIFICAÇÃO', {
+    const eyebrow = this.add.text(0, -panelH / 2 + 28, t('scenes.login.verify.eyebrow'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      accent.primaryHex,
@@ -570,7 +571,7 @@ export default class LoginScene extends Phaser.Scene {
     container.add(eyebrow)
 
     // Title
-    const title = this.add.text(0, -panelH / 2 + 56, 'CÓDIGO DE EMAIL', {
+    const title = this.add.text(0, -panelH / 2 + 56, t('scenes.login.verify.title'), {
       fontFamily: fontFamily.display,
       fontSize:   typeScale.h2,
       color:      fg.primaryHex,
@@ -581,7 +582,7 @@ export default class LoginScene extends Phaser.Scene {
     container.add(title)
 
     // Body text
-    const body = this.add.text(0, -panelH / 2 + 100, 'Um código de 6 dígitos foi enviado\npara seu email. Digite-o abaixo.', {
+    const body = this.add.text(0, -panelH / 2 + 100, t('scenes.login.verify.body'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.small,
       color:      fg.secondaryHex,
@@ -591,8 +592,8 @@ export default class LoginScene extends Phaser.Scene {
 
     // Input field (6-digit code)
     const codeField = UI.inputField(this, panelX, panelY - 16, {
-      label:       'CÓDIGO',
-      placeholder: '000000',
+      label:       t('scenes.login.verify.code-label'),
+      placeholder: t('scenes.login.verify.code-placeholder'),
       type:        'text',
       width:       panelW - 48,
       name:        'verify-code',
@@ -601,14 +602,14 @@ export default class LoginScene extends Phaser.Scene {
     })
 
     // Submit button
-    const btnVerify = UI.buttonPrimary(this, panelX, panelY + panelH / 2 - 78, 'VERIFICAR', {
+    const btnVerify = UI.buttonPrimary(this, panelX, panelY + panelH / 2 - 78, t('scenes.login.verify.submit'), {
       w: panelW - 48, h: 48, depth: 1,
       onPress: () => void this._submitVerify(codeField.input.value.trim()),
     })
     void btnVerify
 
     // Resend link (ghost)
-    const resendLink = this.add.text(panelX, panelY + panelH / 2 - 32, 'Reenviar código', {
+    const resendLink = this.add.text(panelX, panelY + panelH / 2 - 32, t('scenes.login.verify.resend'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.small,
       color:      fg.tertiaryHex,
@@ -648,7 +649,7 @@ export default class LoginScene extends Phaser.Scene {
 
   private async _submitVerify(code: string) {
     if (!code || code.length !== 6) {
-      this._showError('Digite o código de 6 dígitos.')
+      this._showError(t('errors.auth.verify-need-6-digits'))
       return
     }
     try {
@@ -662,24 +663,24 @@ export default class LoginScene extends Phaser.Scene {
     } catch (e: unknown) {
       this._showError(
         (e instanceof Error ? e.message : null) ||
-        'Código inválido. Tente novamente.',
+        t('errors.auth.verify-invalid-code'),
       )
     }
   }
 
   private async _resendCode(_codeField: InputFieldHandle, linkText: Phaser.GameObjects.Text) {
     try {
-      linkText.setText('Enviando…').setColor(fg.tertiaryHex)
+      linkText.setText(t('scenes.login.verify.sending')).setColor(fg.tertiaryHex)
       const { authService } = await import('../services')
       await authService.resendCode(this.pendingUserId!)
-      linkText.setText('Reenviar código').setColor(fg.primaryHex)
+      linkText.setText(t('scenes.login.verify.resend')).setColor(fg.primaryHex)
       this._clearError()
     } catch (e: unknown) {
       this._showError(
         (e instanceof Error ? e.message : null) ||
-        'Erro ao reenviar. Tente novamente.',
+        t('errors.auth.verify-resend-failed'),
       )
-      linkText.setText('Reenviar código').setColor(fg.tertiaryHex)
+      linkText.setText(t('scenes.login.verify.resend')).setColor(fg.tertiaryHex)
     }
   }
 

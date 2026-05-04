@@ -1,3 +1,133 @@
 {
-  "_meta": { "lang": "pt-BR" }
+  "_meta": { "lang": "pt-BR" },
+  "login": {
+    "tab": {
+      "login": "LOGIN",
+      "register": "REGISTRAR"
+    },
+    "title-login": "ENTRAR",
+    "title-register": "CRIAR CONTA",
+    "submit-login": "ENTRAR",
+    "submit-register": "CRIAR CONTA",
+    "fields": {
+      "username-label": "USUÁRIO",
+      "username-placeholder": "Nick",
+      "password-label": "SENHA",
+      "password-placeholder": "••••••••",
+      "email-label": "EMAIL",
+      "email-placeholder": "voce@exemplo.com",
+      "register-password-hint": "Mínimo 6 caracteres"
+    },
+    "remember-me": "Lembrar de mim",
+    "forgot-password": "Esqueceu a senha?",
+    "verify": {
+      "eyebrow": "VERIFICAÇÃO",
+      "title": "CÓDIGO DE EMAIL",
+      "body": "Um código de 6 dígitos foi enviado\npara seu email. Digite-o abaixo.",
+      "code-label": "CÓDIGO",
+      "code-placeholder": "000000",
+      "submit": "VERIFICAR",
+      "resend": "Reenviar código",
+      "sending": "Enviando…"
+    }
+  },
+  "battle-result": {
+    "title": {
+      "victory": "VITÓRIA",
+      "defeat": "DERROTA",
+      "draw": "EMPATE"
+    },
+    "reasons": {
+      "king-slain": "Rei abatido",
+      "simultaneous-kings": "Empate simultâneo",
+      "timeout": "Tempo esgotado",
+      "forfeit": "Desistência"
+    },
+    "opponent-fallback": "Adversário",
+    "sub-meta": "Round {round}  ·  vs {enemy}  ·  {reason}",
+    "rewards-header": "RECOMPENSAS",
+    "new-skill": "Nova skill: {name}!",
+    "next-match": "PRÓXIMA PARTIDA",
+    "try-again": "TENTAR NOVAMENTE",
+    "play-again": "JOGAR NOVAMENTE",
+    "back-to-lobby": "VOLTAR AO LOBBY",
+    "xp": {
+      "level-current": "NÍVEL {level}",
+      "level-up": "NÍVEL {from}  ›  {to}",
+      "gain-suffix": "+{xp} XP",
+      "fraction": "{current} / {max} XP"
+    }
+  },
+  "lobby": {
+    "central-play-title": "JOGAR",
+    "central-play-subtitle": "Escolha seu modo de batalha",
+    "play-modes-title": "MODOS DE JOGO",
+    "nav": {
+      "shop": "LOJA",
+      "skills": "SKILLS",
+      "training": "TREINO",
+      "ranking": "RANKING"
+    },
+    "battlepass": {
+      "line-1": "PASSE",
+      "line-2": "DE BATALHA",
+      "rewards-max": "RECOMPENSAS MAX"
+    },
+    "offline": {
+      "title": "Ataques às equipes",
+      "subtitle": "Offline",
+      "popup-eyebrow": "EM BREVE",
+      "popup-body": "Sistema de ataque equipes"
+    },
+    "sound-toggle": {
+      "on": "Som",
+      "muted": "Mudo"
+    },
+    "news-ticker": "     Boas vindas ao Draft Game!  •  Novos pacotes na loja!  •  Batalha PvP liberada!  •  Treinamento disponível!     "
+  },
+  "menu": {
+    "title": "DRAFT",
+    "subtitle": "BATALHAS TÁTICAS",
+    "studio-credit": "by Codeforje VIO",
+    "studio-name": "Codeforje VIO",
+    "tagline-1": "Estratégia. Tática. Conquista.",
+    "tagline-2": "Monte seu deck e derrote o Rei inimigo em batalhas 4v4",
+    "hint": "Clique para entrar",
+    "version-tag": "v1.0"
+  },
+  "settings": {
+    "title": "CONFIGURAÇÕES",
+    "sections": {
+      "audio": "ÁUDIO",
+      "gameplay": "JOGABILIDADE",
+      "account": "CONTA"
+    },
+    "audio": {
+      "sound-label": "SOM",
+      "sound-on": "Efeitos sonoros ligados",
+      "sound-off": "Efeitos sonoros desligados",
+      "sliders-pending": "Sliders de volume aguardam API no SoundManager."
+    },
+    "gameplay": {
+      "bot-difficulty-label": "DIFICULDADE DO BOT"
+    },
+    "account": {
+      "session-label": "SESSÃO",
+      "session-description": "Sair da conta atual",
+      "logout-button": "SAIR"
+    },
+    "logout-modal": {
+      "title": "Sair da conta",
+      "body": "Você será desconectado do reino. Quer mesmo continuar?",
+      "confirm": "SAIR DA CONTA"
+    },
+    "difficulty": {
+      "easy": "Fácil",
+      "normal": "Normal",
+      "hard": "Difícil"
+    },
+    "footer": {
+      "credits": "Draft Game v1.0  ·  por Caio Sensini"
+    }
+  }
 }

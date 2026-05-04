@@ -7,17 +7,16 @@ import {
   surface, border, accent, fg,
   fontFamily, typeScale, radii,
 } from '../utils/DesignTokens'
+import { t } from '../i18n'
 
 const W = SCREEN.W
 
 const DIFFICULTIES = ['easy', 'normal', 'hard'] as const
 type Difficulty = typeof DIFFICULTIES[number]
 
-const DIFFICULTY_LABELS: Record<Difficulty, string> = {
-  easy:   'Fácil',
-  normal: 'Normal',
-  hard:   'Difícil',
-}
+// Difficulty labels are looked up at render time so they react to language
+// switches without keeping a stale snapshot in module scope.
+const difficultyLabel = (d: Difficulty): string => t(`scenes.settings.difficulty.${d}`)
 
 const TOP_BAR_H = 56
 
@@ -49,7 +48,7 @@ export default class SettingsScene extends Phaser.Scene {
       transitionTo(this, 'LobbyScene')
     })
 
-    this.add.text(70, TOP_BAR_H / 2, 'CONFIGURAÇÕES', {
+    this.add.text(70, TOP_BAR_H / 2, t('scenes.settings.title'), {
       fontFamily: fontFamily.display, fontSize: typeScale.h2,
       color: accent.primaryHex, fontStyle: '700',
     }).setOrigin(0, 0.5).setLetterSpacing(3)
@@ -78,7 +77,7 @@ export default class SettingsScene extends Phaser.Scene {
     // ── Section: ÁUDIO (sound toggle only — sliders pending volume API) ──
     let cursorY = panelY - panelH / 2 + 36
 
-    this._drawSectionHeader(panelX, cursorY, 'ÁUDIO')
+    this._drawSectionHeader(panelX, cursorY, t('scenes.settings.sections.audio'))
     cursorY += 30
 
     soundManager.init()
@@ -88,12 +87,12 @@ export default class SettingsScene extends Phaser.Scene {
     // Sound icon + label on the left
     const soundIcon = UI.lucideIcon(this, 'settings', panelX - panelW / 2 + 36, cursorY + soundCardH / 2, 22, fg.secondary)
     void soundIcon
-    this.add.text(panelX - panelW / 2 + 64, cursorY + soundCardH / 2 - 8, 'SOM', {
+    this.add.text(panelX - panelW / 2 + 64, cursorY + soundCardH / 2 - 8, t('scenes.settings.audio.sound-label'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: fg.tertiaryHex, fontStyle: '700',
     }).setLetterSpacing(1.6)
     const soundStateLabel = this.add.text(panelX - panelW / 2 + 64, cursorY + soundCardH / 2 + 10,
-      soundManager.isEnabled() ? 'Efeitos sonoros ligados' : 'Efeitos sonoros desligados', {
+      t(soundManager.isEnabled() ? 'scenes.settings.audio.sound-on' : 'scenes.settings.audio.sound-off'), {
         fontFamily: fontFamily.body, fontSize: typeScale.small,
         color: fg.secondaryHex, fontStyle: '500',
       })
@@ -102,7 +101,7 @@ export default class SettingsScene extends Phaser.Scene {
       value: soundManager.isEnabled(),
       onChange: (v) => {
         soundManager.toggle()  // soundManager.toggle returns bool but we already have v
-        soundStateLabel.setText(v ? 'Efeitos sonoros ligados' : 'Efeitos sonoros desligados')
+        soundStateLabel.setText(t(v ? 'scenes.settings.audio.sound-on' : 'scenes.settings.audio.sound-off'))
         soundManager.playClick()
       },
     })
@@ -110,21 +109,21 @@ export default class SettingsScene extends Phaser.Scene {
     // Pending note about volume sliders
     cursorY += soundCardH + 6
     this.add.text(panelX, cursorY,
-      'Sliders de volume aguardam API no SoundManager.', {
+      t('scenes.settings.audio.sliders-pending'), {
         fontFamily: fontFamily.serif, fontSize: typeScale.small,
         color: fg.disabledHex, fontStyle: 'italic',
       }).setOrigin(0.5)
 
     // ── Section: JOGABILIDADE ──
     cursorY += 28
-    this._drawSectionHeader(panelX, cursorY, 'JOGABILIDADE')
+    this._drawSectionHeader(panelX, cursorY, t('scenes.settings.sections.gameplay'))
     cursorY += 30
 
     const diffCardH = 80
     this._drawCard(panelX, cursorY + diffCardH / 2, panelW - 48, diffCardH)
 
     // Card label
-    this.add.text(panelX - panelW / 2 + 36, cursorY + 14, 'DIFICULDADE DO BOT', {
+    this.add.text(panelX - panelW / 2 + 36, cursorY + 14, t('scenes.settings.gameplay.bot-difficulty-label'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: fg.tertiaryHex, fontStyle: '700',
     }).setLetterSpacing(1.6)
@@ -134,7 +133,7 @@ export default class SettingsScene extends Phaser.Scene {
     const validDifficulty: Difficulty = DIFFICULTIES.includes(savedDifficulty) ? savedDifficulty : 'normal'
 
     UI.segmentedControl<Difficulty>(this, panelX, cursorY + diffCardH / 2 + 12, {
-      options: DIFFICULTIES.map(d => ({ key: d, label: DIFFICULTY_LABELS[d] })),
+      options: DIFFICULTIES.map(d => ({ key: d, label: difficultyLabel(d) })),
       value: validDifficulty,
       width: panelW - 96,
       height: 32,
@@ -146,23 +145,23 @@ export default class SettingsScene extends Phaser.Scene {
 
     // ── Section: CONTA ──
     cursorY += diffCardH + 24
-    this._drawSectionHeader(panelX, cursorY, 'CONTA')
+    this._drawSectionHeader(panelX, cursorY, t('scenes.settings.sections.account'))
     cursorY += 30
 
     const accountCardH = 64
     this._drawCard(panelX, cursorY + accountCardH / 2, panelW - 48, accountCardH)
-    this.add.text(panelX - panelW / 2 + 36, cursorY + accountCardH / 2 - 8, 'SESSÃO', {
+    this.add.text(panelX - panelW / 2 + 36, cursorY + accountCardH / 2 - 8, t('scenes.settings.account.session-label'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: fg.tertiaryHex, fontStyle: '700',
     }).setLetterSpacing(1.6)
     this.add.text(panelX - panelW / 2 + 36, cursorY + accountCardH / 2 + 10,
-      'Sair da conta atual', {
+      t('scenes.settings.account.session-description'), {
         fontFamily: fontFamily.body, fontSize: typeScale.small,
         color: fg.secondaryHex, fontStyle: '500',
       })
 
     UI.buttonDestructive(this, panelX + panelW / 2 - 90, cursorY + accountCardH / 2,
-      'SAIR', {
+      t('scenes.settings.account.logout-button'), {
         w: 140, h: 36,
         onPress: () => this._confirmLogout(),
       },
@@ -170,11 +169,11 @@ export default class SettingsScene extends Phaser.Scene {
 
     // ── Footer credits ──
     cursorY = panelY + panelH / 2 - 50
-    this.add.text(panelX, cursorY, 'CODEFORJE VIO', {
+    this.add.text(panelX, cursorY, t('common.studio-name'), {
       fontFamily: fontFamily.display, fontSize: typeScale.meta,
       color: accent.primaryHex, fontStyle: '700',
     }).setOrigin(0.5).setLetterSpacing(2.4)
-    this.add.text(panelX, cursorY + 16, 'Draft Game v1.0  ·  por Caio Sensini', {
+    this.add.text(panelX, cursorY + 16, t('scenes.settings.footer.credits'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: fg.disabledHex, fontStyle: '500',
     }).setOrigin(0.5)
@@ -211,19 +210,19 @@ export default class SettingsScene extends Phaser.Scene {
   private _confirmLogout() {
     soundManager.playClick()
     const { close } = UI.modal(this, {
-      eyebrow: 'CONFIRMAR',
-      title:   'Sair da conta',
-      body:    'Você será desconectado do reino. Quer mesmo continuar?',
+      eyebrow: t('common.actions.confirm'),
+      title:   t('scenes.settings.logout-modal.title'),
+      body:    t('scenes.settings.logout-modal.body'),
       actions: [
         {
-          label: 'CANCELAR', kind: 'secondary',
+          label: t('common.actions.cancel'), kind: 'secondary',
           onClick: () => {
             soundManager.playClick()
             close()
           },
         },
         {
-          label: 'SAIR DA CONTA', kind: 'destructive',
+          label: t('scenes.settings.logout-modal.confirm'), kind: 'destructive',
           onClick: async () => {
             soundManager.playClick()
             close()

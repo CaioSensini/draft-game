@@ -12,6 +12,7 @@ import {
 import { showPackOpen, type DroppedSkill } from '../utils/PackOpenAnimation'
 import { SKILL_CATALOG } from '../data/skillCatalog'
 import { getXPForLevel } from '../data/progression'
+import { t } from '../i18n'
 
 // ── Layout constants ─────────────────────────────────────────────────────────
 
@@ -57,11 +58,13 @@ const SKILL_DROP_POOL = [
 
 // ── Reason labels ────────────────────────────────────────────────────────────
 
-const REASON_LABELS: Record<string, string> = {
-  king_slain:         'Rei abatido',
-  simultaneous_kings: 'Empate simultaneo',
-  timeout:            'Tempo esgotado',
-  forfeit:            'Desistencia',
+// Mapping from internal reason ids to i18n keys (translated at draw time so
+// the UI updates when the user switches languages between battles).
+const REASON_KEYS: Record<string, string> = {
+  king_slain:         'scenes.battle-result.reasons.king-slain',
+  simultaneous_kings: 'scenes.battle-result.reasons.simultaneous-kings',
+  timeout:            'scenes.battle-result.reasons.timeout',
+  forfeit:            'scenes.battle-result.reasons.forfeit',
 }
 
 // ── Shared confetti ─────────────────────────────────────────────────────────
@@ -144,13 +147,13 @@ export default class BattleResultScene extends Phaser.Scene {
     let titleText: string
     let titleColor: string
     if (isDraw) {
-      titleText  = 'EMPATE'
+      titleText  = t('scenes.battle-result.title.draw')
       titleColor = fg.tertiaryHex
     } else if (playerWon) {
-      titleText  = 'VITÓRIA'
+      titleText  = t('scenes.battle-result.title.victory')
       titleColor = accent.primaryHex
     } else {
-      titleText  = 'DERROTA'
+      titleText  = t('scenes.battle-result.title.defeat')
       titleColor = state.errorHex
     }
 
@@ -205,10 +208,11 @@ export default class BattleResultScene extends Phaser.Scene {
     const subMetaY = panelY - 180
     const enemyName = data.pveMode && data.npcTeam
       ? data.npcTeam.name
-      : 'Adversário'
-    const reasonLabel = REASON_LABELS[data.reason] ?? data.reason
+      : t('scenes.battle-result.opponent-fallback')
+    const reasonKey = REASON_KEYS[data.reason]
+    const reasonLabel = reasonKey ? t(reasonKey) : data.reason
     const subMeta = this.add.text(panelX, subMetaY,
-      `Round ${data.round}  ·  vs ${enemyName}  ·  ${reasonLabel}`, {
+      t('scenes.battle-result.sub-meta', { round: data.round, enemy: enemyName, reason: reasonLabel }), {
         fontFamily: fontFamily.serif,
         fontSize:   typeScale.small,
         color:      fg.tertiaryHex,
@@ -233,7 +237,7 @@ export default class BattleResultScene extends Phaser.Scene {
 
     if (playerWon) {
       // Header
-      const rewardsHeader = this.add.text(panelX, currentY, 'RECOMPENSAS', {
+      const rewardsHeader = this.add.text(panelX, currentY, t('scenes.battle-result.rewards-header'), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.meta,
         color:      fg.tertiaryHex,
@@ -319,7 +323,7 @@ export default class BattleResultScene extends Phaser.Scene {
         chipG.strokeRoundedRect(panelX - chipW / 2, chipY - chipH / 2, chipW, chipH, radii.md)
         chipG.setAlpha(0).setScale(0, 1)
 
-        const chipText = this.add.text(panelX, chipY, `Nova skill: ${skillName}!`, {
+        const chipText = this.add.text(panelX, chipY, t('scenes.battle-result.new-skill', { name: skillName }), {
           fontFamily: fontFamily.serif,
           fontSize:   typeScale.small,
           color:      accent.primaryHex,
@@ -361,8 +365,11 @@ export default class BattleResultScene extends Phaser.Scene {
     const btnY = panelY + panelH / 2 - 46
     const btnDelay = rewardDelay + 200
 
-    const playAgainLabel = playerWon ? 'PRÓXIMA PARTIDA'
-      : !isDraw ? 'TENTAR NOVAMENTE' : 'JOGAR NOVAMENTE'
+    const playAgainLabel = playerWon
+      ? t('scenes.battle-result.next-match')
+      : !isDraw
+        ? t('scenes.battle-result.try-again')
+        : t('scenes.battle-result.play-again')
     const { container: playAgainC } = UI.buttonPrimary(
       this, panelX - 120, btnY, playAgainLabel,
       {
@@ -388,7 +395,7 @@ export default class BattleResultScene extends Phaser.Scene {
     })
 
     const { container: menuC } = UI.buttonSecondary(
-      this, panelX + 120, btnY, 'VOLTAR AO LOBBY',
+      this, panelX + 120, btnY, t('scenes.battle-result.back-to-lobby'),
       {
         w: 200, h: 48,
         onPress: () => transitionTo(this, 'LobbyScene'),
@@ -432,8 +439,8 @@ export default class BattleResultScene extends Phaser.Scene {
     // Header — "NÍVEL N → N+1" or "NÍVEL N"
     const headerY = cy - hh + 16
     const headerText = willLevelUp
-      ? `NÍVEL ${levelBefore}  ›  ${levelBefore + 1}`
-      : `NÍVEL ${levelBefore}`
+      ? t('scenes.battle-result.xp.level-up', { from: levelBefore, to: levelBefore + 1 })
+      : t('scenes.battle-result.xp.level-current', { level: levelBefore })
     const header = this.add.text(cx - hw + 16, headerY, headerText, {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
@@ -443,7 +450,7 @@ export default class BattleResultScene extends Phaser.Scene {
     this.tweens.add({ targets: header, alpha: 1, duration: 300, delay: delay + 80 })
 
     // "+XP" chip top-right
-    const plus = this.add.text(cx + hw - 16, headerY, `+${xpGained} XP`, {
+    const plus = this.add.text(cx + hw - 16, headerY, t('scenes.battle-result.xp.gain-suffix', { xp: xpGained }), {
       fontFamily: fontFamily.mono,
       fontSize:   typeScale.statMd,
       color:      state.successHex,
@@ -504,7 +511,7 @@ export default class BattleResultScene extends Phaser.Scene {
 
     // Fractional label centered under the bar
     const fracText = this.add.text(cx, cy + hh - 14,
-      `${xpBefore} / ${xpForThisLevel} XP`, {
+      t('scenes.battle-result.xp.fraction', { current: xpBefore, max: xpForThisLevel }), {
         fontFamily: fontFamily.mono,
         fontSize:   typeScale.meta,
         color:      fg.tertiaryHex,
@@ -518,7 +525,7 @@ export default class BattleResultScene extends Phaser.Scene {
       delay: delay + 300,
       onUpdate: () => {
         const shown = Math.round(xpForThisLevel * progressProxy.r)
-        fracText.setText(`${shown} / ${xpForThisLevel} XP`)
+        fracText.setText(t('scenes.battle-result.xp.fraction', { current: shown, max: xpForThisLevel }))
       },
     })
   }

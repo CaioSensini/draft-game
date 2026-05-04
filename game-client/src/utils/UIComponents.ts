@@ -24,6 +24,7 @@ import {
 } from './DesignTokens'
 import { getLucideIconKey, getSkillIconKey, hasSkillIcon } from './AssetPaths'
 import type { LucideIconName } from './AssetPaths'
+import { t } from '../i18n'
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DESIGN SYSTEM PHASE 1 HELPERS
@@ -985,8 +986,8 @@ export const UI = {
       // the user flagged. Falls back to "NV 3 · 300g" disabled when broke.
       const nextLvl = skill.level + 1
       const uparLabel = up.canAfford
-        ? `↑ UPAR NV ${nextLvl} · ${up.cost}g`
-        : `NV ${nextLvl} · ${up.cost}g`
+        ? t('common.labels.upgrade-action-affordable', { level: nextLvl, cost: up.cost })
+        : t('common.labels.upgrade-action-broke', { level: nextLvl, cost: up.cost })
       let uparFontSize = 10
       const uparTx = scene.add.text(0, row2Y, uparLabel, {
         fontFamily: fontFamily.mono, fontSize: `${uparFontSize}px`,
@@ -1248,7 +1249,7 @@ export const UI = {
 
     if (skill.level >= maxLevel) {
       // Max level indicator
-      const maxText = scene.add.text(dotStartX, dotsY, 'MAX', {
+      const maxText = scene.add.text(dotStartX, dotsY, t('common.labels.level-cap-max'), {
         fontFamily: F.title, fontSize: '14px', color: C.goldHex,
         fontStyle: 'bold', stroke: '#000000', strokeThickness: 3,
         shadow: SHADOW.goldGlow,
@@ -1792,7 +1793,7 @@ export const UI = {
     curY += 8
 
     // ── Description (short, Manrope body) ──
-    els.push(scene.add.text(-hw + 18, curY, 'DESCRIÇÃO', {
+    els.push(scene.add.text(-hw + 18, curY, t('common.section.description'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: fg.tertiaryHex, fontStyle: '700',
     }).setLetterSpacing(1.6))
@@ -1821,7 +1822,7 @@ export const UI = {
     curY += 8
 
     // ── Long description (ETAPA 6.5 — placeholder until catalog is filled) ──
-    els.push(scene.add.text(-hw + 18, curY, 'DESCRIÇÃO DETALHADA', {
+    els.push(scene.add.text(-hw + 18, curY, t('common.section.long-description'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: fg.tertiaryHex, fontStyle: '700',
     }).setLetterSpacing(1.6))

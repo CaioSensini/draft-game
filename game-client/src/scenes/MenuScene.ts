@@ -6,6 +6,7 @@ import {
   accent, fg, fontFamily, typeScale,
 } from '../utils/DesignTokens'
 import { transitionTo } from '../utils/SceneTransition'
+import { t } from '../i18n'
 
 export default class MenuScene extends Phaser.Scene {
   constructor() {
@@ -89,14 +90,14 @@ export default class MenuScene extends Phaser.Scene {
     })
 
     // Shadow layer (offset, darker) — Cinzel 900 via design system typeScale.displayXl
-    const titleShadow = this.add.text(cx + 2, titleY + 4, 'DRAFT', {
+    const titleShadow = this.add.text(cx + 2, titleY + 4, t('scenes.menu.title'), {
       fontFamily: fontFamily.display, fontSize: '88px', color: '#1a0e00', fontStyle: '900',
     }).setOrigin(0.5).setAlpha(0)
     const anyShadow = titleShadow as unknown as { setLetterSpacing?: (n: number) => void }
     if (typeof anyShadow.setLetterSpacing === 'function') anyShadow.setLetterSpacing(7)
 
     // Main title — gold accent from tokens, Cinzel 900
-    const title = this.add.text(cx, titleY, 'DRAFT', {
+    const title = this.add.text(cx, titleY, t('scenes.menu.title'), {
       fontFamily: fontFamily.display,
       fontSize: '88px',
       color: accent.primaryHex,
@@ -113,7 +114,7 @@ export default class MenuScene extends Phaser.Scene {
     if (typeof anyTitle.setLetterSpacing === 'function') anyTitle.setLetterSpacing(7)
 
     // Top highlight layer (lighter gold, offset up — simulates metallic bevel)
-    const titleHighlight = this.add.text(cx, titleY - 1, 'DRAFT', {
+    const titleHighlight = this.add.text(cx, titleY - 1, t('scenes.menu.title'), {
       fontFamily: fontFamily.display, fontSize: '88px', fontStyle: '900',
       color: '#fff0a0',
     }).setOrigin(0.5).setAlpha(0)
@@ -128,7 +129,7 @@ export default class MenuScene extends Phaser.Scene {
     // LAYER 9 — "BATALHAS TÁTICAS" subtitle (Cinzel 700, per Print 19)
     // =========================================================================
     const subY = titleY + 62
-    const subtitle = this.add.text(cx, subY, 'BATALHAS TÁTICAS', {
+    const subtitle = this.add.text(cx, subY, t('scenes.menu.subtitle'), {
       fontFamily: fontFamily.display, fontSize: '22px', fontStyle: '700',
       color: fg.secondaryHex,
       shadow: { offsetX: 0, offsetY: 2, color: '#3a2800', blur: 6, fill: true },
@@ -143,7 +144,7 @@ export default class MenuScene extends Phaser.Scene {
     dotGfx.fillCircle(cx + 140, subY, 2)
 
     // Studio credit — Cormorant italic body text
-    const studioText = this.add.text(cx, subY + 35, 'by Codeforje VIO', {
+    const studioText = this.add.text(cx, subY + 35, t('scenes.menu.studio-credit'), {
       fontFamily: fontFamily.serif, fontSize: '13px',
       color: fg.disabledHex,
       fontStyle: 'italic',
@@ -161,13 +162,13 @@ export default class MenuScene extends Phaser.Scene {
     // LAYER 11 — Tagline: Cormorant italic (key phrase) + Manrope body (explainer)
     // =========================================================================
     const tagY = dividerY + 28
-    const tag1 = this.add.text(cx, tagY, 'Estratégia. Tática. Conquista.', {
+    const tag1 = this.add.text(cx, tagY, t('scenes.menu.tagline-1'), {
       fontFamily: fontFamily.serif, fontSize: '18px', fontStyle: 'italic',
       color: fg.secondaryHex,
       shadow: SHADOW.text,
     }).setOrigin(0.5).setAlpha(0)
 
-    const tag2 = this.add.text(cx, tagY + 26, 'Monte seu deck e derrote o Rei inimigo em batalhas 4v4', {
+    const tag2 = this.add.text(cx, tagY + 26, t('scenes.menu.tagline-2'), {
       fontFamily: fontFamily.body, fontSize: '13px',
       color: fg.tertiaryHex,
       wordWrap: { width: 480 },
@@ -220,7 +221,7 @@ export default class MenuScene extends Phaser.Scene {
     }
 
     // Core button — design-system primary gold (size 'lg' = 280×56 per spec §1.1)
-    const jogarBtn = UI.buttonPrimary(this, cx, btnY, 'JOGAR', {
+    const jogarBtn = UI.buttonPrimary(this, cx, btnY, t('common.actions.play'), {
       size: 'lg', depth: 7,
       onPress: () => transitionTo(this, 'LobbyScene', undefined, 400, 'zoomIn'),
     })
@@ -237,7 +238,7 @@ export default class MenuScene extends Phaser.Scene {
     // =========================================================================
     // LAYER 14 — Hint text + version (Manrope meta tokens)
     // =========================================================================
-    const hintText = this.add.text(cx, btnY + 48, 'Clique para entrar', {
+    const hintText = this.add.text(cx, btnY + 48, t('scenes.menu.hint'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: fg.disabledHex,
       fontStyle: '700',
@@ -265,13 +266,13 @@ export default class MenuScene extends Phaser.Scene {
     }
 
     // Version + studio in Manrope meta (fg.disabled)
-    this.add.text(W - 16, H - 14, 'v1.0', {
+    this.add.text(W - 16, H - 14, t('scenes.menu.version-tag'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta, fontStyle: '700',
       color: fg.disabledHex,
       shadow: SHADOW.text,
     }).setOrigin(1, 0.5)
 
-    this.add.text(16, H - 14, 'Codeforje VIO', {
+    this.add.text(16, H - 14, t('scenes.menu.studio-name'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta, fontStyle: '700',
       color: fg.disabledHex,
       shadow: SHADOW.text,
