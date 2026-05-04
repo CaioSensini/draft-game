@@ -676,7 +676,7 @@ export default class LobbyScene extends Phaser.Scene {
     container.add(iconGfx)
 
     // Label (Cormorant h3)
-    const label = this.add.text(10, available ? -5 : -5, 'Ataque Equipes', {
+    const label = this.add.text(10, available ? -5 : -5, 'Ataques às equipes', {
       fontFamily: fontFamily.serif, fontSize: '14px',
       color:      accentHex,
       fontStyle:  '600',
@@ -685,7 +685,7 @@ export default class LobbyScene extends Phaser.Scene {
     container.add(label)
 
     // Description (Manrope body)
-    const desc = this.add.text(10, 10, available ? 'Ataque bases inimigas' : 'Desafie equipes rivais', {
+    const desc = this.add.text(10, 10, 'Offline', {
       fontFamily: fontFamily.body, fontSize: '11px',
       color:      available ? fg.tertiaryHex : fg.disabledHex,
       shadow:     SHADOW.text,
