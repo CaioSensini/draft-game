@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { getAllCharacterAssets, getAllDesignSvgAssets, getAllLucideIconAssets, getAllSkillAssets } from '../utils/AssetPaths'
 import { colors, fonts, fontFamily, sizes } from '../utils/DesignTokens'
+import { initI18n } from '../i18n'
 
 /**
  * Pre-instantiate one short Text object per design-system font family.
@@ -29,6 +30,9 @@ function warmUpDesignSystemFonts(scene: Phaser.Scene): void {
 export default class BootScene extends Phaser.Scene {
   /** Promise resolved once browser fonts are loaded; transitions await it. */
   private _fontsReady: Promise<void> = Promise.resolve()
+
+  /** Promise resolved once i18n bundles for the detected language are loaded. */
+  private _i18nReady: Promise<void> = Promise.resolve()
 
   constructor() {
     super('BootScene')
@@ -80,6 +84,13 @@ export default class BootScene extends Phaser.Scene {
           console.warn('[BootScene] document.fonts.ready failed, falling back', err)
         })
     }
+
+    // === I18N READINESS GATE ===
+    // Loads detected language + PT-BR fallback bundle. Fails open: a rejection
+    // here only means UI text falls back to raw key strings — game still boots.
+    this._i18nReady = initI18n().catch((err: unknown) => {
+      console.warn('[BootScene] i18n init failed, falling back to keys', err)
+    })
 
     // === LAYER 1: Solid dark base ===
     this.add.rectangle(width / 2, height / 2, width, height, colors.ui.bg)
@@ -201,9 +212,10 @@ export default class BootScene extends Phaser.Scene {
         alpha: 1,
         duration: 400,
         onComplete: async () => {
-          // Block transition until design-system fonts are cached. Resolves
-          // quickly in normal conditions (fonts loaded well under 1.5s intro).
-          await this._fontsReady
+          // Block transition until design-system fonts are cached AND the i18n
+          // bundles are loaded. Both kicked off at the start of create(); the
+          // 1.5s intro normally absorbs both latencies.
+          await Promise.all([this._fontsReady, this._i18nReady])
 
           const token = localStorage.getItem('draft_token')
           if (token) {
