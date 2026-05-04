@@ -1,3 +1,320 @@
 {
-  "_meta": { "lang": "ru" }
+  "_meta": { "lang": "ru" },
+  "battle": {
+    "phase": {
+      "movement-title-line-1": "ХОД",
+      "movement-title-line-2": "ДВИЖЕНИЕ",
+      "movement-sub": "Двигайте своих\nперсонажей",
+      "action-title": "ДЕЙСТВИЕ",
+      "action-sub": "Выберите свои навыки",
+      "movement-label": "Ход движения",
+      "action-label": "Ход действия",
+      "role-turn": "Ход {role}",
+      "phase-movement": "Движение",
+      "phase-action": "Действие"
+    },
+    "team": {
+      "ally-eyebrow": "СОЮЗНИК",
+      "enemy-eyebrow": "ВРАГ",
+      "ally-name-fallback": "Вы",
+      "enemy-name-fallback": "Противник",
+      "left-color": "Синий",
+      "right-color": "Фиолетовый"
+    },
+    "phase-side-format": "{phase} — {side}",
+    "tracker-side-movement": "{side} — Движение",
+    "log-round-marker": "— Раунд {round} —",
+    "tracker": {
+      "round": "Раунд {round}",
+      "round-label-default": "Раунд 1",
+      "header-both": "Действие — Оба",
+      "title": "ПОРЯДОК ДЕЙСТВИЙ",
+      "history-button": "СМ. ИСТОРИЮ",
+      "history-popup-title": "ИСТОРИЯ ДЕЙСТВИЙ",
+      "history-popup-hint": "Кликните вне, чтобы закрыть",
+      "wait-indicator": "· · ·",
+      "placeholder": "…"
+    },
+    "log": {
+      "skipped": "Пропуск",
+      "stunned": "Оглушён",
+      "dead": "Мёртв"
+    },
+    "outcome": {
+      "victory": "Победа!",
+      "defeat": "Поражение!",
+      "draw": "Ничья!",
+      "opponent-forfeit": "Противник сдался!",
+      "self-forfeit": "Вы сдались!"
+    },
+    "victory-overlay": {
+      "reasons": {
+        "king_slain": "Король повержен",
+        "simultaneous_kings": "Одновременная ничья",
+        "timeout": "Время вышло",
+        "forfeit": "Сдача"
+      },
+      "detail-forfeit": "{reason} — Противник покинул матч",
+      "detail-normal": "{reason} — Раунд {round}"
+    },
+    "actions": {
+      "confirm": "Подтвердить",
+      "cancel": "Отмена",
+      "skip": "Пропустить",
+      "end-movement": "Конец Движения",
+      "main-menu": "Главное Меню"
+    },
+    "popup": {
+      "confirmation-eyebrow": "Подтверждение",
+      "warning-eyebrow": "Внимание",
+      "vote-eyebrow": "Голосование",
+      "skip-title": "Пропустить ход?",
+      "skip-body": "Ваш персонаж не действует в этом ходу.",
+      "skip-confirm": "Пропустить",
+      "confirm-action-title": "Подтвердить действие?",
+      "confirm-action-body": "Выбранные навыки попадают в очередь и разрешаются в этом ходу.",
+      "surrender-title": "Сдаться?",
+      "surrender-body-solo": "Сдача влияет на ваш ранг и не может быть отменена.",
+      "surrender-vote-title": "Голосовать за сдачу?",
+      "surrender-vote-body": "Ваш голос засчитывается за {required}. Вся команда должна согласиться, чтобы сдаться.",
+      "surrender-vote-button": "Голосовать",
+      "surrender-confirm": "Сдаться",
+      "surrender-button-label": "  Сдаться"
+    },
+    "status": {
+      "shield-suffix": "ЩТ +{amount}",
+      "wall-bonus": "СТЕНА +{pct}%"
+    },
+    "effect-shorthand": {
+      "damage": "Урон",
+      "area": "Область",
+      "heal": "Лечение",
+      "shield": "Щит"
+    }
+  },
+  "battle-result": {
+    "title": {
+      "victory": "ПОБЕДА",
+      "defeat": "ПОРАЖЕНИЕ",
+      "draw": "НИЧЬЯ"
+    },
+    "reasons": {
+      "king-slain": "Король повержен",
+      "simultaneous-kings": "Одновременная ничья",
+      "timeout": "Время вышло",
+      "forfeit": "Сдача"
+    },
+    "opponent-fallback": "Противник",
+    "sub-meta": "Раунд {round}  ·  vs {enemy}  ·  {reason}",
+    "rewards-header": "НАГРАДЫ",
+    "new-skill": "Новый навык: {name}!",
+    "next-match": "СЛЕДУЮЩИЙ МАТЧ",
+    "try-again": "ПОПРОБОВАТЬ СНОВА",
+    "play-again": "ИГРАТЬ СНОВА",
+    "back-to-lobby": "В ЛОББИ",
+    "xp": {
+      "level-current": "УРОВЕНЬ {level}",
+      "level-up": "УРОВЕНЬ {from}  ›  {to}",
+      "gain-suffix": "+{xp} XP",
+      "fraction": "{current} / {max} XP"
+    }
+  },
+  "deck-build": {
+    "title": "СБОРКА КОЛОДЫ",
+    "subtitle": "Выберите 2 карты на группу для каждого класса.",
+    "difficulty-eyebrow": "СЛОЖНОСТЬ",
+    "difficulty": {
+      "easy": "Легко",
+      "normal": "Нормально",
+      "hard": "Сложно"
+    },
+    "groups": {
+      "attack1": "АТАКА · УРОН",
+      "attack2": "АТАКА · КОНТРОЛЬ",
+      "defense1": "ЗАЩИТА · СИЛЬНАЯ",
+      "defense2": "ЗАЩИТА · ЛЁГКАЯ",
+      "attack1-tooltip": "Атака - Урон",
+      "attack2-tooltip": "Атака - Контроль",
+      "defense1-tooltip": "Защита - Сильная",
+      "defense2-tooltip": "Защита - Лёгкая"
+    },
+    "targets": {
+      "single": "Цель: 1 Враг",
+      "self": "Цель: Себя",
+      "lowest_ally": "Цель: Союзник с наименьшим HP",
+      "all_allies": "Цель: Все Союзники",
+      "area": "Цель: Область 3x3"
+    },
+    "tooltip": {
+      "power-with": "Сила {power}",
+      "power-none": "Сила —",
+      "target-prefix": "ЦЕЛЬ · {target}"
+    },
+    "footer": {
+      "deck-label": "КОЛОДА",
+      "atk-label": "АТК",
+      "def-label": "ЗАЩ",
+      "empty-slot": "—",
+      "power-prefix": "СИЛ {power}",
+      "shortcuts": "Горячие клавиши · 1-4 выбрать · Tab сменить класс · Enter играть",
+      "progress": "ЕДИНИЦЫ ГОТОВЫ · {done} / 4    ВЫБЕРИТЕ 2 КАРТЫ В КОЛОНКЕ"
+    },
+    "buttons": {
+      "random": "Случайно",
+      "default": "По умолчанию",
+      "restore": "Восстановить",
+      "start": "СТАРТ"
+    },
+    "tab-ready-suffix": "{role} ✓",
+    "passives": {
+      "king": "Пассивка: Королевская Защита — Щит обновляется каждый ход, -15% получаемого урона.",
+      "warrior": "Пассивка: Защитник — Соседние союзники получают -15% урона.",
+      "specialist": "Пассивка: Горение — Атаки снижают вражеское лечение на 20% на 1 ход.",
+      "executor": "Пассивка: Изолированный — +15% урона, когда никого нет рядом."
+    }
+  },
+  "lobby": {
+    "central-play-title": "ИГРАТЬ",
+    "central-play-subtitle": "Выберите режим битвы",
+    "play-modes-title": "РЕЖИМЫ ИГРЫ",
+    "nav": {
+      "shop": "МАГАЗИН",
+      "skills": "НАВЫКИ",
+      "training": "ТРЕНИРОВКА",
+      "ranking": "РЕЙТИНГ"
+    },
+    "battlepass": {
+      "line-1": "БОЕВОЙ",
+      "line-2": "ПРОПУСК",
+      "rewards-max": "НАГРАДЫ MAX"
+    },
+    "offline": {
+      "title": "Налёты на команды",
+      "subtitle": "Оффлайн",
+      "popup-eyebrow": "СКОРО",
+      "popup-body": "Система налётов на команды"
+    },
+    "sound-toggle": {
+      "on": "Звук",
+      "muted": "Без звука"
+    },
+    "news-ticker": "     Добро пожаловать в Draft Game!  •  Новые наборы в магазине!  •  PvP битва открыта!  •  Тренировка доступна!     "
+  },
+  "login": {
+    "tab": {
+      "login": "ВХОД",
+      "register": "РЕГИСТРАЦИЯ"
+    },
+    "title-login": "ВОЙТИ",
+    "title-register": "СОЗДАТЬ АККАУНТ",
+    "submit-login": "ВОЙТИ",
+    "submit-register": "СОЗДАТЬ АККАУНТ",
+    "fields": {
+      "username-label": "ПОЛЬЗОВАТЕЛЬ",
+      "username-placeholder": "Ник",
+      "password-label": "ПАРОЛЬ",
+      "password-placeholder": "••••••••",
+      "email-label": "EMAIL",
+      "email-placeholder": "ты@пример.com",
+      "register-password-hint": "Минимум 6 символов"
+    },
+    "remember-me": "Запомнить меня",
+    "forgot-password": "Забыли пароль?",
+    "verify": {
+      "eyebrow": "ВЕРИФИКАЦИЯ",
+      "title": "EMAIL КОД",
+      "body": "На вашу почту отправлен 6-значный код.\nВведите его ниже.",
+      "code-label": "КОД",
+      "code-placeholder": "000000",
+      "submit": "ПРОВЕРИТЬ",
+      "resend": "Отправить код повторно",
+      "sending": "Отправка…"
+    }
+  },
+  "menu": {
+    "title": "DRAFT",
+    "subtitle": "ТАКТИЧЕСКИЕ БИТВЫ",
+    "studio-credit": "от Codeforje VIO",
+    "studio-name": "Codeforje VIO",
+    "tagline-1": "Стратегия. Тактика. Завоевание.",
+    "tagline-2": "Соберите свою колоду и победите вражеского Короля в битвах 4 на 4",
+    "hint": "Кликните, чтобы войти",
+    "version-tag": "v1.0"
+  },
+  "profile": {
+    "title": "ПРОФИЛЬ",
+    "tagline": "ПРИЗЫВАТЕЛЬ КОРОЛЕВСТВА",
+    "stats": {
+      "wins": "ПОБЕДЫ",
+      "losses": "ПОРАЖЕНИЯ",
+      "win-rate": "WIN RATE",
+      "gold": "ЗОЛОТО",
+      "dg": "DG",
+      "ranked-points": "РЕЙТИНГ. ОЧКИ"
+    },
+    "mastery-eyebrow": "МАСТЕРСТВО",
+    "mastery": {
+      "attack": "АТАКА",
+      "defense": "ЗАЩИТА"
+    }
+  },
+  "skill-upgrade": {
+    "title": "УПРАВЛЕНИЕ НАВЫКАМИ",
+    "deck-section": {
+      "header": "ЭКИПИРОВАННЫЕ НАВЫКИ",
+      "equipped-counter": "{equipped} / 8",
+      "empty-slot": "Пусто",
+      "slots": {
+        "atk1": "АТК 1",
+        "atk2": "АТК 2",
+        "def1": "ЗАЩ 1",
+        "def2": "ЗАЩ 2"
+      }
+    },
+    "inventory-section": {
+      "header": "ИНВЕНТАРЬ",
+      "hint": "Кликните или перетащите, чтобы экипировать",
+      "all-equipped": "Все экипированы",
+      "owned-counter": "{owned} / {max}"
+    },
+    "groups": {
+      "attack1": "АТАКА · УРОН",
+      "attack2": "АТАКА · КОНТРОЛЬ",
+      "defense1": "ЗАЩИТА · СИЛЬНАЯ",
+      "defense2": "ЗАЩИТА · ЛЁГКАЯ"
+    },
+    "level-up-banner": "ПОВЫШЕНИЕ УРОВНЯ!"
+  },
+  "settings": {
+    "title": "НАСТРОЙКИ",
+    "sections": {
+      "audio": "ЗВУК",
+      "language": "ЯЗЫК",
+      "account": "АККАУНТ"
+    },
+    "audio": {
+      "sound-label": "ЗВУК",
+      "sound-on": "Звуковые эффекты включены",
+      "sound-off": "Звуковые эффекты выключены"
+    },
+    "language": {
+      "field-label": "ВЫБЕРИТЕ ВАШ ЯЗЫК"
+    },
+    "gameplay": {
+      "bot-difficulty-label": "СЛОЖНОСТЬ БОТА"
+    },
+    "account": {
+      "session-label": "СЕССИЯ",
+      "session-description": "Выйти из текущего аккаунта",
+      "logout-button": "ВЫХОД"
+    },
+    "logout-modal": {
+      "title": "Выход",
+      "body": "Вы будете отключены от королевства. Продолжить?",
+      "confirm": "ВЫЙТИ"
+    },
+    "footer": {
+      "credits": "Draft Game v1.0  ·  от Caio Sensini"
+    }
+  }
 }

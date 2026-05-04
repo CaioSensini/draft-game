@@ -1,3 +1,27 @@
 {
-  "_meta": { "lang": "ru" }
+  "_meta": { "lang": "ru", "name": "Русский" },
+  "actions": {
+    "confirm": "ПОДТВЕРДИТЬ",
+    "cancel": "ОТМЕНА",
+    "back": "НАЗАД",
+    "close": "ЗАКРЫТЬ",
+    "play": "ИГРАТЬ",
+    "ok": "ОК",
+    "save": "СОХРАНИТЬ",
+    "yes": "ДА",
+    "no": "НЕТ"
+  },
+  "studio-name": "CODEFORJE VIO",
+  "section": {
+    "description": "ОПИСАНИЕ",
+    "long-description": "ПОДРОБНОЕ ОПИСАНИЕ"
+  },
+  "labels": {
+    "level-cap-max": "MAX",
+    "level-short": "Ур {level}",
+    "level-long": "Ур.{level}",
+    "gold-cost": "{cost}з",
+    "upgrade-action-affordable": "↑ УЛУЧШИТЬ УР {level} · {cost}з",
+    "upgrade-action-broke": "УР {level} · {cost}з"
+  }
 }

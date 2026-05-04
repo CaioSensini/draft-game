@@ -635,8 +635,12 @@ export const tile = {
 } as const
 
 // ── Typography: new font stacks (Google Fonts + generic fallbacks) ──
+// Cinzel does NOT include the Cyrillic subset. The display stack therefore
+// falls back to Cormorant Garamond (which DOES ship Cyrillic) before any
+// generic serif, so Russian (and any other Cyrillic-script language we add
+// later) renders in a cohesive serif rather than the browser's default.
 export const fontFamily = {
-  display: "'Cinzel', 'Trajan Pro', serif",
+  display: "'Cinzel', 'Trajan Pro', 'Cormorant Garamond', serif",
   serif:   "'Cormorant Garamond', 'Cinzel', serif",
   body:    "'Manrope', 'Inter', system-ui, sans-serif",
   mono:    "'JetBrains Mono', ui-monospace, monospace",
