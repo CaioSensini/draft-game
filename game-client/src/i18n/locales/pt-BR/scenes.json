@@ -31,6 +31,98 @@
       "sending": "Enviando…"
     }
   },
+  "battle": {
+    "phase": {
+      "movement-title-line-1": "TURNO DE",
+      "movement-title-line-2": "MOVIMENTO",
+      "movement-sub": "Mova seus\npersonagens",
+      "action-title": "AÇÃO",
+      "action-sub": "Escolha suas habilidades",
+      "movement-label": "Turno de movimento",
+      "action-label": "Turno de ação",
+      "role-turn": "Turno do {role}",
+      "phase-movement": "Movimento",
+      "phase-action": "Ação"
+    },
+    "team": {
+      "ally-eyebrow": "ALIADO",
+      "enemy-eyebrow": "INIMIGO",
+      "ally-name-fallback": "Você",
+      "enemy-name-fallback": "Adversário",
+      "left-color": "Azul",
+      "right-color": "Roxo"
+    },
+    "phase-side-format": "{phase} — {side}",
+    "tracker-side-movement": "{side} — Movimento",
+    "log-round-marker": "— Round {round} —",
+    "tracker": {
+      "round": "Round {round}",
+      "round-label-default": "Round 1",
+      "header-both": "Ação — Ambos",
+      "title": "ORDEM DE AÇÃO",
+      "history-button": "VER HISTÓRICO",
+      "history-popup-title": "HISTÓRICO DE AÇÕES",
+      "history-popup-hint": "Clique fora para fechar",
+      "wait-indicator": "· · ·",
+      "placeholder": "…"
+    },
+    "log": {
+      "skipped": "Pulou",
+      "stunned": "Atordoado",
+      "dead": "Morto"
+    },
+    "outcome": {
+      "victory": "Vitória!",
+      "defeat": "Derrota!",
+      "draw": "Empate!",
+      "opponent-forfeit": "Adversário desistiu!",
+      "self-forfeit": "Você desistiu!"
+    },
+    "victory-overlay": {
+      "reasons": {
+        "king_slain": "Rei abatido",
+        "simultaneous_kings": "Empate simultâneo",
+        "timeout": "Tempo esgotado",
+        "forfeit": "Desistência"
+      },
+      "detail-forfeit": "{reason} — O adversário desistiu da partida",
+      "detail-normal": "{reason} — Round {round}"
+    },
+    "actions": {
+      "confirm": "Confirmar",
+      "cancel": "Cancelar",
+      "skip": "Pular",
+      "end-movement": "Fim Movimento",
+      "main-menu": "Menu Principal"
+    },
+    "popup": {
+      "confirmation-eyebrow": "Confirmação",
+      "warning-eyebrow": "Atenção",
+      "vote-eyebrow": "Votação",
+      "skip-title": "Pular turno?",
+      "skip-body": "Seu personagem não joga este turno.",
+      "skip-confirm": "Pular",
+      "confirm-action-title": "Confirmar ação?",
+      "confirm-action-body": "As skills selecionadas entram na fila e serão resolvidas neste turno.",
+      "surrender-title": "Render-se?",
+      "surrender-body-solo": "Abandonar esta partida afeta seu rank e não pode ser desfeito.",
+      "surrender-vote-title": "Votar para render-se?",
+      "surrender-vote-body": "Seu voto conta para {required}. Todos do time precisam concordar para render.",
+      "surrender-vote-button": "Votar",
+      "surrender-confirm": "Render-se",
+      "surrender-button-label": "  Render-se"
+    },
+    "status": {
+      "shield-suffix": "SH +{amount}",
+      "wall-bonus": "MURO +{pct}%"
+    },
+    "effect-shorthand": {
+      "damage": "Dano",
+      "area": "Área",
+      "heal": "Cura",
+      "shield": "Escudo"
+    }
+  },
   "battle-result": {
     "title": {
       "victory": "VITÓRIA",
@@ -56,6 +148,60 @@
       "level-up": "NÍVEL {from}  ›  {to}",
       "gain-suffix": "+{xp} XP",
       "fraction": "{current} / {max} XP"
+    }
+  },
+  "deck-build": {
+    "title": "MONTAGEM DE DECK",
+    "subtitle": "Escolha 2 cartas por grupo para cada classe.",
+    "difficulty-eyebrow": "DIFICULDADE",
+    "difficulty": {
+      "easy": "Fácil",
+      "normal": "Normal",
+      "hard": "Difícil"
+    },
+    "groups": {
+      "attack1": "ATAQUE · DANO",
+      "attack2": "ATAQUE · CONTROLE",
+      "defense1": "DEFESA · FORTE",
+      "defense2": "DEFESA · LEVE",
+      "attack1-tooltip": "Ataque - Dano",
+      "attack2-tooltip": "Ataque - Controle",
+      "defense1-tooltip": "Defesa - Forte",
+      "defense2-tooltip": "Defesa - Leve"
+    },
+    "targets": {
+      "single": "Alvo: 1 Inimigo",
+      "self": "Alvo: Próprio",
+      "lowest_ally": "Alvo: Aliado com Menos HP",
+      "all_allies": "Alvo: Todos os Aliados",
+      "area": "Alvo: Área 3x3"
+    },
+    "tooltip": {
+      "power-with": "Poder {power}",
+      "power-none": "Poder —",
+      "target-prefix": "ALVO · {target}"
+    },
+    "footer": {
+      "deck-label": "DECK",
+      "atk-label": "ATK",
+      "def-label": "DEF",
+      "empty-slot": "—",
+      "power-prefix": "PWR {power}",
+      "shortcuts": "Atalhos · 1-4 selecionar · Tab trocar classe · Enter jogar",
+      "progress": "UNIDADES PRONTAS · {done} / 4    SELECIONE 2 CARTAS POR COLUNA"
+    },
+    "buttons": {
+      "random": "Aleatório",
+      "default": "Padrão",
+      "restore": "Restaurar",
+      "start": "INICIAR"
+    },
+    "tab-ready-suffix": "{role} ✓",
+    "passives": {
+      "king": "Passiva: Proteção Real — Escudo renovado a cada turno, -15% dano recebido.",
+      "warrior": "Passiva: Protetor — Aliados adjacentes ganham -15% de mitigação de dano.",
+      "specialist": "Passiva: Queimação — Ataques reduzem cura inimiga em 20% por 1 turno.",
+      "executor": "Passiva: Isolado — +15% de dano quando sem ninguém adjacente."
     }
   },
   "lobby": {
@@ -94,6 +240,50 @@
     "tagline-2": "Monte seu deck e derrote o Rei inimigo em batalhas 4v4",
     "hint": "Clique para entrar",
     "version-tag": "v1.0"
+  },
+  "profile": {
+    "title": "PERFIL",
+    "tagline": "INVOCADOR DO REINO",
+    "stats": {
+      "wins": "VITÓRIAS",
+      "losses": "DERROTAS",
+      "win-rate": "WIN RATE",
+      "gold": "GOLD",
+      "dg": "DG",
+      "ranked-points": "PONTOS RANKED"
+    },
+    "mastery-eyebrow": "MAESTRIA",
+    "mastery": {
+      "attack": "ATAQUE",
+      "defense": "DEFESA"
+    }
+  },
+  "skill-upgrade": {
+    "title": "GERENCIAR SKILLS",
+    "deck-section": {
+      "header": "SKILLS EQUIPADAS",
+      "equipped-counter": "{equipped} / 8",
+      "empty-slot": "Vazio",
+      "slots": {
+        "atk1": "ATK 1",
+        "atk2": "ATK 2",
+        "def1": "DEF 1",
+        "def2": "DEF 2"
+      }
+    },
+    "inventory-section": {
+      "header": "INVENTÁRIO",
+      "hint": "Clique ou arraste para equipar",
+      "all-equipped": "Todas equipadas",
+      "owned-counter": "{owned} / {max}"
+    },
+    "groups": {
+      "attack1": "ATAQUE · DANO",
+      "attack2": "ATAQUE · CONTROLE",
+      "defense1": "DEFESA · FORTE",
+      "defense2": "DEFESA · LEVE"
+    },
+    "level-up-banner": "LEVEL UP!"
   },
   "settings": {
     "title": "CONFIGURAÇÕES",

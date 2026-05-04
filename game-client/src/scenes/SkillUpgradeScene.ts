@@ -8,6 +8,7 @@ import {
 } from '../utils/DesignTokens'
 import { transitionTo } from '../utils/SceneTransition'
 import { playerData } from '../utils/PlayerDataManager'
+import { t } from '../i18n'
 import type { OwnedSkill } from '../utils/PlayerDataManager'
 import { SKILL_CATALOG } from '../data/skillCatalog'
 import type { SkillDefinition } from '../domain/Skill'
@@ -142,7 +143,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     UI.backArrow(this, () => { this._fillEmptySlots(); transitionTo(this, 'LobbyScene') })
 
     // Title — Cinzel h2 accent, letterSpacing 3
-    this.add.text(70, TOP_BAR_H / 2, 'GERENCIAR SKILLS', {
+    this.add.text(70, TOP_BAR_H / 2, t('scenes.skill-upgrade.title'), {
       fontFamily: fontFamily.display, fontSize: typeScale.h2,
       color: accent.primaryHex, fontStyle: '700',
     }).setOrigin(0, 0.5).setLetterSpacing(3)
@@ -437,11 +438,11 @@ export default class SkillUpgradeScene extends Phaser.Scene {
 
     // Title — Manrope meta letterSpacing 1.6, accent.primary
     const eq = cfg.attackCards.filter(Boolean).length + cfg.defenseCards.filter(Boolean).length
-    this.deckGroup.push(this.add.text(dx + 16, dy + 18, 'SKILLS EQUIPADAS', {
+    this.deckGroup.push(this.add.text(dx + 16, dy + 18, t('scenes.skill-upgrade.deck-section.header'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: accent.primaryHex, fontStyle: '700',
     }).setOrigin(0, 0.5).setLetterSpacing(1.8))
-    this.deckGroup.push(this.add.text(dx + dw - 16, dy + 18, `${eq} / 8`, {
+    this.deckGroup.push(this.add.text(dx + dw - 16, dy + 18, t('scenes.skill-upgrade.deck-section.equipped-counter', { equipped: eq }), {
       fontFamily: fontFamily.mono, fontSize: typeScale.small,
       color: eq === 8 ? state.successHex : fg.tertiaryHex,
       fontStyle: '700',
@@ -451,10 +452,10 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     const gridStartX = dx + (dw - (DECK_COLS * DECK_CARD_W + (DECK_COLS - 1) * DECK_GAP)) / 2
     const gridStartY = dy + 36
     const groups = [
-      { label: 'ATK 1', ids: cfg.attackCards, start: 0, end: 2, cat: 'attack' },
-      { label: 'ATK 2', ids: cfg.attackCards, start: 2, end: 4, cat: 'attack' },
-      { label: 'DEF 1', ids: cfg.defenseCards, start: 0, end: 2, cat: 'defense' },
-      { label: 'DEF 2', ids: cfg.defenseCards, start: 2, end: 4, cat: 'defense' },
+      { label: t('scenes.skill-upgrade.deck-section.slots.atk1'), ids: cfg.attackCards,  start: 0, end: 2, cat: 'attack' },
+      { label: t('scenes.skill-upgrade.deck-section.slots.atk2'), ids: cfg.attackCards,  start: 2, end: 4, cat: 'attack' },
+      { label: t('scenes.skill-upgrade.deck-section.slots.def1'), ids: cfg.defenseCards, start: 0, end: 2, cat: 'defense' },
+      { label: t('scenes.skill-upgrade.deck-section.slots.def2'), ids: cfg.defenseCards, start: 2, end: 4, cat: 'defense' },
     ]
 
     groups.forEach((grp, gi) => {
@@ -577,7 +578,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
             eg.fillRect(cardX + DECK_CARD_W - 1, cy + di, 1, 3)
           }
           this.deckGroup.push(eg)
-          this.deckGroup.push(this.add.text(cardX + DECK_CARD_W / 2, cy + DECK_CARD_H / 2, 'Vazio', {
+          this.deckGroup.push(this.add.text(cardX + DECK_CARD_W / 2, cy + DECK_CARD_H / 2, t('scenes.skill-upgrade.deck-section.empty-slot'), {
             fontFamily: fontFamily.body, fontSize: typeScale.meta,
             color: fg.disabledHex, fontStyle: '700',
           }).setOrigin(0.5).setLetterSpacing(1.6))
@@ -611,11 +612,11 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     this.invGroup.push(pg)
 
     // Title — Manrope meta + hint on the right
-    this.invGroup.push(this.add.text(ix + 16, iy + 18, 'INVENTÁRIO', {
+    this.invGroup.push(this.add.text(ix + 16, iy + 18, t('scenes.skill-upgrade.inventory-section.header'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: accent.primaryHex, fontStyle: '700',
     }).setOrigin(0, 0.5).setLetterSpacing(1.8))
-    this.invGroup.push(this.add.text(ix + iw - 16, iy + 18, 'Clique ou arraste para equipar', {
+    this.invGroup.push(this.add.text(ix + iw - 16, iy + 18, t('scenes.skill-upgrade.inventory-section.hint'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: fg.tertiaryHex, fontStyle: '500',
     }).setOrigin(1, 0.5))
@@ -635,8 +636,10 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     this.invGroup.push(maskG)
 
     const groupLabels: Record<string, string> = {
-      attack1: 'ATAQUE · DANO', attack2: 'ATAQUE · CONTROLE',
-      defense1: 'DEFESA · FORTE', defense2: 'DEFESA · LEVE',
+      attack1:  t('scenes.skill-upgrade.groups.attack1'),
+      attack2:  t('scenes.skill-upgrade.groups.attack2'),
+      defense1: t('scenes.skill-upgrade.groups.defense1'),
+      defense2: t('scenes.skill-upgrade.groups.defense2'),
     }
     // Group header tint aligned with DeckBuildScene (state-based semantic)
     const groupTint: Record<string, string> = {
@@ -662,7 +665,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
         color: groupTint[group] ?? accent.primaryHex,
         fontStyle: '700',
       }).setLetterSpacing(1.6))
-      container.add(this.add.text(contentW - 8, cursorY, `${totalOwned} / ${maxPerGroup}`, {
+      container.add(this.add.text(contentW - 8, cursorY, t('scenes.skill-upgrade.inventory-section.owned-counter', { owned: totalOwned, max: maxPerGroup }), {
         fontFamily: fontFamily.mono, fontSize: typeScale.meta,
         color: fg.tertiaryHex, fontStyle: '700',
       }).setOrigin(1, 0))
@@ -670,7 +673,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
 
       if (skills.length === 0) {
         // No unequipped skills in this group
-        container.add(this.add.text(4, cursorY + 6, 'Todas equipadas', {
+        container.add(this.add.text(4, cursorY + 6, t('scenes.skill-upgrade.inventory-section.all-equipped'), {
           fontFamily: fontFamily.body, fontSize: typeScale.small,
           color: fg.disabledHex, fontStyle: '500',
         }))
@@ -1169,7 +1172,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     }
 
     // "LEVEL UP!" text flash — Cinzel display, success-green
-    const lvUpText = this.add.text(cx, cy - 20, 'LEVEL UP!', {
+    const lvUpText = this.add.text(cx, cy - 20, t('scenes.skill-upgrade.level-up-banner'), {
       fontFamily: fontFamily.display, fontSize: typeScale.displayMd,
       color: state.successHex, fontStyle: '900',
     }).setOrigin(0.5).setDepth(202).setAlpha(0).setScale(0.5).setLetterSpacing(4)

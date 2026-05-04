@@ -8,6 +8,7 @@ import {
   SCREEN, surface, border, fg, accent, state,
   fontFamily, typeScale, radii, motion,
 } from '../utils/DesignTokens'
+import { t } from '../i18n'
 
 const W = SCREEN.W
 
@@ -57,7 +58,7 @@ export default class ProfileScene extends Phaser.Scene {
 
     UI.backArrow(this, () => transitionTo(this, 'LobbyScene'))
 
-    this.add.text(W / 2, TOP_H / 2, 'PERFIL', {
+    this.add.text(W / 2, TOP_H / 2, t('scenes.profile.title'), {
       fontFamily: fontFamily.display,
       fontSize:   typeScale.h2,
       color:      accent.primaryHex,
@@ -104,7 +105,7 @@ export default class ProfileScene extends Phaser.Scene {
     }).setOrigin(0, 0.5)
 
     // Tagline
-    this.add.text(rightX, py - 22, 'INVOCADOR DO REINO', {
+    this.add.text(rightX, py - 22, t('scenes.profile.tagline'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      fg.tertiaryHex,
@@ -115,7 +116,7 @@ export default class ProfileScene extends Phaser.Scene {
     const xpForNext = Math.max(1, p.level * 100)
     const xpRatio = Math.min(1, p.xp / xpForNext)
 
-    this.add.text(rightX, py + 14, `NÍVEL ${p.level}`, {
+    this.add.text(rightX, py + 14, t('scenes.battle-result.xp.level-current', { level: p.level }), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      accent.primaryHex,
@@ -131,7 +132,7 @@ export default class ProfileScene extends Phaser.Scene {
       ratio:  xpRatio,
     })
 
-    this.add.text(rightX + barW + 24, barY, `${p.xp} / ${xpForNext} XP`, {
+    this.add.text(rightX + barW + 24, barY, t('scenes.battle-result.xp.fraction', { current: p.xp, max: xpForNext }), {
       fontFamily: fontFamily.mono,
       fontSize:   typeScale.statMd,
       color:      fg.primaryHex,
@@ -151,12 +152,12 @@ export default class ProfileScene extends Phaser.Scene {
     const startX = (W - totalW) / 2
 
     const stats: Array<{ label: string; value: string; color: string }> = [
-      { label: 'VITÓRIAS',     value: String(p.wins),       color: state.successHex },
-      { label: 'DERROTAS',     value: String(p.losses),     color: state.errorHex },
-      { label: 'WIN RATE',     value: `${winRate}%`,        color: fg.primaryHex },
-      { label: 'GOLD',         value: String(p.gold),       color: accent.primaryHex },
-      { label: 'DG',           value: String(p.dg),         color: '#a78bfa' },
-      { label: 'PONTOS RANKED', value: String(p.rankPoints), color: state.infoHex },
+      { label: t('scenes.profile.stats.wins'),         value: String(p.wins),       color: state.successHex },
+      { label: t('scenes.profile.stats.losses'),       value: String(p.losses),     color: state.errorHex },
+      { label: t('scenes.profile.stats.win-rate'),     value: `${winRate}%`,        color: fg.primaryHex },
+      { label: t('scenes.profile.stats.gold'),         value: String(p.gold),       color: accent.primaryHex },
+      { label: t('scenes.profile.stats.dg'),           value: String(p.dg),         color: '#a78bfa' },
+      { label: t('scenes.profile.stats.ranked-points'), value: String(p.rankPoints), color: state.infoHex },
     ]
 
     stats.forEach((stat, i) => {
@@ -223,7 +224,7 @@ export default class ProfileScene extends Phaser.Scene {
     bg.fillRect(panelX + 16, panelY, MASTERY_W - 32, 1)
 
     // Eyebrow label
-    this.add.text(panelX + 24, panelY + 18, 'MAESTRIA', {
+    this.add.text(panelX + 24, panelY + 18, t('scenes.profile.mastery-eyebrow'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      accent.primaryHex,
@@ -238,8 +239,8 @@ export default class ProfileScene extends Phaser.Scene {
     const atkY = panelY + 58
     const defY = panelY + 100
 
-    this.drawMasteryRow(labelX, barCenterX, valueX, atkY, 'ATAQUE', p.attackMastery, maxMastery, state.error, state.errorHex, barW)
-    this.drawMasteryRow(labelX, barCenterX, valueX, defY, 'DEFESA', p.defenseMastery, maxMastery, state.info,  state.infoHex,  barW)
+    this.drawMasteryRow(labelX, barCenterX, valueX, atkY, t('scenes.profile.mastery.attack'),  p.attackMastery, maxMastery, state.error, state.errorHex, barW)
+    this.drawMasteryRow(labelX, barCenterX, valueX, defY, t('scenes.profile.mastery.defense'), p.defenseMastery, maxMastery, state.info,  state.infoHex,  barW)
   }
 
   private drawMasteryRow(

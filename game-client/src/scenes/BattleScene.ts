@@ -62,6 +62,7 @@ import type { SpriteRole, SpriteSide } from '../utils/SpriteFactory'
 import { getClassSigilKey } from '../utils/AssetPaths'
 import { CharacterAnimator } from '../utils/CharacterAnimator'
 import type { UnitDeckConfig, UnitRole } from '../types'
+import { t } from '../i18n'
 
 // ── Layout constants ──────────────────────────────────────────────────────────
 
@@ -503,18 +504,18 @@ export default class BattleScene extends Phaser.Scene {
 
       // ── Phase / round labels ──────────────────────────────────────────────
       .onHUD(EventType.ROUND_STARTED, (e) => {
-        this._roundText.setText(`Round ${e.round}`)
+        this._roundText.setText(t('scenes.battle.tracker.round', { round: e.round }))
         this._currentRound = e.round
-        this._addLog(`— Round ${e.round} —`, 'phase')
+        this._addLog(t('scenes.battle.log-round-marker', { round: e.round }), 'phase')
         soundManager.playRoundStart()
 
         // Training mode: reset dummies after each round
         if (this._isTrainingMode) this._resetTrainingDummies()
       })
       .onHUD(EventType.PHASE_STARTED, (e) => {
-        const sideLabel  = e.side  === 'left'     ? 'Azul'     : 'Roxo'
-        const phaseLabel = e.phase === 'movement' ? 'Movimento' : 'Ação'
-        this._phaseText.setText(`${phaseLabel} — ${sideLabel}`)
+        const sideLabel  = t(e.side  === 'left'     ? 'scenes.battle.team.left-color'   : 'scenes.battle.team.right-color')
+        const phaseLabel = t(e.phase === 'movement' ? 'scenes.battle.phase.phase-movement' : 'scenes.battle.phase.phase-action')
+        this._phaseText.setText(t('scenes.battle.phase-side-format', { phase: phaseLabel, side: sideLabel }))
         // Mini log: populate full turn order on action phase (stays during next movement)
         if (e.phase === 'action') {
           this._miniLogRound = this._currentRound
@@ -532,10 +533,10 @@ export default class BattleScene extends Phaser.Scene {
         if (e.phase === 'action') {
           this._turnEntries = []
           // Interleaved: both teams act in the same phase
-          this._trackerHeader.setText(`Ação — Ambos`)
+          this._trackerHeader.setText(t('scenes.battle.tracker.header-both'))
           this._renderTurnTracker()
         } else {
-          this._trackerHeader.setText(`${sideLabel} — Movimento`)
+          this._trackerHeader.setText(t('scenes.battle.tracker-side-movement', { side: sideLabel }))
           this._turnEntries = []
           this._renderTurnTracker()
           this._movedThisPhase.clear()
@@ -694,8 +695,8 @@ export default class BattleScene extends Phaser.Scene {
           actor: e.unitId,
           actorName: this._name(e.unitId),
           actorSide: skipChar?.side ?? 'left',
-          atkSkill: 'Pulou',
-          atkTargets: e.reason === 'stunned' ? 'Atordoado' : e.reason === 'dead' ? 'Morto' : '',
+          atkSkill: t('scenes.battle.log.skipped'),
+          atkTargets: e.reason === 'stunned' ? t('scenes.battle.log.stunned') : e.reason === 'dead' ? t('scenes.battle.log.dead') : '',
         })
         if (e.unitId === this._currentActorId) {
           this._hidePanel()
@@ -1072,11 +1073,11 @@ export default class BattleScene extends Phaser.Scene {
         const isForfeit = e.reason === 'forfeit'
         let winText: string
         if (isForfeit) {
-          winText = playerWon ? 'Adversario desistiu!' : 'Voce desistiu!'
+          winText = playerWon ? t('scenes.battle.outcome.opponent-forfeit') : t('scenes.battle.outcome.self-forfeit')
         } else {
           winText = e.winner
-            ? (playerWon ? 'Vitoria!' : 'Derrota!')
-            : 'Empate!'
+            ? (playerWon ? t('scenes.battle.outcome.victory') : t('scenes.battle.outcome.defeat'))
+            : t('scenes.battle.outcome.draw')
         }
         this._showVictoryOverlay(winText, e.reason, e.round)
 
@@ -1414,7 +1415,7 @@ export default class BattleScene extends Phaser.Scene {
     const barCenterY = PANEL_Y + HAND_TOTAL_H + BTN_BAR_H / 2 + 6
     const halfW = (SKILL_COL_W - 20) / 2
 
-    const confirm = UI.buttonPrimary(this, 6 + halfW / 2, barCenterY, 'Confirmar', {
+    const confirm = UI.buttonPrimary(this, 6 + halfW / 2, barCenterY, t('scenes.battle.actions.confirm'), {
       w: halfW, h: 28, depth: 8,
       onPress: () => {
         if (!this._selReady) return
@@ -1423,7 +1424,7 @@ export default class BattleScene extends Phaser.Scene {
     })
     this._confirmBtn = confirm.container.setVisible(false)
 
-    const skip = UI.buttonGhost(this, 6 + halfW + 8 + halfW / 2, barCenterY, 'Pular', {
+    const skip = UI.buttonGhost(this, 6 + halfW + 8 + halfW / 2, barCenterY, t('scenes.battle.actions.skip'), {
       w: halfW, h: 28, depth: 8,
       onPress: () => {
         if (this._currentActorId) {
@@ -1437,7 +1438,7 @@ export default class BattleScene extends Phaser.Scene {
   private _buildEndMovementButton(): void {
     // End-movement CTA: Primary gold (§1.1).
     const barCenterY = PANEL_Y + HAND_TOTAL_H + BTN_BAR_H / 2 + 6
-    const end = UI.buttonPrimary(this, SKILL_COL_W / 2, barCenterY, 'Fim Movimento', {
+    const end = UI.buttonPrimary(this, SKILL_COL_W / 2, barCenterY, t('scenes.battle.actions.end-movement'), {
       w: BTN_W, h: 28, depth: 8,
       onPress: () => {
         this._ctrl.clearMoveSelection()
@@ -1471,17 +1472,17 @@ export default class BattleScene extends Phaser.Scene {
       const playerTeamHex = this._playerSide === 'left' ? dsColors.team.allyHex : dsColors.team.enemyHex
       const playerTeam = this._playerSide === 'left' ? dsColors.team.ally : dsColors.team.enemy
 
-      const movTitle = this.add.text(labelCx, titleY, 'TURNO DE', {
+      const movTitle = this.add.text(labelCx, titleY, t('scenes.battle.phase.movement-title-line-1'), {
         fontFamily: fontFamily.display, fontSize: typeScale.h3,
         color: playerTeamHex, fontStyle: 'bold', align: 'center',
       }).setOrigin(0.5)
 
-      const movTitle2 = this.add.text(labelCx, titleY + 26, 'MOVIMENTO', {
+      const movTitle2 = this.add.text(labelCx, titleY + 26, t('scenes.battle.phase.movement-title-line-2'), {
         fontFamily: fontFamily.display, fontSize: typeScale.h3,
         color: playerTeamHex, fontStyle: 'bold', align: 'center',
       }).setOrigin(0.5)
 
-      const movSub = this.add.text(labelCx, titleY + 62, 'Mova seus\npersonagens', {
+      const movSub = this.add.text(labelCx, titleY + 62, t('scenes.battle.phase.movement-sub'), {
         fontFamily: fontFamily.body, fontSize: typeScale.small,
         color: fg.tertiaryHex, align: 'center',
       }).setOrigin(0.5)
@@ -1547,7 +1548,7 @@ export default class BattleScene extends Phaser.Scene {
     this.add.rectangle(TRK_CX, TRK_Y + 190, TRK_W, 380, 0x0a1020)
       .setStrokeStyle(1, 0x1e3a5f).setDepth(3)
 
-    this._trackerHeader = this.add.text(TRK_CX, TRK_Y + 8, '…', {
+    this._trackerHeader = this.add.text(TRK_CX, TRK_Y + 8, t('scenes.battle.tracker.placeholder'), {
       fontFamily: 'Arial', fontSize: '14px', color: '#64748b', fontStyle: 'bold',
     }).setOrigin(0.5, 0).setDepth(4)
   }
@@ -1616,12 +1617,12 @@ export default class BattleScene extends Phaser.Scene {
 
     let label: string
     if (phase === 'movement') {
-      label = 'Turno de movimento'
+      label = t('scenes.battle.phase.movement-label')
     } else if (actorRole) {
       const ROLE_NAMES: Record<string, string> = { king: 'REI', warrior: 'GUE', executor: 'EXE', specialist: 'ESP' }
-      label = `Turno do ${ROLE_NAMES[actorRole] ?? actorRole}`
+      label = t('scenes.battle.phase.role-turn', { role: ROLE_NAMES[actorRole] ?? actorRole })
     } else {
-      label = 'Turno de ação'
+      label = t('scenes.battle.phase.action-label')
     }
 
     // Ally half (left) — blue tint + label
@@ -1654,8 +1655,8 @@ export default class BattleScene extends Phaser.Scene {
     for (const obj of this._bannerObjs) (obj as Phaser.GameObjects.GameObject).destroy()
     this._bannerObjs = []
 
-    const title    = phase === 'movement' ? 'MOVIMENTO' : 'AÇÃO'
-    const sub      = phase === 'movement' ? 'Mova seus personagens' : 'Escolha suas habilidades'
+    const title    = phase === 'movement' ? t('scenes.battle.phase.movement-title-line-2') : t('scenes.battle.phase.action-title')
+    const sub      = phase === 'movement' ? t('scenes.battle.phase.movement-sub').replace('\n', ' ') : t('scenes.battle.phase.action-sub')
     const bgColor  = 0x0a1020
     const stroke   = 0xc9a84c
     const titleCol = '#c9a84c'
@@ -2279,21 +2280,21 @@ export default class BattleScene extends Phaser.Scene {
     const teamG = this.add.graphics()
     teamG.fillStyle(dsColors.team.ally, 0.9)
     teamG.fillRoundedRect(barX + 8, 8, 4, 26, 2)
-    this.add.text(barX + 18, 10, 'ALIADO', {
+    this.add.text(barX + 18, 10, t('scenes.battle.team.ally-eyebrow'), {
       fontFamily: fontFamily.body, fontSize: typeScale.small,
       color: dsColors.team.allyHex, fontStyle: 'bold',
     })
-    this.add.text(barX + 18, 26, 'Voce', {
+    this.add.text(barX + 18, 26, t('scenes.battle.team.ally-name-fallback'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta, color: fg.tertiaryHex,
     })
 
     teamG.fillStyle(dsColors.team.enemy, 0.9)
     teamG.fillRoundedRect(W - 12, 8, 4, 26, 2)
-    this.add.text(W - 20, 10, 'INIMIGO', {
+    this.add.text(W - 20, 10, t('scenes.battle.team.enemy-eyebrow'), {
       fontFamily: fontFamily.body, fontSize: typeScale.small,
       color: dsColors.team.enemyHex, fontStyle: 'bold',
     }).setOrigin(1, 0)
-    this.add.text(W - 20, 26, 'Adversario', {
+    this.add.text(W - 20, 26, t('scenes.battle.team.enemy-name-fallback'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta, color: fg.tertiaryHex,
     }).setOrigin(1, 0)
 
@@ -2329,7 +2330,7 @@ export default class BattleScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(10)
 
     // Round text (right section, centered)
-    this._roundText = this.add.text(badgeX + timerW + 2 + roundW / 2, badgeCy, 'Round 1', {
+    this._roundText = this.add.text(badgeX + timerW + 2 + roundW / 2, badgeCy, t('scenes.battle.tracker.round-label-default'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: accent.primaryHex, fontStyle: 'bold',
     }).setOrigin(0.5)
@@ -2372,7 +2373,7 @@ export default class BattleScene extends Phaser.Scene {
     mlG.strokeRoundedRect(4, miniLogY, miniLogW, miniLogH, 6)
 
     // Mini log title + round on same line
-    this.add.text(SKILL_COL_W / 2, miniLogY + 10, 'ORDEM DE ACAO', {
+    this.add.text(SKILL_COL_W / 2, miniLogY + 10, t('scenes.battle.tracker.title'), {
       fontFamily: 'Arial Black', fontSize: '11px', color: '#c9a84c', fontStyle: 'bold',
       stroke: '#000000', strokeThickness: 3,
     }).setOrigin(0.5).setDepth(5)
@@ -2394,7 +2395,7 @@ export default class BattleScene extends Phaser.Scene {
     hBtnG.lineStyle(1, 0xc9a84c, 0.3)
     hBtnG.strokeRoundedRect(10, hBtnY - 12, miniLogW - 12, 24, 6)
 
-    this.add.text(SKILL_COL_W / 2, hBtnY, 'VER HISTORICO', {
+    this.add.text(SKILL_COL_W / 2, hBtnY, t('scenes.battle.tracker.history-button'), {
       fontFamily: 'Arial Black', fontSize: '14px', color: '#c9a84c', fontStyle: 'bold',
       stroke: '#000000', strokeThickness: 2,
     }).setOrigin(0.5).setDepth(5)
@@ -2425,11 +2426,11 @@ export default class BattleScene extends Phaser.Scene {
       .setInteractive().setDepth(3001)
     logEls.push(panelHit)
 
-    logEls.push(this.add.text(W / 2, popY2 + 28, 'HISTORICO DE ACOES', {
+    logEls.push(this.add.text(W / 2, popY2 + 28, t('scenes.battle.tracker.history-popup-title'), {
       fontFamily: 'Arial Black', fontSize: '22px', color: '#f0c850', fontStyle: 'bold', ...stk,
     }).setOrigin(0.5).setDepth(3002))
 
-    logEls.push(this.add.text(W / 2, popY2 + popH - 18, 'Clique fora para fechar', {
+    logEls.push(this.add.text(W / 2, popY2 + popH - 18, t('scenes.battle.tracker.history-popup-hint'), {
       fontFamily: 'Arial', fontSize: '15px', color: '#555555', ...stk,
     }).setOrigin(0.5).setDepth(3002))
 
@@ -3167,12 +3168,9 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   private _showVictoryOverlay(winText: string, reason: string, round: number) {
-    const REASON_LABELS: Record<string, string> = {
-      king_slain:         'Rei abatido',
-      simultaneous_kings: 'Empate simultâneo',
-      timeout:            'Tempo esgotado',
-      forfeit:            'Desistência',
-    }
+    const reasonKey = `scenes.battle.victory-overlay.reasons.${reason}`
+    const reasonLookup = t(reasonKey)
+    const reasonText = reasonLookup === reasonKey ? reason : reasonLookup
     const isForfeit = reason === 'forfeit'
     const stk = { stroke: '#000000', strokeThickness: 3 }
 
@@ -3184,10 +3182,9 @@ export default class BattleScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(22)
 
     // Show forfeit detail if applicable
-    const reasonText = REASON_LABELS[reason] ?? reason
     const detailText = isForfeit
-      ? `${reasonText} — O adversario desistiu da partida`
-      : `${reasonText} — Round ${round}`
+      ? t('scenes.battle.victory-overlay.detail-forfeit', { reason: reasonText })
+      : t('scenes.battle.victory-overlay.detail-normal', { reason: reasonText, round })
 
     this.add.text(W / 2, H / 2 - 10, detailText, {
       fontFamily: 'Arial', fontSize: '16px', color: isForfeit ? '#ffaa44' : '#94a3b8', ...stk,
@@ -3195,7 +3192,7 @@ export default class BattleScene extends Phaser.Scene {
 
     const btn = this.add.rectangle(W / 2, H / 2 + 64, 240, 48, 0x1e293b)
       .setStrokeStyle(2, 0x475569).setInteractive({ useHandCursor: true }).setDepth(22)
-    const label = this.add.text(W / 2, H / 2 + 64, 'Menu Principal', {
+    const label = this.add.text(W / 2, H / 2 + 64, t('scenes.battle.actions.main-menu'), {
       fontFamily: 'Arial', fontSize: '17px', color: '#94a3b8', fontStyle: 'bold',
     }).setOrigin(0.5).setDepth(23)
 
@@ -3310,16 +3307,16 @@ export default class BattleScene extends Phaser.Scene {
 
     const onClick = () => {
       if (isSolo) {
-        this._showConfirmPopup('Render-se?', '', 0, () => {
+        this._showConfirmPopup(t('scenes.battle.popup.surrender-title'), '', 0, () => {
           this._ctrl.forfeit(this._playerSide as 'left' | 'right')
         }, {
-          eyebrow: 'Confirmação',
-          body: 'Abandonar esta partida afeta seu rank e não pode ser desfeito.',
-          confirmLabel: 'Render-se',
+          eyebrow: t('scenes.battle.popup.confirmation-eyebrow'),
+          body: t('scenes.battle.popup.surrender-body-solo'),
+          confirmLabel: t('scenes.battle.popup.surrender-confirm'),
           destructive: true,
         })
       } else {
-        this._showConfirmPopup('Votar para render-se?', '', 0, () => {
+        this._showConfirmPopup(t('scenes.battle.popup.surrender-vote-title'), '', 0, () => {
           this._surrenderVotes++
           if (this._surrenderCountText) {
             this._surrenderCountText.setText(`${this._surrenderVotes}/${this._surrenderRequired}`)
@@ -3330,15 +3327,15 @@ export default class BattleScene extends Phaser.Scene {
             this._ctrl.forfeit(this._playerSide as 'left' | 'right')
           }
         }, {
-          eyebrow: 'Votação',
-          body: `Seu voto conta para ${this._surrenderRequired}. Todos do time precisam concordar para render.`,
-          confirmLabel: 'Votar',
+          eyebrow: t('scenes.battle.popup.vote-eyebrow'),
+          body: t('scenes.battle.popup.surrender-vote-body', { required: this._surrenderRequired }),
+          confirmLabel: t('scenes.battle.popup.surrender-vote-button'),
           destructive: true,
         })
       }
     }
 
-    const { container } = UI.buttonDestructive(this, btnX, btnY, '  Render-se', {
+    const { container } = UI.buttonDestructive(this, btnX, btnY, t('scenes.battle.popup.surrender-button-label'), {
       w: btnW, h: btnH, depth: 9,
       onPress: onClick,
     })
@@ -3385,13 +3382,13 @@ export default class BattleScene extends Phaser.Scene {
   ): void {
     if (this._activeConfirmModal) return
     this._activeConfirmModal = UI.modal(this, {
-      eyebrow: extra?.eyebrow ?? 'Confirmação',
+      eyebrow: extra?.eyebrow ?? t('scenes.battle.popup.confirmation-eyebrow'),
       title,
       body: extra?.body,
       actions: [
-        { label: 'Cancelar', kind: 'secondary', onClick: () => { /* noop — close handled */ } },
+        { label: t('scenes.battle.actions.cancel'), kind: 'secondary', onClick: () => { /* noop — close handled */ } },
         {
-          label: extra?.confirmLabel ?? 'Confirmar',
+          label: extra?.confirmLabel ?? t('scenes.battle.actions.confirm'),
           kind: extra?.destructive ? 'destructive' : 'primary',
           onClick: onConfirm,
         },
@@ -3407,28 +3404,28 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   private _showSkipConfirm(): void {
-    this._showConfirmPopup('Pular turno?', '', 0, () => {
+    this._showConfirmPopup(t('scenes.battle.popup.skip-title'), '', 0, () => {
       if (this._currentActorId) {
         // Clear any selected skills before skipping
         this._ctrl.clearSelection(this._currentActorId)
         this._ctrl.skipTurn('no_selection')
       }
     }, {
-      eyebrow: 'Atenção',
-      body: 'Seu personagem não joga este turno.',
-      confirmLabel: 'Pular',
+      eyebrow: t('scenes.battle.popup.warning-eyebrow'),
+      body: t('scenes.battle.popup.skip-body'),
+      confirmLabel: t('scenes.battle.popup.skip-confirm'),
     })
   }
 
   private _showCommitConfirm(): void {
-    this._showConfirmPopup('Confirmar ação?', '', 0, () => {
+    this._showConfirmPopup(t('scenes.battle.popup.confirm-action-title'), '', 0, () => {
       if (this._selReady) {
         this._ctrl.commitTurn()
       }
     }, {
-      eyebrow: 'Confirmação',
-      body: 'As skills selecionadas entram na fila e serão resolvidas neste turno.',
-      confirmLabel: 'Confirmar',
+      eyebrow: t('scenes.battle.popup.confirmation-eyebrow'),
+      body: t('scenes.battle.popup.confirm-action-body'),
+      confirmLabel: t('scenes.battle.actions.confirm'),
     })
   }
 
@@ -3494,7 +3491,7 @@ export default class BattleScene extends Phaser.Scene {
         hp.shieldStripes.strokePath()
       }
 
-      hp.shieldLabel.setText(`SH +${shieldAmt}`).setVisible(true)
+      hp.shieldLabel.setText(t('scenes.battle.status.shield-suffix', { amount: shieldAmt })).setVisible(true)
     } else {
       hp.shieldLabel.setVisible(false)
     }
@@ -3535,7 +3532,7 @@ export default class BattleScene extends Phaser.Scene {
         continue
       }
       const pct = Math.round(buff.atkBonus * 100)
-      text.setText(`MURO +${pct}%`).setVisible(true)
+      text.setText(t('scenes.battle.status.wall-bonus', { pct })).setVisible(true)
     }
   }
 
@@ -3841,7 +3838,7 @@ export default class BattleScene extends Phaser.Scene {
           this._miniLogContainer.add(defT)
         }
       } else {
-        const waitText = this.add.text(rx, y, '· · ·', {
+        const waitText = this.add.text(rx, y, t('scenes.battle.tracker.wait-indicator'), {
           fontFamily: 'Arial', fontSize: '13px', color: '#2a3a4a', ...stk,
         }).setOrigin(1, 0).setDepth(5)
         this._miniLogObjs.push(waitText)

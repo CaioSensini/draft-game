@@ -10,17 +10,19 @@ import {
   colors as C2,
 } from '../utils/DesignTokens'
 import { getClassSigilKey } from '../utils/AssetPaths'
+import { t } from '../i18n'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const ROLES: UnitRole[] = ['king', 'warrior', 'specialist', 'executor']
 
-const ROLE_LABELS: Record<UnitRole, string> = {
-  king:       'Rei',
-  warrior:    'Guerreiro',
-  specialist: 'Especialista',
-  executor:   'Executor',
+const ROLE_LABEL_KEYS: Record<UnitRole, string> = {
+  king:       'skills.roles.king',
+  warrior:    'skills.roles.warrior',
+  specialist: 'skills.roles.specialist',
+  executor:   'skills.roles.executor',
 }
+const roleLabel = (r: UnitRole): string => t(ROLE_LABEL_KEYS[r])
 
 const ROLE_CLASS_COLOR: Record<UnitRole, number> = {
   king:       C2.class.king,
@@ -29,21 +31,16 @@ const ROLE_CLASS_COLOR: Record<UnitRole, number> = {
   executor:   C2.class.executor,
 }
 
-const ROLE_PASSIVES: Record<UnitRole, string> = {
-  king:       'Passiva: Proteção Real — Escudo renovado a cada turno, -15% dano recebido.',
-  warrior:    'Passiva: Protetor — Aliados adjacentes ganham -15% de mitigação de dano.',
-  specialist: 'Passiva: Queimação — Ataques reduzem cura inimiga em 20% por 1 turno.',
-  executor:   'Passiva: Isolado — +15% de dano quando sem ninguém adjacente.',
+const ROLE_PASSIVE_KEYS: Record<UnitRole, string> = {
+  king:       'scenes.deck-build.passives.king',
+  warrior:    'scenes.deck-build.passives.warrior',
+  specialist: 'scenes.deck-build.passives.specialist',
+  executor:   'scenes.deck-build.passives.executor',
 }
 
 const GROUPS: CardGroup[] = ['attack1', 'attack2', 'defense1', 'defense2']
 
-const GROUP_LABELS: Record<CardGroup, string> = {
-  attack1:  'ATAQUE · DANO',
-  attack2:  'ATAQUE · CONTROLE',
-  defense1: 'DEFESA · FORTE',
-  defense2: 'DEFESA · LEVE',
-}
+const groupLabel = (g: CardGroup): string => t(`scenes.deck-build.groups.${g}`)
 
 // Header tint by group — translucent wash over the column header bar.
 const GROUP_HEADER_TINT: Record<CardGroup, number> = {
@@ -83,28 +80,18 @@ type Difficulty = 'easy' | 'normal' | 'hard'
 
 const STORAGE_KEY = 'draft_last_deck'
 
-const DIFFICULTY_LABELS: Record<Difficulty, string> = {
-  easy:   'Fácil',
-  normal: 'Normal',
-  hard:   'Difícil',
-}
+const difficultyLabel = (d: Difficulty): string => t(`scenes.deck-build.difficulty.${d}`)
 
 // ─── Tooltip target-type labels ─────────────────────────────────────────────
 
-const TARGET_LABELS: Record<string, string> = {
-  single:     'Alvo: 1 Inimigo',
-  self:       'Alvo: Proprio',
-  lowest_ally:'Alvo: Aliado com Menos HP',
-  all_allies: 'Alvo: Todos os Aliados',
-  area:       'Alvo: Area 3x3',
+const targetLabel = (target: string): string => {
+  const known = ['single', 'self', 'lowest_ally', 'all_allies', 'area'] as const
+  return (known as readonly string[]).includes(target)
+    ? t(`scenes.deck-build.targets.${target}`)
+    : target
 }
 
-const GROUP_TYPE_LABELS: Record<CardGroup, string> = {
-  attack1:  'Ataque - Dano',
-  attack2:  'Ataque - Controle',
-  defense1: 'Defesa - Forte',
-  defense2: 'Defesa - Leve',
-}
+const groupTooltipLabel = (g: CardGroup): string => t(`scenes.deck-build.groups.${g}-tooltip`)
 
 export default class DeckBuildScene extends Phaser.Scene {
   private activeRole: UnitRole = 'king'
@@ -237,11 +224,11 @@ export default class DeckBuildScene extends Phaser.Scene {
     this.add.rectangle(W / 2, 56, W, 1, border.subtle)
 
     // Title (Cinzel h2) left-aligned; subtitle (Cormorant italic small)
-    this.add.text(24, 18, 'MONTAGEM DE DECK', {
+    this.add.text(24, 18, t('scenes.deck-build.title'), {
       fontFamily: fontFamily.display, fontSize: typeScale.h2,
       color: accent.primaryHex, fontStyle: '700',
     }).setOrigin(0, 0.5).setLetterSpacing(3)
-    this.add.text(24, 41, 'Escolha 2 cartas por grupo para cada classe.', {
+    this.add.text(24, 41, t('scenes.deck-build.subtitle'), {
       fontFamily: fontFamily.serif, fontSize: typeScale.small,
       color: fg.tertiaryHex, fontStyle: 'italic',
     }).setOrigin(0, 0.5)
@@ -256,7 +243,7 @@ export default class DeckBuildScene extends Phaser.Scene {
       hard:   state.error,
     }
 
-    this.add.text(dStartX - dBtnW / 2 - 16, 28, 'DIFICULDADE', {
+    this.add.text(dStartX - dBtnW / 2 - 16, 28, t('scenes.deck-build.difficulty-eyebrow'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: fg.tertiaryHex, fontStyle: '700',
     }).setOrigin(1, 0.5).setLetterSpacing(1.6)
@@ -270,7 +257,7 @@ export default class DeckBuildScene extends Phaser.Scene {
           isActive ? dBtnActive[d] : border.default,
           isActive ? 1 : 0.7)
         .setInteractive({ useHandCursor: true })
-      const label = this.add.text(x, 28, DIFFICULTY_LABELS[d], {
+      const label = this.add.text(x, 28, difficultyLabel(d), {
         fontFamily: fontFamily.body, fontSize: typeScale.small,
         color: isActive
           ? '#' + dBtnActive[d].toString(16).padStart(6, '0')
@@ -308,7 +295,7 @@ export default class DeckBuildScene extends Phaser.Scene {
         .setTintFill(classColor)
         .setAlpha(0.85)
 
-      const txt = this.add.text(sigilX + 16, 77, ROLE_LABELS[role], {
+      const txt = this.add.text(sigilX + 16, 77, roleLabel(role), {
         fontFamily: fontFamily.serif, fontSize: typeScale.h3,
         color: fg.secondaryHex, fontStyle: '600',
       }).setOrigin(0, 0.5)
@@ -373,7 +360,7 @@ export default class DeckBuildScene extends Phaser.Scene {
     container.add(colBgG)
 
     // Section header (group label + count counter)
-    const hdrTxt = this.add.text(colX + 12, sy + SEC_HEADER_H / 2, GROUP_LABELS[group], {
+    const hdrTxt = this.add.text(colX + 12, sy + SEC_HEADER_H / 2, groupLabel(group), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: tintHex, fontStyle: '700',
     }).setOrigin(0, 0.5).setLetterSpacing(1.6)
@@ -458,8 +445,8 @@ export default class DeckBuildScene extends Phaser.Scene {
 
     const TOOLTIP_W = 260
     const PAD = 12
-    const typeLabel = GROUP_TYPE_LABELS[card.group] ?? card.category
-    const targetLabel = TARGET_LABELS[card.targetType] ?? card.targetType
+    const typeLabel = groupTooltipLabel(card.group)
+    const targetLabelText = targetLabel(card.targetType)
     const classColor = ROLE_CLASS_COLOR[this.activeRole]
     const classHex = '#' + classColor.toString(16).padStart(6, '0')
 
@@ -474,7 +461,9 @@ export default class DeckBuildScene extends Phaser.Scene {
       color: fg.tertiaryHex, fontStyle: '700',
     }).setLetterSpacing(1.6)
 
-    const powerStr = card.power > 0 ? `Poder ${card.power}` : 'Poder —'
+    const powerStr = card.power > 0
+      ? t('scenes.deck-build.tooltip.power-with', { power: card.power })
+      : t('scenes.deck-build.tooltip.power-none')
     const powerText = this.add.text(TOOLTIP_W - PAD, typeText.y, powerStr, {
       fontFamily: fontFamily.mono, fontSize: typeScale.small,
       color: accent.primaryHex, fontStyle: '700',
@@ -491,7 +480,7 @@ export default class DeckBuildScene extends Phaser.Scene {
     })
 
     const targetText = this.add.text(PAD, descText.y + descText.height + 8,
-      `ALVO · ${targetLabel.toUpperCase()}`, {
+      t('scenes.deck-build.tooltip.target-prefix', { target: targetLabelText.toUpperCase() }), {
         fontFamily: fontFamily.body, fontSize: typeScale.meta,
         color: fg.tertiaryHex, fontStyle: '700',
     }).setLetterSpacing(1.6)
@@ -587,7 +576,7 @@ export default class DeckBuildScene extends Phaser.Scene {
     })
 
     this.activeRole = role
-    this.passiveText.setText(ROLE_PASSIVES[role])
+    this.passiveText.setText(t(ROLE_PASSIVE_KEYS[role]))
     this.passiveText.setColor(classHex)
 
     // Refresh highlights + counters for the newly visible container
@@ -627,12 +616,12 @@ export default class DeckBuildScene extends Phaser.Scene {
 
     // ── Deck preview (compact row) ────────────────────────────────────────
     const previewY = 692
-    this.add.text(20, previewY, 'DECK', {
+    this.add.text(20, previewY, t('scenes.deck-build.footer.deck-label'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: fg.tertiaryHex, fontStyle: '700',
     }).setOrigin(0, 0).setLetterSpacing(1.6)
 
-    const atkLabel = this.add.text(70, previewY, 'ATK', {
+    const atkLabel = this.add.text(70, previewY, t('scenes.deck-build.footer.atk-label'), {
       fontFamily: fontFamily.mono, fontSize: typeScale.meta,
       color: state.errorHex, fontStyle: '700',
     }).setOrigin(0, 0)
@@ -646,7 +635,7 @@ export default class DeckBuildScene extends Phaser.Scene {
     }
 
     const defStartX = 70 + atkLabel.width + 6 + 4 * 70 + 8
-    const defLabel = this.add.text(defStartX, previewY, 'DEF', {
+    const defLabel = this.add.text(defStartX, previewY, t('scenes.deck-build.footer.def-label'), {
       fontFamily: fontFamily.mono, fontSize: typeScale.meta,
       color: state.infoHex, fontStyle: '700',
     }).setOrigin(0, 0)
@@ -663,13 +652,13 @@ export default class DeckBuildScene extends Phaser.Scene {
 
     // Power total
     const powerX = defStartX + defLabel.width + 6 + 4 * 70 + 12
-    this.deckPowerText = this.add.text(powerX, previewY, 'PWR 0', {
+    this.deckPowerText = this.add.text(powerX, previewY, t('scenes.deck-build.footer.power-prefix', { power: 0 }), {
       fontFamily: fontFamily.mono, fontSize: typeScale.small,
       color: accent.primaryHex, fontStyle: '700',
     }).setOrigin(0, 0)
 
     // Shortcut hint
-    this.add.text(20, 710, 'Atalhos · 1-4 selecionar · Tab trocar classe · Enter jogar', {
+    this.add.text(20, 710, t('scenes.deck-build.footer.shortcuts'), {
       fontFamily: fontFamily.body, fontSize: '10px',
       color: fg.disabledHex, fontStyle: '500',
     }).setOrigin(0, 0.5)
@@ -683,9 +672,9 @@ export default class DeckBuildScene extends Phaser.Scene {
       return container
     }
 
-    mkBtn(W - 462, 'Aleatório',  () => this.randomizeDeck())
-    mkBtn(W - 332, 'Padrão',     () => this.fillDefaultDeck())
-    mkBtn(W - 202, 'Restaurar',  () => {
+    mkBtn(W - 462, t('scenes.deck-build.buttons.random'),  () => this.randomizeDeck())
+    mkBtn(W - 332, t('scenes.deck-build.buttons.default'), () => this.fillDefaultDeck())
+    mkBtn(W - 202, t('scenes.deck-build.buttons.restore'), () => {
       if (this.loadFromStorage()) {
         ROLES.forEach((role) => this.refreshRoleVisuals(role))
         this.updateFooter()
@@ -695,7 +684,7 @@ export default class DeckBuildScene extends Phaser.Scene {
 
     // ── Start button (primary gold, canonical CTA) ───────────────────────
     const { setDisabled } = UI.buttonPrimary(
-      this, W - 72, btnY, 'INICIAR',
+      this, W - 72, btnY, t('scenes.deck-build.buttons.start'),
       {
         w: 128, h: 40,
         onPress: () => {
@@ -713,9 +702,7 @@ export default class DeckBuildScene extends Phaser.Scene {
       GROUPS.every((g) => (this.selections.get(role)?.get(g)?.length ?? 0) === 2)
     ).length
 
-    this.progressText.setText(
-      `UNIDADES PRONTAS · ${completedCount} / 4    SELECIONE 2 CARTAS POR COLUNA`,
-    )
+    this.progressText.setText(t('scenes.deck-build.footer.progress', { done: completedCount }))
 
     const allDone = completedCount === 4
     this.startBtnSetDisabled?.(!allDone)
@@ -725,7 +712,8 @@ export default class DeckBuildScene extends Phaser.Scene {
       const done = GROUPS.every((g) => (this.selections.get(role)?.get(g)?.length ?? 0) === 2)
       const tabTxt = this.tabTexts.get(role)
       if (!tabTxt) return
-      tabTxt.setText(done ? `${ROLE_LABELS[role]} ✓` : ROLE_LABELS[role])
+      const rl = roleLabel(role)
+      tabTxt.setText(done ? t('scenes.deck-build.tab-ready-suffix', { role: rl }) : rl)
       if (this.activeRole !== role) {
         const rHex = '#' + ROLE_CLASS_COLOR[role].toString(16).padStart(6, '0')
         tabTxt.setColor(done ? rHex : fg.secondaryHex)
@@ -773,7 +761,7 @@ export default class DeckBuildScene extends Phaser.Scene {
     }
 
     if (this.deckPowerText) {
-      this.deckPowerText.setText(`PWR ${totalPower}`)
+      this.deckPowerText.setText(t('scenes.deck-build.footer.power-prefix', { power: totalPower }))
     }
   }
 
