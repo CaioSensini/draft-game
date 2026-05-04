@@ -1,3 +1,27 @@
 {
-  "_meta": { "lang": "en-US" }
+  "_meta": { "lang": "en-US", "name": "English" },
+  "actions": {
+    "confirm": "CONFIRM",
+    "cancel": "CANCEL",
+    "back": "BACK",
+    "close": "CLOSE",
+    "play": "PLAY",
+    "ok": "OK",
+    "save": "SAVE",
+    "yes": "YES",
+    "no": "NO"
+  },
+  "studio-name": "CODEFORJE VIO",
+  "section": {
+    "description": "DESCRIPTION",
+    "long-description": "DETAILED DESCRIPTION"
+  },
+  "labels": {
+    "level-cap-max": "MAX",
+    "level-short": "Lv {level}",
+    "level-long": "Lv.{level}",
+    "gold-cost": "{cost}g",
+    "upgrade-action-affordable": "↑ UPGRADE LV {level} · {cost}g",
+    "upgrade-action-broke": "LV {level} · {cost}g"
+  }
 }

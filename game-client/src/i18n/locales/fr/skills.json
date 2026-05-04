@@ -1,3 +1,339 @@
 {
-  "_meta": { "lang": "fr" }
+  "_meta": { "lang": "fr" },
+  "roles": {
+    "specialist": "Spécialiste",
+    "warrior": "Guerrier",
+    "executor": "Exécuteur",
+    "king": "Roi"
+  },
+  "passives": {
+    "specialist-name": "Brûlure",
+    "specialist-text": "Les cibles touchées par les compétences du Spécialiste reçoivent -30% de soin pendant 2 tours.",
+    "warrior-name": "Protecteur",
+    "warrior-text": "Les alliés adjacents au Guerrier reçoivent -15% de dégâts.",
+    "executor-name": "Isolé",
+    "executor-text": "Quand aucun allié n'est adjacent, l'Exécuteur inflige +20% de dégâts et reçoit +10% de dégâts.",
+    "king-name": "Protection Royale",
+    "king-text": "Le Roi reçoit -20% de tous les dégâts, y compris les vrais dégâts. Les Rois sont immunisés au soin direct — seuls la régen et les self-skills les soignent."
+  },
+  "ls_a1": {
+    "name": "Boule de Feu",
+    "description": "28 dégâts en zone 2x2 sur le terrain ennemi. Applique brûlure 6/tour pendant 2 tours.",
+    "long-description": "Le Spécialiste lance une sphère enflammée sur le terrain ennemi, infligeant 28 dégâts physiques en zone carrée 2x2. Chaque cible touchée reçoit Brûlure, un DoT de feu qui inflige 6 dégâts par tour pendant 2 tours. La passive de classe, Brûlure, renforce le combo: les cibles touchées reçoivent -30% de soin pendant 2 tours, rendant la récupération difficile pour l'équipe ennemie. Compétence d'ouverture standard pour fragmenter les regroupements."
+  },
+  "ls_a2": {
+    "name": "Pluie de Mana",
+    "description": "22 dégâts en 2 ticks (11+11) sur ligne verticale de 3 cases sur le terrain ennemi.",
+    "long-description": "Le Spécialiste invoque une pluie d'énergie magique qui parcourt une ligne verticale de 3 cases sur le terrain ennemi, frappant la même cible deux fois consécutivement avec 11 de dégâts par tick (22 total). Chaque tick est résolu individuellement — les boucliers et esquives n'absorbent que le coup correspondant. Les dégâts par tick passent par la mitigation de DEF normalement. Utile contre les boucliers faibles ou pour activer des déclencheurs multi-hits."
+  },
+  "ls_a3": {
+    "name": "Rayon Purificateur",
+    "description": "25 dégâts + purge sur les ennemis sur la ligne. Les alliés touchés gagnent bouclier 10.",
+    "long-description": "Un faisceau lumineux traverse toute l'arène en ligne horizontale de 6 cases, infligeant 25 dégâts à chaque ennemi sur sa trajectoire et appliquant Purge — supprime tous les buffs actifs des cibles touchées. Les alliés sur la trajectoire reçoivent 10 de bouclier et ne subissent aucun dégât. Compétence polyvalente pour annuler les compositions basées sur des buffs soutenus tout en protégeant la ligne de front."
+  },
+  "ls_a4": {
+    "name": "Explosion Centrale",
+    "description": "1er usage: marque la cible (non-amovible). 2e usage sur cible marquée: 50 dégâts + 50% extra si elle a un debuff. Ignore Esquive et immunités.",
+    "long-description": "Compétence à deux phases. Le premier usage marque un ennemi avec Marque de Détonation — une marque permanente qui NE peut PAS être retirée par purge, cleanse ou immunité. Le deuxième usage détonne la marque pour 50 dégâts directs. Si la cible avait un debuff actif au moment de la détonation, l'explosion est amplifiée de +50% (75 dégâts). La détonation ignore complètement Esquive, boucliers et immunités — dégâts garantis."
+  },
+  "ls_a5": {
+    "name": "Orbe de Lenteur",
+    "description": "12 dégâts en zone 3x3. def_down 25% + mov_down 1 pendant 1 tour.",
+    "long-description": "Le Spécialiste projette un orbe gravitationnel qui détonne en zone 3x3, infligeant 12 dégâts et appliquant deux debuffs à toutes les cibles touchées: def_down de 25% et mov_down de 1 pendant 1 tour. Compétence de setup défensif: prépare le terrain pour que les attaquants de l'équipe achèvent les cibles avec DEF réduite et faible capacité de fuite."
+  },
+  "ls_a6": {
+    "name": "Chaînes Rigides",
+    "description": "10 dégâts en forme de + (5 cases). Immobilise les ennemis pendant 1 tour.",
+    "long-description": "Des chaînes magiques jaillissent du sol en motif de croix (5 cases: centre + 4 adjacentes), infligeant 10 dégâts à chaque ennemi touché et appliquant Snare pendant 1 tour. Snare empêche le mouvement mais PAS l'utilisation des compétences — différent de Stun. Contrôle positionnel: bloque les ennemis dans des positions défavorables pour les attaques de zone de l'équipe."
+  },
+  "ls_a7": {
+    "name": "Brume",
+    "description": "Toute l'arène ennemie. Alliés: def_up 15%. Ennemis: def_down 15% + soin reçu -30% pendant 2 tours.",
+    "long-description": "Le Spécialiste invoque une brume dense qui couvre toute l'arène pendant 2 tours. Les alliés à l'intérieur reçoivent +15% de DEF. Les ennemis à l'intérieur reçoivent -15% de DEF et -30% de soin reçu (toutes sources — heal direct, regen, lifesteal). Compétence de champ qui altère le tempo du match sans causer de dégâts."
+  },
+  "ls_a8": {
+    "name": "Gel",
+    "description": "18 dégâts + stun 1t + def_down 20% pendant 1 tour.",
+    "long-description": "Une impulsion de glace concentrée frappe une cible unique, infligeant 18 dégâts et appliquant Stun pendant 1 tour + def_down de 20% pendant 1 tour. Stun empêche à la fois le mouvement ET l'utilisation des compétences — le contrôle le plus fort du jeu. Compétence de pick: isole une cible prioritaire."
+  },
+  "ls_d1": {
+    "name": "Soin Suprême",
+    "description": "Soigne 35 PV sur 1 allié (non-roi).",
+    "long-description": "Le Spécialiste canalise une vague d'énergie restauratrice sur un seul allié, rendant 35 PV instantanément. Le soin n'AFFECTE PAS les Rois — ils sont immunisés au soin direct selon la règle d'Immunité Royale. Soumis au Heal Cap et son efficacité est réduite de 30% si la cible est sous Brûlure. Compétence de maintien lourd."
+  },
+  "ls_d2": {
+    "name": "Renaissance Partielle",
+    "description": "Réanim latente (2 tours) sur l'allié au plus bas PV (non-roi). Réanime à 25 PV s'il meurt. Max 1x par allié par match.",
+    "long-description": "Le Spécialiste marque l'allié au plus bas PV (excluant le Roi) avec un buffer de Réanim latente qui dure 2 tours. Si l'allié meurt durant cette fenêtre, il est instantanément réanimé à 25 PV sur la même case, avec tous les debuffs et DoTs nettoyés. Chaque allié ne peut être ressuscité qu'une fois par match."
+  },
+  "ls_d3": {
+    "name": "Champ de Soin",
+    "description": "Soigne 12 PV + bouclier 10 (1t) en zone 3x3. Le Roi ne reçoit que le bouclier.",
+    "long-description": "Le Spécialiste crée un champ de lumière curative en zone 3x3, restaurant 12 PV et appliquant 10 de bouclier (1 tour) à tous les alliés dans la zone. Les Rois ne reçoivent QUE le bouclier — pas le soin, selon la règle d'Immunité Royale. Bouclier limité à 100 PV total accumulé sur la cible."
+  },
+  "ls_d4": {
+    "name": "Protection",
+    "description": "Forme + (5 cases). Supprime tous les debuffs alliés + immunité aux nouveaux debuffs pendant 1 tour.",
+    "long-description": "Cleanse en zone en forme de croix (centre + 4 adjacentes), supprimant tous les debuffs actifs des alliés affectés (bleed, burn, poison, stun, snare, silence, def_down, mov_down, atk_down, marques) et conférant immunité totale aux nouveaux debuffs pendant 1 tour. Pas de dégâts, pas de soin — purement une réponse aux setups de contrôle et DoT lourds."
+  },
+  "ls_d5": {
+    "name": "Champ de Soin Continu",
+    "description": "Régen 6 PV/tour pendant 2 tours en zone 3x3. Le Roi ne reçoit pas. Annulé si l'allié subit des dégâts.",
+    "long-description": "Un champ de régénération stationnaire couvre une zone 3x3 pendant 2 tours. Chaque allié à l'intérieur reçoit Régen de 6 PV par tour (12 total s'il reste 2 tours) — les Rois ne reçoivent pas. Si l'allié subit des dégâts pendant qu'il est dans le champ, le régen est annulé pour cet allié. Compétence de sustain post-combat."
+  },
+  "ls_d6": {
+    "name": "Esquive",
+    "description": "Évite complètement la première attaque directe au prochain tour.",
+    "long-description": "Le Spécialiste prend une posture évasive et évite complètement la prochaine attaque directe reçue au prochain tour. Esquive absorbe seulement un coup, puis est consommée. Fonctionne contre les dégâts directs et les zones touchant le caster. Ne bloque PAS les DoTs déjà appliqués ni les effets sans dégâts. Carte partagée entre Spécialiste, Exécuteur et Roi."
+  },
+  "ls_d7": {
+    "name": "Blocage Total",
+    "description": "Bouclier 60. Persiste jusqu'à être brisé ou 2 tours.",
+    "long-description": "Confère au caster un bouclier de 60 PV, persistant jusqu'à être totalement consommé ou expirer en 2 tours. Le bouclier est soumis au Shield Cap global de 100 PV accumulés par unité. Absorbe les dégâts avant les PV, mais les DoTs ignorent le bouclier. Carte partagée entre Spécialiste et Exécuteur."
+  },
+  "ls_d8": {
+    "name": "Aura de Protection",
+    "description": "Bouclier 12 + atk_up 10% pendant 1 tour en zone diamant r2.",
+    "long-description": "Une aura protectrice couvre une zone en forme de diamant de rayon 2 (~13 cases) autour du caster. Tous les alliés dans la zone reçoivent 12 de bouclier (soumis au Shield Cap de 100) et atk_up de 10% pendant 1 tour. Compétence offensive-défensive qui prépare un tour d'attaque coordonné."
+  },
+  "lw_a1": {
+    "name": "Collision Titanesque",
+    "description": "22 dégâts en rectangle 6x2 vertical + push 1 case. Si bloqué: snare 1t.",
+    "long-description": "Le Guerrier avance comme une muraille en mouvement, frappant tous les ennemis dans un rectangle vertical 6x2 devant, infligeant 22 dégâts et les repoussant 1 case en arrière. Si le push d'une cible est bloqué par un mur ou un autre ennemi, cette cible reçoit Snare pendant 1 tour. Compétence d'ouverture agressive qui repositionne toute une ligne ennemie."
+  },
+  "lw_a2": {
+    "name": "Impact",
+    "description": "28 dégâts en zone 3x3. def_down 18% + mov_down 1 pendant 1 tour.",
+    "long-description": "Un coup d'impact lourd détonne en zone 3x3 autour de la cible, infligeant 28 dégâts à toutes les cibles touchées et appliquant deux debuffs pendant 1 tour: def_down de 18% et mov_down de 1. Pression coordonnée: affaiblit la défense d'un regroupement et limite la retraite, ouvrant une fenêtre pour les Exécuteurs."
+  },
+  "lw_a3": {
+    "name": "Coup Dévastateur",
+    "description": "30 dégâts en zone 2x2. Supprime les buffs et brise les boucliers des cibles touchées.",
+    "long-description": "Le Guerrier inflige un coup colossal en zone 2x2, infligeant 30 dégâts et appliquant Purge à toutes les cibles touchées: supprime tous les buffs actifs et brise complètement les boucliers, ignorant le Shield Cap. Excellente compétence anti-bunker contre les compositions défensives — démantèle Blocage Total, Aura de Protection, Bouclier du Protecteur en un seul coup."
+  },
+  "lw_a4": {
+    "name": "Charge Brutale",
+    "description": "24 dégâts en ligne verticale 3 cases. Ligne centrale: push 1 + snare 1t si bloqué. Lignes haut/bas: poussées perpendiculaires.",
+    "long-description": "Le Guerrier charge en ligne droite verticale de 3 cases, infligeant 24 dégâts à toutes les cibles touchées. Le push est divisé par ligne: la ligne centrale est repoussée 1 case dans la direction de la charge (snare 1t si bloqué), tandis que les lignes haut et bas sont poussées perpendiculairement, ouvrant un couloir."
+  },
+  "lw_a5": {
+    "name": "Provocation",
+    "description": "10 dégâts + def_down 15% + silence_defense 1t sur 1 ennemi.",
+    "long-description": "Le Guerrier provoque un seul ennemi, infligeant 10 dégâts et appliquant deux debuffs: def_down de 15% pendant 1 tour et silence_defense pendant 1 tour (empêche l'utilisation de toute compétence défensive). Compétence de bait lourd: force un Spécialiste ou Exécuteur à être exécuté sans pouvoir utiliser Esquive, Blocage Total ou Reflet."
+  },
+  "lw_a6": {
+    "name": "Mur Vivant",
+    "description": "Mur vertical 2 cases sur le terrain ennemi dure 2t. Ennemis adjacents: def_down 15%, mov_down 1, 3 dégâts/tour.",
+    "long-description": "Le Guerrier invoque un mur vivant de 2 cases verticales sur le terrain ennemi, persistant pendant 2 tours. Les ennemis adjacents au mur reçoivent def_down 15%, mov_down 1 et subissent 3 dégâts par tour tant qu'ils restent adjacents. Le mur est automatiquement détruit après 2 tours OU s'il est touché par toute compétence atk1."
+  },
+  "lw_a7": {
+    "name": "Charge",
+    "description": "12 dégâts en ligne verticale 3 cases. def_down 15% + mov_down 1 pendant 1 tour.",
+    "long-description": "Version plus légère de Charge Brutale: le Guerrier avance en ligne verticale de 3 cases, infligeant 12 dégâts à toutes les cibles touchées et appliquant def_down 15% et mov_down 1 pendant 1 tour. Sans push, sans snare. Compétence de pression soutenue."
+  },
+  "lw_a8": {
+    "name": "Prison de Mur Mort",
+    "description": "12 dégâts au centre + 8 murs temporaires autour. Ennemis à l'intérieur: snare 2t. Les murs cassent avec toute atk1.",
+    "long-description": "Le Guerrier crée une prison de murs morts: inflige 12 dégâts sur une case centrale et érige 8 murs formant un anneau autour (rayon 1). Les ennemis à l'intérieur de la prison reçoivent Snare pendant 2 tours — ne peuvent pas bouger, mais peuvent encore utiliser des compétences. Les murs de la prison sont fragiles."
+  },
+  "lw_d1": {
+    "name": "Bouclier du Protecteur",
+    "description": "Bouge jusqu'à 2 cases + crée un mur de bouclier 3 cases verticales devant. Alliés dans rectangle 6 cases derrière: -50% dégâts pendant 1 tour.",
+    "long-description": "Le Guerrier peut bouger jusqu'à 2 cases avant de canaliser la compétence (preMovement), puis crée un mur de bouclier de 3 cases verticales devant. Tous les alliés dans un rectangle 6x2 derrière le mur reçoivent -50% de dégâts pendant 1 tour. Compétence défensive de pic — prépare l'équipe pour un tour d'absorption lourde."
+  },
+  "lw_d2": {
+    "name": "Gardien",
+    "description": "60% des dégâts reçus par l'allié sont redirigés vers le guerrier, réduits de 30% sur le guerrier (1 tour).",
+    "long-description": "Le Guerrier marque l'allié au plus bas PV (non-roi) comme protégé. Pendant 1 tour, 60% de tous les dégâts que cet allié reçoit sont redirigés vers le Guerrier, et ces dégâts redirigés passent par une réduction supplémentaire de 30% sur le Guerrier. Compétence de sauvetage contre les bursts."
+  },
+  "lw_d3": {
+    "name": "Résistance Absolue",
+    "description": "Guerrier + allié derrière: -65% dégâts pendant 1 tour. Peut bouger 1 case avant.",
+    "long-description": "Le Guerrier peut bouger jusqu'à 1 case avant de canaliser (preMovement), puis assume une posture de résistance absolue. Pendant 1 tour, lui et l'allié immédiatement derrière reçoivent -65% de tous les dégâts (incluant les vrais dégâts, mais pas les DoTs déjà appliqués). Compétence d'absorption lourde."
+  },
+  "lw_d4": {
+    "name": "Forteresse Inébranlable",
+    "description": "-80% dégâts reçus pendant 1 tour. Ne peut pas bouger au prochain tour de mouvement.",
+    "long-description": "Le Guerrier prend la forme d'une forteresse vivante. Pendant 1 tour, reçoit -80% de tous les dégâts (incluant les vrais dégâts). Le coût: il NE peut PAS bouger au prochain tour de mouvement, bloqué sur place. Compétence d'échange de temps. Carte partagée entre Guerrier et Roi."
+  },
+  "lw_d5": {
+    "name": "Bouclier de Groupe",
+    "description": "Bouclier 15 sur tous les alliés pendant 2 tours.",
+    "long-description": "Le Guerrier distribue un bouclier collectif: tous les 4 alliés (s'incluant ainsi que le Roi) reçoivent 15 de bouclier, persistant pendant 2 tours ou jusqu'à être brisé. Chaque bouclier est indépendant — les Rois reçoivent normalement, contrairement aux soins. Soumis au Shield Cap de 100 PV par unité."
+  },
+  "lw_d6": {
+    "name": "Posture Défensive",
+    "description": "Alliés en 3x3 autour: -25% dégâts pendant 1 tour.",
+    "long-description": "Le Guerrier adopte une posture défensive. Les alliés dans une zone 3x3 autour de lui (s'incluant) reçoivent -25% de dégâts pendant 1 tour. Pas de bouclier, pas de soin — purement une réduction de dégâts. Combine avec la passive Protecteur (-15%) pour un effectif -40% sur les alliés adjacents."
+  },
+  "lw_d7": {
+    "name": "Avancer",
+    "description": "Bouge les alliés en 4x4 1 case devant. +1 mov + -10% dégâts + +10% ATK pendant 1 tour.",
+    "long-description": "Le Guerrier mène l'avance de l'équipe. Tous les alliés dans un quadrant 4x4 autour de lui bougent 1 case devant (vers le terrain ennemi) et reçoivent trois buffs pendant 1 tour: +1 mov, -10% de dégâts reçus et +10% d'ATK. Compétence offensive-coordonnée."
+  },
+  "lw_d8": {
+    "name": "Battre en Retraite",
+    "description": "Bouge tous les alliés 1 case en arrière en 4x4. +1 mov prochain tour + -15% dégâts pendant 1 tour.",
+    "long-description": "Le Guerrier ordonne une retraite tactique. Tous les alliés dans un quadrant 4x4 autour de lui bougent 1 case en arrière (vers le terrain propre) et reçoivent +1 mov au prochain tour et -15% de dégâts pendant 1 tour. Compétence purement défensive-repositionnelle."
+  },
+  "le_a1": {
+    "name": "Coup Mortel",
+    "description": "45 dégâts + supprime les debuffs de la cible. Si bleed: +50% dégâts (67 total).",
+    "long-description": "L'Exécuteur inflige une coupe précise et létale sur une cible unique, infligeant 45 dégâts directs et appliquant Cleanse sur la cible. Si la cible avait Bleed actif au moment du coup, les dégâts sont amplifiés de +50% (67 dégâts au total). Compétence d'exécution lourde — récompense les setups où un allié a appliqué bleed le tour précédent."
+  },
+  "le_a2": {
+    "name": "Tempête de Lames",
+    "description": "26 dégâts en zone 3x3. Si les cibles avaient bleed: +50% dégâts sur elles.",
+    "long-description": "L'Exécuteur déchaîne une tempête de lames en zone 3x3, infligeant 26 dégâts à tous les ennemis touchés. Chaque cible reçoit individuellement +50% de dégâts si elle était sous Bleed au moment du hit. Compétence de cleanup en zone qui combine avec toute source de bleed de l'équipe."
+  },
+  "le_a3": {
+    "name": "Tir Précis",
+    "description": "30 vrais dégâts (ignore DEF). Si la cible avait bleed: ignore aussi les boucliers.",
+    "long-description": "L'Exécuteur tire un projectile de précision létale sur une cible unique, infligeant 30 de Vrais Dégâts — dégâts purs qui IGNORENT toute mitigation par DEF, passives et toute réduction en pourcentage. Si la cible avait Bleed actif, le tir IGNORE aussi tous les boucliers actifs. Compétence d'exécution chirurgicale."
+  },
+  "le_a4": {
+    "name": "Coupe Précise",
+    "description": "22 dégâts en 2 cases horizontales + purge.",
+    "long-description": "L'Exécuteur inflige deux coupes consécutives atteignant une ligne horizontale de 2 cases, infligeant 22 dégâts et appliquant Purge à toutes les cibles touchées. Compétence anti-buff: annule les compositions basées sur le maintien de buffs. Synergie classique: allié applique Poussée Royale → Coupe Précise pour purger tout d'un coup."
+  },
+  "le_a5": {
+    "name": "Coupe Hémorragique",
+    "description": "8 dégâts + bleed 4/tour pendant 3t en 2 cases horizontales. Cumulatif si réappliqué.",
+    "long-description": "L'Exécuteur inflige une coupe rasante sur une ligne horizontale de 2 cases, infligeant 8 dégâts initiaux et appliquant Bleed: 4 dégâts par tour pendant 3 tours (12 total). Bleed est un DoT physique qui ignore les boucliers. Si Coupe Hémorragique est utilisée à nouveau sur une cible déjà sanglante, le bleed s'EMPILE."
+  },
+  "le_a6": {
+    "name": "Bombe à Pointes",
+    "description": "10 dégâts + bleed 5/tour pendant 2t en diamant r2.",
+    "long-description": "L'Exécuteur lance une bombe à pointes qui détonne en forme de diamant de rayon 2 (~13 cases), infligeant 10 dégâts initiaux à toutes les cibles touchées et appliquant Bleed de 5 par tour pendant 2 tours (10 DoT total). Compétence de couverture large pour appliquer bleed sur plusieurs cibles."
+  },
+  "le_a7": {
+    "name": "Marque de la Mort",
+    "description": "12 dégâts en 8 cases verticales. Supprime les boucliers (soigne 20% d'eux comme PV). Bleed 8/tour pendant 2t.",
+    "long-description": "L'Exécuteur canalise Marque de la Mort dans une zone rectangulaire verticale de 8 cases (4 de profondeur × 2 de largeur). Inflige 12 dégâts à toutes les cibles touchées, SUPPRIME tous les boucliers des cibles (et soigne l'Exécuteur de 20% du bouclier supprimé en PV) et applique Bleed de 8 par tour pendant 2 tours."
+  },
+  "le_a8": {
+    "name": "Piège Caché",
+    "description": "Arme une case (pas sur case occupée). En marchant dessus: 15 dégâts + snare 1t + bleed 4/tour pendant 3t.",
+    "long-description": "L'Exécuteur place un piège invisible sur une case vide. Le piège reste jusqu'à activation. Quand UN ennemi entre dans la case, il détonne: inflige 15 dégâts, applique Snare pendant 1 tour et Bleed de 4 par tour pendant 3 tours. Compétence de zoning."
+  },
+  "le_d1": {
+    "name": "Refléter",
+    "description": "-25% dégâts reçus + reflète le mitigé à l'attaquant au prochain tour.",
+    "long-description": "Pendant 1 tour, l'Exécuteur reçoit -25% de tous les dégâts et reflète EXACTEMENT la valeur mitigée vers l'attaquant. Par exemple: attaque de 40 → reçoit 30, l'attaquant reçoit 10 de reflect. Plusieurs attaquants génèrent plusieurs reflets, chacun proportionnel aux dégâts originaux. Bait parfait contre Spécialistes et Exécuteurs agressifs."
+  },
+  "le_d2": {
+    "name": "Adrénaline",
+    "description": "+25% ATK pendant 2 tours. À la fin: perd 15% PV max (bloquable par bouclier).",
+    "long-description": "L'Exécuteur entre en mode d'adrénaline extrême: gagne +25% d'ATK pendant 2 tours. À la FIN du deuxième tour, subit 15% des PV max comme dégâts de retour (bloquable par bouclier actif). Compétence à risque/récompense — produit deux tours de burst extrême, mais coûte des PV à la fin."
+  },
+  "le_d3": {
+    "name": "Attaque Double",
+    "description": "Prochain tour: 2 compétences atk, 0 def. Cooldown: 2 tours (non utilisable consécutivement).",
+    "long-description": "Pendant 1 tour (le prochain), l'Exécuteur peut utiliser 2 compétences d'attaque au lieu d'1, mais perd la possibilité d'utiliser toute compétence défensive ce tour. Cooldown de 2 tours. Compétence de pic de pression — surtout combinée avec Adrénaline et bleeds préalables."
+  },
+  "le_d4": {
+    "name": "Téléportation",
+    "description": "Se téléporte jusqu'à 5 cases. Consomme le prochain tour de mouvement.",
+    "long-description": "L'Exécuteur se téléporte instantanément à toute case dans un rayon de 5, IGNORANT les obstacles, murs et unités sur le chemin. Le coût: consomme le prochain tour de mouvement. Compétence de mobilité tactique extrême: approche rapidement pour finir des cibles isolées ou fuit un siège."
+  },
+  "le_d5": {
+    "name": "Repli Rapide",
+    "description": "Bouge jusqu'à 2 cases en arrière + bouclier 20 pendant 1 tour.",
+    "long-description": "L'Exécuteur recule jusqu'à 2 cases en arrière (uniquement vers le terrain propre) et gagne 20 de bouclier pendant 1 tour. Le mouvement et le bouclier font partie de la même action — ne peut pas avancer ni aller sur les côtés. Compétence de fuite légère."
+  },
+  "le_d6": {
+    "name": "Esquive",
+    "description": "Évite complètement la première attaque directe au prochain tour.",
+    "long-description": "L'Exécuteur prend une posture évasive et évite complètement la prochaine attaque directe reçue au prochain tour. Esquive absorbe seulement un coup, puis est consommée. Fonctionne contre les dégâts directs et les zones touchant le caster. Carte partagée entre Spécialiste, Exécuteur et Roi."
+  },
+  "le_d7": {
+    "name": "Blocage Total",
+    "description": "Bouclier 60. Persiste jusqu'à être brisé ou 2 tours.",
+    "long-description": "Confère à l'Exécuteur un bouclier de 60 PV, persistant jusqu'à être totalement consommé ou expirer en 2 tours. Le bouclier est soumis au Shield Cap global de 100 PV accumulés par unité. Carte partagée entre Spécialiste et Exécuteur. Pour l'Exécuteur, plus précieux car la passive Isolé devient vulnérable quand il s'éloigne des alliés."
+  },
+  "le_d8": {
+    "name": "Bouclier",
+    "description": "Bouclier 25 pendant 1 tour.",
+    "long-description": "Confère à l'Exécuteur un bouclier rapide de 25 PV pendant 1 tour. Soumis au Shield Cap de 100 PV accumulés. Plus léger et moins cher que Blocage Total — utile dans les rotations où l'on veut absorber un seul coup sans engager 2 tours de bouclier actif."
+  },
+  "lk_a1": {
+    "name": "Coup Royal",
+    "description": "25 dégâts en 2 cases horizontales + self bouclier 15 pendant 2 tours.",
+    "long-description": "Le Roi inflige un coup royal en ligne horizontale de 2 cases devant, infligeant 25 dégâts à tous les ennemis touchés. Au même tour, reçoit 15 de self bouclier pendant 2 tours (soumis au Shield Cap de 100 PV). Compétence de pression hybride attaque-défense — le Roi maintient la pression sur le front tout en se sustentant."
+  },
+  "lk_a2": {
+    "name": "Coup de Pied Royal",
+    "description": "27 dégâts en 2 cases verticales + self bouclier 15 pendant 2 tours.",
+    "long-description": "Le Roi inflige un coup de pied royal en ligne verticale de 2 cases devant, infligeant 27 dégâts à tous les ennemis touchés. Reçoit 15 de self bouclier pendant 2 tours. Variante verticale de Coup Royal — choix d'orientation tactique selon la formation ennemie."
+  },
+  "lk_a3": {
+    "name": "Combo de Coups",
+    "description": "15 dégâts en 3x2 + lifesteal 30%. Exception à la règle d'immunité du roi.",
+    "long-description": "Le Roi déchaîne une séquence de coups en rafale, infligeant 15 dégâts en zone 3x2 devant. Reçoit 30% des dégâts causés en retour comme soin (Lifesteal) — exception explicite à la règle d'Immunité Royale, car la compétence est self-cast. Si touche 4 cibles à 15 chacune (60 total), récupère 18 PV."
+  },
+  "lk_a4": {
+    "name": "Domaine Royal",
+    "description": "18 dégâts en 3x3 + self bouclier = 25% des dégâts totaux causés pendant 1 tour.",
+    "long-description": "Le Roi impose son domaine en zone 3x3, infligeant 18 dégâts à chaque cible touchée (jusqu'à 9 cibles). Après calcul des dégâts totaux, reçoit 25% de ce total comme self bouclier pendant 1 tour. Compétence offensive-défensive scalable — plus d'ennemis attrapés, plus de bouclier."
+  },
+  "lk_a5": {
+    "name": "Poussée Royale",
+    "description": "12 dégâts en ligne verticale 3 cases jusqu'à la fin de la carte + push jusqu'à 3 cases.",
+    "long-description": "Le Roi pousse avec une force brutale en ligne verticale qui va du Roi à la fin de la carte (largeur de 3 cases). Inflige 12 dégâts à tous les ennemis sur le chemin et les pousse jusqu'à 3 cases en arrière. Compétence de zoning massive — nettoie le front entier."
+  },
+  "lk_a6": {
+    "name": "Contre-attaque",
+    "description": "15 dégâts en 3x3 + push 1 case éloignant du centre. Le centre ne bouge pas.",
+    "long-description": "Le Roi détonne une contre-attaque en zone 3x3 autour de lui (il est le centre). Inflige 15 dégâts à tous les ennemis dans la zone et pousse chacun 1 case dans la direction radiale (s'éloignant du centre). Le Roi (centre) NE bouge PAS. Compétence d'assainissement d'adjacence."
+  },
+  "lk_a7": {
+    "name": "Intimidation",
+    "description": "10 dégâts + téléporte la cible et adjacents à un endroit choisi. Ne peut pas placer aux bords.",
+    "long-description": "Le Roi intimide une cible: inflige 10 dégâts et téléporte la cible PLUS tous les ennemis adjacents à elle (jusqu'à 5 unités) à un endroit choisi par le caster (sur le terrain de la carte, sauf bords). Compétence de repositionnement offensif extrême."
+  },
+  "lk_a8": {
+    "name": "Désarmer",
+    "description": "6 dégâts + annule la skill atk de la cible au tour + silence_attack 1t. N'affecte pas les rois.",
+    "long-description": "Le Roi désarme un ennemi: inflige 6 dégâts et ANNULE immédiatement toute compétence d'attaque que la cible avait sélectionnée pour ce tour (la compétence est jetée, sans coût, sans effet). Applique aussi silence_attack pendant 1 tour. Compétence de contre-jeu chirurgicale."
+  },
+  "lk_d1": {
+    "name": "Fuite Sombre",
+    "description": "Se téléporte n'importe où dans la moitié alliée. Le Roi devient untargetable par les compétences single-target jusqu'à recevoir des dégâts ou bouger.",
+    "long-description": "Le Roi devient invisible un instant et se téléporte sur toute case du terrain propre (moitié alliée de la carte). Après le téléport, devient UNTARGETABLE par les compétences single-target. L'invisibilité se brise si le Roi reçoit des dégâts (de zone ou DoT) ou s'il bouge volontairement au prochain tour."
+  },
+  "lk_d2": {
+    "name": "Récupération Royale",
+    "description": "Récupère 20% PV max en 2 tours (10% maintenant, 10% prochain tour si non blessé). Exception à l'immunité de soin du roi.",
+    "long-description": "Le Roi canalise Récupération Royale: reçoit 10% des PV max comme soin immédiatement (ce tour) et 10% supplémentaires des PV max au prochain tour SI NON blessé ce tour. Total possible: 20% des PV max. Exception explicite à la règle d'Immunité Royale au soin — la compétence est self-cast."
+  },
+  "lk_d3": {
+    "name": "Ombre Royale",
+    "description": "Crée 2 clones sur cases vides. Le Roi peut échanger position avec un. Les clones durent 2 tours. Les ennemis ne savent pas lequel est réel.",
+    "long-description": "Le Roi crée 2 clones visuels sur des cases vides proches. Les clones durent 2 tours et sont visuellement identiques au Roi réel. Les ennemis ne savent pas lequel est le vrai jusqu'à attaquer — les clones absorbent le coup et disparaissent s'ils sont touchés. Le Roi réel peut instantanément échanger position avec un clone."
+  },
+  "lk_d4": {
+    "name": "Esprit de Survie",
+    "description": "Si PV ≤ 50%: +15% PV max + bouclier 10% PV max pendant 1 tour. Si PV > 50%: +10% PV max.",
+    "long-description": "Compétence de survie adaptative. Si le Roi est à PV ≤ 50% au moment de l'utilisation, gagne +15% des PV max (augmentation permanente) PLUS un bouclier équivalent à 10% des PV max pendant 1 tour. Si le Roi est à PV > 50%, gagne seulement +10% des PV max (sans bouclier)."
+  },
+  "lk_d5": {
+    "name": "Bouclier Self",
+    "description": "Bouclier 30 pendant 2 tours.",
+    "long-description": "Le Roi se confère un bouclier de 30 PV pendant 2 tours (soumis au Shield Cap de 100). Persiste jusqu'à être totalement consommé ou expirer. Compétence de maintien générique du Roi — avec Coup Royal et Coup de Pied Royal, est l'une des principales façons de maintenir un bouclier actif sur le Roi."
+  },
+  "lk_d6": {
+    "name": "Forteresse Inébranlable",
+    "description": "-80% dégâts reçus pendant 1 tour. Ne peut pas bouger au prochain tour de mouvement.",
+    "long-description": "Le Roi se transforme en forteresse vivante. Pendant 1 tour, reçoit -80% de tous les dégâts (incluant les vrais dégâts). Le coût: NE peut PAS bouger au prochain tour de mouvement. Compétence d'échange de temps — survit pratiquement à n'importe quel combo de burst, mais perd la mobilité tactique pour un round. Carte partagée entre Guerrier et Roi."
+  },
+  "lk_d7": {
+    "name": "Esquive",
+    "description": "Évite complètement la première attaque directe au prochain tour.",
+    "long-description": "Le Roi prend une posture évasive et évite complètement la prochaine attaque directe reçue au prochain tour. Esquive absorbe seulement un coup, puis est consommée. Carte partagée entre Spécialiste, Exécuteur et Roi. Pour le Roi, c'est la meilleure défense contre Tir Précis (vrais dégâts) qui ignore la passive Protection Royale."
+  },
+  "lk_d8": {
+    "name": "Ordre Royal",
+    "description": "Le Roi retourne à sa position initiale, alliés téléportés à des positions adjacentes. Alliés adjacents: -15% dégâts. Roi: -15% par allié adjacent (max -45%) pendant 1 tour.",
+    "long-description": "Compétence suprême de regroupement. Le Roi se téléporte à sa position initiale (coin de la moitié alliée) et tire les 3 alliés (non-Roi) vers des cases adjacentes au Roi. Pendant 1 tour, tous les alliés adjacents reçoivent -15% de dégâts et le Roi reçoit -15% supplémentaires par chaque allié adjacent (jusqu'à 3 alliés = -45% sur le Roi). Compétence de reset stratégique."
+  }
 }

@@ -1,3 +1,339 @@
 {
-  "_meta": { "lang": "en-US" }
+  "_meta": { "lang": "en-US" },
+  "roles": {
+    "specialist": "Specialist",
+    "warrior": "Warrior",
+    "executor": "Executor",
+    "king": "King"
+  },
+  "passives": {
+    "specialist-name": "Burning",
+    "specialist-text": "Targets hit by Specialist skills receive -30% healing for 2 turns.",
+    "warrior-name": "Protector",
+    "warrior-text": "Allies adjacent to the Warrior take -15% damage.",
+    "executor-name": "Isolated",
+    "executor-text": "When no allies are adjacent, the Executor deals +20% damage and takes +10% damage.",
+    "king-name": "Royal Protection",
+    "king-text": "The King takes -20% from all damage, including true damage. Kings are immune to direct healing — only regen and self-skills can heal them."
+  },
+  "ls_a1": {
+    "name": "Fireball",
+    "description": "28 damage in a 2x2 area on the enemy field. Applies burning 6/turn for 2 turns.",
+    "long-description": "The Specialist hurls a flaming sphere onto the enemy field, dealing 28 physical damage in a 2x2 square area. Each affected target also receives Burning, a fire DoT that deals 6 damage per turn for 2 turns. The class passive, Burning, reinforces the combo: hit targets receive -30% healing for the next 2 turns, making it harder for the enemy team to recover. A standard opener to fragment groupings and start sustained pressure."
+  },
+  "ls_a2": {
+    "name": "Mana Rain",
+    "description": "22 damage in 2 ticks (11+11) on a vertical 3-tile line on the enemy field.",
+    "long-description": "The Specialist summons a rain of magical energy that travels through a vertical 3-tile line on the enemy field, hitting the same target twice consecutively for 11 damage per tick (22 total). Each tick is resolved individually, so shields and dodges only absorb the matching hit — the second tick still lands even if the first is evaded. Damage per tick passes DEF mitigation normally. Useful against weak shields or to trigger multi-hit damage stacks."
+  },
+  "ls_a3": {
+    "name": "Cleansing Beam",
+    "description": "25 damage + purge on enemies in the line. Allies hit gain shield 10.",
+    "long-description": "A luminous beam crosses the entire arena in a horizontal 6-tile line, dealing 25 damage to each enemy in its path and applying Purge — removes all active buffs (atk_up, def_up, regen, shield, etc.) from struck targets. Allies on the path receive 10 shield and take no damage. Versatile skill to cancel buff-stacking compositions while protecting your own front line. Excellent against teams relying on sustained buffs for prolonged combat."
+  },
+  "ls_a4": {
+    "name": "Central Explosion",
+    "description": "1st use: marks target (non-removable). 2nd use on marked: 50 damage + 50% extra if target has debuff. Ignores Dodge and immunities.",
+    "long-description": "Two-phase skill. First use marks an enemy with Detonation Mark — a permanent mark that CANNOT be removed by purge, cleanse, or immunity. Second use detonates the mark for 50 direct damage. If the target had any active debuff at detonation time (bleed, burn, poison, stun, snare, silence, def_down, mov_down, atk_down), the explosion is amplified by +50%, totaling 75 damage. The detonation completely ignores Dodge, shields, and immunities — guaranteed damage. Heavy execution tool that rewards setups with prior team debuffs."
+  },
+  "ls_a5": {
+    "name": "Slowing Orb",
+    "description": "12 damage in a 3x3 area. def_down 25% + mov_down 1 for 1 turn.",
+    "long-description": "The Specialist projects a gravitational orb that detonates in a 3x3 area, dealing 12 damage and applying two debuffs to all hit targets: def_down 25% (reduces defense by 25% for 1 turn) and mov_down 1 (reduces mobility by 1 tile for 1 turn). Setup skill: prepares ground for the team's attackers to finish targets with reduced DEF and limited escape. Especially good combined with area damage skills that exploit the def_down window."
+  },
+  "ls_a6": {
+    "name": "Rigid Chains",
+    "description": "10 damage in a + shape (5 tiles). Snares enemies for 1 turn.",
+    "long-description": "Magical chains erupt from the ground in a cross pattern (5 tiles: center + 4 adjacent), dealing 10 damage to each hit enemy and applying Snare for 1 turn. Snare prevents movement but NOT skill use — unlike Stun. Positional control: locks enemies in unfavorable positions for the team's area attacks, or prevents the retreat of targets about to be finished. The + shape covers central and adjacent targets, ideal against groupings or enemy lines."
+  },
+  "ls_a7": {
+    "name": "Mist",
+    "description": "Whole enemy arena. Allies: def_up 15%. Enemies: def_down 15% + healing received -30% for 2 turns.",
+    "long-description": "The Specialist summons a dense mist covering the entire arena for 2 turns. Allies inside the mist gain +15% DEF. Enemies inside take -15% DEF and -30% healing received (all sources — direct heal, regen, lifesteal). Field skill that alters match tempo without dealing damage: creates a 2-turn window where the team applies more pressure and the enemy struggles to sustain. Combines with any sustained-damage composition, especially DoTs and multi-hit attacks."
+  },
+  "ls_a8": {
+    "name": "Freeze",
+    "description": "18 damage + stun 1t + def_down 20% for 1 turn.",
+    "long-description": "A concentrated ice pulse strikes a single target, dealing 18 damage and applying Stun for 1 turn + def_down 20% for 1 turn. Stun prevents both movement AND skill use — the strongest control in the game. Pick skill: isolates a priority target (usually an enemy Executor or Specialist) and removes them entirely from the next turn while the team focuses damage with reduced DEF. Stun does not stack with active Stun, but combines with any other debuff."
+  },
+  "ls_d1": {
+    "name": "Supreme Heal",
+    "description": "Heals 35 HP on 1 ally (non-king).",
+    "long-description": "The Specialist channels a wave of restorative energy into a single ally, instantly returning 35 HP. Healing does NOT affect Kings — they are immune to direct healing per the global Royal Immunity rule. Subject to Heal Cap (turn-based heal limit) and reduced 30% if the target is under Burning. Heavy maintenance skill to recover Warriors tanking damage or Executors near execution threshold. Always resolves after DoTs each turn, so it never wastes healing on a target about to bleed out."
+  },
+  "ls_d2": {
+    "name": "Partial Rebirth",
+    "description": "Latent revive (2 turns) on lowest-HP ally (non-king). Revives at 25 HP if dies. Max 1x per ally per match.",
+    "long-description": "The Specialist marks the lowest-HP ally (excluding King) with a latent Revive buffer that lasts 2 turns. If the ally dies during that window, they instantly revive at 25 HP on the same tile, with all debuffs and DoTs cleared. Each ally can only be resurrected once per match, so the trigger is permanently consumed after use. Strategic sustain against burst — forces the enemy to burn two executions on the same target. Doesn't work on Kings."
+  },
+  "ls_d3": {
+    "name": "Healing Field",
+    "description": "Heals 12 HP + shield 10 (1t) in a 3x3 area. King only receives shield.",
+    "long-description": "The Specialist creates a healing light field in a 3x3 area, restoring 12 HP and applying 10 shield (1 turn) to all allies in the area. Kings receive ONLY the shield — no heal, per Royal Immunity to direct healing. Shield is capped at 100 HP total accumulated on target. Area maintenance for grouped teams, ideal right after damage trades in mid-map. Combines very well with compact formations and Warrior frontline compositions."
+  },
+  "ls_d4": {
+    "name": "Protection",
+    "description": "+ shape (5 tiles). Removes all ally debuffs + immunity to new debuffs for 1 turn.",
+    "long-description": "Area cleanse in cross shape (center + 4 adjacent), removing all active debuffs from affected allies (bleed, burn, poison, stun, snare, silence, def_down, mov_down, atk_down, marks) and granting total immunity to new debuffs for 1 turn. Deals no damage and no healing — purely a response to heavy control and DoT setups. Ideal against teams relying on bleed stacks (Executor) or disabilities (Stun from Freeze, Snare from Rigid Chains). Immunity window lasts only 1 turn — timing is everything."
+  },
+  "ls_d5": {
+    "name": "Continuous Healing Field",
+    "description": "Regen 6 HP/turn for 2 turns in a 3x3 area. King doesn't receive. Cancelled if ally takes damage.",
+    "long-description": "A stationary regen field covers a 3x3 area for 2 turns. Each ally inside receives Regen of 6 HP per turn (12 total if staying both turns) — Kings do not receive. The regen has an important clause: if an ally takes ANY damage while in the field, the regen is cancelled for that ally. Post-fight sustain skill — placed in safe areas, far from the front, to recover the team between confrontations. Not a maintenance skill in the middle of trades."
+  },
+  "ls_d6": {
+    "name": "Dodge",
+    "description": "Completely evades the first direct attack on the next turn.",
+    "long-description": "The Specialist takes evasive stance and completely evades the next direct attack received next turn. Dodge absorbs only one hit, then is consumed — multiple attackers can still break it in sequence. Works against direct damage (damage, true_damage) and area attacks hitting the caster. Does NOT block already-applied DoTs (bleed, burn, poison) or non-damage effects (push, pull, stun, snare). Card shared between Specialist, Executor, and King — each class has the same identical version. Excellent bait card against isolated Executors."
+  },
+  "ls_d7": {
+    "name": "Total Block",
+    "description": "Shield 60. Persists until broken or 2 turns.",
+    "long-description": "Grants the caster a 60 HP shield, persisting until fully consumed or expiring in 2 turns — whichever comes first. Shield is subject to global Shield Cap of 100 HP accumulated per unit — if caster already has active shield, excess is discarded. Shield absorbs damage before HP, but DoTs (bleed, burn, poison) bypass shield and hit HP directly. Heavy protection card shared between Specialist and Executor — Warrior version is Unshakable Fortress (different mechanic)."
+  },
+  "ls_d8": {
+    "name": "Aura of Protection",
+    "description": "Shield 12 + atk_up 10% for 1 turn in diamond r2 area.",
+    "long-description": "A protective aura covers a diamond-shape area of radius 2 (extended cross, ~13 tiles) around the caster. All allies in the area receive 12 shield (subject to 100 Shield Cap) and atk_up 10% for 1 turn. Offensive-defensive skill that prepares a coordinated attack turn: the entire team enters with more sustain and more outgoing damage. Good for aggressive compositions trading HP for kills, or in Overtime rounds where each turn matters more."
+  },
+  "lw_a1": {
+    "name": "Titanic Collision",
+    "description": "22 damage in vertical 6x2 rectangle + push 1 sqm. If blocked: snare 1t.",
+    "long-description": "The Warrior charges forward like a moving wall, hitting all enemies in a vertical 6x2 rectangle ahead, dealing 22 damage and pushing them back 1 tile. If a target's push is blocked by a wall or another enemy, that target receives Snare for 1 turn (cannot move). Aggressive opener that repositions an entire enemy line and separates flank from core — or locks targets against obstacles. Combines with control skills exploiting snared targets like Death Mark or Spike Bomb."
+  },
+  "lw_a2": {
+    "name": "Impact",
+    "description": "28 damage in a 3x3 area. def_down 18% + mov_down 1 for 1 turn.",
+    "long-description": "A heavy impact strike detonates in a 3x3 area around the target, dealing 28 damage to all hit and applying two debuffs for 1 turn: def_down 18% (defense reduced 18%) and mov_down 1 (mobility reduced 1 tile). Coordinated pressure: weakens a grouping's defense and limits retreat, opening a window for the team's Executors to finish targets with reduced DEF the next turn."
+  },
+  "lw_a3": {
+    "name": "Devastating Blow",
+    "description": "30 damage in a 2x2 area. Removes buffs and breaks shields of those hit.",
+    "long-description": "The Warrior delivers a colossal strike in a 2x2 area, dealing 30 damage and applying Purge to all hit targets: removes all active buffs (atk_up, def_up, regen, evade, reflect) and completely breaks shields, ignoring the Shield Cap. Excellent anti-bunker skill against defensive compositions — dismantles Total Block, Aura of Protection, Protector's Shield in one strike. The 30 damage comes before shield removal, so shield still absorbs the first hit, but any subsequent team damage that turn lands directly on HP."
+  },
+  "lw_a4": {
+    "name": "Brutal Charge",
+    "description": "24 damage in a vertical 3-tile line. Center line: push 1 + snare 1t if blocked. Top/bottom lines: pushed perpendicular.",
+    "long-description": "The Warrior charges in a straight vertical line of 3 tiles, dealing 24 damage to all hit. Push splits per line: the central line is pushed 1 tile in the charge direction (snare 1t if blocked), while top and bottom lines are pushed perpendicularly, opening a corridor. Penetration skill that breaks enemy formations into three distinct pieces, creating isolated flanks that can be eliminated individually next turns."
+  },
+  "lw_a5": {
+    "name": "Taunt",
+    "description": "10 damage + def_down 15% + silence_defense 1t on 1 enemy.",
+    "long-description": "The Warrior taunts a single enemy, dealing 10 damage and applying two debuffs: def_down 15% for 1 turn and silence_defense for 1 turn (prevents use of any defensive skill). Heavy bait skill: forces a Specialist or Executor to be executed without being able to use Dodge, Total Block, or Reflect. Combines perfectly with team burst next turn — the silenced target can't protect itself and reduced DEF amplifies effective damage."
+  },
+  "lw_a6": {
+    "name": "Living Wall",
+    "description": "Vertical 2-tile wall on enemy field for 2t. Adjacent enemies: def_down 15%, mov_down 1, 3 damage/turn.",
+    "long-description": "The Warrior summons a living wall 2 tiles vertical on the enemy field, persisting for 2 turns. Enemies adjacent to the wall receive def_down 15%, mov_down 1, and take 3 damage per turn while remaining adjacent. The wall is automatically destroyed after 2 turns OR if hit by any atk1 skill (high priority). Zone control skill: forces the enemy to deviate formation or pay penalties for staying close, creating positional dilemmas favoring the attacking team."
+  },
+  "lw_a7": {
+    "name": "Charge",
+    "description": "12 damage in a vertical 3-tile line. def_down 15% + mov_down 1 for 1 turn.",
+    "long-description": "Lighter version of Brutal Charge: the Warrior advances in a vertical line of 3 tiles, dealing 12 damage to all hit and applying def_down 15% and mov_down 1 for 1 turn. No push, no snare. Sustained pressure and pick skill: modest damage but with valuable debuffs to set up team follow-up. Good in rotation with the Warrior's other atk2 skills to keep the enemy front constantly weakened."
+  },
+  "lw_a8": {
+    "name": "Dead Wall Prison",
+    "description": "12 damage at center + 8 temporary walls around. Enemies inside: snare 2t. Walls break with any atk1.",
+    "long-description": "The Warrior creates a dead-wall prison: deals 12 damage on a central tile and erects 8 walls forming a ring around (radius 1). Enemies inside the prison receive Snare for 2 turns — cannot move, but can still use skills. Prison walls are fragile: any atk1 skill crossing the wall destroys it. Strong capture skill to isolate an enemy Executor or Specialist from the rest of the team, giving 2 turns of focus window while their allies can't easily reach them."
+  },
+  "lw_d1": {
+    "name": "Protector's Shield",
+    "description": "Move up to 2 sqm + create vertical 3-tile shield wall ahead. Allies in 6 sqm rectangle behind: -50% damage for 1 turn.",
+    "long-description": "The Warrior may move up to 2 tiles before channeling the skill (preMovement), then creates a 3-tile vertical shield wall in front. All allies in a 6x2 rectangle behind the wall receive -50% damage for 1 turn. Peak defensive skill — prepares the team for a heavy absorption turn before a decisive trade. Prior repositioning is crucial: the Warrior chooses the ideal position for the wall to cover maximum allies. Doesn't block DoTs."
+  },
+  "lw_d2": {
+    "name": "Guardian",
+    "description": "60% of damage received by ally is redirected to warrior, reduced 30% on warrior (1 turn).",
+    "long-description": "The Warrior marks the lowest-HP ally (non-king) as protected. For 1 turn, 60% of all damage that ally receives is redirected to the Warrior, and that redirected damage further passes through a 30% reduction on the Warrior (effectively the ally takes 40% and the Warrior takes 60% × 0.7 = 42% of original damage). Save skill against burst — protects Specialists and Executors on the firing line. Combines with the Protector passive (-15% on adjacent) and Absolute Resistance (-65% damage)."
+  },
+  "lw_d3": {
+    "name": "Absolute Resistance",
+    "description": "Warrior + ally behind: -65% damage for 1 turn. Can move 1 sqm before.",
+    "long-description": "The Warrior may move up to 1 tile before channeling (preMovement), then assumes absolute resistance stance. For 1 turn, he and the ally immediately behind him take -65% of all damage (including true damage, but not already-applied DoTs). Heavy absorption skill — usually survives Brutal Charge, Fireball, and even Death Mark burst. Prior repositioning ensures the right ally (usually the Specialist or King) gets protected behind. Works perfectly as a counter to Royal Domain or Blade Storm."
+  },
+  "lw_d4": {
+    "name": "Unshakable Fortress",
+    "description": "-80% damage received for 1 turn. Cannot move on next movement turn.",
+    "long-description": "The Warrior assumes a living fortress form. For 1 turn, takes -80% of all damage (including true damage). The cost: he CANNOT move on the next movement turn, locked in place. Time-trade skill: immune to virtually any burst combo, but loses tactical mobility for one round. Combines poorly with enemy pushes (Royal Push, Titanic Collision) that may displace him from a strategic position while immobilized. Card shared between Warrior and King."
+  },
+  "lw_d5": {
+    "name": "Group Shield",
+    "description": "Shield 15 on all allies for 2 turns.",
+    "long-description": "The Warrior distributes a collective shield: all 4 allies (including himself and King) receive 15 shield, persisting for 2 turns or until broken. Each shield is independent — Kings receive normally, unlike heals. Subject to Shield Cap of 100 HP per unit. Team maintenance skill — not as heavy as Protector's Shield, but applies to entire team and lasts 2 turns. Good for sustaining prolonged area trades or Overtime turns."
+  },
+  "lw_d6": {
+    "name": "Defensive Stance",
+    "description": "Allies in 3x3 around: -25% damage for 1 turn.",
+    "long-description": "The Warrior adopts defensive stance. Allies in a 3x3 area around him (including himself) receive -25% damage for 1 turn. No shield, no heal — purely an outgoing damage reduction on enemy hits, applied to all attacks received by allies in the area next turn. Lighter than Absolute Resistance but with greater coverage. Combines with the Protector passive (-15%) for an effective -40% on allies adjacent to the Warrior."
+  },
+  "lw_d7": {
+    "name": "Advance",
+    "description": "Move allies in 4x4 1 tile forward. +1 mov + -10% damage + +10% ATK for 1 turn.",
+    "long-description": "The Warrior leads the team's advance. All allies in a 4x4 quadrant around him move 1 tile forward (toward enemy field) and receive three buffs for 1 turn: +1 mov (extra mobility), -10% damage received, and +10% ATK. Coordinated offensive skill that repositions the entire team closer to the enemy while adding damage and protection — perfect to initiate a heavy trade or pressure the enemy King. Mirrored by Retreat, which does the opposite."
+  },
+  "lw_d8": {
+    "name": "Retreat",
+    "description": "Move all allies 1 tile back in 4x4. +1 mov next turn + -15% damage for 1 turn.",
+    "long-description": "The Warrior orders tactical retreat. All allies in a 4x4 quadrant around him move 1 tile back (toward own field) and receive +1 mov on next turn and -15% damage for 1 turn. Purely defensive-repositional skill: avoids predicted enemy burst, creates distance from Executors in Isolated mode, or simply refreshes formation after a bad trade. Mirrors Advance for teams needing to yield space to survive."
+  },
+  "le_a1": {
+    "name": "Lethal Strike",
+    "description": "45 damage + removes target's debuffs. If target had bleed: +50% damage (67 total).",
+    "long-description": "The Executor delivers a precise and lethal cut on a single target, dealing 45 direct damage and applying Cleanse on the target (removes all active debuffs from them). If the target had Bleed active at strike time, damage is amplified by +50% (totaling 67 damage). Heavy execution — rewards setups where an ally applied bleed (Spike Bomb, Bleed Cut) the previous turn. Removing debuffs after damage means if the target survives, they'll be clean next turn — a tactical variable to consider."
+  },
+  "le_a2": {
+    "name": "Blade Storm",
+    "description": "26 damage in a 3x3 area. If targets had bleed: +50% damage on them.",
+    "long-description": "The Executor unleashes a blade storm in a 3x3 area, dealing 26 damage to all hit enemies. Each target individually receives +50% damage if it was under Bleed at hit time (totaling 39 damage on that target, but keeping 26 on others). Cleanup skill that combines with any team bleed source — especially the Executor's own Spike Bomb or Death Mark. Can hit 4 targets simultaneously in compact formations."
+  },
+  "le_a3": {
+    "name": "Precise Shot",
+    "description": "30 true damage (ignores DEF). If target had bleed: also ignores shields.",
+    "long-description": "The Executor fires a lethal precision projectile at a single target, dealing 30 True Damage — pure damage that IGNORES all DEF mitigation, passives (including King's Royal Protection reduces but doesn't nullify), and any percent damage reduction. If the target had Bleed active at shot time, the shot also IGNORES all active shields on the target, hitting HP directly. Surgical execution skill against defensive Kings or Warriors tanking behind Total Block."
+  },
+  "le_a4": {
+    "name": "Precise Cut",
+    "description": "22 damage in 2 sqm horizontal + purge.",
+    "long-description": "The Executor delivers two consecutive cuts hitting a horizontal 2-tile line, dealing 22 damage and applying Purge to all hit (removes all active buffs: atk_up, def_up, regen, evade, shield, etc.). Anti-buff skill: cancels compositions based on buff sustain (Adrenaline, Aura of Protection, Group Shield). Classic synergy: ally applies Royal Push to align enemies in line → Precise Cut to purge all at once."
+  },
+  "le_a5": {
+    "name": "Bleed Cut",
+    "description": "8 damage + bleed 4/turn for 3t in 2 sqm horizontal. Stacks if reapplied.",
+    "long-description": "The Executor delivers a grazing cut on a horizontal 2-tile line, dealing 8 initial damage and applying Bleed: 4 damage per turn for 3 turns (12 total damage). Bleed is physical DoT that ignores shields and hits HP directly. If Bleed Cut is used again on an already-bleeding target, the bleed STACKS — two simultaneous applications (8 damage per turn). Sustained pressure skill that prepares setups for Lethal Strike and Blade Storm (which give +50% if the target has bleed)."
+  },
+  "le_a6": {
+    "name": "Spike Bomb",
+    "description": "10 damage + bleed 5/turn for 2t in diamond r2.",
+    "long-description": "The Executor throws a spike bomb that detonates in a diamond shape of radius 2 (~13 tiles), dealing 10 initial damage to all hit and applying Bleed of 5 per turn for 2 turns (10 DoT total). Wide coverage skill to apply bleed to multiple targets simultaneously, preparing terrain for Lethal Strike and Blade Storm. Unlike Bleed Cut, it's area and hits more targets per use, but with lesser duration — pick by coverage, not duration."
+  },
+  "le_a7": {
+    "name": "Death Mark",
+    "description": "12 damage in vertical 8 sqm (4 deep, 2 wide). Removes shields (heals 20% of them as HP). Bleed 8/turn for 2t.",
+    "long-description": "The Executor channels Death Mark in a vertical rectangular area of 8 tiles (4 deep × 2 wide). Deals 12 damage to all hit, REMOVES all shields from targets (and heals the Executor by 20% of removed shield as HP) and applies Bleed of 8 per turn for 2 turns (16 DoT). Anti-shield area execution skill + self-sustain + heavy DoT. One of the most punishing skills against defensive teams with Group Shield or Total Block active. Combines with Lethal Strike next turn to finish bleeding targets."
+  },
+  "le_a8": {
+    "name": "Hidden Trap",
+    "description": "Arms a tile (not on occupied tile). On step: 15 damage + snare 1t + bleed 4/turn for 3t.",
+    "long-description": "The Executor plants an invisible trap on an empty tile (cannot be where unit is). The trap remains until activated. When ANY enemy enters the tile, it detonates: deals 15 damage, applies Snare for 1 turn (prevents movement), and Bleed 4 per turn for 3 turns. Zoning skill — forces the enemy to alter route or pay the price. Combines with team pushes (Royal Push, Titanic Collision) that can push enemies directly into the trap. Only 1 trap per Executor at a time."
+  },
+  "le_d1": {
+    "name": "Reflect",
+    "description": "-25% damage received + reflects mitigated to attacker on next turn.",
+    "long-description": "For 1 turn, the Executor takes -25% of all damage and reflects EXACTLY the mitigated value back at the attacker. Example: 40 damage attack → receives 30, attacker takes 10 reflect. Multiple attackers generate multiple reflects, each proportional to original damage. Perfect bait against aggressive Specialists and Executors — they hurt themselves trying to kill the caster. Doesn't work against already-applied DoTs (bleed, burn, poison) nor against true damage that ignores percent reduction completely in some cases."
+  },
+  "le_d2": {
+    "name": "Adrenaline",
+    "description": "+25% ATK for 2 turns. At end: loses 15% max HP (blockable by shield).",
+    "long-description": "The Executor enters extreme adrenaline mode: gains +25% ATK for 2 turns. At END of second turn, suffers 15% of max HP as backlash damage (blockable by active shield at that moment). Risk/reward skill — produces two turns of extreme burst (especially in synergy with Adrenaline + Double Attack), but costs HP at the end. Combines with allies who can shield the Executor before second turn expires (Aura of Protection, Group Shield) to nullify the backlash."
+  },
+  "le_d3": {
+    "name": "Double Attack",
+    "description": "Next turn: 2 atk skills, 0 def. Cooldown: 2 turns (cannot use consecutively).",
+    "long-description": "For 1 turn (next), the Executor can use 2 attack skills instead of 1, but loses ability to use any defensive skill that turn. 2-turn cooldown — cannot be activated again until 2 full turns pass. Pressure peak skill — especially combined with Adrenaline (+25% ATK) and prior bleeds to amplify two Lethal Strikes or one Lethal Strike + Precise Shot. Clear vulnerability: the Executor cannot protect himself on the double-attack turn, so must be in safe position or have allies covering."
+  },
+  "le_d4": {
+    "name": "Teleport",
+    "description": "Teleports up to 5 sqm. Consumes next movement turn.",
+    "long-description": "The Executor instantly teleports to any tile within range 5, IGNORING obstacles, walls, and units along the way. The cost: consumes the next movement turn — he cannot move freely next round. Extreme tactical mobility skill: rapidly closes to finish isolated targets or escapes a siege. Combines with Isolated passive (+20% damage when no allies adjacent) to reach a flank and take down support targets without compromising team structure."
+  },
+  "le_d5": {
+    "name": "Quick Retreat",
+    "description": "Move up to 2 sqm back + shield 20 for 1 turn.",
+    "long-description": "The Executor retreats up to 2 tiles backward (only toward own field) and gains 20 shield for 1 turn. Movement and shield are part of the same action — cannot move forward or sideways. Light escape skill to exit immediate pressure without compromising future turns. Cheaper than Teleport (doesn't consume next movement turn), but with smaller range and flexibility. Excellent for escaping traps or unwanted adjacency (losing the Isolated bonus)."
+  },
+  "le_d6": {
+    "name": "Dodge",
+    "description": "Completely evades the first direct attack on the next turn.",
+    "long-description": "The Executor takes evasive stance and completely evades the next direct attack received next turn. Dodge absorbs only one hit, then is consumed — multiple attackers can still break it in sequence. Works against direct damage (damage, true_damage) and area attacks hitting the caster. Does NOT block already-applied DoTs or non-damage effects (push, pull, stun, snare). Card shared between Specialist, Executor, and King — all with identical mechanic. Crucial tool against heavy burst on Executors, who have low base DEF (8)."
+  },
+  "le_d7": {
+    "name": "Total Block",
+    "description": "Shield 60. Persists until broken or 2 turns.",
+    "long-description": "Grants the Executor a 60 HP shield, persisting until fully consumed or expiring in 2 turns — whichever comes first. Shield is subject to global Shield Cap of 100 HP accumulated per unit — if active shield exists, excess is discarded. Absorbs damage before HP, but DoTs (bleed, burn, poison) bypass shield and hit HP directly. Card shared between Specialist and Executor. For the Executor it's more valuable because the Isolated passive becomes vulnerable when distancing from allies — the shield compensates lack of cover."
+  },
+  "le_d8": {
+    "name": "Shield",
+    "description": "Shield 25 for 1 turn.",
+    "long-description": "Grants the Executor a quick 25 HP shield for 1 turn. Subject to Shield Cap of 100 HP accumulated. Lighter and cheaper than Total Block — useful in rotations where one wants to absorb a single hit without committing to 2 turns of active shield. Fine maintenance skill for Executors relying on mobility and tight timing. Doesn't absorb DoTs (bleed, burn, poison) — only direct damage."
+  },
+  "lk_a1": {
+    "name": "Royal Punch",
+    "description": "25 damage in 2 sqm horizontal + self shield 15 for 2 turns.",
+    "long-description": "The King delivers a royal punch in a horizontal 2-tile line ahead, dealing 25 damage to all hit enemies. Same turn, receives 15 self shield for 2 turns (subject to Shield Cap of 100 HP). Hybrid attack-defense pressure skill — the King maintains front pressure while sustaining. Combines with Royal Protection passive (-20% damage received) for an effective mobile bunker. Kings cannot be directly healed but can gain shield — so this is the main way to keep the King alive."
+  },
+  "lk_a2": {
+    "name": "Royal Kick",
+    "description": "27 damage in 2 sqm vertical + self shield 15 for 2 turns.",
+    "long-description": "The King delivers a royal kick in a vertical 2-tile line ahead, dealing 27 damage to all hit enemies. Receives 15 self shield for 2 turns. Vertical variant of Royal Punch — tactical orientation choice based on enemy formation. Combined with Royal Punch in rotation, ensures the King always has active shield (they don't overlap — second use discards the previous if still standing). These 2 attacks are the King's maintenance pillar in aggressive mode."
+  },
+  "lk_a3": {
+    "name": "Punch Combo",
+    "description": "15 damage in 3x2 + lifesteal 30%. Exception to king immunity rule (self-heal from own skill).",
+    "long-description": "The King delivers a barrage punch combo, dealing 15 damage in a 3x2 area ahead. Receives 30% of damage dealt as healing (Lifesteal) — explicit exception to Royal Healing Immunity rule, since the skill is self-cast. If hits 4 targets at 15 each (60 total), recovers 18 HP. Main sustain skill of the aggressive King. Synergizes with Royal Protection passive to survive while channeling damage and healing."
+  },
+  "lk_a4": {
+    "name": "Royal Domain",
+    "description": "18 damage in 3x3 + self shield = 25% of total damage dealt for 1 turn.",
+    "long-description": "The King imposes domain in a 3x3 area, dealing 18 damage to each hit target (up to 9 targets). After total damage calculation, receives 25% of that total as self shield for 1 turn. Example: hits 4 targets = 72 total damage = 18 shield (subject to 100 Shield Cap). Scaling offensive-defensive skill — the more enemies caught, the more shield the King receives. Excellent in multi-player skirmishes where multiple enemies are in range."
+  },
+  "lk_a5": {
+    "name": "Royal Push",
+    "description": "12 damage in vertical 3-tile line to map's end + push up to 3 sqm.",
+    "long-description": "The King pushes with brutal force in a vertical line going from the King to the map's end (3 tiles wide). Deals 12 damage to all enemies in the path and pushes them up to 3 tiles back (in push direction). If the push is blocked by wall or another enemy, the blocked target takes additional collision damage (not listed mechanically, but conceptual). Massive zoning skill — clears entire front, separates flanks, throws enemies against obstacles."
+  },
+  "lk_a6": {
+    "name": "Counter-attack",
+    "description": "15 damage in 3x3 + push 1 sqm pushing from center. Center doesn't move.",
+    "long-description": "The King detonates a counter-attack in a 3x3 area around himself (he is the center). Deals 15 damage to all enemies in the area and pushes each one 1 tile in the radial direction (away from center). The King (center) does NOT move. Adjacency cleanup skill — removes enemies that surrounded the King, creating space to retake safe position or follow with other skills. Combines with Retreat for coordinated team withdrawal."
+  },
+  "lk_a7": {
+    "name": "Intimidation",
+    "description": "10 damage + teleports target and adjacent to chosen location. Cannot place at borders.",
+    "long-description": "The King intimidates a target: deals 10 damage and teleports the target PLUS all enemies adjacent to it (up to 5 units) to a location chosen by the caster (anywhere on the map field, except borders). Extreme offensive repositioning skill — can force an enemy grouping to leave a strong defensive position and fall into a team trap. Doesn't work on Kings (they're immune to teleport_target). Combines with Death Mark or Fireball at destination to detonate all teleported at once."
+  },
+  "lk_a8": {
+    "name": "Disarm",
+    "description": "6 damage + cancels target's atk skill that turn + silence_attack 1t. Doesn't affect kings.",
+    "long-description": "The King disarms an enemy: deals 6 damage and immediately CANCELS any attack skill the target had selected for that turn (skill is discarded, no cost, no effect). Additionally, applies silence_attack for 1 turn — the target cannot use attack skills next turn either. Doesn't work on Kings (they are immune to that silence). Surgical counter-play skill — invalidates a critical enemy's offensive turn (Executor preparing Lethal Strike, Specialist channeling Fireball)."
+  },
+  "lk_d1": {
+    "name": "Shadow Escape",
+    "description": "Teleports anywhere in ally half. King becomes untargetable by single-target skills until taking damage or moving.",
+    "long-description": "The King becomes invisible for a moment and teleports to any tile of own field (ally half of the map). After teleport, becomes UNTARGETABLE by single-target skills — single-target attacks cannot aim at him. Invisibility breaks if the King takes ANY damage (from area or DoT) or if he moves voluntarily next turn. Supreme evasion skill against combined single-target burst (Precise Shot, Lethal Strike, Death Mark). Areas still hit normally."
+  },
+  "lk_d2": {
+    "name": "Royal Recovery",
+    "description": "Recovers 20% max HP over 2 turns (10% now, 10% next turn if not damaged). Exception to king's heal immunity.",
+    "long-description": "The King channels Royal Recovery: receives 10% of max HP as healing immediately (this turn) and another 10% of max HP next turn IF NOT damaged that turn. Maximum possible: 20% of max HP. Explicit exception to Royal Healing Immunity — the skill is self-cast, so it works. Long-duration sustain skill — requires 2 turns without pressure for full effect. If the King takes damage after the first tick, loses the second half of healing."
+  },
+  "lk_d3": {
+    "name": "Royal Shadow",
+    "description": "Creates 2 clones in empty cells. King can swap position with one. Clones last 2 turns. Enemies don't know which is real.",
+    "long-description": "The King creates 2 visual clones on nearby empty tiles. Clones last 2 turns and visually identical to the real King. Enemies don't know which is real until attacking — clones absorb the hit and disappear if struck. The real King can instantly swap position with any of the clones at any time (free action, outside skill use). Supreme obfuscation skill — forces the enemy to waste 2 attacks on wrong targets or play safe and lose opportunity windows."
+  },
+  "lk_d4": {
+    "name": "Survival Spirit",
+    "description": "If HP ≤ 50%: +15% max HP + shield 10% max HP for 1 turn. If HP > 50%: +10% max HP.",
+    "long-description": "Adaptive survival skill. If the King is at HP ≤ 50% at use time, gains +15% of max HP (permanent increase to current and max HP) PLUS shield equivalent to 10% of max HP for 1 turn. If the King is at HP > 50%, gains only +10% of max HP (no shield). Game-changer skill — the more wounded the King, the more value it delivers. Kings start with 180 HP, so a 15% boost = +27 HP is significant near execution threshold."
+  },
+  "lk_d5": {
+    "name": "Self Shield",
+    "description": "Shield 30 for 2 turns.",
+    "long-description": "The King grants himself a 30 HP shield for 2 turns (subject to 100 Shield Cap). Persists until fully consumed or expiring. Generic King maintenance skill — along with Royal Punch and Royal Kick, is one of the main ways to keep active shield on the King (who is immune to direct healing). Doesn't absorb DoTs (bleed, burn, poison)."
+  },
+  "lk_d6": {
+    "name": "Unshakable Fortress",
+    "description": "-80% damage received for 1 turn. Cannot move on next movement turn.",
+    "long-description": "The King transforms into a living fortress. For 1 turn, takes -80% of all damage (including true damage). The cost: CANNOT move on next movement turn, locked in place. Time-trade skill — survives virtually any burst combo, but loses tactical mobility for one round. Card shared between Warrior and King. Obvious vulnerability: enemy pushes can displace the immobilized King from a safe position. Combines poorly with opponent's Royal Push."
+  },
+  "lk_d7": {
+    "name": "Dodge",
+    "description": "Completely evades the first direct attack on the next turn.",
+    "long-description": "The King takes evasive stance and completely evades the next direct attack received next turn. Dodge absorbs only one hit, then is consumed — multiple attackers can break it in sequence. Works against direct damage (damage, true_damage) and area attacks hitting the King. Does NOT block already-applied DoTs or non-damage effects (push, pull, stun, snare). Card shared between Specialist, Executor, and King. For the King, it's the best defense against Precise Shot (true damage) which ignores the Royal Protection passive."
+  },
+  "lk_d8": {
+    "name": "Royal Order",
+    "description": "King returns to initial position, allies teleported to adjacent positions. Adjacent allies: -15% damage. King: -15% per adjacent ally (max -45%) for 1 turn.",
+    "long-description": "Supreme regrouping skill. The King teleports to his initial position (corner of ally half) and pulls all 3 allies (non-King) to tiles adjacent to the King. For 1 turn, all adjacent allies receive -15% damage and the King receives an additional -15% per adjacent ally (up to 3 allies = -45% on the King). Strategic reset skill — useful when the team got dispersed by the enemy, or when the King is at execution risk and needs immediate cover. Doesn't work if any adjacent tile is blocked."
+  }
 }

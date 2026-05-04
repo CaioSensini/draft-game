@@ -1,3 +1,12 @@
 {
-  "_meta": { "lang": "it" }
+  "_meta": { "lang": "it" },
+  "auth": {
+    "fill-all-fields": "Compila tutti i campi.",
+    "password-too-short": "La password deve avere almeno 6 caratteri.",
+    "login-server-error": "Errore di connessione. Verifica che il server sia in esecuzione.",
+    "register-server-error": "Errore di registrazione. Verifica che il server sia in esecuzione.",
+    "verify-need-6-digits": "Inserisci il codice di 6 cifre.",
+    "verify-invalid-code": "Codice non valido. Riprova.",
+    "verify-resend-failed": "Errore nel rinvio. Riprova."
+  }
 }

@@ -1,3 +1,27 @@
 {
-  "_meta": { "lang": "fr" }
+  "_meta": { "lang": "fr", "name": "Français" },
+  "actions": {
+    "confirm": "CONFIRMER",
+    "cancel": "ANNULER",
+    "back": "RETOUR",
+    "close": "FERMER",
+    "play": "JOUER",
+    "ok": "OK",
+    "save": "ENREGISTRER",
+    "yes": "OUI",
+    "no": "NON"
+  },
+  "studio-name": "CODEFORJE VIO",
+  "section": {
+    "description": "DESCRIPTION",
+    "long-description": "DESCRIPTION DÉTAILLÉE"
+  },
+  "labels": {
+    "level-cap-max": "MAX",
+    "level-short": "Niv {level}",
+    "level-long": "Niv.{level}",
+    "gold-cost": "{cost}o",
+    "upgrade-action-affordable": "↑ AMÉLIORER NIV {level} · {cost}o",
+    "upgrade-action-broke": "NIV {level} · {cost}o"
+  }
 }

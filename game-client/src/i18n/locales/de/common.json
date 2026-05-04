@@ -1,3 +1,27 @@
 {
-  "_meta": { "lang": "de" }
+  "_meta": { "lang": "de", "name": "Deutsch" },
+  "actions": {
+    "confirm": "BESTÄTIGEN",
+    "cancel": "ABBRECHEN",
+    "back": "ZURÜCK",
+    "close": "SCHLIESSEN",
+    "play": "SPIELEN",
+    "ok": "OK",
+    "save": "SPEICHERN",
+    "yes": "JA",
+    "no": "NEIN"
+  },
+  "studio-name": "CODEFORJE VIO",
+  "section": {
+    "description": "BESCHREIBUNG",
+    "long-description": "DETAIL-BESCHREIBUNG"
+  },
+  "labels": {
+    "level-cap-max": "MAX",
+    "level-short": "St {level}",
+    "level-long": "St.{level}",
+    "gold-cost": "{cost}g",
+    "upgrade-action-affordable": "↑ STUFE {level} · {cost}g",
+    "upgrade-action-broke": "ST {level} · {cost}g"
+  }
 }

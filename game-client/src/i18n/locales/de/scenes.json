@@ -1,3 +1,133 @@
 {
-  "_meta": { "lang": "de" }
+  "_meta": { "lang": "de" },
+  "battle-result": {
+    "title": {
+      "victory": "SIEG",
+      "defeat": "NIEDERLAGE",
+      "draw": "UNENTSCHIEDEN"
+    },
+    "reasons": {
+      "king-slain": "König gefallen",
+      "simultaneous-kings": "Gleichzeitiges Unentschieden",
+      "timeout": "Zeit abgelaufen",
+      "forfeit": "Aufgabe"
+    },
+    "opponent-fallback": "Gegner",
+    "sub-meta": "Runde {round}  ·  vs {enemy}  ·  {reason}",
+    "rewards-header": "BELOHNUNGEN",
+    "new-skill": "Neue Fähigkeit: {name}!",
+    "next-match": "NÄCHSTE PARTIE",
+    "try-again": "ERNEUT VERSUCHEN",
+    "play-again": "ERNEUT SPIELEN",
+    "back-to-lobby": "ZUR LOBBY",
+    "xp": {
+      "level-current": "STUFE {level}",
+      "level-up": "STUFE {from}  ›  {to}",
+      "gain-suffix": "+{xp} XP",
+      "fraction": "{current} / {max} XP"
+    }
+  },
+  "lobby": {
+    "central-play-title": "SPIELEN",
+    "central-play-subtitle": "Wähle deinen Kampfmodus",
+    "play-modes-title": "SPIELMODI",
+    "nav": {
+      "shop": "SHOP",
+      "skills": "SKILLS",
+      "training": "TRAINING",
+      "ranking": "RANGLISTE"
+    },
+    "battlepass": {
+      "line-1": "BATTLE",
+      "line-2": "PASS",
+      "rewards-max": "BELOHNUNGEN MAX"
+    },
+    "offline": {
+      "title": "Team-Überfälle",
+      "subtitle": "Offline",
+      "popup-eyebrow": "DEMNÄCHST",
+      "popup-body": "Team-Angriffssystem"
+    },
+    "sound-toggle": {
+      "on": "Ton",
+      "muted": "Stumm"
+    },
+    "news-ticker": "     Willkommen bei Draft Game!  •  Neue Packs im Shop!  •  PvP-Kampf freigeschaltet!  •  Training verfügbar!     "
+  },
+  "login": {
+    "tab": {
+      "login": "LOGIN",
+      "register": "REGISTRIEREN"
+    },
+    "title-login": "ANMELDEN",
+    "title-register": "KONTO ERSTELLEN",
+    "submit-login": "ANMELDEN",
+    "submit-register": "KONTO ERSTELLEN",
+    "fields": {
+      "username-label": "BENUTZER",
+      "username-placeholder": "Nick",
+      "password-label": "PASSWORT",
+      "password-placeholder": "••••••••",
+      "email-label": "E-MAIL",
+      "email-placeholder": "du@beispiel.de",
+      "register-password-hint": "Mindestens 6 Zeichen"
+    },
+    "remember-me": "Angemeldet bleiben",
+    "forgot-password": "Passwort vergessen?",
+    "verify": {
+      "eyebrow": "VERIFIZIERUNG",
+      "title": "E-MAIL-CODE",
+      "body": "Ein 6-stelliger Code wurde\nan deine E-Mail gesendet. Gib ihn unten ein.",
+      "code-label": "CODE",
+      "code-placeholder": "000000",
+      "submit": "BESTÄTIGEN",
+      "resend": "Code erneut senden",
+      "sending": "Senden…"
+    }
+  },
+  "menu": {
+    "title": "DRAFT",
+    "subtitle": "TAKTISCHE SCHLACHTEN",
+    "studio-credit": "von Codeforje VIO",
+    "studio-name": "Codeforje VIO",
+    "tagline-1": "Strategie. Taktik. Eroberung.",
+    "tagline-2": "Stelle dein Deck zusammen und besiege den feindlichen König in 4v4-Schlachten",
+    "hint": "Klicken zum Eintreten",
+    "version-tag": "v1.0"
+  },
+  "settings": {
+    "title": "EINSTELLUNGEN",
+    "sections": {
+      "audio": "AUDIO",
+      "gameplay": "SPIEL",
+      "account": "KONTO"
+    },
+    "audio": {
+      "sound-label": "TON",
+      "sound-on": "Soundeffekte an",
+      "sound-off": "Soundeffekte aus",
+      "sliders-pending": "Lautstärke-Regler warten auf SoundManager-API."
+    },
+    "gameplay": {
+      "bot-difficulty-label": "BOT-SCHWIERIGKEIT"
+    },
+    "account": {
+      "session-label": "SITZUNG",
+      "session-description": "Vom aktuellen Konto abmelden",
+      "logout-button": "ABMELDEN"
+    },
+    "logout-modal": {
+      "title": "Abmelden",
+      "body": "Du wirst aus dem Königreich getrennt. Fortfahren?",
+      "confirm": "ABMELDEN"
+    },
+    "difficulty": {
+      "easy": "Leicht",
+      "normal": "Normal",
+      "hard": "Schwer"
+    },
+    "footer": {
+      "credits": "Draft Game v1.0  ·  von Caio Sensini"
+    }
+  }
 }

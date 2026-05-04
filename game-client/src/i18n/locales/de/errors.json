@@ -1,3 +1,12 @@
 {
-  "_meta": { "lang": "de" }
+  "_meta": { "lang": "de" },
+  "auth": {
+    "fill-all-fields": "Bitte alle Felder ausfüllen.",
+    "password-too-short": "Das Passwort muss mindestens 6 Zeichen lang sein.",
+    "login-server-error": "Verbindungsfehler. Stelle sicher, dass der Server läuft.",
+    "register-server-error": "Registrierungsfehler. Stelle sicher, dass der Server läuft.",
+    "verify-need-6-digits": "Gib den 6-stelligen Code ein.",
+    "verify-invalid-code": "Ungültiger Code. Bitte erneut versuchen.",
+    "verify-resend-failed": "Erneutes Senden fehlgeschlagen. Bitte erneut versuchen."
+  }
 }

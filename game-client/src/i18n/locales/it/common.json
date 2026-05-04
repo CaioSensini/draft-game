@@ -1,3 +1,27 @@
 {
-  "_meta": { "lang": "it" }
+  "_meta": { "lang": "it", "name": "Italiano" },
+  "actions": {
+    "confirm": "CONFERMA",
+    "cancel": "ANNULLA",
+    "back": "INDIETRO",
+    "close": "CHIUDI",
+    "play": "GIOCA",
+    "ok": "OK",
+    "save": "SALVA",
+    "yes": "SÌ",
+    "no": "NO"
+  },
+  "studio-name": "CODEFORJE VIO",
+  "section": {
+    "description": "DESCRIZIONE",
+    "long-description": "DESCRIZIONE DETTAGLIATA"
+  },
+  "labels": {
+    "level-cap-max": "MAX",
+    "level-short": "Lv {level}",
+    "level-long": "Lv.{level}",
+    "gold-cost": "{cost}o",
+    "upgrade-action-affordable": "↑ POTENZIA LV {level} · {cost}o",
+    "upgrade-action-broke": "LV {level} · {cost}o"
+  }
 }

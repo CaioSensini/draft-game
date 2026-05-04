@@ -1,3 +1,133 @@
 {
-  "_meta": { "lang": "fr" }
+  "_meta": { "lang": "fr" },
+  "battle-result": {
+    "title": {
+      "victory": "VICTOIRE",
+      "defeat": "DÉFAITE",
+      "draw": "MATCH NUL"
+    },
+    "reasons": {
+      "king-slain": "Roi abattu",
+      "simultaneous-kings": "Égalité simultanée",
+      "timeout": "Temps écoulé",
+      "forfeit": "Abandon"
+    },
+    "opponent-fallback": "Adversaire",
+    "sub-meta": "Manche {round}  ·  vs {enemy}  ·  {reason}",
+    "rewards-header": "RÉCOMPENSES",
+    "new-skill": "Nouvelle compétence : {name} !",
+    "next-match": "PROCHAIN MATCH",
+    "try-again": "RÉESSAYER",
+    "play-again": "REJOUER",
+    "back-to-lobby": "RETOUR AU LOBBY",
+    "xp": {
+      "level-current": "NIVEAU {level}",
+      "level-up": "NIVEAU {from}  ›  {to}",
+      "gain-suffix": "+{xp} XP",
+      "fraction": "{current} / {max} XP"
+    }
+  },
+  "lobby": {
+    "central-play-title": "JOUER",
+    "central-play-subtitle": "Choisissez votre mode de combat",
+    "play-modes-title": "MODES DE JEU",
+    "nav": {
+      "shop": "BOUTIQUE",
+      "skills": "COMPÉTENCES",
+      "training": "ENTRAÎNEMENT",
+      "ranking": "CLASSEMENT"
+    },
+    "battlepass": {
+      "line-1": "PASSE",
+      "line-2": "DE COMBAT",
+      "rewards-max": "RÉCOMPENSES MAX"
+    },
+    "offline": {
+      "title": "Raids d'équipes",
+      "subtitle": "Hors ligne",
+      "popup-eyebrow": "BIENTÔT",
+      "popup-body": "Système de raids d'équipes"
+    },
+    "sound-toggle": {
+      "on": "Son",
+      "muted": "Muet"
+    },
+    "news-ticker": "     Bienvenue dans Draft Game !  •  Nouveaux packs en boutique !  •  Combat PvP débloqué !  •  Entraînement disponible !     "
+  },
+  "login": {
+    "tab": {
+      "login": "CONNEXION",
+      "register": "INSCRIPTION"
+    },
+    "title-login": "SE CONNECTER",
+    "title-register": "CRÉER UN COMPTE",
+    "submit-login": "SE CONNECTER",
+    "submit-register": "CRÉER UN COMPTE",
+    "fields": {
+      "username-label": "UTILISATEUR",
+      "username-placeholder": "Nick",
+      "password-label": "MOT DE PASSE",
+      "password-placeholder": "••••••••",
+      "email-label": "E-MAIL",
+      "email-placeholder": "vous@exemple.com",
+      "register-password-hint": "6 caractères minimum"
+    },
+    "remember-me": "Se souvenir de moi",
+    "forgot-password": "Mot de passe oublié ?",
+    "verify": {
+      "eyebrow": "VÉRIFICATION",
+      "title": "CODE E-MAIL",
+      "body": "Un code à 6 chiffres a été envoyé\nà votre e-mail. Saisissez-le ci-dessous.",
+      "code-label": "CODE",
+      "code-placeholder": "000000",
+      "submit": "VÉRIFIER",
+      "resend": "Renvoyer le code",
+      "sending": "Envoi…"
+    }
+  },
+  "menu": {
+    "title": "DRAFT",
+    "subtitle": "BATAILLES TACTIQUES",
+    "studio-credit": "par Codeforje VIO",
+    "studio-name": "Codeforje VIO",
+    "tagline-1": "Stratégie. Tactique. Conquête.",
+    "tagline-2": "Composez votre deck et vainquez le Roi ennemi en combats 4v4",
+    "hint": "Cliquez pour entrer",
+    "version-tag": "v1.0"
+  },
+  "settings": {
+    "title": "PARAMÈTRES",
+    "sections": {
+      "audio": "AUDIO",
+      "gameplay": "JOUABILITÉ",
+      "account": "COMPTE"
+    },
+    "audio": {
+      "sound-label": "SON",
+      "sound-on": "Effets sonores activés",
+      "sound-off": "Effets sonores désactivés",
+      "sliders-pending": "Les curseurs de volume attendent l'API SoundManager."
+    },
+    "gameplay": {
+      "bot-difficulty-label": "DIFFICULTÉ DU BOT"
+    },
+    "account": {
+      "session-label": "SESSION",
+      "session-description": "Se déconnecter du compte actuel",
+      "logout-button": "DÉCONNEXION"
+    },
+    "logout-modal": {
+      "title": "Se déconnecter",
+      "body": "Vous serez déconnecté du royaume. Continuer ?",
+      "confirm": "SE DÉCONNECTER"
+    },
+    "difficulty": {
+      "easy": "Facile",
+      "normal": "Normal",
+      "hard": "Difficile"
+    },
+    "footer": {
+      "credits": "Draft Game v1.0  ·  par Caio Sensini"
+    }
+  }
 }

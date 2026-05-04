@@ -1,3 +1,133 @@
 {
-  "_meta": { "lang": "it" }
+  "_meta": { "lang": "it" },
+  "battle-result": {
+    "title": {
+      "victory": "VITTORIA",
+      "defeat": "SCONFITTA",
+      "draw": "PAREGGIO"
+    },
+    "reasons": {
+      "king-slain": "Re abbattuto",
+      "simultaneous-kings": "Pareggio simultaneo",
+      "timeout": "Tempo scaduto",
+      "forfeit": "Resa"
+    },
+    "opponent-fallback": "Avversario",
+    "sub-meta": "Round {round}  ·  vs {enemy}  ·  {reason}",
+    "rewards-header": "RICOMPENSE",
+    "new-skill": "Nuova abilità: {name}!",
+    "next-match": "PROSSIMA PARTITA",
+    "try-again": "RIPROVA",
+    "play-again": "GIOCA ANCORA",
+    "back-to-lobby": "TORNA ALLA LOBBY",
+    "xp": {
+      "level-current": "LIVELLO {level}",
+      "level-up": "LIVELLO {from}  ›  {to}",
+      "gain-suffix": "+{xp} XP",
+      "fraction": "{current} / {max} XP"
+    }
+  },
+  "lobby": {
+    "central-play-title": "GIOCA",
+    "central-play-subtitle": "Scegli la tua modalità di battaglia",
+    "play-modes-title": "MODALITÀ DI GIOCO",
+    "nav": {
+      "shop": "NEGOZIO",
+      "skills": "ABILITÀ",
+      "training": "TRAINING",
+      "ranking": "CLASSIFICA"
+    },
+    "battlepass": {
+      "line-1": "PASS",
+      "line-2": "DI BATTAGLIA",
+      "rewards-max": "RICOMPENSE MAX"
+    },
+    "offline": {
+      "title": "Attacchi alle squadre",
+      "subtitle": "Offline",
+      "popup-eyebrow": "PROSSIMAMENTE",
+      "popup-body": "Sistema di attacco alle squadre"
+    },
+    "sound-toggle": {
+      "on": "Audio",
+      "muted": "Muto"
+    },
+    "news-ticker": "     Benvenuto in Draft Game!  •  Nuovi pacchetti nel negozio!  •  Battaglia PvP sbloccata!  •  Training disponibile!     "
+  },
+  "login": {
+    "tab": {
+      "login": "LOGIN",
+      "register": "REGISTRA"
+    },
+    "title-login": "ACCEDI",
+    "title-register": "CREA ACCOUNT",
+    "submit-login": "ACCEDI",
+    "submit-register": "CREA ACCOUNT",
+    "fields": {
+      "username-label": "UTENTE",
+      "username-placeholder": "Nick",
+      "password-label": "PASSWORD",
+      "password-placeholder": "••••••••",
+      "email-label": "EMAIL",
+      "email-placeholder": "tu@esempio.com",
+      "register-password-hint": "Almeno 6 caratteri"
+    },
+    "remember-me": "Ricordami",
+    "forgot-password": "Password dimenticata?",
+    "verify": {
+      "eyebrow": "VERIFICA",
+      "title": "CODICE EMAIL",
+      "body": "Un codice di 6 cifre è stato inviato\nalla tua email. Inseriscilo qui sotto.",
+      "code-label": "CODICE",
+      "code-placeholder": "000000",
+      "submit": "VERIFICA",
+      "resend": "Reinvia codice",
+      "sending": "Invio…"
+    }
+  },
+  "menu": {
+    "title": "DRAFT",
+    "subtitle": "BATTAGLIE TATTICHE",
+    "studio-credit": "di Codeforje VIO",
+    "studio-name": "Codeforje VIO",
+    "tagline-1": "Strategia. Tattica. Conquista.",
+    "tagline-2": "Costruisci il tuo mazzo e sconfiggi il Re nemico in battaglie 4v4",
+    "hint": "Clicca per entrare",
+    "version-tag": "v1.0"
+  },
+  "settings": {
+    "title": "IMPOSTAZIONI",
+    "sections": {
+      "audio": "AUDIO",
+      "gameplay": "GIOCO",
+      "account": "ACCOUNT"
+    },
+    "audio": {
+      "sound-label": "AUDIO",
+      "sound-on": "Effetti sonori attivi",
+      "sound-off": "Effetti sonori disattivati",
+      "sliders-pending": "Cursori del volume in attesa dell'API SoundManager."
+    },
+    "gameplay": {
+      "bot-difficulty-label": "DIFFICOLTÀ DEL BOT"
+    },
+    "account": {
+      "session-label": "SESSIONE",
+      "session-description": "Disconnetti dall'account attuale",
+      "logout-button": "ESCI"
+    },
+    "logout-modal": {
+      "title": "Disconnetti",
+      "body": "Sarai disconnesso dal regno. Continuare?",
+      "confirm": "DISCONNETTI"
+    },
+    "difficulty": {
+      "easy": "Facile",
+      "normal": "Normale",
+      "hard": "Difficile"
+    },
+    "footer": {
+      "credits": "Draft Game v1.0  ·  di Caio Sensini"
+    }
+  }
 }

@@ -1,3 +1,133 @@
 {
-  "_meta": { "lang": "en-US" }
+  "_meta": { "lang": "en-US" },
+  "battle-result": {
+    "title": {
+      "victory": "VICTORY",
+      "defeat": "DEFEAT",
+      "draw": "DRAW"
+    },
+    "reasons": {
+      "king-slain": "King slain",
+      "simultaneous-kings": "Simultaneous draw",
+      "timeout": "Time's up",
+      "forfeit": "Forfeit"
+    },
+    "opponent-fallback": "Opponent",
+    "sub-meta": "Round {round}  ·  vs {enemy}  ·  {reason}",
+    "rewards-header": "REWARDS",
+    "new-skill": "New skill: {name}!",
+    "next-match": "NEXT MATCH",
+    "try-again": "TRY AGAIN",
+    "play-again": "PLAY AGAIN",
+    "back-to-lobby": "BACK TO LOBBY",
+    "xp": {
+      "level-current": "LEVEL {level}",
+      "level-up": "LEVEL {from}  ›  {to}",
+      "gain-suffix": "+{xp} XP",
+      "fraction": "{current} / {max} XP"
+    }
+  },
+  "lobby": {
+    "central-play-title": "PLAY",
+    "central-play-subtitle": "Choose your battle mode",
+    "play-modes-title": "GAME MODES",
+    "nav": {
+      "shop": "SHOP",
+      "skills": "SKILLS",
+      "training": "TRAINING",
+      "ranking": "RANKING"
+    },
+    "battlepass": {
+      "line-1": "BATTLE",
+      "line-2": "PASS",
+      "rewards-max": "REWARDS MAX"
+    },
+    "offline": {
+      "title": "Team raids",
+      "subtitle": "Offline",
+      "popup-eyebrow": "COMING SOON",
+      "popup-body": "Team raid system"
+    },
+    "sound-toggle": {
+      "on": "Sound",
+      "muted": "Mute"
+    },
+    "news-ticker": "     Welcome to Draft Game!  •  New packs in the shop!  •  PvP battle unlocked!  •  Training available!     "
+  },
+  "login": {
+    "tab": {
+      "login": "LOGIN",
+      "register": "REGISTER"
+    },
+    "title-login": "SIGN IN",
+    "title-register": "CREATE ACCOUNT",
+    "submit-login": "SIGN IN",
+    "submit-register": "CREATE ACCOUNT",
+    "fields": {
+      "username-label": "USERNAME",
+      "username-placeholder": "Nick",
+      "password-label": "PASSWORD",
+      "password-placeholder": "••••••••",
+      "email-label": "EMAIL",
+      "email-placeholder": "you@example.com",
+      "register-password-hint": "At least 6 characters"
+    },
+    "remember-me": "Remember me",
+    "forgot-password": "Forgot your password?",
+    "verify": {
+      "eyebrow": "VERIFICATION",
+      "title": "EMAIL CODE",
+      "body": "A 6-digit code was sent\nto your email. Enter it below.",
+      "code-label": "CODE",
+      "code-placeholder": "000000",
+      "submit": "VERIFY",
+      "resend": "Resend code",
+      "sending": "Sending…"
+    }
+  },
+  "menu": {
+    "title": "DRAFT",
+    "subtitle": "TACTICAL BATTLES",
+    "studio-credit": "by Codeforje VIO",
+    "studio-name": "Codeforje VIO",
+    "tagline-1": "Strategy. Tactics. Conquest.",
+    "tagline-2": "Build your deck and defeat the enemy King in 4v4 battles",
+    "hint": "Click to enter",
+    "version-tag": "v1.0"
+  },
+  "settings": {
+    "title": "SETTINGS",
+    "sections": {
+      "audio": "AUDIO",
+      "gameplay": "GAMEPLAY",
+      "account": "ACCOUNT"
+    },
+    "audio": {
+      "sound-label": "SOUND",
+      "sound-on": "Sound effects on",
+      "sound-off": "Sound effects off",
+      "sliders-pending": "Volume sliders await SoundManager API."
+    },
+    "gameplay": {
+      "bot-difficulty-label": "BOT DIFFICULTY"
+    },
+    "account": {
+      "session-label": "SESSION",
+      "session-description": "Sign out of current account",
+      "logout-button": "SIGN OUT"
+    },
+    "logout-modal": {
+      "title": "Sign out",
+      "body": "You will be disconnected from the realm. Continue?",
+      "confirm": "SIGN OUT"
+    },
+    "difficulty": {
+      "easy": "Easy",
+      "normal": "Normal",
+      "hard": "Hard"
+    },
+    "footer": {
+      "credits": "Draft Game v1.0  ·  by Caio Sensini"
+    }
+  }
 }

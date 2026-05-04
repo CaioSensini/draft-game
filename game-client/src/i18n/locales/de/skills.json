@@ -1,3 +1,339 @@
 {
-  "_meta": { "lang": "de" }
+  "_meta": { "lang": "de" },
+  "roles": {
+    "specialist": "Spezialist",
+    "warrior": "Krieger",
+    "executor": "Henker",
+    "king": "König"
+  },
+  "passives": {
+    "specialist-name": "Verbrennung",
+    "specialist-text": "Ziele, die von Spezialisten-Skills getroffen werden, erhalten -30% Heilung für 2 Runden.",
+    "warrior-name": "Beschützer",
+    "warrior-text": "Verbündete, die dem Krieger benachbart sind, erleiden -15% Schaden.",
+    "executor-name": "Isoliert",
+    "executor-text": "Wenn keine Verbündeten benachbart sind, verursacht der Henker +20% Schaden und erleidet +10% Schaden.",
+    "king-name": "Königlicher Schutz",
+    "king-text": "Der König erleidet -20% von allem Schaden, einschließlich True Damage. Könige sind immun gegen direkte Heilung — nur Regen und Selbst-Skills heilen sie."
+  },
+  "ls_a1": {
+    "name": "Feuerball",
+    "description": "28 Schaden in 2x2-Bereich auf gegnerischem Feld. Wendet Verbrennung 6/Runde für 2 Runden an.",
+    "long-description": "Der Spezialist schleudert eine flammende Sphäre auf das gegnerische Feld und verursacht 28 physischen Schaden in einer quadratischen 2x2-Fläche. Jedes betroffene Ziel erhält Verbrennung, einen Feuer-DoT, der 6 Schaden pro Runde für 2 Runden verursacht. Die Klassen-Passive Verbrennung verstärkt das Combo: getroffene Ziele erhalten -30% Heilung für 2 Runden. Standard-Eröffnungs-Skill, um Gruppierungen zu fragmentieren."
+  },
+  "ls_a2": {
+    "name": "Mana-Regen",
+    "description": "22 Schaden in 2 Ticks (11+11) auf vertikaler 3-Felder-Linie auf gegnerischem Feld.",
+    "long-description": "Der Spezialist beschwört einen Regen magischer Energie, der eine vertikale 3-Felder-Linie durchquert und dasselbe Ziel zweimal hintereinander mit 11 Schaden pro Tick (insgesamt 22) trifft. Jeder Tick wird einzeln aufgelöst — Schilde und Ausweichmanöver absorbieren nur den entsprechenden Treffer. Schaden pro Tick durchläuft die DEF-Mitigation normal."
+  },
+  "ls_a3": {
+    "name": "Reinigender Strahl",
+    "description": "25 Schaden + Purge bei Feinden auf der Linie. Getroffene Verbündete erhalten Schild 10.",
+    "long-description": "Ein Lichtstrahl durchquert die gesamte Arena in einer horizontalen 6-Felder-Linie, verursacht 25 Schaden bei jedem Feind auf seiner Bahn und wendet Purge an — entfernt alle aktiven Buffs der getroffenen Ziele. Verbündete auf der Bahn erhalten 10 Schild und keinen Schaden. Vielseitiger Skill, um Buff-stack-Kompositionen zu annullieren."
+  },
+  "ls_a4": {
+    "name": "Zentrale Explosion",
+    "description": "1. Anwendung: markiert Ziel (nicht entfernbar). 2. Anwendung auf Markiertem: 50 Schaden + 50% extra wenn Debuff. Ignoriert Ausweichen und Immunitäten.",
+    "long-description": "Skill mit zwei Phasen. Erste Anwendung markiert einen Feind mit Detonationsmarke — eine permanente Marke, die NICHT durch Purge, Cleanse oder Immunität entfernt werden kann. Zweite Anwendung detoniert die Marke für 50 direkten Schaden. Wenn das Ziel beim Detonieren einen aktiven Debuff hatte, wird die Explosion um +50% verstärkt (75 Schaden). Die Detonation ignoriert Ausweichen, Schilde und Immunitäten — garantierter Schaden."
+  },
+  "ls_a5": {
+    "name": "Verlangsamungs-Orb",
+    "description": "12 Schaden in 3x3-Bereich. def_down 25% + mov_down 1 für 1 Runde.",
+    "long-description": "Der Spezialist projiziert einen Gravitations-Orb, der in einem 3x3-Bereich detoniert, 12 Schaden verursacht und zwei Debuffs auf alle getroffenen Ziele anwendet: def_down 25% und mov_down 1 für 1 Runde. Defensiver Setup-Skill: bereitet Boden für Angreifer des Teams, Ziele mit reduziertem DEF zu erledigen."
+  },
+  "ls_a6": {
+    "name": "Starre Ketten",
+    "description": "10 Schaden in +-Form (5 Felder). Snared Feinde für 1 Runde.",
+    "long-description": "Magische Ketten brechen aus dem Boden in Kreuzmuster (5 Felder: Zentrum + 4 angrenzende), verursachen 10 Schaden bei jedem getroffenen Feind und wenden Snare für 1 Runde an. Snare verhindert Bewegung, aber NICHT Skill-Nutzung — anders als Stun. Positionelle Kontrolle: blockiert Feinde in ungünstigen Positionen für die Bereichsangriffe des Teams."
+  },
+  "ls_a7": {
+    "name": "Nebel",
+    "description": "Gesamte gegnerische Arena. Verbündete: def_up 15%. Feinde: def_down 15% + erhaltene Heilung -30% für 2 Runden.",
+    "long-description": "Der Spezialist beschwört einen dichten Nebel, der die gesamte Arena 2 Runden lang bedeckt. Verbündete im Nebel erhalten +15% DEF. Feinde im Nebel erhalten -15% DEF und -30% erhaltene Heilung (alle Quellen — direkter Heal, Regen, Lifesteal). Feld-Skill, der das Match-Tempo verändert ohne Schaden."
+  },
+  "ls_a8": {
+    "name": "Einfrieren",
+    "description": "18 Schaden + Stun 1R + def_down 20% für 1 Runde.",
+    "long-description": "Ein konzentrierter Eis-Impuls trifft ein einzelnes Ziel, verursacht 18 Schaden und wendet Stun für 1 Runde + def_down 20% für 1 Runde an. Stun verhindert sowohl Bewegung ALS AUCH Skill-Nutzung — die stärkste Kontrolle im Spiel. Pick-Skill: isoliert ein Prioritätsziel."
+  },
+  "ls_d1": {
+    "name": "Höchste Heilung",
+    "description": "Heilt 35 HP auf 1 Verbündeten (kein König).",
+    "long-description": "Der Spezialist kanalisiert eine Welle restaurativer Energie auf einen einzelnen Verbündeten und gibt sofort 35 HP zurück. Heilung beeinflusst Könige NICHT — sie sind immun gegen direkte Heilung gemäß der globalen Royal Immunity-Regel. Unterliegt dem Heal Cap und ist um 30% reduziert, wenn das Ziel unter Verbrennung steht."
+  },
+  "ls_d2": {
+    "name": "Teilweise Wiedergeburt",
+    "description": "Latente Wiederbelebung (2 Runden) auf Verbündetem mit niedrigster HP (kein König). Wiederbelebt mit 25 HP wenn stirbt. Max 1x pro Verbündetem pro Match.",
+    "long-description": "Der Spezialist markiert den Verbündeten mit niedrigster HP (außer König) mit einem latenten Wiederbelebungs-Buffer, der 2 Runden anhält. Stirbt der Verbündete in diesem Fenster, wird er sofort mit 25 HP auf demselben Feld wiederbelebt, mit allen Debuffs und DoTs gelöscht. Jeder Verbündete kann pro Match nur einmal wiederbelebt werden."
+  },
+  "ls_d3": {
+    "name": "Heilfeld",
+    "description": "Heilt 12 HP + Schild 10 (1R) in 3x3-Bereich. König erhält nur Schild.",
+    "long-description": "Der Spezialist erschafft ein Lichtheilungsfeld in einem 3x3-Bereich, stellt 12 HP wieder her und wendet 10 Schild (1 Runde) auf alle Verbündeten im Bereich an. Könige erhalten NUR den Schild — keine Heilung. Schild ist auf 100 HP gesamt akkumuliert pro Ziel begrenzt."
+  },
+  "ls_d4": {
+    "name": "Schutz",
+    "description": "+-Form (5 Felder). Entfernt alle Verbündeten-Debuffs + Immunität gegen neue Debuffs für 1 Runde.",
+    "long-description": "Bereich-Cleanse in Kreuzform (Zentrum + 4 angrenzend), entfernt alle aktiven Debuffs der betroffenen Verbündeten (bleed, burn, poison, stun, snare, silence, def_down, mov_down, atk_down, Marken) und gewährt totale Immunität gegen neue Debuffs für 1 Runde. Kein Schaden, keine Heilung — rein eine Antwort auf schwere Kontroll- und DoT-Setups."
+  },
+  "ls_d5": {
+    "name": "Kontinuierliches Heilfeld",
+    "description": "Regen 6 HP/Runde für 2 Runden in 3x3-Bereich. König erhält nicht. Abgebrochen wenn Verbündeter Schaden nimmt.",
+    "long-description": "Ein stationäres Regen-Feld bedeckt einen 3x3-Bereich für 2 Runden. Jeder Verbündete im Inneren erhält Regen von 6 HP pro Runde — Könige erhalten nicht. Wenn der Verbündete IRGENDEINEN Schaden im Feld nimmt, wird Regen für diesen Verbündeten abgebrochen. Post-Kampf-Sustain."
+  },
+  "ls_d6": {
+    "name": "Ausweichen",
+    "description": "Weicht dem ersten direkten Angriff in der nächsten Runde komplett aus.",
+    "long-description": "Der Spezialist nimmt eine ausweichende Haltung ein und weicht dem nächsten erhaltenen direkten Angriff in der nächsten Runde komplett aus. Ausweichen absorbiert nur einen Treffer, dann wird es verbraucht — mehrere Angreifer können es noch in Folge brechen. Karte geteilt zwischen Spezialist, Henker und König."
+  },
+  "ls_d7": {
+    "name": "Total-Block",
+    "description": "Schild 60. Hält bis zerbrochen oder 2 Runden.",
+    "long-description": "Gibt dem Caster einen 60 HP Schild, der bis zur vollständigen Konsumierung oder Ablauf in 2 Runden besteht. Schild unterliegt dem globalen Shield Cap von 100 HP akkumuliert pro Einheit. Karte geteilt zwischen Spezialist und Henker. Schild absorbiert Schaden vor HP, aber DoTs umgehen Schild und treffen HP direkt."
+  },
+  "ls_d8": {
+    "name": "Aura des Schutzes",
+    "description": "Schild 12 + atk_up 10% für 1 Runde in Diamant-r2-Bereich.",
+    "long-description": "Eine schützende Aura bedeckt einen Diamantbereich mit Radius 2 (~13 Felder) um den Caster. Alle Verbündeten im Bereich erhalten 12 Schild (Shield Cap 100) und atk_up 10% für 1 Runde. Offensiv-defensiver Skill, der eine koordinierte Angriffsrunde vorbereitet: das ganze Team tritt mit mehr Sustain und mehr Schaden ein."
+  },
+  "lw_a1": {
+    "name": "Titanen-Kollision",
+    "description": "22 Schaden in vertikalem 6x2-Rechteck + Push 1 Feld. Wenn blockiert: Snare 1R.",
+    "long-description": "Der Krieger stürmt voran wie eine bewegliche Mauer, trifft alle Feinde in einem vertikalen 6x2-Rechteck vorne, verursacht 22 Schaden und stößt sie 1 Feld zurück. Wird der Push eines Ziels von Mauer oder anderem Feind blockiert, erhält dieses Ziel Snare für 1 Runde. Aggressive Eröffnung, die eine ganze Feindlinie repositioniert."
+  },
+  "lw_a2": {
+    "name": "Aufschlag",
+    "description": "28 Schaden in 3x3-Bereich. def_down 18% + mov_down 1 für 1 Runde.",
+    "long-description": "Ein schwerer Aufprall detoniert in einem 3x3-Bereich um das Ziel, verursacht 28 Schaden bei allen Getroffenen und wendet zwei Debuffs für 1 Runde an: def_down 18% und mov_down 1. Koordinierter Druck: schwächt die Verteidigung einer Gruppierung und limitiert den Rückzug."
+  },
+  "lw_a3": {
+    "name": "Verheerender Schlag",
+    "description": "30 Schaden in 2x2-Bereich. Entfernt Buffs und bricht Schilde der Getroffenen.",
+    "long-description": "Der Krieger versetzt einen kolossalen Schlag in einem 2x2-Bereich, verursacht 30 Schaden und wendet Purge auf alle getroffenen Ziele an: entfernt alle aktiven Buffs und bricht Schilde komplett, ignoriert den Shield Cap. Exzellenter Anti-Bunker-Skill — demontiert Total-Block, Aura des Schutzes, Beschützer-Schild auf einen Schlag."
+  },
+  "lw_a4": {
+    "name": "Brutaler Sturm",
+    "description": "24 Schaden in vertikaler 3-Felder-Linie. Mittlere Linie: Push 1 + Snare 1R wenn blockiert. Obere/untere Linien: senkrecht gestoßen.",
+    "long-description": "Der Krieger stürmt in gerader vertikaler Linie von 3 Feldern, verursacht 24 Schaden bei allen Getroffenen. Push wird pro Linie geteilt: die mittlere Linie wird 1 Feld in Sturmrichtung gestoßen, während obere und untere Linien senkrecht gestoßen werden, um einen Korridor zu öffnen."
+  },
+  "lw_a5": {
+    "name": "Spott",
+    "description": "10 Schaden + def_down 15% + silence_defense 1R bei 1 Feind.",
+    "long-description": "Der Krieger spottet einen einzelnen Feind, verursacht 10 Schaden und wendet zwei Debuffs an: def_down 15% für 1 Runde und silence_defense für 1 Runde (verhindert Nutzung defensiver Skills). Schwerer Bait-Skill: zwingt einen Spezialisten oder Henker zur Hinrichtung ohne Ausweichen, Total-Block oder Reflektion nutzen zu können."
+  },
+  "lw_a6": {
+    "name": "Lebende Mauer",
+    "description": "Vertikale 2-Felder-Mauer auf gegnerischem Feld dauert 2R. Angrenzende Feinde: def_down 15%, mov_down 1, 3 Schaden/Runde.",
+    "long-description": "Der Krieger beschwört eine lebende Mauer von 2 vertikalen Feldern auf dem gegnerischen Feld, die 2 Runden bestehen bleibt. An die Mauer angrenzende Feinde erhalten def_down 15%, mov_down 1 und nehmen 3 Schaden pro Runde. Die Mauer wird automatisch nach 2 Runden ODER von jedem atk1-Skill zerstört."
+  },
+  "lw_a7": {
+    "name": "Sturm",
+    "description": "12 Schaden in vertikaler 3-Felder-Linie. def_down 15% + mov_down 1 für 1 Runde.",
+    "long-description": "Leichtere Version von Brutaler Sturm: der Krieger stürmt in vertikaler Linie von 3 Feldern, verursacht 12 Schaden bei allen Getroffenen und wendet def_down 15% und mov_down 1 für 1 Runde an. Kein Push, kein Snare. Anhaltender Druck und Pick-Skill."
+  },
+  "lw_a8": {
+    "name": "Tote-Mauer-Gefängnis",
+    "description": "12 Schaden im Zentrum + 8 temporäre Mauern drumherum. Feinde drinnen: Snare 2R. Mauern brechen mit jedem atk1.",
+    "long-description": "Der Krieger erschafft ein Tote-Mauer-Gefängnis: verursacht 12 Schaden auf einem zentralen Feld und errichtet 8 Mauern, die einen Ring drumherum bilden (Radius 1). Feinde im Gefängnis erhalten Snare für 2 Runden — können sich nicht bewegen, aber Skills nutzen. Mauern sind zerbrechlich."
+  },
+  "lw_d1": {
+    "name": "Beschützer-Schild",
+    "description": "Bewegt bis zu 2 Felder + erschafft vertikale 3-Felder-Schildmauer voraus. Verbündete im 6-Felder-Rechteck dahinter: -50% Schaden für 1 Runde.",
+    "long-description": "Der Krieger kann sich bis zu 2 Felder vor dem Skill-Cast bewegen (preMovement), dann erschafft er eine 3-Felder-Schildmauer voraus. Alle Verbündeten in einem 6x2-Rechteck hinter der Mauer erhalten -50% Schaden für 1 Runde. Schwerer defensiver Skill — bereitet das Team auf einen Absorptionsturn vor."
+  },
+  "lw_d2": {
+    "name": "Wächter",
+    "description": "60% des vom Verbündeten erhaltenen Schadens werden zum Krieger umgeleitet, im Krieger um 30% reduziert (1 Runde).",
+    "long-description": "Der Krieger markiert den Verbündeten mit niedrigster HP (kein König) als geschützt. 1 Runde lang werden 60% jedes Schadens, den dieser Verbündete erhält, zum Krieger umgeleitet, und dieser umgeleitete Schaden durchläuft eine zusätzliche Reduktion von 30% am Krieger. Rettungs-Skill gegen Burst."
+  },
+  "lw_d3": {
+    "name": "Absolute Resistenz",
+    "description": "Krieger + Verbündeter dahinter: -65% Schaden für 1 Runde. Kann 1 Feld vorher bewegen.",
+    "long-description": "Der Krieger kann sich bis zu 1 Feld vor dem Cast bewegen (preMovement), dann nimmt er eine absolute Resistenzhaltung ein. 1 Runde lang erhalten er und der Verbündete unmittelbar dahinter -65% von allem Schaden (einschließlich True Damage). Schwerer Absorptions-Skill — überlebt meist Brutalen Sturm, Feuerball und sogar Todesmarke-Burst."
+  },
+  "lw_d4": {
+    "name": "Unerschütterliche Festung",
+    "description": "-80% Schaden erhalten für 1 Runde. Kann sich in nächster Bewegungsrunde nicht bewegen.",
+    "long-description": "Der Krieger nimmt die Form einer lebenden Festung an. 1 Runde lang erhält er -80% von allem Schaden (einschließlich True Damage). Die Kosten: er KANN sich in der nächsten Bewegungsrunde NICHT bewegen, an Ort und Stelle gefangen. Karte geteilt zwischen Krieger und König."
+  },
+  "lw_d5": {
+    "name": "Gruppen-Schild",
+    "description": "Schild 15 auf alle Verbündeten für 2 Runden.",
+    "long-description": "Der Krieger verteilt einen kollektiven Schild: alle 4 Verbündeten (einschließlich er selbst und König) erhalten 15 Schild, der 2 Runden anhält oder bis er gebrochen wird. Jeder Schild ist unabhängig — Könige erhalten normal, anders als bei Heilungen. Unterliegt dem Shield Cap von 100 HP."
+  },
+  "lw_d6": {
+    "name": "Defensive Haltung",
+    "description": "Verbündete in 3x3 herum: -25% Schaden für 1 Runde.",
+    "long-description": "Der Krieger nimmt eine defensive Haltung ein. Verbündete in einem 3x3-Bereich um ihn (einschließlich er selbst) erhalten -25% Schaden für 1 Runde. Kein Schild, keine Heilung — rein eine Schadensreduktion. Kombiniert mit der Beschützer-Passive (-15%) für effektive -40% bei benachbarten Verbündeten."
+  },
+  "lw_d7": {
+    "name": "Vorrücken",
+    "description": "Bewegt Verbündete in 4x4 1 Feld vorwärts. +1 mov + -10% Schaden + +10% ATK für 1 Runde.",
+    "long-description": "Der Krieger führt das Vorrücken des Teams an. Alle Verbündeten in einem 4x4-Quadranten um ihn bewegen sich 1 Feld vorwärts (Richtung gegnerisches Feld) und erhalten drei Buffs für 1 Runde: +1 mov, -10% erhaltener Schaden und +10% ATK. Offensiv-koordinierter Skill."
+  },
+  "lw_d8": {
+    "name": "Rückzug",
+    "description": "Bewegt alle Verbündeten 1 Feld rückwärts in 4x4. +1 mov nächste Runde + -15% Schaden für 1 Runde.",
+    "long-description": "Der Krieger befiehlt taktischen Rückzug. Alle Verbündeten in einem 4x4-Quadranten um ihn bewegen sich 1 Feld rückwärts (Richtung eigenes Feld) und erhalten +1 mov in der nächsten Runde und -15% Schaden für 1 Runde. Rein defensiv-repositionaler Skill."
+  },
+  "le_a1": {
+    "name": "Tödlicher Schnitt",
+    "description": "45 Schaden + entfernt Debuffs des Ziels. Wenn Bleed: +50% Schaden (67 gesamt).",
+    "long-description": "Der Henker versetzt einen präzisen, tödlichen Schnitt auf ein einzelnes Ziel, verursacht 45 direkten Schaden und wendet Cleanse auf das Ziel an. Hatte das Ziel Bleed beim Schnitt aktiv, wird der Schaden um +50% verstärkt (67 gesamt). Schwerer Hinrichtungs-Skill — belohnt Setups mit vorhergehendem Bleed."
+  },
+  "le_a2": {
+    "name": "Klingensturm",
+    "description": "26 Schaden in 3x3-Bereich. Wenn Ziele Bleed hatten: +50% Schaden auf sie.",
+    "long-description": "Der Henker entfesselt einen Klingensturm in einem 3x3-Bereich, verursacht 26 Schaden bei allen getroffenen Feinden. Jedes Ziel erhält +50% Schaden, wenn es zum Hit-Zeitpunkt unter Bleed war. Cleanup-Skill in der Fläche, der mit jeder Bleed-Quelle des Teams kombiniert."
+  },
+  "le_a3": {
+    "name": "Präzisionsschuss",
+    "description": "30 True Damage (ignoriert DEF). Wenn Ziel Bleed hatte: ignoriert auch Schilde.",
+    "long-description": "Der Henker schießt ein tödliches Präzisionsgeschoss auf ein einzelnes Ziel, verursacht 30 True Damage — reiner Schaden, der jede DEF-Mitigation, Passives und prozentuale Schadensreduktionen IGNORIERT. Hatte das Ziel beim Schuss Bleed aktiv, IGNORIERT der Schuss auch alle aktiven Schilde. Chirurgischer Hinrichtungs-Skill."
+  },
+  "le_a4": {
+    "name": "Präziser Schnitt",
+    "description": "22 Schaden in 2 horizontalen Feldern + Purge.",
+    "long-description": "Der Henker versetzt zwei aufeinanderfolgende Schnitte, die eine horizontale 2-Felder-Linie treffen, verursacht 22 Schaden und wendet Purge auf alle Getroffenen an. Anti-Buff-Skill: annulliert Kompositionen, die auf Buff-Sustain basieren. Klassische Synergie mit Königlichem Stoß für Massen-Purge."
+  },
+  "le_a5": {
+    "name": "Blutender Schnitt",
+    "description": "8 Schaden + Bleed 4/Runde für 3R in 2 horizontalen Feldern. Stapelbar bei erneuter Anwendung.",
+    "long-description": "Der Henker versetzt einen streifenden Schnitt auf einer horizontalen 2-Felder-Linie, verursacht 8 anfänglichen Schaden und wendet Bleed an: 4 Schaden pro Runde für 3 Runden (12 gesamt). Bleed ist physischer DoT, der Schilde ignoriert. Wird Blutender Schnitt erneut auf bereits blutendem Ziel angewendet, STAPELT sich der Bleed."
+  },
+  "le_a6": {
+    "name": "Stachelbombe",
+    "description": "10 Schaden + Bleed 5/Runde für 2R in Diamant r2.",
+    "long-description": "Der Henker wirft eine Stachelbombe, die in Diamantform mit Radius 2 (~13 Felder) detoniert, verursacht 10 anfänglichen Schaden bei allen Getroffenen und wendet Bleed von 5 pro Runde für 2 Runden an (10 DoT gesamt). Breite Abdeckung für Bleed auf mehreren Zielen."
+  },
+  "le_a7": {
+    "name": "Todesmarke",
+    "description": "12 Schaden in vertikalen 8 Feldern. Entfernt Schilde (heilt 20% von ihnen als HP). Bleed 8/Runde für 2R.",
+    "long-description": "Der Henker kanalisiert Todesmarke in einem vertikalen rechteckigen Bereich von 8 Feldern (4 tief × 2 breit). Verursacht 12 Schaden bei allen Getroffenen, ENTFERNT alle Schilde der Ziele (und heilt den Henker um 20% des entfernten Schilds als HP) und wendet Bleed von 8 pro Runde für 2 Runden an (16 DoT)."
+  },
+  "le_a8": {
+    "name": "Versteckte Falle",
+    "description": "Bewaffnet ein Feld (nicht auf besetztem Feld). Beim Betreten: 15 Schaden + Snare 1R + Bleed 4/Runde für 3R.",
+    "long-description": "Der Henker pflanzt eine unsichtbare Falle auf ein leeres Feld. Die Falle bleibt bis zur Aktivierung. Wenn EIN Feind in das Feld tritt, detoniert sie: verursacht 15 Schaden, wendet Snare für 1 Runde und Bleed 4 pro Runde für 3 Runden an. Zoning-Skill."
+  },
+  "le_d1": {
+    "name": "Reflektieren",
+    "description": "-25% Schaden erhalten + reflektiert das Mitigierte zum Angreifer in der nächsten Runde.",
+    "long-description": "1 Runde lang erhält der Henker -25% von allem Schaden und reflektiert GENAU den mitigierten Wert zurück zum Angreifer. Beispiel: Angriff von 40 → erhält 30, Angreifer erhält 10 Reflect. Mehrere Angreifer generieren mehrere Reflects, jeder proportional zum Originalschaden. Perfekter Bait gegen aggressive Spezialisten und Henker."
+  },
+  "le_d2": {
+    "name": "Adrenalin",
+    "description": "+25% ATK für 2 Runden. Am Ende: verliert 15% Max-HP (durch Schild blockierbar).",
+    "long-description": "Der Henker betritt extremen Adrenalin-Modus: erhält +25% ATK für 2 Runden. Am ENDE der zweiten Runde erleidet er 15% der Max-HP als Backlash-Schaden (durch aktiven Schild blockierbar). Risiko/Belohnungs-Skill — produziert zwei Runden extremen Bursts, kostet aber HP am Ende."
+  },
+  "le_d3": {
+    "name": "Doppelangriff",
+    "description": "Nächste Runde: 2 atk-Skills, 0 def. Cooldown: 2 Runden (nicht hintereinander nutzbar).",
+    "long-description": "1 Runde lang (die nächste) kann der Henker 2 Angriffs-Skills statt 1 nutzen, verliert aber die Möglichkeit, in dieser Runde defensive Skills zu nutzen. Cooldown von 2 Runden. Druckspitzen-Skill — besonders kombiniert mit Adrenalin und vorherigen Bleeds."
+  },
+  "le_d4": {
+    "name": "Teleport",
+    "description": "Teleportiert bis zu 5 Felder. Verbraucht nächste Bewegungsrunde.",
+    "long-description": "Der Henker teleportiert sich sofort auf ein beliebiges Feld in Reichweite 5, IGNORIERT Hindernisse, Mauern und Einheiten unterwegs. Die Kosten: verbraucht die nächste Bewegungsrunde. Extreme taktische Mobilität: nähert sich schnell, um isolierte Ziele zu erledigen oder einer Belagerung zu entkommen."
+  },
+  "le_d5": {
+    "name": "Schneller Rückzug",
+    "description": "Bewegt bis zu 2 Felder rückwärts + Schild 20 für 1 Runde.",
+    "long-description": "Der Henker zieht sich bis zu 2 Felder zurück (nur in Richtung eigenes Feld) und gewinnt 20 Schild für 1 Runde. Bewegung und Schild sind Teil derselben Aktion — kann nicht vorwärts oder seitlich bewegen. Leichter Flucht-Skill für unmittelbaren Druck."
+  },
+  "le_d6": {
+    "name": "Ausweichen",
+    "description": "Weicht dem ersten direkten Angriff in der nächsten Runde komplett aus.",
+    "long-description": "Der Henker nimmt eine ausweichende Haltung ein und weicht dem nächsten erhaltenen direkten Angriff in der nächsten Runde komplett aus. Ausweichen absorbiert nur einen Treffer. Karte geteilt zwischen Spezialist, Henker und König."
+  },
+  "le_d7": {
+    "name": "Total-Block",
+    "description": "Schild 60. Hält bis zerbrochen oder 2 Runden.",
+    "long-description": "Gibt dem Henker einen 60 HP Schild, der bis zur vollständigen Konsumierung oder Ablauf in 2 Runden besteht. Schild unterliegt dem globalen Shield Cap von 100 HP. Karte geteilt zwischen Spezialist und Henker. Für den Henker wertvoller, da die Isoliert-Passive verwundbar wird, wenn er sich von Verbündeten entfernt."
+  },
+  "le_d8": {
+    "name": "Schild",
+    "description": "Schild 25 für 1 Runde.",
+    "long-description": "Gibt dem Henker einen schnellen 25 HP Schild für 1 Runde. Unterliegt dem Shield Cap von 100 HP. Leichter und billiger als Total-Block — nützlich in Rotationen, wo man einen einzelnen Treffer absorbieren will, ohne 2 Runden aktiven Schild zu binden."
+  },
+  "lk_a1": {
+    "name": "Königlicher Schlag",
+    "description": "25 Schaden in 2 horizontalen Feldern + self Schild 15 für 2 Runden.",
+    "long-description": "Der König versetzt einen königlichen Schlag in horizontaler 2-Felder-Linie voraus, verursacht 25 Schaden bei allen Getroffenen. In derselben Runde erhält er 15 self Schild für 2 Runden (Shield Cap 100). Hybrider Angriffs-Verteidigungs-Druck — der König hält Frontdruck, während er sich erhält."
+  },
+  "lk_a2": {
+    "name": "Königlicher Tritt",
+    "description": "27 Schaden in 2 vertikalen Feldern + self Schild 15 für 2 Runden.",
+    "long-description": "Der König versetzt einen königlichen Tritt in vertikaler 2-Felder-Linie voraus, verursacht 27 Schaden bei allen getroffenen Feinden. Erhält 15 self Schild für 2 Runden. Vertikale Variante des Königlichen Schlags — taktische Orientierungswahl je nach Feindformation."
+  },
+  "lk_a3": {
+    "name": "Schlag-Combo",
+    "description": "15 Schaden in 3x2 + Lifesteal 30%. Ausnahme zur Königs-Immunitätsregel (Selbst-Heal vom eigenen Skill).",
+    "long-description": "Der König entfesselt eine Schlag-Combo, verursacht 15 Schaden in einem 3x2-Bereich voraus. Erhält 30% des verursachten Schadens als Heilung zurück (Lifesteal) — explizite Ausnahme zur Royal Immunity-Regel, da der Skill self-cast ist. Trifft 4 Ziele zu je 15 (60 gesamt), erholt sich um 18 HP."
+  },
+  "lk_a4": {
+    "name": "Königliches Reich",
+    "description": "18 Schaden in 3x3 + self Schild = 25% des verursachten Gesamtschadens für 1 Runde.",
+    "long-description": "Der König setzt sein Reich in einem 3x3-Bereich durch, verursacht 18 Schaden bei jedem getroffenen Ziel (bis zu 9 Ziele). Nach Berechnung des Gesamtschadens erhält er 25% dieses Werts als self Schild für 1 Runde. Skalierender offensiv-defensiver Skill — je mehr Feinde gefangen, desto mehr Schild."
+  },
+  "lk_a5": {
+    "name": "Königlicher Stoß",
+    "description": "12 Schaden in vertikaler 3-Felder-Linie bis Karten-Ende + Push bis zu 3 Felder.",
+    "long-description": "Der König stößt mit brutaler Kraft in vertikaler Linie vom König bis zum Karten-Ende (Breite 3 Felder). Verursacht 12 Schaden bei allen Feinden auf dem Weg und stößt sie bis zu 3 Felder zurück. Massiver Zoning-Skill — räumt die gesamte Front auf."
+  },
+  "lk_a6": {
+    "name": "Gegenangriff",
+    "description": "15 Schaden in 3x3 + Push 1 Feld vom Zentrum weg. Zentrum bewegt sich nicht.",
+    "long-description": "Der König detoniert einen Gegenangriff in einem 3x3-Bereich um ihn (er ist das Zentrum). Verursacht 15 Schaden bei allen Feinden im Bereich und stößt jeden 1 Feld in radialer Richtung (vom Zentrum weg). Der König (Zentrum) bewegt sich NICHT. Adjacency-Cleanup-Skill."
+  },
+  "lk_a7": {
+    "name": "Einschüchterung",
+    "description": "10 Schaden + teleportiert Ziel und benachbarte zum gewählten Ort. Nicht an Rändern platzierbar.",
+    "long-description": "Der König schüchtert ein Ziel ein: verursacht 10 Schaden und teleportiert das Ziel PLUS alle ihm benachbarten Feinde (bis zu 5 Einheiten) an einen vom Caster gewählten Ort (auf dem Karten-Feld, außer Ränder). Extremer offensiver Reposition-Skill."
+  },
+  "lk_a8": {
+    "name": "Entwaffnen",
+    "description": "6 Schaden + bricht atk-Skill des Ziels in der Runde + silence_attack 1R. Beeinflusst keine Könige.",
+    "long-description": "Der König entwaffnet einen Feind: verursacht 6 Schaden und BRICHT sofort jeden Angriffs-Skill ab, den das Ziel für diese Runde gewählt hatte (der Skill wird verworfen, ohne Kosten, ohne Effekt). Wendet zusätzlich silence_attack für 1 Runde an. Chirurgischer Konter-Skill."
+  },
+  "lk_d1": {
+    "name": "Schatten-Flucht",
+    "description": "Teleportiert irgendwo in die Verbündeten-Hälfte. König wird untargetable durch Single-Target-Skills bis er Schaden nimmt oder bewegt.",
+    "long-description": "Der König wird kurz unsichtbar und teleportiert auf jedes Feld des eigenen Felds (Verbündeten-Hälfte der Karte). Nach dem Teleport wird er UNTARGETABLE durch Single-Target-Skills. Die Unsichtbarkeit bricht, wenn der König JEDEN Schaden nimmt oder freiwillig bewegt. Höchster Evasions-Skill."
+  },
+  "lk_d2": {
+    "name": "Königliche Erholung",
+    "description": "Erholt 20% Max-HP in 2 Runden (10% jetzt, 10% nächste Runde wenn nicht verletzt). Ausnahme zur Heal-Immunität des Königs.",
+    "long-description": "Der König kanalisiert Königliche Erholung: erhält 10% der Max-HP als Heilung sofort (diese Runde) und weitere 10% Max-HP in der nächsten Runde, WENN NICHT verletzt in dieser Runde. Maximum: 20% Max-HP. Explizite Ausnahme zur Royal Healing-Immunität — der Skill ist self-cast."
+  },
+  "lk_d3": {
+    "name": "Königlicher Schatten",
+    "description": "Erschafft 2 Klone in leeren Feldern. König kann mit einem Position tauschen. Klone halten 2 Runden. Feinde wissen nicht, welcher echt ist.",
+    "long-description": "Der König erschafft 2 visuelle Klone auf nahegelegenen leeren Feldern. Klone halten 2 Runden und sind visuell identisch mit dem echten König. Feinde wissen nicht, welcher der echte ist, bis sie angreifen — Klone absorbieren den Treffer und verschwinden, wenn getroffen. Höchster Verschleierungs-Skill."
+  },
+  "lk_d4": {
+    "name": "Überlebensgeist",
+    "description": "Wenn HP ≤ 50%: +15% Max-HP + Schild 10% Max-HP für 1 Runde. Wenn HP > 50%: +10% Max-HP.",
+    "long-description": "Adaptiver Überlebens-Skill. Wenn der König HP ≤ 50% bei Nutzung hat, gewinnt er +15% Max-HP (permanente Erhöhung) PLUS Schild äquivalent zu 10% Max-HP für 1 Runde. Wenn der König HP > 50% hat, gewinnt er nur +10% Max-HP (kein Schild). Wendepunkt-Skill."
+  },
+  "lk_d5": {
+    "name": "Selbst-Schild",
+    "description": "Schild 30 für 2 Runden.",
+    "long-description": "Der König gibt sich selbst einen 30 HP Schild für 2 Runden (Shield Cap 100). Hält bis vollständig verbraucht oder Ablauf. Generischer Erhaltungs-Skill des Königs — zusammen mit Königlichem Schlag und Königlichem Tritt eine der Hauptweisen, aktiven Schild auf dem König zu halten."
+  },
+  "lk_d6": {
+    "name": "Unerschütterliche Festung",
+    "description": "-80% Schaden erhalten für 1 Runde. Kann sich in nächster Bewegungsrunde nicht bewegen.",
+    "long-description": "Der König verwandelt sich in eine lebende Festung. 1 Runde lang erhält er -80% von allem Schaden (einschließlich True Damage). Die Kosten: KANN sich in der nächsten Bewegungsrunde NICHT bewegen. Karte geteilt zwischen Krieger und König."
+  },
+  "lk_d7": {
+    "name": "Ausweichen",
+    "description": "Weicht dem ersten direkten Angriff in der nächsten Runde komplett aus.",
+    "long-description": "Der König nimmt eine ausweichende Haltung ein und weicht dem nächsten erhaltenen direkten Angriff in der nächsten Runde komplett aus. Karte geteilt zwischen Spezialist, Henker und König. Für den König die beste Verteidigung gegen Präzisionsschuss (True Damage), der die Königlichen Schutz-Passive ignoriert."
+  },
+  "lk_d8": {
+    "name": "Königlicher Befehl",
+    "description": "König kehrt zur Anfangsposition zurück, Verbündete teleportiert auf benachbarte Positionen. Benachbarte Verbündete: -15% Schaden. König: -15% pro benachbartem Verbündeten (max -45%) für 1 Runde.",
+    "long-description": "Höchster Regruppierungs-Skill. Der König teleportiert auf seine Anfangsposition (Ecke der Verbündeten-Hälfte) und zieht alle 3 Verbündeten (kein König) auf Felder benachbart zum König. 1 Runde lang erhalten alle benachbarten Verbündeten -15% Schaden und der König erhält -15% zusätzlich pro benachbartem Verbündeten (bis 3 Verbündete = -45% am König). Strategischer Reset-Skill."
+  }
 }

@@ -1,3 +1,12 @@
 {
-  "_meta": { "lang": "en-US" }
+  "_meta": { "lang": "en-US" },
+  "auth": {
+    "fill-all-fields": "Please fill in all fields.",
+    "password-too-short": "Password must be at least 6 characters.",
+    "login-server-error": "Connection error. Make sure the server is running.",
+    "register-server-error": "Registration error. Make sure the server is running.",
+    "verify-need-6-digits": "Enter the 6-digit code.",
+    "verify-invalid-code": "Invalid code. Please try again.",
+    "verify-resend-failed": "Failed to resend. Please try again."
+  }
 }
