@@ -1,3 +1,320 @@
 {
-  "_meta": { "lang": "ko" }
+  "_meta": { "lang": "ko" },
+  "battle": {
+    "phase": {
+      "movement-title-line-1": "턴",
+      "movement-title-line-2": "이동",
+      "movement-sub": "캐릭터를\n이동시키세요",
+      "action-title": "행동",
+      "action-sub": "스킬을 선택하세요",
+      "movement-label": "이동 턴",
+      "action-label": "행동 턴",
+      "role-turn": "{role}의 턴",
+      "phase-movement": "이동",
+      "phase-action": "행동"
+    },
+    "team": {
+      "ally-eyebrow": "아군",
+      "enemy-eyebrow": "적군",
+      "ally-name-fallback": "당신",
+      "enemy-name-fallback": "상대",
+      "left-color": "파랑",
+      "right-color": "보라"
+    },
+    "phase-side-format": "{phase} — {side}",
+    "tracker-side-movement": "{side} — 이동",
+    "log-round-marker": "— 라운드 {round} —",
+    "tracker": {
+      "round": "라운드 {round}",
+      "round-label-default": "라운드 1",
+      "header-both": "행동 — 양측",
+      "title": "행동 순서",
+      "history-button": "기록 보기",
+      "history-popup-title": "행동 기록",
+      "history-popup-hint": "외부 클릭으로 닫기",
+      "wait-indicator": "· · ·",
+      "placeholder": "…"
+    },
+    "log": {
+      "skipped": "건너뜀",
+      "stunned": "기절",
+      "dead": "사망"
+    },
+    "outcome": {
+      "victory": "승리!",
+      "defeat": "패배!",
+      "draw": "무승부!",
+      "opponent-forfeit": "상대가 항복!",
+      "self-forfeit": "당신이 항복했습니다!"
+    },
+    "victory-overlay": {
+      "reasons": {
+        "king_slain": "왕이 쓰러짐",
+        "simultaneous_kings": "동시 무승부",
+        "timeout": "시간 종료",
+        "forfeit": "항복"
+      },
+      "detail-forfeit": "{reason} — 상대가 경기를 포기했습니다",
+      "detail-normal": "{reason} — 라운드 {round}"
+    },
+    "actions": {
+      "confirm": "확인",
+      "cancel": "취소",
+      "skip": "건너뛰기",
+      "end-movement": "이동 종료",
+      "main-menu": "메인 메뉴"
+    },
+    "popup": {
+      "confirmation-eyebrow": "확인",
+      "warning-eyebrow": "주의",
+      "vote-eyebrow": "투표",
+      "skip-title": "턴을 건너뛸까요?",
+      "skip-body": "이번 턴 캐릭터가 행동하지 않습니다.",
+      "skip-confirm": "건너뛰기",
+      "confirm-action-title": "행동을 확정?",
+      "confirm-action-body": "선택된 스킬은 큐에 들어가 이번 턴에 해결됩니다.",
+      "surrender-title": "항복?",
+      "surrender-body-solo": "항복은 랭크에 영향을 주며 되돌릴 수 없습니다.",
+      "surrender-vote-title": "항복에 투표?",
+      "surrender-vote-body": "당신의 표는 {required}에 카운트됩니다. 항복하려면 팀 전원이 동의해야 합니다.",
+      "surrender-vote-button": "투표",
+      "surrender-confirm": "항복",
+      "surrender-button-label": "  항복"
+    },
+    "status": {
+      "shield-suffix": "방패 +{amount}",
+      "wall-bonus": "벽 +{pct}%"
+    },
+    "effect-shorthand": {
+      "damage": "데미지",
+      "area": "범위",
+      "heal": "치유",
+      "shield": "방패"
+    }
+  },
+  "battle-result": {
+    "title": {
+      "victory": "승리",
+      "defeat": "패배",
+      "draw": "무승부"
+    },
+    "reasons": {
+      "king-slain": "왕이 쓰러짐",
+      "simultaneous-kings": "동시 무승부",
+      "timeout": "시간 종료",
+      "forfeit": "항복"
+    },
+    "opponent-fallback": "상대",
+    "sub-meta": "라운드 {round}  ·  vs {enemy}  ·  {reason}",
+    "rewards-header": "보상",
+    "new-skill": "새 스킬: {name}!",
+    "next-match": "다음 경기",
+    "try-again": "다시 시도",
+    "play-again": "다시 플레이",
+    "back-to-lobby": "로비로",
+    "xp": {
+      "level-current": "레벨 {level}",
+      "level-up": "레벨 {from}  ›  {to}",
+      "gain-suffix": "+{xp} XP",
+      "fraction": "{current} / {max} XP"
+    }
+  },
+  "deck-build": {
+    "title": "덱 구축",
+    "subtitle": "각 클래스의 그룹마다 카드 2장을 선택하세요.",
+    "difficulty-eyebrow": "난이도",
+    "difficulty": {
+      "easy": "쉬움",
+      "normal": "보통",
+      "hard": "어려움"
+    },
+    "groups": {
+      "attack1": "공격 · 데미지",
+      "attack2": "공격 · 제어",
+      "defense1": "방어 · 강",
+      "defense2": "방어 · 경",
+      "attack1-tooltip": "공격 - 데미지",
+      "attack2-tooltip": "공격 - 제어",
+      "defense1-tooltip": "방어 - 강",
+      "defense2-tooltip": "방어 - 경"
+    },
+    "targets": {
+      "single": "대상: 적 1명",
+      "self": "대상: 자신",
+      "lowest_ally": "대상: 최저 HP 아군",
+      "all_allies": "대상: 모든 아군",
+      "area": "대상: 3x3 범위"
+    },
+    "tooltip": {
+      "power-with": "위력 {power}",
+      "power-none": "위력 —",
+      "target-prefix": "대상 · {target}"
+    },
+    "footer": {
+      "deck-label": "덱",
+      "atk-label": "공",
+      "def-label": "방",
+      "empty-slot": "—",
+      "power-prefix": "위력 {power}",
+      "shortcuts": "단축키 · 1-4 선택 · Tab 클래스 전환 · Enter 플레이",
+      "progress": "유닛 준비 완료 · {done} / 4    각 열에 2장씩 선택"
+    },
+    "buttons": {
+      "random": "무작위",
+      "default": "기본",
+      "restore": "복원",
+      "start": "시작"
+    },
+    "tab-ready-suffix": "{role} ✓",
+    "passives": {
+      "king": "패시브: 왕의 보호 — 매 턴 방패 갱신, 받는 데미지 -15%.",
+      "warrior": "패시브: 수호자 — 인접한 아군 -15% 데미지 감소.",
+      "specialist": "패시브: 연소 — 공격 시 적의 치유 20% 감소 (1턴).",
+      "executor": "패시브: 고립 — 인접자가 없을 때 데미지 +15%."
+    }
+  },
+  "lobby": {
+    "central-play-title": "플레이",
+    "central-play-subtitle": "전투 모드를 선택하세요",
+    "play-modes-title": "게임 모드",
+    "nav": {
+      "shop": "상점",
+      "skills": "스킬",
+      "training": "훈련",
+      "ranking": "랭킹"
+    },
+    "battlepass": {
+      "line-1": "배틀",
+      "line-2": "패스",
+      "rewards-max": "보상 MAX"
+    },
+    "offline": {
+      "title": "팀 습격",
+      "subtitle": "오프라인",
+      "popup-eyebrow": "곧 출시",
+      "popup-body": "팀 습격 시스템"
+    },
+    "sound-toggle": {
+      "on": "사운드",
+      "muted": "음소거"
+    },
+    "news-ticker": "     Draft Game에 오신 것을 환영합니다!  •  상점에 새 팩!  •  PvP 전투 잠금 해제!  •  훈련 모드 사용 가능!     "
+  },
+  "login": {
+    "tab": {
+      "login": "로그인",
+      "register": "가입"
+    },
+    "title-login": "로그인",
+    "title-register": "계정 생성",
+    "submit-login": "로그인",
+    "submit-register": "계정 생성",
+    "fields": {
+      "username-label": "사용자",
+      "username-placeholder": "Nick",
+      "password-label": "비밀번호",
+      "password-placeholder": "••••••••",
+      "email-label": "이메일",
+      "email-placeholder": "you@example.com",
+      "register-password-hint": "최소 6자"
+    },
+    "remember-me": "로그인 유지",
+    "forgot-password": "비밀번호를 잊으셨나요?",
+    "verify": {
+      "eyebrow": "인증",
+      "title": "이메일 코드",
+      "body": "이메일로 6자리 코드를 보냈습니다.\n아래에 입력하세요.",
+      "code-label": "코드",
+      "code-placeholder": "000000",
+      "submit": "인증",
+      "resend": "코드 재전송",
+      "sending": "전송 중…"
+    }
+  },
+  "menu": {
+    "title": "DRAFT",
+    "subtitle": "전술 전투",
+    "studio-credit": "Codeforje VIO 제작",
+    "studio-name": "Codeforje VIO",
+    "tagline-1": "전략. 전술. 정복.",
+    "tagline-2": "덱을 구축하고 4v4 전투에서 적의 왕을 물리치세요",
+    "hint": "클릭하여 입장",
+    "version-tag": "v1.0"
+  },
+  "profile": {
+    "title": "프로필",
+    "tagline": "왕국의 소환사",
+    "stats": {
+      "wins": "승리",
+      "losses": "패배",
+      "win-rate": "승률",
+      "gold": "골드",
+      "dg": "DG",
+      "ranked-points": "랭크 포인트"
+    },
+    "mastery-eyebrow": "숙련도",
+    "mastery": {
+      "attack": "공격",
+      "defense": "방어"
+    }
+  },
+  "skill-upgrade": {
+    "title": "스킬 관리",
+    "deck-section": {
+      "header": "장착된 스킬",
+      "equipped-counter": "{equipped} / 8",
+      "empty-slot": "비어있음",
+      "slots": {
+        "atk1": "공 1",
+        "atk2": "공 2",
+        "def1": "방 1",
+        "def2": "방 2"
+      }
+    },
+    "inventory-section": {
+      "header": "인벤토리",
+      "hint": "클릭 또는 드래그로 장착",
+      "all-equipped": "모두 장착됨",
+      "owned-counter": "{owned} / {max}"
+    },
+    "groups": {
+      "attack1": "공격 · 데미지",
+      "attack2": "공격 · 제어",
+      "defense1": "방어 · 강",
+      "defense2": "방어 · 경"
+    },
+    "level-up-banner": "레벨 업!"
+  },
+  "settings": {
+    "title": "설정",
+    "sections": {
+      "audio": "오디오",
+      "language": "언어",
+      "account": "계정"
+    },
+    "audio": {
+      "sound-label": "사운드",
+      "sound-on": "효과음 켜짐",
+      "sound-off": "효과음 꺼짐"
+    },
+    "language": {
+      "field-label": "언어를 선택하세요"
+    },
+    "gameplay": {
+      "bot-difficulty-label": "봇 난이도"
+    },
+    "account": {
+      "session-label": "세션",
+      "session-description": "현재 계정에서 로그아웃",
+      "logout-button": "로그아웃"
+    },
+    "logout-modal": {
+      "title": "로그아웃",
+      "body": "왕국에서 연결이 끊어집니다. 계속하시겠습니까?",
+      "confirm": "로그아웃"
+    },
+    "footer": {
+      "credits": "Draft Game v1.0  ·  Caio Sensini 제작"
+    }
+  }
 }

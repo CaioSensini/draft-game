@@ -1,3 +1,12 @@
 {
-  "_meta": { "lang": "ko" }
+  "_meta": { "lang": "ko" },
+  "auth": {
+    "fill-all-fields": "모든 항목을 입력해 주세요.",
+    "password-too-short": "비밀번호는 6자 이상이어야 합니다.",
+    "login-server-error": "연결 오류. 서버가 실행 중인지 확인하세요.",
+    "register-server-error": "등록 오류. 서버가 실행 중인지 확인하세요.",
+    "verify-need-6-digits": "6자리 코드를 입력하세요.",
+    "verify-invalid-code": "잘못된 코드입니다. 다시 시도하세요.",
+    "verify-resend-failed": "재전송에 실패했습니다. 다시 시도하세요."
+  }
 }
