@@ -757,15 +757,20 @@ export const UI = {
       king: 0xfbbf24, warrior: 0x8b5cf6, specialist: 0x10b981, executor: 0xdc2626,
     }
     const CLASS_NAME: Record<string, string> = {
-      king: 'REI', warrior: 'GUERREIRO', specialist: 'ESPECIALISTA', executor: 'EXECUTOR',
+      king: t('skills.roles.king'),
+      warrior: t('skills.roles.warrior'),
+      specialist: t('skills.roles.specialist'),
+      executor: t('skills.roles.executor'),
     }
     const classColor = CLASS_COLOR[skill.unitClass] ?? accent.primary
     const classHex   = '#' + classColor.toString(16).padStart(6, '0')
     const className  = CLASS_NAME[skill.unitClass]  ?? skill.unitClass.toUpperCase()
 
     const CAT_LABEL: Record<string, string> = {
-      attack1: 'ATAQUE', attack2: 'ATAQUE',
-      defense1: 'DEFESA', defense2: 'DEFESA',
+      attack1: t('common.skill-card.categories.attack'),
+      attack2: t('common.skill-card.categories.attack'),
+      defense1: t('common.skill-card.categories.defense'),
+      defense2: t('common.skill-card.categories.defense'),
     }
     const catLabel = CAT_LABEL[skill.group] ?? skill.group.toUpperCase()
 
@@ -782,30 +787,37 @@ export const UI = {
     let statLabel = ''
     let statValue = ''
     if (DMG_TYPES.has(skill.effectType)) {
-      statKind = 'attack'; statLabel = 'DMG'; statValue = String(skill.power)
+      statKind = 'attack'; statLabel = t('common.skill-card.stats.damage'); statValue = String(skill.power)
     } else if (HEAL_TYPES.has(skill.effectType)) {
-      statKind = 'heal'; statLabel = 'HEAL'; statValue = String(skill.power)
+      statKind = 'heal'; statLabel = t('common.skill-card.stats.heal'); statValue = String(skill.power)
     } else if (SHIELD_TYPES.has(skill.effectType)) {
-      statKind = 'shield'; statLabel = 'SHLD'; statValue = String(skill.power)
+      statKind = 'shield'; statLabel = t('common.skill-card.stats.shield'); statValue = String(skill.power)
     } else if (EVADE_TYPES.has(skill.effectType)) {
-      statKind = 'evade'; statLabel = 'EVADE'; statValue = ''
+      statKind = 'evade'; statLabel = t('common.skill-card.stats.evade'); statValue = ''
     } else {
       statKind = skill.group.startsWith('defense') ? 'shield' : 'attack'
-      statLabel = skill.power > 0 ? 'PWR' : ''
+      statLabel = skill.power > 0 ? t('common.skill-card.stats.power') : ''
       statValue = skill.power > 0 ? String(skill.power) : ''
     }
 
     // TYPE label — derived from targetType + areaShape.
     const TARGET_TYPE_LABEL: Record<string, string> = {
-      single: 'ALVO', self: 'PRÓPRIO', lowest_ally: 'ALIADO', all_allies: 'ALIADOS',
+      single: t('common.skill-card.targets.single'),
+      self: t('common.skill-card.targets.self'),
+      lowest_ally: t('common.skill-card.targets.ally'),
+      all_allies: t('common.skill-card.targets.all-allies'),
     }
     const AREA_SHAPE_LABEL: Record<string, string> = {
-      line: 'LINHA', cone: 'CONE', ring: 'ANEL',
-      diamond: 'ÁREA', square: 'ÁREA', single: 'TILE',
+      line: t('common.skill-card.targets.line'),
+      cone: t('common.skill-card.targets.cone'),
+      ring: t('common.skill-card.targets.ring'),
+      diamond: t('common.skill-card.targets.area'),
+      square: t('common.skill-card.targets.area'),
+      single: t('common.skill-card.targets.tile'),
     }
     let typeLabel = ''
     if (skill.targetType === 'area') {
-      typeLabel = skill.areaShape ? (AREA_SHAPE_LABEL[skill.areaShape.type] ?? 'ÁREA') : 'ÁREA'
+      typeLabel = skill.areaShape ? (AREA_SHAPE_LABEL[skill.areaShape.type] ?? t('common.skill-card.targets.area')) : t('common.skill-card.targets.area')
     } else if (skill.targetType && TARGET_TYPE_LABEL[skill.targetType]) {
       typeLabel = TARGET_TYPE_LABEL[skill.targetType]
     }
@@ -935,7 +947,7 @@ export const UI = {
 
     // Always lay down the level + dots first; the UPAR overlay covers
     // them when present so a single pixel position drives both states.
-    const nvText = scene.add.text(-hw + 8, row2Y, `NV ${skill.level}`, {
+    const nvText = scene.add.text(-hw + 8, row2Y, t('common.labels.level-short', { level: skill.level }), {
       fontFamily: fontFamily.mono, fontSize: typeScale.meta,
       color: fg.primaryHex, fontStyle: 'bold',
     }).setOrigin(0, 0.5)
@@ -1113,7 +1125,10 @@ export const UI = {
       king: '#fbbf24', warrior: '#8b5cf6', specialist: '#10b981', executor: '#dc2626',
     }
     const CLASS_FULL_NAMES: Record<string, string> = {
-      king: 'Rei', warrior: 'Guerreiro', specialist: 'Especialista', executor: 'Executor',
+      king: t('skills.roles.king'),
+      warrior: t('skills.roles.warrior'),
+      specialist: t('skills.roles.specialist'),
+      executor: t('skills.roles.executor'),
     }
     const EFFECT_ABBREVS: Record<string, string> = {
       damage: 'DA', heal: 'HE', shield: 'SH', area: 'AR', stun: 'ST',
@@ -1125,9 +1140,9 @@ export const UI = {
       revive: 'RV', mov_down: 'M-', atk_down: 'A-',
     }
     const SHARED_SKILLS: Record<string, string[]> = {
-      'Esquiva': ['Especialista', 'Executor', 'Rei'],
-      'Bloqueio Total': ['Especialista', 'Executor'],
-      'Fortaleza Inabalavel': ['Guerreiro', 'Rei'],
+      'Esquiva': [t('skills.roles.specialist'), t('skills.roles.executor'), t('skills.roles.king')],
+      'Bloqueio Total': [t('skills.roles.specialist'), t('skills.roles.executor')],
+      'Fortaleza Inabalavel': [t('skills.roles.warrior'), t('skills.roles.king')],
     }
 
     const classHex = CLASS_COLORS_HEX[skill.unitClass] ?? '#f0c850'
@@ -1624,7 +1639,10 @@ export const UI = {
       king: C.king, warrior: C.warrior, specialist: C.specialist, executor: C.executor,
     }
     const CLASS_NAMES: Record<string, string> = {
-      king: 'Rei', warrior: 'Guerreiro', specialist: 'Especialista', executor: 'Executor',
+      king: t('skills.roles.king'),
+      warrior: t('skills.roles.warrior'),
+      specialist: t('skills.roles.specialist'),
+      executor: t('skills.roles.executor'),
     }
     const GROUP_TINT: Record<string, number> = {
       attack1:  dsState.error,
@@ -1640,8 +1658,11 @@ export const UI = {
       retreat_allies: 'RT', revive: 'RV', mov_down: 'M-', atk_down: 'A-',
     }
     const TARGET_LABELS: Record<string, string> = {
-      single: 'Alvo único', area: 'Área', self: 'Próprio',
-      lowest_ally: 'Aliado fraco', all_allies: 'Todos aliados',
+      single: t('common.skill-card.target-details.single'),
+      area: t('common.skill-card.target-details.area'),
+      self: t('common.skill-card.target-details.self'),
+      lowest_ally: t('common.skill-card.target-details.lowest-ally'),
+      all_allies: t('common.skill-card.target-details.all-allies'),
     }
 
     // Effect-type classification for stat line rendering
@@ -1678,7 +1699,7 @@ export const UI = {
     // ── Top-left: Class name + Level + progress dots ──
     // Dots read "lvl atual / max lvl" at a glance (ETAPA 6.5 spec).
     const headerY = -hh + 14
-    const headerTx = scene.add.text(-hw + 14, headerY, `${cName.toUpperCase()}  ·  NV ${skill.level}`, {
+    const headerTx = scene.add.text(-hw + 14, headerY, `${cName.toUpperCase()}  ·  ${t('common.labels.level-short', { level: skill.level })}`, {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: cHex, fontStyle: '700',
     }).setOrigin(0, 0.5).setLetterSpacing(1.6)
@@ -1758,20 +1779,24 @@ export const UI = {
     }
 
     if (DAMAGE_TYPES.has(skill.effectType) && skill.power > 0) {
-      pushStatLine('DANO', `${skill.power}`, fg.tertiaryHex, dsState.errorHex)
+      pushStatLine(t('common.skill-card.detail-labels.damage'), `${skill.power}`, fg.tertiaryHex, dsState.errorHex)
     }
     if (HEAL_TYPES.has(skill.effectType) && skill.power > 0) {
-      pushStatLine('CURA', `${skill.power}`, fg.tertiaryHex, dsState.successHex)
+      pushStatLine(t('common.skill-card.detail-labels.heal'), `${skill.power}`, fg.tertiaryHex, dsState.successHex)
     }
     if (SHIELD_TYPES.has(skill.effectType) && skill.power > 0) {
-      pushStatLine('ESCUDO', `${skill.power}`, fg.tertiaryHex, dsState.infoHex)
+      pushStatLine(t('common.skill-card.detail-labels.shield'), `${skill.power}`, fg.tertiaryHex, dsState.infoHex)
     }
 
     // Secondary effect (if exists)
     if (skill.secondaryEffect && skill.secondaryEffect.power > 0) {
       const secIsDmg = DAMAGE_TYPES.has(skill.secondaryEffect.effectType)
       const secIsHeal = HEAL_TYPES.has(skill.secondaryEffect.effectType)
-      const secLabel = secIsDmg ? 'DANO EXTRA' : secIsHeal ? 'CURA EXTRA' : 'EFEITO'
+      const secLabel = secIsDmg
+        ? t('common.skill-card.detail-labels.extra-damage')
+        : secIsHeal
+          ? t('common.skill-card.detail-labels.extra-heal')
+          : t('common.skill-card.detail-labels.effect')
       const secColor = secIsDmg ? dsState.warnHex
         : secIsHeal ? dsState.successHex
         : accent.primaryHex
@@ -1780,7 +1805,7 @@ export const UI = {
     }
 
     // Tipo (target type)
-    pushStatLine('ALVO', tgtLabel, fg.tertiaryHex, fg.primaryHex)
+    pushStatLine(t('common.skill-card.detail-labels.target'), tgtLabel, fg.tertiaryHex, fg.primaryHex)
     curY += 4
 
     // ── Separator 2 ──

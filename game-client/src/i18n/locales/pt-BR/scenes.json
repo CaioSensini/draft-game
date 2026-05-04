@@ -75,7 +75,43 @@
     "title": "LOJA",
     "all-owned": "JÁ POSSUI TODAS",
     "buy": "COMPRAR",
-    "unlocked": "DESBLOQUEADO"
+    "unlocked": "DESBLOQUEADO",
+    "tabs": {
+      "packs": "PACOTES",
+      "skins": "SKINS"
+    },
+    "items": {
+      "defense": "Defesa",
+      "attack": "Ataque",
+      "complete": "Completo",
+      "dg-100": "100 DG",
+      "dg-500": "500 DG"
+    },
+    "descriptions": {
+      "one-random-skill": "1 skill aleat?ria",
+      "two-random-skills": "2 skills aleat?rias",
+      "three-random-skills": "3 skills aleat?rias",
+      "premium-skill-pack": "3 defesa + 3 ataque",
+      "real-money": "Dinheiro real"
+    },
+    "rarity": {
+      "basic": "B?SICO",
+      "medium": "M?DIO",
+      "advanced": "AVAN?ADO",
+      "premium": "PREMIUM"
+    },
+    "drop-pill": "?{count} SKILLS",
+    "skin-state": {
+      "equipped": "EQUIPADA",
+      "owned": "ADQUIRIDA"
+    },
+    "modal": {
+      "buy-title": "Comprar {name}?",
+      "buy-gold": "COMPRAR ? {price} GOLD",
+      "buy-dg": "COMPRAR ? {price} DG",
+      "insufficient-balance": "SALDO INSUFICIENTE",
+      "pack-body": "{desc} ? {count} skill(s) aleat?ria(s)."
+    }
   },
   "battle-pass": {
     "title": "PASSE DE BATALHA",
@@ -99,7 +135,13 @@
       "def-mastery": "M. DEFESA",
       "region": "REGIÃO"
     },
-    "no-players": "Nenhum jogador encontrado"
+    "no-players": "Nenhum jogador encontrado",
+    "filters": {
+      "elo": "ELO",
+      "attack": "ATAQUE",
+      "defense": "DEFESA",
+      "global": "GLOBAL"
+    }
   },
   "ranked": {
     "title": "RANKED",
@@ -202,7 +244,9 @@
       "stunned": "Atordoado",
       "dead": "Morto",
       "no-targets": "? Sem alvos ao alcance!",
-      "death": "?? {name} morreu (Round {round})"
+      "death": "?? {name} morreu (Round {round})",
+      "damage": "{name} recebe {amount} dano (HP {hp})",
+      "heal": "{name} cura {amount} HP"
     },
     "outcome": {
       "victory": "Vitória!",
@@ -489,5 +533,13 @@
         "desc": "Monte times com amigos e bots"
       }
     }
+  },
+  "skin-picker": {
+    "title": "ESCOLHER SKIN",
+    "locked-hint": "{count} skin(s) bloqueada(s) ? compre na loja",
+    "all-unlocked-hint": "Todas as skins desbloqueadas ? toque para equipar",
+    "equipped": "?  EQUIPADA",
+    "equip": "EQUIPAR",
+    "in-shop": "NA LOJA"
   }
 }

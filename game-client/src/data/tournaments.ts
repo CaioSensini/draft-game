@@ -8,6 +8,8 @@
  * All ranked matches are tournament-format between REAL players only.
  */
 
+import { t } from '../i18n'
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // PVE TOURNAMENTS
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -252,6 +254,10 @@ export interface TierData {
   lpPenalty: number
 }
 
+export function getRankedTierName(tier: RankedTier): string {
+  return t(`common.ranked-tiers.${tier}`)
+}
+
 export const RANKED_TIERS: Record<RankedTier, TierData> = {
   desconhecido: {
     name: 'Desconhecido', color: 0x666666, colorHex: '#666666', icon: '❓',
@@ -359,7 +365,7 @@ export function processRankedTournament(
       updated.division = 1
       updated.lp = Math.min(updated.lp, 50)
       promoted = true
-      tierChange = 'Recruta 1'
+      tierChange = `${getRankedTierName('recruta')} 1`
     }
     return { newInfo: updated, promoted, demoted, tierChange, lpGained: lpGain }
   }
@@ -393,14 +399,14 @@ export function processRankedTournament(
         updated.tier = nextTier
         updated.division = nextTier === 'rei' ? null : 1
         promoted = true
-        tierChange = `${RANKED_TIERS[updated.tier].name}${updated.division ? ' ' + updated.division : ''}`
+      tierChange = `${getRankedTierName(updated.tier)}${updated.division ? ' ' + updated.division : ''}`
       }
     } else {
       // Promote to next division within tier
       updated.lp -= 100
       updated.division = (updated.division! + 1) as RankedDivision
       promoted = true
-      tierChange = `${RANKED_TIERS[updated.tier].name} ${updated.division}`
+      tierChange = `${getRankedTierName(updated.tier)} ${updated.division}`
     }
   }
 
@@ -417,7 +423,7 @@ export function processRankedTournament(
         updated.division = 3
         updated.lp = 75 // Buffer so you don't instantly demote again
         demoted = true
-        tierChange = `${RANKED_TIERS[updated.tier].name} ${updated.division}`
+        tierChange = `${getRankedTierName(updated.tier)} ${updated.division}`
       } else {
         updated.lp = 0
       }
@@ -426,7 +432,7 @@ export function processRankedTournament(
       updated.division = (updated.division! - 1) as RankedDivision
       updated.lp = 75
       demoted = true
-      tierChange = `${RANKED_TIERS[updated.tier].name} ${updated.division}`
+      tierChange = `${getRankedTierName(updated.tier)} ${updated.division}`
     }
   }
 
@@ -439,15 +445,15 @@ export function processRankedTournament(
 export function getRankedDisplayString(info: RankedInfo): string {
   const td = RANKED_TIERS[info.tier]
   if (info.tier === 'desconhecido') {
-    return `❓ Desconhecido (${info.totalTournaments}/3 torneios para classificar)`
+    return t('common.ranked-display.placement', { count: info.totalTournaments })
   }
   if (info.tier === 'rei') {
-    return `${td.icon} Rei — ${info.lp} LP`
+    return `${td.icon} ${getRankedTierName('rei')} — ${info.lp} LP`
   }
   if (info.tier === 'comandante' && info.division === 3) {
-    return `${td.icon} Comandante 3 — ${info.lp} LP`
+    return `${td.icon} ${getRankedTierName('comandante')} 3 — ${info.lp} LP`
   }
-  return `${td.icon} ${td.name} ${info.division} — ${info.lp} LP`
+  return `${td.icon} ${getRankedTierName(info.tier)} ${info.division} — ${info.lp} LP`
 }
 
 /**

@@ -939,7 +939,7 @@ export default class BattleScene extends Phaser.Scene {
             })
           }
         })
-        this._addLog(`${this._name(e.unitId)} recebe ${e.amount} dano (HP ${e.newHp})`, 'damage')
+        this._addLog(t('scenes.battle.log.damage', { name: this._name(e.unitId), amount: e.amount, hp: e.newHp }), 'damage')
         // Append area targets to the last action's atkTargets
         if (this._actionHistory.length > 0) {
           const lastAct = this._actionHistory[this._actionHistory.length - 1]
@@ -960,7 +960,7 @@ export default class BattleScene extends Phaser.Scene {
           this._floatingText(e.unitId, `+${e.amount}`, '#44ff88', 22)
           soundManager.playHeal()
         })
-        this._addLog(`${this._name(e.unitId)} cura ${e.amount} HP`, 'heal')
+        this._addLog(t('scenes.battle.log.heal', { name: this._name(e.unitId), amount: e.amount }), 'heal')
       })
       .onHUD(EventType.BLEED_TICK, (e) => {
         this._updateHpBar(e.unitId, e.newHp)
@@ -1550,7 +1550,7 @@ export default class BattleScene extends Phaser.Scene {
       .setStrokeStyle(1, 0x1e3a5f).setDepth(3)
 
     this._trackerHeader = this.add.text(TRK_CX, TRK_Y + 8, t('scenes.battle.tracker.placeholder'), {
-      fontFamily: 'Arial', fontSize: '14px', color: '#64748b', fontStyle: 'bold',
+      fontFamily: fontFamily.body, fontSize: '14px', color: '#64748b', fontStyle: 'bold',
     }).setOrigin(0.5, 0).setDepth(4)
   }
 
@@ -1579,18 +1579,18 @@ export default class BattleScene extends Phaser.Scene {
       const color = isActive ? '#e2e8f0' : isDone ? '#44dd88' : '#475569'
 
       const iconTxt = this.add.text(TRK_X + 6, y + 4, icon, {
-        fontFamily: 'Arial', fontSize: '14px', color,
+        fontFamily: fontFamily.body, fontSize: '14px', color,
       }).setDepth(4)
 
       const nameTxt = this.add.text(TRK_X + 18, y + 4, entry.name, {
-        fontFamily: 'Arial', fontSize: '14px', color,
+        fontFamily: fontFamily.body, fontSize: '14px', color,
         fontStyle: isActive ? 'bold' : 'normal',
       }).setDepth(4)
 
       const progressColor = isActive ? '#00ccaa' : '#334155'
       const progressTxt = this.add.text(TRK_CX + TRK_W / 2 - 6, y + 4,
         `${entry.order}/${entry.total}`, {
-          fontFamily: 'Arial', fontSize: '15px', color: progressColor,
+          fontFamily: fontFamily.body, fontSize: '15px', color: progressColor,
         }).setOrigin(1, 0).setDepth(4)
 
       this._trackerObjs.push(iconTxt, nameTxt, progressTxt)
@@ -1666,10 +1666,10 @@ export default class BattleScene extends Phaser.Scene {
     const bg = this.add.rectangle(W / 2, bannerY, 380, 68, bgColor)
       .setStrokeStyle(2, stroke).setAlpha(0).setDepth(14)
     const titleTxt = this.add.text(W / 2, bannerY - 13, title, {
-      fontFamily: 'Arial Black', fontSize: '26px', color: titleCol, fontStyle: 'bold',
+      fontFamily: fontFamily.display, fontSize: '26px', color: titleCol, fontStyle: 'bold',
     }).setOrigin(0.5).setAlpha(0).setDepth(15)
     const subTxt = this.add.text(W / 2, bannerY + 14, sub, {
-      fontFamily: 'Arial', fontSize: '15px', color: '#94a3b8',
+      fontFamily: fontFamily.body, fontSize: '15px', color: '#94a3b8',
     }).setOrigin(0.5).setAlpha(0).setDepth(15)
 
     this._bannerObjs = [bg, titleTxt, subTxt]
@@ -1706,7 +1706,7 @@ export default class BattleScene extends Phaser.Scene {
     const cy = GRID_Y + ROWS * TILE / 2
     const bg = this.add.rectangle(cx, cy, 300, 50, 0x000000, 0.7).setDepth(900)
     const txt = this.add.text(cx, cy, `\u2694 ${name}`, {
-      fontFamily: 'Arial', fontSize: '24px', color: '#f0c850', fontStyle: 'bold',
+      fontFamily: fontFamily.body, fontSize: '24px', color: '#f0c850', fontStyle: 'bold',
       stroke: '#000000', strokeThickness: 3,
     }).setOrigin(0.5).setDepth(901)
 
@@ -1755,7 +1755,7 @@ export default class BattleScene extends Phaser.Scene {
   /** Section label for card groups — kept for potential future use */
   public _addSectionLabel(x: number, y: number, text: string, color: string): void {
     const label = this.add.text(x, y, text, {
-      fontFamily: 'Arial', fontSize: '15px', color, fontStyle: 'bold',
+      fontFamily: fontFamily.body, fontSize: '15px', color, fontStyle: 'bold',
     }).setOrigin(0, 1).setDepth(7)
     // Wrap in a minimal container so it goes through the same cleanup path
     const c = this.add.container(0, 0, [label]).setDepth(7)
@@ -2374,13 +2374,13 @@ export default class BattleScene extends Phaser.Scene {
 
     // Mini log title + round on same line
     this.add.text(SKILL_COL_W / 2, miniLogY + 10, t('scenes.battle.tracker.title'), {
-      fontFamily: 'Arial Black', fontSize: '11px', color: '#c9a84c', fontStyle: 'bold',
+      fontFamily: fontFamily.display, fontSize: '11px', color: '#c9a84c', fontStyle: 'bold',
       stroke: '#000000', strokeThickness: 3,
     }).setOrigin(0.5).setDepth(5)
 
     // Round number (updated dynamically)
     this._miniLogRoundText = this.add.text(SKILL_COL_W / 2, miniLogY + 24, '', {
-      fontFamily: 'Arial Black', fontSize: '11px', color: '#4fc3f7', fontStyle: 'bold',
+      fontFamily: fontFamily.display, fontSize: '11px', color: '#4fc3f7', fontStyle: 'bold',
       stroke: '#000000', strokeThickness: 2,
     }).setOrigin(0.5).setDepth(5)
 
@@ -2396,7 +2396,7 @@ export default class BattleScene extends Phaser.Scene {
     hBtnG.strokeRoundedRect(10, hBtnY - 12, miniLogW - 12, 24, 6)
 
     this.add.text(SKILL_COL_W / 2, hBtnY, t('scenes.battle.tracker.history-button'), {
-      fontFamily: 'Arial Black', fontSize: '14px', color: '#c9a84c', fontStyle: 'bold',
+      fontFamily: fontFamily.display, fontSize: '14px', color: '#c9a84c', fontStyle: 'bold',
       stroke: '#000000', strokeThickness: 2,
     }).setOrigin(0.5).setDepth(5)
 
@@ -2427,11 +2427,11 @@ export default class BattleScene extends Phaser.Scene {
     logEls.push(panelHit)
 
     logEls.push(this.add.text(W / 2, popY2 + 28, t('scenes.battle.tracker.history-popup-title'), {
-      fontFamily: 'Arial Black', fontSize: '22px', color: '#f0c850', fontStyle: 'bold', ...stk,
+      fontFamily: fontFamily.display, fontSize: '22px', color: '#f0c850', fontStyle: 'bold', ...stk,
     }).setOrigin(0.5).setDepth(3002))
 
     logEls.push(this.add.text(W / 2, popY2 + popH - 18, t('scenes.battle.tracker.history-popup-hint'), {
-      fontFamily: 'Arial', fontSize: '15px', color: '#555555', ...stk,
+      fontFamily: fontFamily.body, fontSize: '15px', color: '#555555', ...stk,
     }).setOrigin(0.5).setDepth(3002))
 
     // Scrollable content area
@@ -2460,7 +2460,7 @@ export default class BattleScene extends Phaser.Scene {
         contentContainer.add(rg)
         cy2 += 6
         contentContainer.add(this.add.text(cX, cy2, t('scenes.battle.round-heading', { round: act.round }), {
-          fontFamily: 'Arial Black', fontSize: '22px', color: '#f0c850', fontStyle: 'bold', ...stk,
+          fontFamily: fontFamily.display, fontSize: '22px', color: '#f0c850', fontStyle: 'bold', ...stk,
         }))
         cy2 += 30
       }
@@ -2469,10 +2469,10 @@ export default class BattleScene extends Phaser.Scene {
       const sideHex = act.actorSide === 'left' ? blueHex : redHex
       const sideLabel = act.actorSide === 'left' ? 'AZUL' : 'ROXO'
       contentContainer.add(this.add.text(cX, cy2, `${act.actorName}`, {
-        fontFamily: 'Arial Black', fontSize: '18px', color: sideHex, fontStyle: 'bold', ...stk,
+        fontFamily: fontFamily.display, fontSize: '18px', color: sideHex, fontStyle: 'bold', ...stk,
       }))
       contentContainer.add(this.add.text(cX + cW, cy2 + 2, sideLabel, {
-        fontFamily: 'Arial Black', fontSize: '16px', color: sideHex, fontStyle: 'bold', ...stk,
+        fontFamily: fontFamily.display, fontSize: '16px', color: sideHex, fontStyle: 'bold', ...stk,
       }).setOrigin(1, 0))
       cy2 += 26
 
@@ -2481,10 +2481,10 @@ export default class BattleScene extends Phaser.Scene {
       if (act.atkSkill) {
         const atkColor = atkGroupColors[act.atkGroup ?? ''] ?? '#dd4433'
         contentContainer.add(this.add.text(cX + 16, cy2, `⚔ ${act.atkSkill}`, {
-          fontFamily: 'Arial Black', fontSize: '17px', color: atkColor, fontStyle: 'bold', ...stk,
+          fontFamily: fontFamily.display, fontSize: '17px', color: atkColor, fontStyle: 'bold', ...stk,
         }))
         contentContainer.add(this.add.text(cX + cW, cy2 + 2, act.atkTargets ?? '', {
-          fontFamily: 'Arial', fontSize: '16px', color: sideHex === blueHex ? redHex : blueHex, fontStyle: 'bold', ...stk,
+          fontFamily: fontFamily.body, fontSize: '16px', color: sideHex === blueHex ? redHex : blueHex, fontStyle: 'bold', ...stk,
         }).setOrigin(1, 0))
         cy2 += 24
       }
@@ -2494,10 +2494,10 @@ export default class BattleScene extends Phaser.Scene {
       if (act.defSkill) {
         const defColor = defGroupColors[act.defGroup ?? ''] ?? '#3366cc'
         contentContainer.add(this.add.text(cX + 16, cy2, `🛡 ${act.defSkill}`, {
-          fontFamily: 'Arial Black', fontSize: '17px', color: defColor, fontStyle: 'bold', ...stk,
+          fontFamily: fontFamily.display, fontSize: '17px', color: defColor, fontStyle: 'bold', ...stk,
         }))
         contentContainer.add(this.add.text(cX + cW, cy2 + 2, act.defTarget ?? '', {
-          fontFamily: 'Arial', fontSize: '16px', color: sideHex, fontStyle: 'bold', ...stk,
+          fontFamily: fontFamily.body, fontSize: '16px', color: sideHex, fontStyle: 'bold', ...stk,
         }).setOrigin(1, 0))
         cy2 += 24
       }
@@ -2737,7 +2737,7 @@ export default class BattleScene extends Phaser.Scene {
     const offsetX = (Math.random() - 0.5) * 30  // random horizontal spread
 
     const t = this.add.text(x + offsetX, y - 10, text, {
-      fontFamily: 'Arial Black',
+      fontFamily: fontFamily.display,
       fontSize: `${finalSize}px`,
       color,
       fontStyle: 'bold',
@@ -3086,7 +3086,7 @@ export default class BattleScene extends Phaser.Scene {
       badge.strokeRoundedRect(ox - badgeW / 2, oy - badgeH / 2, badgeW, badgeH, 3)
 
       const iconText = this.add.text(ox, oy, icon, {
-        fontFamily: 'Arial', fontSize: '11px', color: '#ffffff',
+        fontFamily: fontFamily.body, fontSize: '11px', color: '#ffffff',
       }).setOrigin(0.5)
 
       sprite.statusDots.add(badge)
@@ -3177,7 +3177,7 @@ export default class BattleScene extends Phaser.Scene {
     this.add.rectangle(W / 2, H / 2, 560, 260, 0x101827).setDepth(21).setStrokeStyle(2, 0x334155)
 
     this.add.text(W / 2, H / 2 - 64, winText, {
-      fontFamily: 'Arial Black', fontSize: '36px', color: '#f8e7b9', fontStyle: 'bold', ...stk,
+      fontFamily: fontFamily.display, fontSize: '36px', color: '#f8e7b9', fontStyle: 'bold', ...stk,
     }).setOrigin(0.5).setDepth(22)
 
     // Show forfeit detail if applicable
@@ -3186,13 +3186,13 @@ export default class BattleScene extends Phaser.Scene {
       : t('scenes.battle.victory-overlay.detail-normal', { reason: reasonText, round })
 
     this.add.text(W / 2, H / 2 - 10, detailText, {
-      fontFamily: 'Arial', fontSize: '16px', color: isForfeit ? '#ffaa44' : '#94a3b8', ...stk,
+      fontFamily: fontFamily.body, fontSize: '16px', color: isForfeit ? '#ffaa44' : '#94a3b8', ...stk,
     }).setOrigin(0.5).setDepth(22)
 
     const btn = this.add.rectangle(W / 2, H / 2 + 64, 240, 48, 0x1e293b)
       .setStrokeStyle(2, 0x475569).setInteractive({ useHandCursor: true }).setDepth(22)
     const label = this.add.text(W / 2, H / 2 + 64, t('scenes.battle.actions.main-menu'), {
-      fontFamily: 'Arial', fontSize: '17px', color: '#94a3b8', fontStyle: 'bold',
+      fontFamily: fontFamily.body, fontSize: '17px', color: '#94a3b8', fontStyle: 'bold',
     }).setOrigin(0.5).setDepth(23)
 
     btn.on('pointerover', () => { btn.setFillStyle(0x263548); label.setColor('#f1f5f9') })
@@ -3799,14 +3799,14 @@ export default class BattleScene extends Phaser.Scene {
 
       // Order number
       const numText = this.add.text(10, y, `${i + 1}.`, {
-        fontFamily: 'Arial Black', fontSize: '13px', color: '#5a6a7a', ...stk,
+        fontFamily: fontFamily.display, fontSize: '13px', color: '#5a6a7a', ...stk,
       }).setDepth(5)
       this._miniLogObjs.push(numText)
       this._miniLogContainer.add(numText)
 
       // Name
       const nameText = this.add.text(28, y, e.name, {
-        fontFamily: 'Arial', fontSize: '13px', color: sideColor, fontStyle: 'bold', ...stk,
+        fontFamily: fontFamily.body, fontSize: '13px', color: sideColor, fontStyle: 'bold', ...stk,
       }).setDepth(5)
       this._miniLogObjs.push(nameText)
       this._miniLogContainer.add(nameText)
@@ -3819,7 +3819,7 @@ export default class BattleScene extends Phaser.Scene {
         const atkCol = e.atkIcon ? '#c9a84c' : '#cc3333'
         if (atkStr) {
           const atkT = this.add.text(rx, y, atkStr, {
-            fontFamily: 'Arial Black', fontSize: '14px', color: atkCol, ...stk,
+            fontFamily: fontFamily.display, fontSize: '14px', color: atkCol, ...stk,
           }).setOrigin(1, 0).setDepth(5)
           this._miniLogObjs.push(atkT)
           this._miniLogContainer.add(atkT)
@@ -3830,14 +3830,14 @@ export default class BattleScene extends Phaser.Scene {
         const defCol = e.defIcon ? '#c9a84c' : '#cc3333'
         if (defStr) {
           const defT = this.add.text(rx, y, defStr, {
-            fontFamily: 'Arial Black', fontSize: '14px', color: defCol, ...stk,
+            fontFamily: fontFamily.display, fontSize: '14px', color: defCol, ...stk,
           }).setOrigin(1, 0).setDepth(5)
           this._miniLogObjs.push(defT)
           this._miniLogContainer.add(defT)
         }
       } else {
         const waitText = this.add.text(rx, y, t('scenes.battle.tracker.wait-indicator'), {
-          fontFamily: 'Arial', fontSize: '13px', color: '#2a3a4a', ...stk,
+          fontFamily: fontFamily.body, fontSize: '13px', color: '#2a3a4a', ...stk,
         }).setOrigin(1, 0).setDepth(5)
         this._miniLogObjs.push(waitText)
         this._miniLogContainer.add(waitText)
@@ -3864,18 +3864,8 @@ export default class BattleScene extends Phaser.Scene {
 /** Human-readable label for a skill effect type, used on card buttons. */
 /** @internal kept for potential future use */
 export function _effectLabel(effectType: string): string {
-  const labels: Record<string, string> = {
-    damage: 'Dano', area: 'Area', heal: 'Cura', shield: 'Escudo',
-    stun: 'Stun', snare: 'Snare', bleed: 'Sangramento',
-    burn: 'Queimacao', poison: 'Veneno', evade: 'Esquiva',
-    reflect: 'Refletir', regen: 'Regen', mark: 'Marca',
-    revive: 'Revive', lifesteal: 'Roubo', true_damage: 'Dano Puro',
-    cleanse: 'Purificar', purge: 'Purgar', def_up: '+DEF',
-    atk_up: '+ATK', def_down: '-DEF', atk_down: '-ATK',
-    double_attack: 'Duplo', silence_defense: 'Silencio', push: 'Empurrao',
-    mov_down: '-MOV',
-  }
-  return labels[effectType] ?? effectType
+  const value = t(`common.skill-card.effect-labels.${effectType}`)
+  return value === `common.skill-card.effect-labels.${effectType}` ? effectType : value
 }
 
 function _tileCenter(col: number, row: number): { x: number; y: number } {

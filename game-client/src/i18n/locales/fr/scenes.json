@@ -44,7 +44,43 @@
     "title": "BOUTIQUE",
     "all-owned": "VOUS POSSÉDEZ TOUT",
     "buy": "ACHETER",
-    "unlocked": "DÉBLOQUÉ"
+    "unlocked": "DÉBLOQUÉ",
+    "tabs": {
+      "packs": "PACKS",
+      "skins": "SKINS"
+    },
+    "items": {
+      "defense": "D?fense",
+      "attack": "Attaque",
+      "complete": "Complet",
+      "dg-100": "100 DG",
+      "dg-500": "500 DG"
+    },
+    "descriptions": {
+      "one-random-skill": "1 skill al?atoire",
+      "two-random-skills": "2 skills al?atoires",
+      "three-random-skills": "3 skills al?atoires",
+      "premium-skill-pack": "3 d?fense + 3 attaque",
+      "real-money": "Argent r?el"
+    },
+    "rarity": {
+      "basic": "BASIQUE",
+      "medium": "MOYEN",
+      "advanced": "AVANC?",
+      "premium": "PREMIUM"
+    },
+    "drop-pill": "?{count} SKILLS",
+    "skin-state": {
+      "equipped": "?QUIP?E",
+      "owned": "ACQUISE"
+    },
+    "modal": {
+      "buy-title": "Acheter {name} ?",
+      "buy-gold": "ACHETER ? {price} GOLD",
+      "buy-dg": "ACHETER ? {price} DG",
+      "insufficient-balance": "SOLDE INSUFFISANT",
+      "pack-body": "{desc} ? {count} skill(s) al?atoire(s)."
+    }
   },
   "battle-pass": {
     "title": "PASSE DE COMBAT",
@@ -68,7 +104,13 @@
       "def-mastery": "MAÎT. DÉF",
       "region": "RÉGION"
     },
-    "no-players": "Aucun joueur trouvé"
+    "no-players": "Aucun joueur trouvé",
+    "filters": {
+      "elo": "ELO",
+      "attack": "ATTAQUE",
+      "defense": "D?FENSE",
+      "global": "GLOBAL"
+    }
   },
   "ranked": {
     "title": "CLASSÉE",
@@ -171,7 +213,9 @@
       "stunned": "Étourdi",
       "dead": "Mort",
       "no-targets": "? Aucune cible ? port?e !",
-      "death": "?? {name} est mort (Manche {round})"
+      "death": "?? {name} est mort (Manche {round})",
+      "damage": "{name} subit {amount} d?g?ts (PV {hp})",
+      "heal": "{name} soigne {amount} PV"
     },
     "outcome": {
       "victory": "Victoire !",
@@ -489,5 +533,13 @@
         "desc": "Composez des ?quipes avec amis et bots"
       }
     }
+  },
+  "skin-picker": {
+    "title": "CHOISIR SKIN",
+    "locked-hint": "{count} skin(s) verrouill?e(s) ? achetez-les dans la boutique",
+    "all-unlocked-hint": "Toutes les skins sont d?bloqu?es ? touchez pour ?quiper",
+    "equipped": "?  ?QUIP?E",
+    "equip": "?QUIPER",
+    "in-shop": "BOUTIQUE"
   }
 }

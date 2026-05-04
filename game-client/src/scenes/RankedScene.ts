@@ -18,7 +18,7 @@ import { transitionTo } from '../utils/SceneTransition'
 import { playerData } from '../utils/PlayerDataManager'
 import { showPlayModesOverlay } from '../utils/PlayModesOverlay'
 import { drawCharacterSprite, type SpriteRole } from '../utils/SpriteFactory'
-import { RANKED_TIERS } from '../data/tournaments'
+import { getRankedTierName, RANKED_TIERS } from '../data/tournaments'
 import type { RankedQueue } from '../data/tournaments'
 import type { UnitRole } from '../engine/types'
 import type { CharClass } from '../utils/AssetPaths'
@@ -352,7 +352,7 @@ export default class RankedScene extends Phaser.Scene {
       }).setOrigin(0.5)
 
       // Tier name
-      this.add.text(sideX, y + 72, td.name.toUpperCase(), {
+      this.add.text(sideX, y + 72, getRankedTierName(info.tier).toUpperCase(), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.meta,
         color:      td.colorHex,
@@ -729,7 +729,7 @@ export default class RankedScene extends Phaser.Scene {
         fontStyle:  p.isMe ? '700' : '500',
       }).setOrigin(0, 0.5)
 
-      this.add.text(LOG_X + LOG_W / 2 - 14, y, bestTd.name.toUpperCase(), {
+      this.add.text(LOG_X + LOG_W / 2 - 14, y, getRankedTierName(bestInfo.tier).toUpperCase(), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.meta,
         color:      bestTd.colorHex,

@@ -1,5 +1,8 @@
 {
-  "_meta": { "lang": "pt-BR", "name": "Português" },
+  "_meta": {
+    "lang": "pt-BR",
+    "name": "Português"
+  },
   "actions": {
     "confirm": "CONFIRMAR",
     "cancel": "CANCELAR",
@@ -23,5 +26,85 @@
     "gold-cost": "{cost}g",
     "upgrade-action-affordable": "↑ UPAR NV {level} · {cost}g",
     "upgrade-action-broke": "NV {level} · {cost}g"
+  },
+  "ranked-tiers": {
+    "desconhecido": "Desconhecido",
+    "recruta": "Recruta",
+    "aprendiz": "Aprendiz",
+    "soldado": "Soldado",
+    "veterano": "Veterano",
+    "comandante": "Comandante",
+    "rei": "Rei"
+  },
+  "ranked-display": {
+    "placement": "? Desconhecido ({count}/3 torneios para classificar)"
+  },
+  "skill-card": {
+    "categories": {
+      "attack": "ATAQUE",
+      "defense": "DEFESA"
+    },
+    "stats": {
+      "damage": "DMG",
+      "heal": "HEAL",
+      "shield": "SHLD",
+      "evade": "EVADE",
+      "power": "PWR"
+    },
+    "targets": {
+      "single": "ALVO",
+      "self": "PR?PRIO",
+      "ally": "ALIADO",
+      "all-allies": "ALIADOS",
+      "line": "LINHA",
+      "cone": "CONE",
+      "ring": "ANEL",
+      "area": "?REA",
+      "tile": "TILE"
+    },
+    "target-details": {
+      "single": "Alvo ?nico",
+      "area": "?rea",
+      "self": "Pr?prio",
+      "lowest-ally": "Aliado fraco",
+      "all-allies": "Todos aliados"
+    },
+    "detail-labels": {
+      "damage": "DANO",
+      "heal": "CURA",
+      "shield": "ESCUDO",
+      "extra-damage": "DANO EXTRA",
+      "extra-heal": "CURA EXTRA",
+      "effect": "EFEITO",
+      "target": "ALVO"
+    },
+    "effect-labels": {
+      "damage": "Dano",
+      "area": "?rea",
+      "heal": "Cura",
+      "shield": "Escudo",
+      "stun": "Stun",
+      "snare": "Snare",
+      "bleed": "Sangramento",
+      "burn": "Queima??o",
+      "poison": "Veneno",
+      "evade": "Esquiva",
+      "reflect": "Refletir",
+      "regen": "Regen",
+      "mark": "Marca",
+      "revive": "Revive",
+      "lifesteal": "Roubo",
+      "true_damage": "Dano Puro",
+      "cleanse": "Purificar",
+      "purge": "Purgar",
+      "def_up": "+DEF",
+      "atk_up": "+ATK",
+      "def_down": "-DEF",
+      "atk_down": "-ATK",
+      "double_attack": "Duplo",
+      "silence_defense": "Sil?ncio",
+      "push": "Empurr?o",
+      "mov_down": "-MOV"
+    }
   }
 }

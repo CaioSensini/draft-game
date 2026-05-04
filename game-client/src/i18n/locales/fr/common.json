@@ -1,5 +1,8 @@
 {
-  "_meta": { "lang": "fr", "name": "Français" },
+  "_meta": {
+    "lang": "fr",
+    "name": "Français"
+  },
   "actions": {
     "confirm": "CONFIRMER",
     "cancel": "ANNULER",
@@ -23,5 +26,85 @@
     "gold-cost": "{cost}o",
     "upgrade-action-affordable": "↑ AMÉLIORER NIV {level} · {cost}o",
     "upgrade-action-broke": "NIV {level} · {cost}o"
+  },
+  "ranked-tiers": {
+    "desconhecido": "Inconnu",
+    "recruta": "Recrue",
+    "aprendiz": "Apprenti",
+    "soldado": "Soldat",
+    "veterano": "V?t?ran",
+    "comandante": "Commandant",
+    "rei": "Roi"
+  },
+  "ranked-display": {
+    "placement": "? Inconnu ({count}/3 tournois pour se classer)"
+  },
+  "skill-card": {
+    "categories": {
+      "attack": "ATTAQUE",
+      "defense": "D?FENSE"
+    },
+    "stats": {
+      "damage": "DGT",
+      "heal": "SOIN",
+      "shield": "BCL",
+      "evade": "ESQ",
+      "power": "PWR"
+    },
+    "targets": {
+      "single": "CIBLE",
+      "self": "SOI",
+      "ally": "ALLI?",
+      "all-allies": "ALLI?S",
+      "line": "LIGNE",
+      "cone": "C?NE",
+      "ring": "ANNEAU",
+      "area": "ZONE",
+      "tile": "CASE"
+    },
+    "target-details": {
+      "single": "Cible unique",
+      "area": "Zone",
+      "self": "Soi",
+      "lowest-ally": "Alli? faible",
+      "all-allies": "Tous les alli?s"
+    },
+    "detail-labels": {
+      "damage": "D?G?TS",
+      "heal": "SOIN",
+      "shield": "BOUCLIER",
+      "extra-damage": "D?G?TS EXTRA",
+      "extra-heal": "SOIN EXTRA",
+      "effect": "EFFET",
+      "target": "CIBLE"
+    },
+    "effect-labels": {
+      "damage": "D?g?ts",
+      "area": "Zone",
+      "heal": "Soin",
+      "shield": "Bouclier",
+      "stun": "?tourdissement",
+      "snare": "Entrave",
+      "bleed": "Saignement",
+      "burn": "Br?lure",
+      "poison": "Poison",
+      "evade": "Esquive",
+      "reflect": "Renvoi",
+      "regen": "Regen",
+      "mark": "Marque",
+      "revive": "R?surrection",
+      "lifesteal": "Vol de vie",
+      "true_damage": "D?g?ts purs",
+      "cleanse": "Purifier",
+      "purge": "Dissiper",
+      "def_up": "+DEF",
+      "atk_up": "+ATQ",
+      "def_down": "-DEF",
+      "atk_down": "-ATQ",
+      "double_attack": "Double",
+      "silence_defense": "Silence",
+      "push": "Pousser",
+      "mov_down": "-MOV"
+    }
   }
 }

@@ -1,5 +1,8 @@
 {
-  "_meta": { "lang": "tr", "name": "Türkçe" },
+  "_meta": {
+    "lang": "tr",
+    "name": "Türkçe"
+  },
   "actions": {
     "confirm": "ONAYLA",
     "cancel": "İPTAL",
@@ -23,5 +26,85 @@
     "gold-cost": "{cost}a",
     "upgrade-action-affordable": "↑ YÜKSELT SV {level} · {cost}a",
     "upgrade-action-broke": "SV {level} · {cost}a"
+  },
+  "ranked-tiers": {
+    "desconhecido": "Bilinmiyor",
+    "recruta": "Acemi",
+    "aprendiz": "??rak",
+    "soldado": "Asker",
+    "veterano": "K?demli",
+    "comandante": "Komutan",
+    "rei": "Kral"
+  },
+  "ranked-display": {
+    "placement": "? Bilinmiyor ({count}/3 turnuva ile s?ralan?r)"
+  },
+  "skill-card": {
+    "categories": {
+      "attack": "SALDIRI",
+      "defense": "SAVUNMA"
+    },
+    "stats": {
+      "damage": "HSR",
+      "heal": "?Y?L",
+      "shield": "KALK",
+      "evade": "KA?",
+      "power": "G??"
+    },
+    "targets": {
+      "single": "HEDEF",
+      "self": "KEND?",
+      "ally": "M?TTEF",
+      "all-allies": "M?TTEF",
+      "line": "??ZG?",
+      "cone": "KON?",
+      "ring": "HALKA",
+      "area": "ALAN",
+      "tile": "KARE"
+    },
+    "target-details": {
+      "single": "Tek hedef",
+      "area": "Alan",
+      "self": "Kendi",
+      "lowest-ally": "Zay?f m?ttefik",
+      "all-allies": "T?m m?ttefikler"
+    },
+    "detail-labels": {
+      "damage": "HASAR",
+      "heal": "?Y?LE?ME",
+      "shield": "KALKAN",
+      "extra-damage": "EK HASAR",
+      "extra-heal": "EK ?Y?LE?ME",
+      "effect": "ETK?",
+      "target": "HEDEF"
+    },
+    "effect-labels": {
+      "damage": "Hasar",
+      "area": "Alan",
+      "heal": "?yile?me",
+      "shield": "Kalkan",
+      "stun": "Sersemletme",
+      "snare": "K?k",
+      "bleed": "Kanama",
+      "burn": "Yanma",
+      "poison": "Zehir",
+      "evade": "Ka??nma",
+      "reflect": "Yans?t",
+      "regen": "Regen",
+      "mark": "??aret",
+      "revive": "Dirilt",
+      "lifesteal": "Can ?alma",
+      "true_damage": "Ger?ek hasar",
+      "cleanse": "Temizle",
+      "purge": "Ar?nd?r",
+      "def_up": "+SVN",
+      "atk_up": "+SLD",
+      "def_down": "-SVN",
+      "atk_down": "-SLD",
+      "double_attack": "?ift",
+      "silence_defense": "Sessizlik",
+      "push": "?t",
+      "mov_down": "-HRK"
+    }
   }
 }

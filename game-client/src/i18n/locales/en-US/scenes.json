@@ -44,7 +44,43 @@
     "title": "SHOP",
     "all-owned": "YOU OWN THEM ALL",
     "buy": "BUY",
-    "unlocked": "UNLOCKED"
+    "unlocked": "UNLOCKED",
+    "tabs": {
+      "packs": "PACKS",
+      "skins": "SKINS"
+    },
+    "items": {
+      "defense": "Defense",
+      "attack": "Attack",
+      "complete": "Complete",
+      "dg-100": "100 DG",
+      "dg-500": "500 DG"
+    },
+    "descriptions": {
+      "one-random-skill": "1 random skill",
+      "two-random-skills": "2 random skills",
+      "three-random-skills": "3 random skills",
+      "premium-skill-pack": "3 defense + 3 attack",
+      "real-money": "Real money"
+    },
+    "rarity": {
+      "basic": "BASIC",
+      "medium": "MEDIUM",
+      "advanced": "ADVANCED",
+      "premium": "PREMIUM"
+    },
+    "drop-pill": "?{count} SKILLS",
+    "skin-state": {
+      "equipped": "EQUIPPED",
+      "owned": "OWNED"
+    },
+    "modal": {
+      "buy-title": "Buy {name}?",
+      "buy-gold": "BUY ? {price} GOLD",
+      "buy-dg": "BUY ? {price} DG",
+      "insufficient-balance": "INSUFFICIENT BALANCE",
+      "pack-body": "{desc} ? {count} random skill(s)."
+    }
   },
   "battle-pass": {
     "title": "BATTLE PASS",
@@ -68,7 +104,13 @@
       "def-mastery": "DEF MASTERY",
       "region": "REGION"
     },
-    "no-players": "No players found"
+    "no-players": "No players found",
+    "filters": {
+      "elo": "ELO",
+      "attack": "ATTACK",
+      "defense": "DEFENSE",
+      "global": "GLOBAL"
+    }
   },
   "ranked": {
     "title": "RANKED",
@@ -171,7 +213,9 @@
       "stunned": "Stunned",
       "dead": "Dead",
       "no-targets": "? No targets in range!",
-      "death": "?? {name} died (Round {round})"
+      "death": "?? {name} died (Round {round})",
+      "damage": "{name} takes {amount} damage (HP {hp})",
+      "heal": "{name} heals {amount} HP"
     },
     "outcome": {
       "victory": "Victory!",
@@ -489,5 +533,13 @@
         "desc": "Build teams with friends and bots"
       }
     }
+  },
+  "skin-picker": {
+    "title": "CHOOSE SKIN",
+    "locked-hint": "{count} locked skin(s) ? buy them in the shop",
+    "all-unlocked-hint": "All skins unlocked ? tap to equip",
+    "equipped": "?  EQUIPPED",
+    "equip": "EQUIP",
+    "in-shop": "IN SHOP"
   }
 }

@@ -44,7 +44,43 @@
     "title": "MAĞAZA",
     "all-owned": "HEPSİNE SAHİPSİN",
     "buy": "SATIN AL",
-    "unlocked": "KİLİT AÇIK"
+    "unlocked": "KİLİT AÇIK",
+    "tabs": {
+      "packs": "PAKETLER",
+      "skins": "KAPLAMALAR"
+    },
+    "items": {
+      "defense": "Savunma",
+      "attack": "Sald?r?",
+      "complete": "Tam",
+      "dg-100": "100 DG",
+      "dg-500": "500 DG"
+    },
+    "descriptions": {
+      "one-random-skill": "1 rastgele skill",
+      "two-random-skills": "2 rastgele skill",
+      "three-random-skills": "3 rastgele skill",
+      "premium-skill-pack": "3 savunma + 3 sald?r?",
+      "real-money": "Ger?ek para"
+    },
+    "rarity": {
+      "basic": "TEMEL",
+      "medium": "ORTA",
+      "advanced": "GEL??M??",
+      "premium": "PREMIUM"
+    },
+    "drop-pill": "?{count} SKILL",
+    "skin-state": {
+      "equipped": "KU?ANILDI",
+      "owned": "ALINDI"
+    },
+    "modal": {
+      "buy-title": "{name} sat?n al?ns?n m??",
+      "buy-gold": "SATIN AL ? {price} GOLD",
+      "buy-dg": "SATIN AL ? {price} DG",
+      "insufficient-balance": "YETERS?Z BAK?YE",
+      "pack-body": "{desc} ? {count} rastgele skill."
+    }
   },
   "battle-pass": {
     "title": "SAVAŞ GEÇİDİ",
@@ -68,7 +104,13 @@
       "def-mastery": "SAV. USTALIK",
       "region": "BÖLGE"
     },
-    "no-players": "Hiç oyuncu bulunamadı"
+    "no-players": "Hiç oyuncu bulunamadı",
+    "filters": {
+      "elo": "ELO",
+      "attack": "SALDIRI",
+      "defense": "SAVUNMA",
+      "global": "GLOBAL"
+    }
   },
   "ranked": {
     "title": "DERECELİ",
@@ -171,7 +213,9 @@
       "stunned": "Sersem",
       "dead": "Ölü",
       "no-targets": "? Menzilde hedef yok!",
-      "death": "?? {name} ?ld? (Raunt {round})"
+      "death": "?? {name} ?ld? (Raunt {round})",
+      "damage": "{name} {amount} hasar al?r (HP {hp})",
+      "heal": "{name} {amount} HP iyile?tirir"
     },
     "outcome": {
       "victory": "Zafer!",
@@ -492,5 +536,13 @@
         "desc": "Arkada?lar ve botlarla tak?m kur"
       }
     }
+  },
+  "skin-picker": {
+    "title": "SKIN SE?",
+    "locked-hint": "{count} skin kilitli ? ma?azadan sat?n al",
+    "all-unlocked-hint": "T?m skinler a??k ? ku?anmak i?in dokun",
+    "equipped": "?  KU?ANILDI",
+    "equip": "KU?AN",
+    "in-shop": "MA?AZADA"
   }
 }

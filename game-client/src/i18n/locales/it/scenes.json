@@ -44,7 +44,43 @@
     "title": "NEGOZIO",
     "all-owned": "POSSIEDI GIÀ TUTTE",
     "buy": "ACQUISTA",
-    "unlocked": "SBLOCCATO"
+    "unlocked": "SBLOCCATO",
+    "tabs": {
+      "packs": "PACCHETTI",
+      "skins": "SKIN"
+    },
+    "items": {
+      "defense": "Difesa",
+      "attack": "Attacco",
+      "complete": "Completo",
+      "dg-100": "100 DG",
+      "dg-500": "500 DG"
+    },
+    "descriptions": {
+      "one-random-skill": "1 skill casuale",
+      "two-random-skills": "2 skill casuali",
+      "three-random-skills": "3 skill casuali",
+      "premium-skill-pack": "3 difesa + 3 attacco",
+      "real-money": "Denaro reale"
+    },
+    "rarity": {
+      "basic": "BASE",
+      "medium": "MEDIO",
+      "advanced": "AVANZATO",
+      "premium": "PREMIUM"
+    },
+    "drop-pill": "?{count} SKILL",
+    "skin-state": {
+      "equipped": "EQUIPAGGIATA",
+      "owned": "ACQUISTATA"
+    },
+    "modal": {
+      "buy-title": "Comprare {name}?",
+      "buy-gold": "COMPRA ? {price} GOLD",
+      "buy-dg": "COMPRA ? {price} DG",
+      "insufficient-balance": "SALDO INSUFFICIENTE",
+      "pack-body": "{desc} ? {count} skill casuale/i."
+    }
   },
   "battle-pass": {
     "title": "PASS DI BATTAGLIA",
@@ -68,7 +104,13 @@
       "def-mastery": "M. DIFESA",
       "region": "REGIONE"
     },
-    "no-players": "Nessun giocatore trovato"
+    "no-players": "Nessun giocatore trovato",
+    "filters": {
+      "elo": "ELO",
+      "attack": "ATTACCO",
+      "defense": "DIFESA",
+      "global": "GLOBAL"
+    }
   },
   "ranked": {
     "title": "RANKED",
@@ -171,7 +213,9 @@
       "stunned": "Stordito",
       "dead": "Morto",
       "no-targets": "? Nessun bersaglio a portata!",
-      "death": "?? {name} ? morto (Round {round})"
+      "death": "?? {name} ? morto (Round {round})",
+      "damage": "{name} subisce {amount} danni (HP {hp})",
+      "heal": "{name} cura {amount} HP"
     },
     "outcome": {
       "victory": "Vittoria!",
@@ -489,5 +533,13 @@
         "desc": "Crea squadre con amici e bot"
       }
     }
+  },
+  "skin-picker": {
+    "title": "SCEGLI SKIN",
+    "locked-hint": "{count} skin bloccata/e ? acquistala nel negozio",
+    "all-unlocked-hint": "Tutte le skin sbloccate ? tocca per equipaggiare",
+    "equipped": "?  EQUIPAGGIATA",
+    "equip": "EQUIPAGGIA",
+    "in-shop": "NEGOZIO"
   }
 }

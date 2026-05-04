@@ -1,5 +1,8 @@
 {
-  "_meta": { "lang": "zh-CN", "name": "简体中文" },
+  "_meta": {
+    "lang": "zh-CN",
+    "name": "简体中文"
+  },
   "actions": {
     "confirm": "确认",
     "cancel": "取消",
@@ -23,5 +26,85 @@
     "gold-cost": "{cost}金",
     "upgrade-action-affordable": "↑ 升级 Lv {level} · {cost}金",
     "upgrade-action-broke": "Lv {level} · {cost}金"
+  },
+  "ranked-tiers": {
+    "desconhecido": "??",
+    "recruta": "??",
+    "aprendiz": "??",
+    "soldado": "??",
+    "veterano": "??",
+    "comandante": "???",
+    "rei": "??"
+  },
+  "ranked-display": {
+    "placement": "? ???{count}/3 ?????"
+  },
+  "skill-card": {
+    "categories": {
+      "attack": "??",
+      "defense": "??"
+    },
+    "stats": {
+      "damage": "??",
+      "heal": "??",
+      "shield": "??",
+      "evade": "??",
+      "power": "??"
+    },
+    "targets": {
+      "single": "??",
+      "self": "??",
+      "ally": "??",
+      "all-allies": "???",
+      "line": "??",
+      "cone": "??",
+      "ring": "??",
+      "area": "??",
+      "tile": "?"
+    },
+    "target-details": {
+      "single": "????",
+      "area": "??",
+      "self": "??",
+      "lowest-ally": "????",
+      "all-allies": "????"
+    },
+    "detail-labels": {
+      "damage": "??",
+      "heal": "??",
+      "shield": "??",
+      "extra-damage": "????",
+      "extra-heal": "????",
+      "effect": "??",
+      "target": "??"
+    },
+    "effect-labels": {
+      "damage": "??",
+      "area": "??",
+      "heal": "??",
+      "shield": "??",
+      "stun": "??",
+      "snare": "??",
+      "bleed": "??",
+      "burn": "??",
+      "poison": "??",
+      "evade": "??",
+      "reflect": "??",
+      "regen": "??",
+      "mark": "??",
+      "revive": "??",
+      "lifesteal": "??",
+      "true_damage": "????",
+      "cleanse": "??",
+      "purge": "??",
+      "def_up": "+??",
+      "atk_up": "+??",
+      "def_down": "-??",
+      "atk_down": "-??",
+      "double_attack": "??",
+      "silence_defense": "??",
+      "push": "??",
+      "mov_down": "-??"
+    }
   }
 }

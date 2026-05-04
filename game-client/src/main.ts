@@ -32,5 +32,10 @@ const game = new Phaser.Game(gameConfig)
 if (typeof window !== 'undefined') {
   window.addEventListener('draft:i18n-language-changed', () => {
     rerenderActiveTextObjects(game)
+    for (const scene of game.scene.getScenes(true)) {
+      const key = scene.scene.key
+      if (key === 'BootScene') continue
+      scene.scene.restart(scene.scene.settings.data)
+    }
   })
 }
