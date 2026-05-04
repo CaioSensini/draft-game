@@ -1,5 +1,8 @@
 {
-  "_meta": { "lang": "en-US", "name": "English" },
+  "_meta": {
+    "lang": "en-US",
+    "name": "English"
+  },
   "actions": {
     "confirm": "CONFIRM",
     "cancel": "CANCEL",
@@ -23,5 +26,85 @@
     "gold-cost": "{cost}g",
     "upgrade-action-affordable": "↑ UPGRADE LV {level} · {cost}g",
     "upgrade-action-broke": "LV {level} · {cost}g"
+  },
+  "ranked-tiers": {
+    "desconhecido": "Unknown",
+    "recruta": "Recruit",
+    "aprendiz": "Apprentice",
+    "soldado": "Soldier",
+    "veterano": "Veteran",
+    "comandante": "Commander",
+    "rei": "King"
+  },
+  "ranked-display": {
+    "placement": "? Unknown ({count}/3 tournaments to qualify)"
+  },
+  "skill-card": {
+    "categories": {
+      "attack": "ATTACK",
+      "defense": "DEFENSE"
+    },
+    "stats": {
+      "damage": "DMG",
+      "heal": "HEAL",
+      "shield": "SHLD",
+      "evade": "EVADE",
+      "power": "PWR"
+    },
+    "targets": {
+      "single": "TARGET",
+      "self": "SELF",
+      "ally": "ALLY",
+      "all-allies": "ALLIES",
+      "line": "LINE",
+      "cone": "CONE",
+      "ring": "RING",
+      "area": "AREA",
+      "tile": "TILE"
+    },
+    "target-details": {
+      "single": "Single target",
+      "area": "Area",
+      "self": "Self",
+      "lowest-ally": "Weak ally",
+      "all-allies": "All allies"
+    },
+    "detail-labels": {
+      "damage": "DAMAGE",
+      "heal": "HEAL",
+      "shield": "SHIELD",
+      "extra-damage": "EXTRA DAMAGE",
+      "extra-heal": "EXTRA HEAL",
+      "effect": "EFFECT",
+      "target": "TARGET"
+    },
+    "effect-labels": {
+      "damage": "Damage",
+      "area": "Area",
+      "heal": "Heal",
+      "shield": "Shield",
+      "stun": "Stun",
+      "snare": "Snare",
+      "bleed": "Bleed",
+      "burn": "Burn",
+      "poison": "Poison",
+      "evade": "Evade",
+      "reflect": "Reflect",
+      "regen": "Regen",
+      "mark": "Mark",
+      "revive": "Revive",
+      "lifesteal": "Lifesteal",
+      "true_damage": "True Damage",
+      "cleanse": "Cleanse",
+      "purge": "Purge",
+      "def_up": "+DEF",
+      "atk_up": "+ATK",
+      "def_down": "-DEF",
+      "atk_down": "-ATK",
+      "double_attack": "Double",
+      "silence_defense": "Silence",
+      "push": "Push",
+      "mov_down": "-MOV"
+    }
   }
 }

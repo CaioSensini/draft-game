@@ -1,5 +1,8 @@
 {
-  "_meta": { "lang": "it", "name": "Italiano" },
+  "_meta": {
+    "lang": "it",
+    "name": "Italiano"
+  },
   "actions": {
     "confirm": "CONFERMA",
     "cancel": "ANNULLA",
@@ -23,5 +26,85 @@
     "gold-cost": "{cost}o",
     "upgrade-action-affordable": "↑ POTENZIA LV {level} · {cost}o",
     "upgrade-action-broke": "LV {level} · {cost}o"
+  },
+  "ranked-tiers": {
+    "desconhecido": "Sconosciuto",
+    "recruta": "Recluta",
+    "aprendiz": "Apprendista",
+    "soldado": "Soldato",
+    "veterano": "Veterano",
+    "comandante": "Comandante",
+    "rei": "Re"
+  },
+  "ranked-display": {
+    "placement": "? Sconosciuto ({count}/3 tornei per qualificarti)"
+  },
+  "skill-card": {
+    "categories": {
+      "attack": "ATTACCO",
+      "defense": "DIFESA"
+    },
+    "stats": {
+      "damage": "DAN",
+      "heal": "CURA",
+      "shield": "SCU",
+      "evade": "EVADE",
+      "power": "POT"
+    },
+    "targets": {
+      "single": "BERS.",
+      "self": "S?",
+      "ally": "ALLEATO",
+      "all-allies": "ALLEATI",
+      "line": "LINEA",
+      "cone": "CONO",
+      "ring": "ANELLO",
+      "area": "AREA",
+      "tile": "TILE"
+    },
+    "target-details": {
+      "single": "Bersaglio singolo",
+      "area": "Area",
+      "self": "S?",
+      "lowest-ally": "Alleato debole",
+      "all-allies": "Tutti gli alleati"
+    },
+    "detail-labels": {
+      "damage": "DANNO",
+      "heal": "CURA",
+      "shield": "SCUDO",
+      "extra-damage": "DANNO EXTRA",
+      "extra-heal": "CURA EXTRA",
+      "effect": "EFFETTO",
+      "target": "BERSAGLIO"
+    },
+    "effect-labels": {
+      "damage": "Danno",
+      "area": "Area",
+      "heal": "Cura",
+      "shield": "Scudo",
+      "stun": "Stordimento",
+      "snare": "Vincolo",
+      "bleed": "Sanguinamento",
+      "burn": "Bruciatura",
+      "poison": "Veleno",
+      "evade": "Evasione",
+      "reflect": "Riflettere",
+      "regen": "Regen",
+      "mark": "Marchio",
+      "revive": "Rianima",
+      "lifesteal": "Rubavita",
+      "true_damage": "Danno puro",
+      "cleanse": "Purifica",
+      "purge": "Dissolvi",
+      "def_up": "+DIF",
+      "atk_up": "+ATT",
+      "def_down": "-DIF",
+      "atk_down": "-ATT",
+      "double_attack": "Doppio",
+      "silence_defense": "Silenzio",
+      "push": "Spinta",
+      "mov_down": "-MOV"
+    }
   }
 }

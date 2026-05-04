@@ -1,5 +1,8 @@
 {
-  "_meta": { "lang": "de", "name": "Deutsch" },
+  "_meta": {
+    "lang": "de",
+    "name": "Deutsch"
+  },
   "actions": {
     "confirm": "BESTÄTIGEN",
     "cancel": "ABBRECHEN",
@@ -23,5 +26,85 @@
     "gold-cost": "{cost}g",
     "upgrade-action-affordable": "↑ STUFE {level} · {cost}g",
     "upgrade-action-broke": "ST {level} · {cost}g"
+  },
+  "ranked-tiers": {
+    "desconhecido": "Unbekannt",
+    "recruta": "Rekrut",
+    "aprendiz": "Lehrling",
+    "soldado": "Soldat",
+    "veterano": "Veteran",
+    "comandante": "Kommandant",
+    "rei": "K?nig"
+  },
+  "ranked-display": {
+    "placement": "? Unbekannt ({count}/3 Turniere zur Einstufung)"
+  },
+  "skill-card": {
+    "categories": {
+      "attack": "ANGRIFF",
+      "defense": "ABWEHR"
+    },
+    "stats": {
+      "damage": "SCH",
+      "heal": "HEIL",
+      "shield": "SCHD",
+      "evade": "AUSW",
+      "power": "KFT"
+    },
+    "targets": {
+      "single": "ZIEL",
+      "self": "SELBST",
+      "ally": "VERB.",
+      "all-allies": "VERB.",
+      "line": "LINIE",
+      "cone": "KEGEL",
+      "ring": "RING",
+      "area": "BEREICH",
+      "tile": "FELD"
+    },
+    "target-details": {
+      "single": "Einzelziel",
+      "area": "Bereich",
+      "self": "Selbst",
+      "lowest-ally": "Schwacher Verb?ndeter",
+      "all-allies": "Alle Verb?ndeten"
+    },
+    "detail-labels": {
+      "damage": "SCHADEN",
+      "heal": "HEILUNG",
+      "shield": "SCHILD",
+      "extra-damage": "EXTRA-SCHADEN",
+      "extra-heal": "EXTRA-HEILUNG",
+      "effect": "EFFEKT",
+      "target": "ZIEL"
+    },
+    "effect-labels": {
+      "damage": "Schaden",
+      "area": "Bereich",
+      "heal": "Heilung",
+      "shield": "Schild",
+      "stun": "Bet?ubung",
+      "snare": "Fessel",
+      "bleed": "Blutung",
+      "burn": "Brand",
+      "poison": "Gift",
+      "evade": "Ausweichen",
+      "reflect": "Reflektieren",
+      "regen": "Regen",
+      "mark": "Marke",
+      "revive": "Wiederbeleben",
+      "lifesteal": "Lebensraub",
+      "true_damage": "Reiner Schaden",
+      "cleanse": "Reinigen",
+      "purge": "Bannen",
+      "def_up": "+DEF",
+      "atk_up": "+ANG",
+      "def_down": "-DEF",
+      "atk_down": "-ANG",
+      "double_attack": "Doppelt",
+      "silence_defense": "Stille",
+      "push": "Sto?en",
+      "mov_down": "-BEW"
+    }
   }
 }

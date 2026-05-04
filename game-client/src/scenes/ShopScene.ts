@@ -14,7 +14,6 @@ import {
   getPurchasableSkins,
   SKIN_RARITY_COLOR,
   SKIN_RARITY_HEX,
-  SKIN_RARITY_LABEL,
   type SkinDef,
 } from '../data/skinCatalog'
 import { drawCharacterSprite, type SpriteRole } from '../utils/SpriteFactory'
@@ -40,25 +39,25 @@ const GRID_TOP = TAB_Y + 42
 type Rarity = 'basic' | 'medium' | 'advanced' | 'premium'
 
 interface ShopItem {
-  id: string; name: string; desc: string
+  id: string; nameKey: string; descKey: string
   goldPrice: number; dgPrice: number; rarity: Rarity
   dropCount: number; dropType: 'attack' | 'defense' | 'both'
   category: 'skills' | 'premium'
 }
 
 const ITEMS: ShopItem[] = [
-  { id: 'basic_def',  name: 'Defesa',   desc: '1 skill aleatoria',    goldPrice: 100,  dgPrice: 5,   rarity: 'basic',    dropCount: 1, dropType: 'defense', category: 'skills' },
-  { id: 'basic_atk',  name: 'Ataque',   desc: '1 skill aleatoria',    goldPrice: 100,  dgPrice: 5,   rarity: 'basic',    dropCount: 1, dropType: 'attack',  category: 'skills' },
-  { id: 'medio_def',  name: 'Defesa',   desc: '2 skills aleatorias',  goldPrice: 300,  dgPrice: 12,  rarity: 'medium',   dropCount: 2, dropType: 'defense', category: 'skills' },
-  { id: 'medio_atk',  name: 'Ataque',   desc: '2 skills aleatorias',  goldPrice: 300,  dgPrice: 12,  rarity: 'medium',   dropCount: 2, dropType: 'attack',  category: 'skills' },
-  { id: 'adv_def',    name: 'Defesa',   desc: '3 skills aleatorias',  goldPrice: 600,  dgPrice: 25,  rarity: 'advanced', dropCount: 3, dropType: 'defense', category: 'skills' },
-  { id: 'adv_atk',    name: 'Ataque',   desc: '3 skills aleatorias',  goldPrice: 600,  dgPrice: 25,  rarity: 'advanced', dropCount: 3, dropType: 'attack',  category: 'skills' },
-  { id: 'premium',    name: 'Completo', desc: '3 defesa + 3 ataque',  goldPrice: 0,    dgPrice: 50,  rarity: 'premium',  dropCount: 6, dropType: 'both',    category: 'skills' },
+  { id: 'basic_def',  nameKey: 'defense',  descKey: 'one-random-skill',     goldPrice: 100,  dgPrice: 5,   rarity: 'basic',    dropCount: 1, dropType: 'defense', category: 'skills' },
+  { id: 'basic_atk',  nameKey: 'attack',   descKey: 'one-random-skill',     goldPrice: 100,  dgPrice: 5,   rarity: 'basic',    dropCount: 1, dropType: 'attack',  category: 'skills' },
+  { id: 'medio_def',  nameKey: 'defense',  descKey: 'two-random-skills',    goldPrice: 300,  dgPrice: 12,  rarity: 'medium',   dropCount: 2, dropType: 'defense', category: 'skills' },
+  { id: 'medio_atk',  nameKey: 'attack',   descKey: 'two-random-skills',    goldPrice: 300,  dgPrice: 12,  rarity: 'medium',   dropCount: 2, dropType: 'attack',  category: 'skills' },
+  { id: 'adv_def',    nameKey: 'defense',  descKey: 'three-random-skills',  goldPrice: 600,  dgPrice: 25,  rarity: 'advanced', dropCount: 3, dropType: 'defense', category: 'skills' },
+  { id: 'adv_atk',    nameKey: 'attack',   descKey: 'three-random-skills',  goldPrice: 600,  dgPrice: 25,  rarity: 'advanced', dropCount: 3, dropType: 'attack',  category: 'skills' },
+  { id: 'premium',    nameKey: 'complete', descKey: 'premium-skill-pack',   goldPrice: 0,    dgPrice: 50,  rarity: 'premium',  dropCount: 6, dropType: 'both',    category: 'skills' },
 ]
 
 const DG_ITEMS: ShopItem[] = [
-  { id: 'dg_100', name: '100 DG',  desc: 'Dinheiro real', goldPrice: 0, dgPrice: 0, rarity: 'basic',    dropCount: 0, dropType: 'attack', category: 'premium' },
-  { id: 'dg_500', name: '500 DG',  desc: 'Dinheiro real', goldPrice: 0, dgPrice: 0, rarity: 'advanced', dropCount: 0, dropType: 'attack', category: 'premium' },
+  { id: 'dg_100', nameKey: 'dg-100', descKey: 'real-money', goldPrice: 0, dgPrice: 0, rarity: 'basic',    dropCount: 0, dropType: 'attack', category: 'premium' },
+  { id: 'dg_500', nameKey: 'dg-500', descKey: 'real-money', goldPrice: 0, dgPrice: 0, rarity: 'advanced', dropCount: 0, dropType: 'attack', category: 'premium' },
 ]
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -88,7 +87,7 @@ function hasAvailableSkills(type: 'attack' | 'defense' | 'both'): boolean {
 // Helpers
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const RARITY_LABEL: Record<string, string> = { basic: 'BÁSICO', medium: 'MÉDIO', advanced: 'AVANÇADO', premium: 'PREMIUM' }
+const RARITY_LABEL: Record<string, string> = { basic: 'basic', medium: 'medium', advanced: 'advanced', premium: 'premium' }
 // Tokens: basic=tertiary slate, medium=info blue, advanced=warn amber,
 // premium=accent gold (matches the dual-currency Print 11 vocabulary).
 const RARITY_COLORS: Record<string, number> = {
@@ -102,6 +101,19 @@ const RARITY_HEX: Record<string, string> = {
   medium:   state.infoHex,
   advanced: state.warnHex,
   premium:  accent.primaryHex,
+}
+
+function itemName(item: ShopItem): string {
+  return t(`scenes.shop.items.${item.nameKey}`)
+}
+
+function itemDesc(item: ShopItem): string {
+  return t(`scenes.shop.descriptions.${item.descKey}`)
+}
+
+function rarityLabel(rarity: string): string {
+  const key = RARITY_LABEL[rarity] ?? rarity
+  return t(`scenes.shop.rarity.${key}`)
 }
 
 function getCardAccent(item: ShopItem): number {
@@ -173,8 +185,8 @@ export default class ShopScene extends Phaser.Scene {
     // 3-tab indicator + per-tab hit boxes + recolor handlers.
     UI.segmentedControl<'skills' | 'skins' | 'dg'>(this, W / 2, TAB_Y + 14, {
       options: [
-        { key: 'skills', label: 'PACOTES' },
-        { key: 'skins',  label: 'SKINS' },
+        { key: 'skills', label: t('scenes.shop.tabs.packs') },
+        { key: 'skins',  label: t('scenes.shop.tabs.skins') },
         { key: 'dg',     label: 'DG' },
       ],
       value: this.activeTab,
@@ -288,7 +300,7 @@ export default class ShopScene extends Phaser.Scene {
     bg.lineBetween(-hw + 14, -hh + BANNER_H + 4, hw - 14, -hh + BANNER_H + 4)
 
     // Rarity label — Manrope meta letterSpacing 1.6
-    const rLabel = this.add.text(0, -hh + BANNER_H / 2 + 2, RARITY_LABEL[item.rarity] ?? '', {
+    const rLabel = this.add.text(0, -hh + BANNER_H / 2 + 2, rarityLabel(item.rarity), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: rarityHex, fontStyle: '700',
     }).setOrigin(0.5).setLetterSpacing(1.6)
@@ -321,13 +333,13 @@ export default class ShopScene extends Phaser.Scene {
     }
 
     // ── Name — Cormorant h3 ──
-    const nameText = this.add.text(0, -hh + 158, item.name, {
+    const nameText = this.add.text(0, -hh + 158, itemName(item), {
       fontFamily: fontFamily.serif, fontSize: typeScale.h3,
       color: fg.primaryHex, fontStyle: '600',
     }).setOrigin(0.5)
 
     // ── Description — Manrope small ──
-    const descText = this.add.text(0, -hh + 184, item.desc, {
+    const descText = this.add.text(0, -hh + 184, itemDesc(item), {
       fontFamily: fontFamily.body, fontSize: typeScale.small,
       color: fg.tertiaryHex, fontStyle: '500',
     }).setOrigin(0.5)
@@ -343,7 +355,7 @@ export default class ShopScene extends Phaser.Scene {
       badgeGfx.strokeRoundedRect(-32, badgeY - 9, 64, 18, 9)
       badgeEls.push(badgeGfx)
 
-      badgeEls.push(this.add.text(0, badgeY, `×${item.dropCount} SKILLS`, {
+      badgeEls.push(this.add.text(0, badgeY, t('scenes.shop.drop-pill', { count: item.dropCount }), {
         fontFamily: fontFamily.body, fontSize: typeScale.meta,
         color: accentHex, fontStyle: '700',
       }).setOrigin(0.5).setLetterSpacing(1.2))
@@ -537,7 +549,7 @@ export default class ShopScene extends Phaser.Scene {
     const hh = ch / 2
     const rarityColor = SKIN_RARITY_COLOR[skin.rarity]
     const rarityHex   = SKIN_RARITY_HEX[skin.rarity]
-    const rarityLabel = SKIN_RARITY_LABEL[skin.rarity]
+    const rarityText  = rarityLabel(skin.rarity)
     const owned       = playerData.ownsSkin(skin.classId, skin.id)
     const equipped    = playerData.getEquippedSkin(skin.classId) === skin.id
 
@@ -575,7 +587,7 @@ export default class ShopScene extends Phaser.Scene {
     rBadge.strokeRoundedRect(-rw / 2, -hh + 8, rw, rh, rh / 2)
     container.add(rBadge)
     container.add(
-      this.add.text(0, -hh + 8 + rh / 2, rarityLabel.toUpperCase(), {
+      this.add.text(0, -hh + 8 + rh / 2, rarityText.toUpperCase(), {
         fontFamily: fontFamily.body, fontSize: typeScale.meta,
         color: rarityHex, fontStyle: '700',
       }).setOrigin(0.5).setLetterSpacing(1.6),
@@ -631,7 +643,7 @@ export default class ShopScene extends Phaser.Scene {
       container.add(badgeBg)
 
       container.add(
-        this.add.text(0, actionY, equipped ? 'EQUIPADA' : 'ADQUIRIDA', {
+        this.add.text(0, actionY, equipped ? t('scenes.shop.skin-state.equipped') : t('scenes.shop.skin-state.owned'), {
           fontFamily: fontFamily.body, fontSize: typeScale.meta,
           color: statusColorHex, fontStyle: '700',
         }).setOrigin(0.5).setLetterSpacing(1.8),
@@ -712,13 +724,13 @@ export default class ShopScene extends Phaser.Scene {
     let modalClose: () => void = () => {}
     const actions: Array<{ label: string; kind: 'primary' | 'secondary' | 'destructive' | 'ghost'; onClick: () => void }> = [
       {
-        label: 'CANCELAR', kind: 'secondary',
+        label: t('common.actions.cancel'), kind: 'secondary',
         onClick: () => modalClose(),
       },
     ]
     if (canAfford) {
       actions.push({
-        label: `COMPRAR · ${skin.dgPrice} DG`, kind: 'primary',
+        label: t('scenes.shop.modal.buy-dg', { price: skin.dgPrice }), kind: 'primary',
         onClick: () => {
           modalClose()
           const ok = playerData.purchaseSkin(skin.classId, skin.id)
@@ -731,13 +743,13 @@ export default class ShopScene extends Phaser.Scene {
       })
     } else {
       actions.push({
-        label: 'SALDO INSUFICIENTE', kind: 'ghost',
+        label: t('scenes.shop.modal.insufficient-balance'), kind: 'ghost',
         onClick: () => modalClose(),
       })
     }
     const { close } = UI.modal(this, {
-      eyebrow: SKIN_RARITY_LABEL[skin.rarity],
-      title:   `Comprar ${skin.displayName}?`,
+      eyebrow: rarityLabel(skin.rarity),
+      title:   t('scenes.shop.modal.buy-title', { name: skin.displayName }),
       body:    skin.subtitle,
       actions,
     }, { width: 460 })
@@ -784,33 +796,33 @@ export default class ShopScene extends Phaser.Scene {
     let modalClose: () => void = () => {}
 
     const actions: Array<{ label: string; kind: 'primary' | 'secondary' | 'destructive' | 'ghost'; onClick: () => void }> = [
-      { label: 'CANCELAR', kind: 'secondary', onClick: () => modalClose() },
+      { label: t('common.actions.cancel'), kind: 'secondary', onClick: () => modalClose() },
     ]
     if (canAffordGold) {
       actions.push({
-        label: `COMPRAR · ${item.goldPrice} GOLD`, kind: 'primary',
+        label: t('scenes.shop.modal.buy-gold', { price: item.goldPrice }), kind: 'primary',
         onClick: () => { modalClose(); this.executePurchase(item, false) },
       })
     }
     if (canAffordDG) {
       actions.push({
-        label: `COMPRAR · ${item.dgPrice} DG`, kind: 'primary',
+        label: t('scenes.shop.modal.buy-dg', { price: item.dgPrice }), kind: 'primary',
         onClick: () => { modalClose(); this.executePurchase(item, true) },
       })
     }
     if (!canAffordGold && !canAffordDG) {
       actions.push({
-        label: 'SALDO INSUFICIENTE', kind: 'ghost',
+        label: t('scenes.shop.modal.insufficient-balance'), kind: 'ghost',
         onClick: () => modalClose(),
       })
     }
 
     const { close } = UI.modal(this, {
-      eyebrow: RARITY_LABEL[item.rarity] ?? '',
-      title:   `Comprar ${item.name}?`,
+      eyebrow: rarityLabel(item.rarity),
+      title:   t('scenes.shop.modal.buy-title', { name: itemName(item) }),
       body:    item.dropCount > 0
-        ? `${item.desc}  ·  ${item.dropCount} skill${item.dropCount > 1 ? 's' : ''} aleatória${item.dropCount > 1 ? 's' : ''}.`
-        : item.desc,
+        ? t('scenes.shop.modal.pack-body', { desc: itemDesc(item), count: item.dropCount })
+        : itemDesc(item),
       actions,
     }, { width: 480 })
     modalClose = close

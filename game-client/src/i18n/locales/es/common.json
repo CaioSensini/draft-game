@@ -1,5 +1,8 @@
 {
-  "_meta": { "lang": "es", "name": "Español" },
+  "_meta": {
+    "lang": "es",
+    "name": "Español"
+  },
   "actions": {
     "confirm": "CONFIRMAR",
     "cancel": "CANCELAR",
@@ -23,5 +26,85 @@
     "gold-cost": "{cost}o",
     "upgrade-action-affordable": "↑ MEJORAR NV {level} · {cost}o",
     "upgrade-action-broke": "NV {level} · {cost}o"
+  },
+  "ranked-tiers": {
+    "desconhecido": "Desconocido",
+    "recruta": "Recluta",
+    "aprendiz": "Aprendiz",
+    "soldado": "Soldado",
+    "veterano": "Veterano",
+    "comandante": "Comandante",
+    "rei": "Rey"
+  },
+  "ranked-display": {
+    "placement": "? Desconocido ({count}/3 torneos para clasificar)"
+  },
+  "skill-card": {
+    "categories": {
+      "attack": "ATAQUE",
+      "defense": "DEFENSA"
+    },
+    "stats": {
+      "damage": "DA?O",
+      "heal": "CURA",
+      "shield": "ESC",
+      "evade": "EVADIR",
+      "power": "POD"
+    },
+    "targets": {
+      "single": "OBJETIVO",
+      "self": "PROPIO",
+      "ally": "ALIADO",
+      "all-allies": "ALIADOS",
+      "line": "L?NEA",
+      "cone": "CONO",
+      "ring": "ANILLO",
+      "area": "?REA",
+      "tile": "CASILLA"
+    },
+    "target-details": {
+      "single": "Objetivo ?nico",
+      "area": "?rea",
+      "self": "Propio",
+      "lowest-ally": "Aliado d?bil",
+      "all-allies": "Todos aliados"
+    },
+    "detail-labels": {
+      "damage": "DA?O",
+      "heal": "CURA",
+      "shield": "ESCUDO",
+      "extra-damage": "DA?O EXTRA",
+      "extra-heal": "CURA EXTRA",
+      "effect": "EFECTO",
+      "target": "OBJETIVO"
+    },
+    "effect-labels": {
+      "damage": "Da?o",
+      "area": "?rea",
+      "heal": "Cura",
+      "shield": "Escudo",
+      "stun": "Aturdimiento",
+      "snare": "Inmovilizar",
+      "bleed": "Sangrado",
+      "burn": "Quemadura",
+      "poison": "Veneno",
+      "evade": "Evasi?n",
+      "reflect": "Reflejar",
+      "regen": "Regen",
+      "mark": "Marca",
+      "revive": "Revivir",
+      "lifesteal": "Robo de vida",
+      "true_damage": "Da?o puro",
+      "cleanse": "Purificar",
+      "purge": "Disipar",
+      "def_up": "+DEF",
+      "atk_up": "+ATQ",
+      "def_down": "-DEF",
+      "atk_down": "-ATQ",
+      "double_attack": "Doble",
+      "silence_defense": "Silencio",
+      "push": "Empujar",
+      "mov_down": "-MOV"
+    }
   }
 }

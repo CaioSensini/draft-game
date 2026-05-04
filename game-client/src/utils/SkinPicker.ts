@@ -29,10 +29,10 @@ import {
   SKIN_CATALOG,
   SKIN_RARITY_COLOR,
   SKIN_RARITY_HEX,
-  SKIN_RARITY_LABEL,
   type SkinDef,
 } from '../data/skinCatalog'
 import type { CharClass } from './AssetPaths'
+import { t } from '../i18n'
 
 const W = SCREEN.W
 const H = SCREEN.H
@@ -126,7 +126,7 @@ export function openSkinPicker(
   // ── Header — "ESCOLHER SKIN" + role label ──
   root.add(
     scene.add
-      .text(0, -PANEL_H / 2 + 22, 'ESCOLHER SKIN', {
+      .text(0, -PANEL_H / 2 + 22, t('scenes.skin-picker.title'), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.meta,
         color:      accent.primaryHex,
@@ -226,10 +226,10 @@ export function openSkinPicker(
 
     const locked = skins.filter((s) => !playerData.ownsSkin(classId, s.id)).length
     if (locked > 0) {
-      hintText.setText(`${locked} skin(s) bloqueada(s) — compre na loja`)
+      hintText.setText(t('scenes.skin-picker.locked-hint', { count: locked }))
       hintText.setColor(fg.tertiaryHex)
     } else {
-      hintText.setText('Todas as skins desbloqueadas — toque para equipar')
+      hintText.setText(t('scenes.skin-picker.all-unlocked-hint'))
       hintText.setColor(state.successHex)
     }
   }
@@ -296,7 +296,7 @@ function createCard(
 
   const rarityColor = SKIN_RARITY_COLOR[skin.rarity]
   const rarityHex = SKIN_RARITY_HEX[skin.rarity]
-  const rarityLabel = SKIN_RARITY_LABEL[skin.rarity]
+  const rarityLabel = t(`scenes.shop.rarity.${skin.rarity}`)
 
   // ── Background — token-driven card with rarity tint ──
   const bg = scene.add.graphics()
@@ -451,7 +451,7 @@ function createCard(
     container.add(eg)
     container.add(
       scene.add
-        .text(0, actionY, '✓  EQUIPADA', {
+        .text(0, actionY, t('scenes.skin-picker.equipped'), {
           fontFamily: fontFamily.body,
           fontSize:   typeScale.small,
           color:      accent.primaryHex,
@@ -474,7 +474,7 @@ function createCard(
     container.add(btnG)
 
     const btnLabel = scene.add
-      .text(0, actionY, 'EQUIPAR', {
+      .text(0, actionY, t('scenes.skin-picker.equip'), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.small,
         color:      state.successHex,
@@ -537,7 +537,7 @@ function createCard(
 
     container.add(
       scene.add
-        .text(actionW / 2 - 12, actionY, 'NA LOJA', {
+        .text(actionW / 2 - 12, actionY, t('scenes.skin-picker.in-shop'), {
           fontFamily: fontFamily.body,
           fontSize:   typeScale.meta,
           color:      fg.tertiaryHex,
@@ -582,7 +582,7 @@ export function makeChangeSkinPill(
   c.add(g)
 
   const label = scene.add
-    .text(0, 0, 'ALTERAR SKIN', {
+    .text(0, 0, t('scenes.lobby-shared.change-skin'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      fg.secondaryHex,

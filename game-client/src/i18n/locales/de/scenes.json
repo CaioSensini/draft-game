@@ -44,7 +44,43 @@
     "title": "SHOP",
     "all-owned": "ALLE BEREITS BESITZEN",
     "buy": "KAUFEN",
-    "unlocked": "FREIGESCHALTET"
+    "unlocked": "FREIGESCHALTET",
+    "tabs": {
+      "packs": "PAKETE",
+      "skins": "SKINS"
+    },
+    "items": {
+      "defense": "Abwehr",
+      "attack": "Angriff",
+      "complete": "Komplett",
+      "dg-100": "100 DG",
+      "dg-500": "500 DG"
+    },
+    "descriptions": {
+      "one-random-skill": "1 zuf?llige Skill",
+      "two-random-skills": "2 zuf?llige Skills",
+      "three-random-skills": "3 zuf?llige Skills",
+      "premium-skill-pack": "3 Abwehr + 3 Angriff",
+      "real-money": "Echtgeld"
+    },
+    "rarity": {
+      "basic": "BASIS",
+      "medium": "MITTEL",
+      "advanced": "FORTGESCHRITTEN",
+      "premium": "PREMIUM"
+    },
+    "drop-pill": "?{count} SKILLS",
+    "skin-state": {
+      "equipped": "AUSGER?STET",
+      "owned": "ERWORBEN"
+    },
+    "modal": {
+      "buy-title": "{name} kaufen?",
+      "buy-gold": "KAUFEN ? {price} GOLD",
+      "buy-dg": "KAUFEN ? {price} DG",
+      "insufficient-balance": "GUTHABEN ZU NIEDRIG",
+      "pack-body": "{desc} ? {count} zuf?llige Skill(s)."
+    }
   },
   "battle-pass": {
     "title": "BATTLE PASS",
@@ -68,7 +104,13 @@
       "def-mastery": "VER-MEIST.",
       "region": "REGION"
     },
-    "no-players": "Keine Spieler gefunden"
+    "no-players": "Keine Spieler gefunden",
+    "filters": {
+      "elo": "ELO",
+      "attack": "ANGRIFF",
+      "defense": "ABWEHR",
+      "global": "GLOBAL"
+    }
   },
   "ranked": {
     "title": "RANKED",
@@ -171,7 +213,9 @@
       "stunned": "Betäubt",
       "dead": "Tot",
       "no-targets": "? Keine Ziele in Reichweite!",
-      "death": "?? {name} ist gefallen (Runde {round})"
+      "death": "?? {name} ist gefallen (Runde {round})",
+      "damage": "{name} erleidet {amount} Schaden (HP {hp})",
+      "heal": "{name} heilt {amount} HP"
     },
     "outcome": {
       "victory": "Sieg!",
@@ -489,5 +533,13 @@
         "desc": "Teams mit Freunden und Bots bauen"
       }
     }
+  },
+  "skin-picker": {
+    "title": "SKIN W?HLEN",
+    "locked-hint": "{count} Skin(s) gesperrt ? im Shop kaufen",
+    "all-unlocked-hint": "Alle Skins freigeschaltet ? zum Ausr?sten tippen",
+    "equipped": "?  AUSGER?STET",
+    "equip": "AUSR?STEN",
+    "in-shop": "IM SHOP"
   }
 }

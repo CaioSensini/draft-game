@@ -55,19 +55,25 @@ const LEFT_SPRITE_H     = SCREEN.H - LEFT_SPRITE_TOP - 8       // 342 with H=720
 
 interface ClassMeta {
   role: UnitRole
-  label: string
-  abbrev: string
   prefix: string
   color: number
   colorHex: string
 }
 
 const CLASSES: ClassMeta[] = [
-  { role: 'king',       label: 'Rei',          abbrev: 'REI', prefix: 'lk_', color: C2.class.king,       colorHex: '#' + C2.class.king.toString(16).padStart(6, '0') },
-  { role: 'warrior',    label: 'Guerreiro',    abbrev: 'GUE', prefix: 'lw_', color: C2.class.warrior,    colorHex: '#' + C2.class.warrior.toString(16).padStart(6, '0') },
-  { role: 'executor',   label: 'Executor',     abbrev: 'EXE', prefix: 'le_', color: C2.class.executor,   colorHex: '#' + C2.class.executor.toString(16).padStart(6, '0') },
-  { role: 'specialist', label: 'Especialista', abbrev: 'ESP', prefix: 'ls_', color: C2.class.specialist, colorHex: '#' + C2.class.specialist.toString(16).padStart(6, '0') },
+  { role: 'king',       prefix: 'lk_', color: C2.class.king,       colorHex: '#' + C2.class.king.toString(16).padStart(6, '0') },
+  { role: 'warrior',    prefix: 'lw_', color: C2.class.warrior,    colorHex: '#' + C2.class.warrior.toString(16).padStart(6, '0') },
+  { role: 'executor',   prefix: 'le_', color: C2.class.executor,   colorHex: '#' + C2.class.executor.toString(16).padStart(6, '0') },
+  { role: 'specialist', prefix: 'ls_', color: C2.class.specialist, colorHex: '#' + C2.class.specialist.toString(16).padStart(6, '0') },
 ]
+
+function roleLabel(role: UnitRole): string {
+  return t(`skills.roles.${role}`)
+}
+
+function roleAbbr(role: UnitRole): string {
+  return t(`scenes.battle.role-abbr.${role}`)
+}
 
 const STAT_CFG = [
   { key: 'maxHp' as const,    label: 'HP',  color: state.error,   hex: state.errorHex,   max: 200 },
@@ -203,7 +209,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
       } else {
         cont.add(UI.classIcon(this, 0, -2, cls.role, 28, isActive ? cls.color : border.default))
       }
-      cont.add(this.add.text(0, tabW / 2 + 8, cls.abbrev, {
+      cont.add(this.add.text(0, tabW / 2 + 8, roleAbbr(cls.role), {
         fontFamily: fontFamily.body, fontSize: typeScale.meta,
         fontStyle: '700',
         color: isActive ? cls.colorHex : fg.disabledHex,
@@ -248,7 +254,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     this.leftGroup.push(bg)
 
     // Class name — Cormorant h3 class-color
-    this.leftGroup.push(this.add.text(px + pw / 2, py + 26, cls.label, {
+    this.leftGroup.push(this.add.text(px + pw / 2, py + 26, roleLabel(cls.role), {
       fontFamily: fontFamily.serif, fontSize: typeScale.h3,
       color: cls.colorHex, fontStyle: '600',
     }).setOrigin(0.5))
@@ -353,7 +359,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     }
 
     // Character name under sprite — Cormorant h3 class-color
-    this.leftGroup.push(this.add.text(spriteCx, spriteY + spriteH - 22, cls.label, {
+    this.leftGroup.push(this.add.text(spriteCx, spriteY + spriteH - 22, roleLabel(cls.role), {
       fontFamily: fontFamily.serif, fontSize: typeScale.h3,
       color: cls.colorHex, fontStyle: '600',
     }).setOrigin(0.5))

@@ -165,8 +165,8 @@ export const colors = {
 } as const
 
 export const fonts = {
-  heading: 'Arial Black, Arial, sans-serif',
-  body:    'Arial, sans-serif',
+  heading: "'Cinzel', 'Trajan Pro', 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif SC', 'Noto Serif KR', serif",
+  body:    "'Manrope', 'Inter', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', system-ui, sans-serif",
 } as const
 
 export const sizes = {

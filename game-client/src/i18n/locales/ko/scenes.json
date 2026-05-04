@@ -44,7 +44,43 @@
     "title": "상점",
     "all-owned": "이미 모두 보유",
     "buy": "구매",
-    "unlocked": "잠금 해제"
+    "unlocked": "잠금 해제",
+    "tabs": {
+      "packs": "?",
+      "skins": "??"
+    },
+    "items": {
+      "defense": "??",
+      "attack": "??",
+      "complete": "??",
+      "dg-100": "100 DG",
+      "dg-500": "500 DG"
+    },
+    "descriptions": {
+      "one-random-skill": "?? ?? 1?",
+      "two-random-skills": "?? ?? 2?",
+      "three-random-skills": "?? ?? 3?",
+      "premium-skill-pack": "?? 3 + ?? 3",
+      "real-money": "?? ??"
+    },
+    "rarity": {
+      "basic": "??",
+      "medium": "??",
+      "advanced": "??",
+      "premium": "????"
+    },
+    "drop-pill": "?{count} ??",
+    "skin-state": {
+      "equipped": "???",
+      "owned": "???"
+    },
+    "modal": {
+      "buy-title": "{name} ???",
+      "buy-gold": "?? ? {price} GOLD",
+      "buy-dg": "?? ? {price} DG",
+      "insufficient-balance": "?? ??",
+      "pack-body": "{desc} ? ?? ?? {count}?."
+    }
   },
   "battle-pass": {
     "title": "배틀 패스",
@@ -68,7 +104,13 @@
       "def-mastery": "방어 숙련도",
       "region": "지역"
     },
-    "no-players": "플레이어를 찾을 수 없음"
+    "no-players": "플레이어를 찾을 수 없음",
+    "filters": {
+      "elo": "ELO",
+      "attack": "??",
+      "defense": "??",
+      "global": "???"
+    }
   },
   "ranked": {
     "title": "랭크",
@@ -171,7 +213,9 @@
       "stunned": "기절",
       "dead": "사망",
       "no-targets": "? ??? ?? ??? ????!",
-      "death": "?? {name} ?? (??? {round})"
+      "death": "?? {name} ?? (??? {round})",
+      "damage": "{name}?(?) {amount} ??? ?? (HP {hp})",
+      "heal": "{name}?(?) {amount} HP ??"
     },
     "outcome": {
       "victory": "승리!",
@@ -492,5 +536,13 @@
         "desc": "??? ??? ? ??"
       }
     }
+  },
+  "skin-picker": {
+    "title": "?? ??",
+    "locked-hint": "{count}? ?? ?? ? ???? ??",
+    "all-unlocked-hint": "?? ?? ?? ?? ? ??? ??",
+    "equipped": "?  ???",
+    "equip": "??",
+    "in-shop": "??"
   }
 }

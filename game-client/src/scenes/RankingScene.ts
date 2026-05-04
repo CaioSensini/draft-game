@@ -3,7 +3,7 @@ import { UI } from '../utils/UIComponents'
 import { transitionTo } from '../utils/SceneTransition'
 import { playerData } from '../utils/PlayerDataManager'
 import type { RankedTier } from '../data/tournaments'
-import { RANKED_TIERS } from '../data/tournaments'
+import { getRankedTierName, RANKED_TIERS } from '../data/tournaments'
 import {
   SCREEN, surface, border, fg, accent, state,
   fontFamily, typeScale, radii, motion,
@@ -58,6 +58,10 @@ const REGION_COLOR_HEX: Record<string, string> = {
   BR: state.successHex,
   US: state.infoHex,
   EU: state.warnHex,
+}
+
+function tierLabel(tier: RankedTier): string {
+  return getRankedTierName(tier)
 }
 
 // ── Scene ────────────────────────────────────────────────────────────────────
@@ -118,9 +122,9 @@ export default class RankingScene extends Phaser.Scene {
 
   private drawFilters() {
     const sortOptions: Array<{ key: SortKey; label: string }> = [
-      { key: 'elo', label: 'ELO' },
-      { key: 'atk_mastery', label: 'ATAQUE' },
-      { key: 'def_mastery', label: 'DEFESA' },
+      { key: 'elo', label: t('scenes.ranking.filters.elo') },
+      { key: 'atk_mastery', label: t('scenes.ranking.filters.attack') },
+      { key: 'def_mastery', label: t('scenes.ranking.filters.defense') },
     ]
 
     this.add.text(40, FILTER_Y - 16, t('scenes.ranking.sort-label'), {
@@ -139,7 +143,7 @@ export default class RankingScene extends Phaser.Scene {
     })
 
     const regionOptions: Array<{ key: RegionKey; label: string }> = [
-      { key: 'all', label: 'GLOBAL' },
+      { key: 'all', label: t('scenes.ranking.filters.global') },
       { key: 'BR',  label: 'BR' },
       { key: 'US',  label: 'US' },
       { key: 'EU',  label: 'EU' },
@@ -274,7 +278,7 @@ export default class RankingScene extends Phaser.Scene {
       const tierData = RANKED_TIERS[p.tier]
       if (tierData) {
         UI.tierIcon(this, COL.elo, cellY, p.tier, 10)
-        this.add.text(COL.elo + 18, cellY, tierData.name, {
+        this.add.text(COL.elo + 18, cellY, tierLabel(p.tier), {
           fontFamily: fontFamily.body,
           fontSize:   this.sortKey === 'elo' ? typeScale.body : typeScale.small,
           color:      tierData.colorHex,
@@ -363,7 +367,7 @@ export default class RankingScene extends Phaser.Scene {
     const tierData = RANKED_TIERS[myTier]
     if (tierData) {
       UI.tierIcon(this, COL.elo, cellY, myTier, 10)
-      this.add.text(COL.elo + 18, cellY, tierData.name, {
+      this.add.text(COL.elo + 18, cellY, tierLabel(myTier), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.body,
         color:      tierData.colorHex,
