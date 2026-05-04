@@ -125,10 +125,10 @@ export default class MenuScene extends Phaser.Scene {
     shimmer.setDepth(8)
 
     // =========================================================================
-    // LAYER 9 — "TACTICAL WARFARE" subtitle (Cinzel 700, per Print 19)
+    // LAYER 9 — "BATALHAS TÁTICAS" subtitle (Cinzel 700, per Print 19)
     // =========================================================================
     const subY = titleY + 62
-    const subtitle = this.add.text(cx, subY, 'TACTICAL WARFARE', {
+    const subtitle = this.add.text(cx, subY, 'BATALHAS TÁTICAS', {
       fontFamily: fontFamily.display, fontSize: '22px', fontStyle: '700',
       color: fg.secondaryHex,
       shadow: { offsetX: 0, offsetY: 2, color: '#3a2800', blur: 6, fill: true },
