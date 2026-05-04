@@ -1,5 +1,78 @@
 {
   "_meta": { "lang": "fr" },
+  "lobby-shared": {
+    "your-team": "VOTRE ÉQUIPE",
+    "your-badge": "VOUS",
+    "your-badge-short": "VOUS",
+    "team-bonus": "BONUS D'ÉQUIPE",
+    "team-info": "INFOS",
+    "current-badge": "ACTUEL",
+    "empty-slot": "Vide",
+    "waiting": "En attente…",
+    "invite": "INVITER",
+    "change-skin": "CHANGER SKIN",
+    "swap": "ÉCHANGER",
+    "level-range": "PLAGE DE NIVEAU"
+  },
+  "shop": {
+    "title": "BOUTIQUE",
+    "all-owned": "VOUS POSSÉDEZ TOUT",
+    "buy": "ACHETER",
+    "unlocked": "DÉBLOQUÉ"
+  },
+  "battle-pass": {
+    "title": "PASSE DE COMBAT",
+    "season-missions": "MISSIONS DE LA SAISON",
+    "buy-premium": "OBTENIR PREMIUM",
+    "premium-tagline": "Débloque le parcours premium",
+    "premium-active": "PREMIUM ACTIF",
+    "premium-thanks": "Merci pour votre soutien !",
+    "complete-chain": "CHAÎNE COMPLÈTE",
+    "rewards": "RÉCOMPENSES"
+  },
+  "ranking": {
+    "title": "CLASSEMENT MONDIAL",
+    "subtitle": "Les meilleurs joueurs du monde",
+    "sort-label": "TRIER",
+    "region-label": "RÉGION",
+    "table": {
+      "player": "JOUEUR",
+      "elo": "ELO",
+      "atk-mastery": "MAÎT. ATQ",
+      "def-mastery": "MAÎT. DÉF",
+      "region": "RÉGION"
+    },
+    "no-players": "Aucun joueur trouvé"
+  },
+  "ranked": {
+    "title": "CLASSÉE",
+    "subtitle": "ARÈNE CLASSÉE",
+    "locked-title": "ARÈNE CLASSÉE",
+    "locked-body": "Disponible à partir du Niveau 100",
+    "ranks-eyebrow": "RANGS"
+  },
+  "bracket": {
+    "live": "EN DIRECT",
+    "champion": "CHAMPION",
+    "you-won": "VOUS AVEZ GAGNÉ !"
+  },
+  "pvp": {
+    "title": "PVP",
+    "subtitle": "COMBAT",
+    "squad-incomplete": "Invitez 1 joueur de plus pour compléter le squad"
+  },
+  "pve": {
+    "title": "PVE"
+  },
+  "custom": {
+    "title": "PERSO",
+    "subtitle": "PARTIE PERSONNALISÉE"
+  },
+  "matchmaking": {
+    "searching": "RECHERCHE D'ADVERSAIRE",
+    "queue-time": "TEMPS EN FILE",
+    "tip-eyebrow": "ASTUCE"
+  },
   "battle": {
     "phase": {
       "movement-title-line-1": "TOUR DE",

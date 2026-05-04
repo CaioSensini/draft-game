@@ -1,5 +1,78 @@
 {
   "_meta": { "lang": "de" },
+  "lobby-shared": {
+    "your-team": "DEIN TEAM",
+    "your-badge": "DU",
+    "your-badge-short": "DU",
+    "team-bonus": "TEAM-BONUS",
+    "team-info": "INFO",
+    "current-badge": "AKTUELL",
+    "empty-slot": "Leer",
+    "waiting": "Warten…",
+    "invite": "EINLADEN",
+    "change-skin": "SKIN ÄNDERN",
+    "swap": "TAUSCHEN",
+    "level-range": "STUFEN-BEREICH"
+  },
+  "shop": {
+    "title": "SHOP",
+    "all-owned": "ALLE BEREITS BESITZEN",
+    "buy": "KAUFEN",
+    "unlocked": "FREIGESCHALTET"
+  },
+  "battle-pass": {
+    "title": "BATTLE PASS",
+    "season-missions": "SAISON-MISSIONEN",
+    "buy-premium": "PREMIUM HOLEN",
+    "premium-tagline": "Schaltet Premium-Pfad frei",
+    "premium-active": "PREMIUM AKTIV",
+    "premium-thanks": "Danke für deine Unterstützung!",
+    "complete-chain": "KETTE KOMPLETT",
+    "rewards": "BELOHNUNGEN"
+  },
+  "ranking": {
+    "title": "GLOBALE RANGLISTE",
+    "subtitle": "Die Top-Spieler der Welt",
+    "sort-label": "SORTIEREN",
+    "region-label": "REGION",
+    "table": {
+      "player": "SPIELER",
+      "elo": "ELO",
+      "atk-mastery": "ANG-MEIST.",
+      "def-mastery": "VER-MEIST.",
+      "region": "REGION"
+    },
+    "no-players": "Keine Spieler gefunden"
+  },
+  "ranked": {
+    "title": "RANKED",
+    "subtitle": "RANKED ARENA",
+    "locked-title": "RANKED ARENA",
+    "locked-body": "Verfügbar ab Stufe 100",
+    "ranks-eyebrow": "RÄNGE"
+  },
+  "bracket": {
+    "live": "LIVE",
+    "champion": "CHAMPION",
+    "you-won": "DU HAST GEWONNEN!"
+  },
+  "pvp": {
+    "title": "PVP",
+    "subtitle": "KAMPF",
+    "squad-incomplete": "Lade 1 weiteren Spieler ein, um den Squad zu vervollständigen"
+  },
+  "pve": {
+    "title": "PVE"
+  },
+  "custom": {
+    "title": "CUSTOM",
+    "subtitle": "BENUTZERDEFINIERTES MATCH"
+  },
+  "matchmaking": {
+    "searching": "SUCHE GEGNER",
+    "queue-time": "WARTEZEIT",
+    "tip-eyebrow": "TIPP"
+  },
   "battle": {
     "phase": {
       "movement-title-line-1": "ZUG VON",

@@ -1,5 +1,78 @@
 {
   "_meta": { "lang": "tr" },
+  "lobby-shared": {
+    "your-team": "TAKIMIN",
+    "your-badge": "SEN",
+    "your-badge-short": "SEN",
+    "team-bonus": "TAKIM BONUSU",
+    "team-info": "BİLGİ",
+    "current-badge": "MEVCUT",
+    "empty-slot": "Boş",
+    "waiting": "Bekleniyor…",
+    "invite": "DAVET ET",
+    "change-skin": "SKİN DEĞİŞTİR",
+    "swap": "DEĞİŞTİR",
+    "level-range": "SEVİYE ARALIĞI"
+  },
+  "shop": {
+    "title": "MAĞAZA",
+    "all-owned": "HEPSİNE SAHİPSİN",
+    "buy": "SATIN AL",
+    "unlocked": "KİLİT AÇIK"
+  },
+  "battle-pass": {
+    "title": "SAVAŞ GEÇİDİ",
+    "season-missions": "SEZON GÖREVLERİ",
+    "buy-premium": "PREMIUM AL",
+    "premium-tagline": "Premium yolu açar",
+    "premium-active": "PREMIUM AKTİF",
+    "premium-thanks": "Desteğin için teşekkürler!",
+    "complete-chain": "ZİNCİR TAMAMLANDI",
+    "rewards": "ÖDÜLLER"
+  },
+  "ranking": {
+    "title": "GLOBAL SIRALAMA",
+    "subtitle": "Dünyanın en iyi oyuncuları",
+    "sort-label": "SIRALA",
+    "region-label": "BÖLGE",
+    "table": {
+      "player": "OYUNCU",
+      "elo": "ELO",
+      "atk-mastery": "SAL. USTALIK",
+      "def-mastery": "SAV. USTALIK",
+      "region": "BÖLGE"
+    },
+    "no-players": "Hiç oyuncu bulunamadı"
+  },
+  "ranked": {
+    "title": "DERECELİ",
+    "subtitle": "DERECELİ ARENA",
+    "locked-title": "DERECELİ ARENA",
+    "locked-body": "Seviye 100'den itibaren",
+    "ranks-eyebrow": "RÜTBELER"
+  },
+  "bracket": {
+    "live": "CANLI",
+    "champion": "ŞAMPİYON",
+    "you-won": "KAZANDIN!"
+  },
+  "pvp": {
+    "title": "PVP",
+    "subtitle": "SAVAŞ",
+    "squad-incomplete": "Squad'ı tamamlamak için 1 oyuncu daha davet et"
+  },
+  "pve": {
+    "title": "PVE"
+  },
+  "custom": {
+    "title": "ÖZEL",
+    "subtitle": "ÖZEL MAÇ"
+  },
+  "matchmaking": {
+    "searching": "RAKİP ARANIYOR",
+    "queue-time": "SIRA SÜRESİ",
+    "tip-eyebrow": "İPUCU"
+  },
   "battle": {
     "phase": {
       "movement-title-line-1": "SIRA",

@@ -1,5 +1,78 @@
 {
   "_meta": { "lang": "en-US" },
+  "lobby-shared": {
+    "your-team": "YOUR TEAM",
+    "your-badge": "YOU",
+    "your-badge-short": "YOU",
+    "team-bonus": "TEAM BONUS",
+    "team-info": "INFO",
+    "current-badge": "CURRENT",
+    "empty-slot": "Empty",
+    "waiting": "Waiting…",
+    "invite": "INVITE",
+    "change-skin": "CHANGE SKIN",
+    "swap": "SWAP",
+    "level-range": "LEVEL RANGE"
+  },
+  "shop": {
+    "title": "SHOP",
+    "all-owned": "YOU OWN THEM ALL",
+    "buy": "BUY",
+    "unlocked": "UNLOCKED"
+  },
+  "battle-pass": {
+    "title": "BATTLE PASS",
+    "season-missions": "SEASON MISSIONS",
+    "buy-premium": "GET PREMIUM",
+    "premium-tagline": "Unlocks premium track",
+    "premium-active": "PREMIUM ACTIVE",
+    "premium-thanks": "Thanks for supporting!",
+    "complete-chain": "CHAIN COMPLETE",
+    "rewards": "REWARDS"
+  },
+  "ranking": {
+    "title": "GLOBAL RANKING",
+    "subtitle": "The world's top players",
+    "sort-label": "SORT",
+    "region-label": "REGION",
+    "table": {
+      "player": "PLAYER",
+      "elo": "ELO",
+      "atk-mastery": "ATK MASTERY",
+      "def-mastery": "DEF MASTERY",
+      "region": "REGION"
+    },
+    "no-players": "No players found"
+  },
+  "ranked": {
+    "title": "RANKED",
+    "subtitle": "RANKED ARENA",
+    "locked-title": "RANKED ARENA",
+    "locked-body": "Available from Level 100",
+    "ranks-eyebrow": "RANKS"
+  },
+  "bracket": {
+    "live": "LIVE",
+    "champion": "CHAMPION",
+    "you-won": "YOU WON!"
+  },
+  "pvp": {
+    "title": "PVP",
+    "subtitle": "BATTLE",
+    "squad-incomplete": "Invite 1 more player to complete the squad"
+  },
+  "pve": {
+    "title": "PVE"
+  },
+  "custom": {
+    "title": "CUSTOM",
+    "subtitle": "CUSTOM MATCH"
+  },
+  "matchmaking": {
+    "searching": "SEARCHING FOR OPPONENT",
+    "queue-time": "QUEUE TIME",
+    "tip-eyebrow": "TIP"
+  },
   "battle": {
     "phase": {
       "movement-title-line-1": "TURN OF",

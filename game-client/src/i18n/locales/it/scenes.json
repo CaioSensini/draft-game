@@ -1,5 +1,78 @@
 {
   "_meta": { "lang": "it" },
+  "lobby-shared": {
+    "your-team": "LA TUA SQUADRA",
+    "your-badge": "TU",
+    "your-badge-short": "TU",
+    "team-bonus": "BONUS SQUADRA",
+    "team-info": "INFO",
+    "current-badge": "ATTUALE",
+    "empty-slot": "Vuoto",
+    "waiting": "In attesa…",
+    "invite": "INVITA",
+    "change-skin": "CAMBIA SKIN",
+    "swap": "SCAMBIA",
+    "level-range": "FASCIA DI LIVELLO"
+  },
+  "shop": {
+    "title": "NEGOZIO",
+    "all-owned": "POSSIEDI GIÀ TUTTE",
+    "buy": "ACQUISTA",
+    "unlocked": "SBLOCCATO"
+  },
+  "battle-pass": {
+    "title": "PASS DI BATTAGLIA",
+    "season-missions": "MISSIONI DELLA STAGIONE",
+    "buy-premium": "OTTIENI PREMIUM",
+    "premium-tagline": "Sblocca traccia premium",
+    "premium-active": "PREMIUM ATTIVO",
+    "premium-thanks": "Grazie per il supporto!",
+    "complete-chain": "CATENA COMPLETA",
+    "rewards": "RICOMPENSE"
+  },
+  "ranking": {
+    "title": "CLASSIFICA GLOBALE",
+    "subtitle": "I migliori giocatori del mondo",
+    "sort-label": "ORDINA",
+    "region-label": "REGIONE",
+    "table": {
+      "player": "GIOCATORE",
+      "elo": "ELO",
+      "atk-mastery": "M. ATTACCO",
+      "def-mastery": "M. DIFESA",
+      "region": "REGIONE"
+    },
+    "no-players": "Nessun giocatore trovato"
+  },
+  "ranked": {
+    "title": "RANKED",
+    "subtitle": "ARENA CLASSIFICATA",
+    "locked-title": "ARENA CLASSIFICATA",
+    "locked-body": "Disponibile dal Livello 100",
+    "ranks-eyebrow": "RANGHI"
+  },
+  "bracket": {
+    "live": "DAL VIVO",
+    "champion": "CAMPIONE",
+    "you-won": "HAI VINTO!"
+  },
+  "pvp": {
+    "title": "PVP",
+    "subtitle": "BATTAGLIA",
+    "squad-incomplete": "Invita 1 giocatore in più per completare la squadra"
+  },
+  "pve": {
+    "title": "PVE"
+  },
+  "custom": {
+    "title": "CUSTOM",
+    "subtitle": "PARTITA PERSONALIZZATA"
+  },
+  "matchmaking": {
+    "searching": "RICERCA AVVERSARIO",
+    "queue-time": "TEMPO IN CODA",
+    "tip-eyebrow": "SUGGERIMENTO"
+  },
   "battle": {
     "phase": {
       "movement-title-line-1": "TURNO DI",

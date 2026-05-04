@@ -1,5 +1,78 @@
 {
   "_meta": { "lang": "es" },
+  "lobby-shared": {
+    "your-team": "TU EQUIPO",
+    "your-badge": "TÚ",
+    "your-badge-short": "TÚ",
+    "team-bonus": "BONUS DE EQUIPO",
+    "team-info": "INFO",
+    "current-badge": "ACTUAL",
+    "empty-slot": "Vacío",
+    "waiting": "Esperando…",
+    "invite": "INVITAR",
+    "change-skin": "CAMBIAR SKIN",
+    "swap": "CAMBIAR",
+    "level-range": "RANGO DE NIVEL"
+  },
+  "shop": {
+    "title": "TIENDA",
+    "all-owned": "YA POSEES TODAS",
+    "buy": "COMPRAR",
+    "unlocked": "DESBLOQUEADO"
+  },
+  "battle-pass": {
+    "title": "PASE DE BATALLA",
+    "season-missions": "MISIONES DE TEMPORADA",
+    "buy-premium": "OBTENER PREMIUM",
+    "premium-tagline": "Desbloquea camino premium",
+    "premium-active": "PREMIUM ACTIVO",
+    "premium-thanks": "¡Gracias por apoyar!",
+    "complete-chain": "CADENA COMPLETA",
+    "rewards": "RECOMPENSAS"
+  },
+  "ranking": {
+    "title": "RANKING GLOBAL",
+    "subtitle": "Los mejores jugadores del mundo",
+    "sort-label": "ORDENAR",
+    "region-label": "REGIÓN",
+    "table": {
+      "player": "JUGADOR",
+      "elo": "ELO",
+      "atk-mastery": "M. ATAQUE",
+      "def-mastery": "M. DEFENSA",
+      "region": "REGIÓN"
+    },
+    "no-players": "Ningún jugador encontrado"
+  },
+  "ranked": {
+    "title": "RANKED",
+    "subtitle": "ARENA RANKED",
+    "locked-title": "ARENA RANKED",
+    "locked-body": "Disponible a partir del Nivel 100",
+    "ranks-eyebrow": "RANGOS"
+  },
+  "bracket": {
+    "live": "EN VIVO",
+    "champion": "CAMPEÓN",
+    "you-won": "¡GANASTE!"
+  },
+  "pvp": {
+    "title": "PVP",
+    "subtitle": "BATALLA",
+    "squad-incomplete": "Invita 1 jugador más para completar el squad"
+  },
+  "pve": {
+    "title": "PVE"
+  },
+  "custom": {
+    "title": "CUSTOM",
+    "subtitle": "PARTIDA PERSONALIZADA"
+  },
+  "matchmaking": {
+    "searching": "BUSCANDO ADVERSARIO",
+    "queue-time": "TIEMPO EN COLA",
+    "tip-eyebrow": "CONSEJO"
+  },
   "battle": {
     "phase": {
       "movement-title-line-1": "TURNO DE",

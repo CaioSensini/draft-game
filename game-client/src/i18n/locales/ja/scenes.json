@@ -1,5 +1,78 @@
 {
   "_meta": { "lang": "ja" },
+  "lobby-shared": {
+    "your-team": "あなたのチーム",
+    "your-badge": "あなた",
+    "your-badge-short": "あなた",
+    "team-bonus": "チームボーナス",
+    "team-info": "情報",
+    "current-badge": "現在",
+    "empty-slot": "空",
+    "waiting": "待機中…",
+    "invite": "招待",
+    "change-skin": "スキン変更",
+    "swap": "交換",
+    "level-range": "レベル範囲"
+  },
+  "shop": {
+    "title": "ショップ",
+    "all-owned": "すべて所有済み",
+    "buy": "購入",
+    "unlocked": "解除済み"
+  },
+  "battle-pass": {
+    "title": "バトルパス",
+    "season-missions": "シーズンミッション",
+    "buy-premium": "プレミアム入手",
+    "premium-tagline": "プレミアムトラックを解除",
+    "premium-active": "プレミアム有効",
+    "premium-thanks": "ご支援ありがとうございます！",
+    "complete-chain": "チェーン完了",
+    "rewards": "報酬"
+  },
+  "ranking": {
+    "title": "グローバルランキング",
+    "subtitle": "世界トップのプレイヤー",
+    "sort-label": "並び替え",
+    "region-label": "地域",
+    "table": {
+      "player": "プレイヤー",
+      "elo": "ELO",
+      "atk-mastery": "攻撃熟練",
+      "def-mastery": "防御熟練",
+      "region": "地域"
+    },
+    "no-players": "プレイヤーが見つかりません"
+  },
+  "ranked": {
+    "title": "ランク",
+    "subtitle": "ランクアリーナ",
+    "locked-title": "ランクアリーナ",
+    "locked-body": "レベル100から利用可能",
+    "ranks-eyebrow": "ランク"
+  },
+  "bracket": {
+    "live": "ライブ",
+    "champion": "チャンピオン",
+    "you-won": "勝利！"
+  },
+  "pvp": {
+    "title": "PVP",
+    "subtitle": "バトル",
+    "squad-incomplete": "スカッドを完成させるためにあと1人招待"
+  },
+  "pve": {
+    "title": "PVE"
+  },
+  "custom": {
+    "title": "カスタム",
+    "subtitle": "カスタムマッチ"
+  },
+  "matchmaking": {
+    "searching": "対戦相手を検索中",
+    "queue-time": "待機時間",
+    "tip-eyebrow": "ヒント"
+  },
   "battle": {
     "phase": {
       "movement-title-line-1": "ターン",

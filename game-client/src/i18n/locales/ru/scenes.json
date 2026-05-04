@@ -1,5 +1,78 @@
 {
   "_meta": { "lang": "ru" },
+  "lobby-shared": {
+    "your-team": "ВАША КОМАНДА",
+    "your-badge": "ВЫ",
+    "your-badge-short": "ВЫ",
+    "team-bonus": "БОНУС КОМАНДЫ",
+    "team-info": "ИНФО",
+    "current-badge": "ТЕКУЩИЙ",
+    "empty-slot": "Пусто",
+    "waiting": "Ожидание…",
+    "invite": "ПРИГЛАСИТЬ",
+    "change-skin": "СМЕНИТЬ СКИН",
+    "swap": "ПОМЕНЯТЬ",
+    "level-range": "ДИАПАЗОН УРОВНЕЙ"
+  },
+  "shop": {
+    "title": "МАГАЗИН",
+    "all-owned": "ВСЁ ВАШЕ",
+    "buy": "КУПИТЬ",
+    "unlocked": "РАЗБЛОКИРОВАНО"
+  },
+  "battle-pass": {
+    "title": "БОЕВОЙ ПРОПУСК",
+    "season-missions": "МИССИИ СЕЗОНА",
+    "buy-premium": "ПОЛУЧИТЬ ПРЕМИУМ",
+    "premium-tagline": "Открывает премиум путь",
+    "premium-active": "ПРЕМИУМ АКТИВЕН",
+    "premium-thanks": "Спасибо за поддержку!",
+    "complete-chain": "ЦЕПОЧКА ЗАВЕРШЕНА",
+    "rewards": "НАГРАДЫ"
+  },
+  "ranking": {
+    "title": "ГЛОБАЛЬНЫЙ РЕЙТИНГ",
+    "subtitle": "Лучшие игроки мира",
+    "sort-label": "СОРТ",
+    "region-label": "РЕГИОН",
+    "table": {
+      "player": "ИГРОК",
+      "elo": "ELO",
+      "atk-mastery": "МАСТ. АТАКИ",
+      "def-mastery": "МАСТ. ЗАЩИТЫ",
+      "region": "РЕГИОН"
+    },
+    "no-players": "Игроки не найдены"
+  },
+  "ranked": {
+    "title": "РЕЙТИНГ",
+    "subtitle": "РЕЙТИНГОВАЯ АРЕНА",
+    "locked-title": "РЕЙТИНГОВАЯ АРЕНА",
+    "locked-body": "Доступно с Уровня 100",
+    "ranks-eyebrow": "РАНГИ"
+  },
+  "bracket": {
+    "live": "В ЭФИРЕ",
+    "champion": "ЧЕМПИОН",
+    "you-won": "ВЫ ВЫИГРАЛИ!"
+  },
+  "pvp": {
+    "title": "PVP",
+    "subtitle": "БИТВА",
+    "squad-incomplete": "Пригласите ещё 1 игрока, чтобы заполнить отряд"
+  },
+  "pve": {
+    "title": "PVE"
+  },
+  "custom": {
+    "title": "СВОЯ",
+    "subtitle": "СВОЯ ИГРА"
+  },
+  "matchmaking": {
+    "searching": "ПОИСК ПРОТИВНИКА",
+    "queue-time": "ВРЕМЯ В ОЧЕРЕДИ",
+    "tip-eyebrow": "СОВЕТ"
+  },
   "battle": {
     "phase": {
       "movement-title-line-1": "ХОД",

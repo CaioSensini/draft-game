@@ -1,5 +1,78 @@
 {
   "_meta": { "lang": "ko" },
+  "lobby-shared": {
+    "your-team": "당신의 팀",
+    "your-badge": "당신",
+    "your-badge-short": "당신",
+    "team-bonus": "팀 보너스",
+    "team-info": "정보",
+    "current-badge": "현재",
+    "empty-slot": "비어있음",
+    "waiting": "대기 중…",
+    "invite": "초대",
+    "change-skin": "스킨 변경",
+    "swap": "교체",
+    "level-range": "레벨 범위"
+  },
+  "shop": {
+    "title": "상점",
+    "all-owned": "이미 모두 보유",
+    "buy": "구매",
+    "unlocked": "잠금 해제"
+  },
+  "battle-pass": {
+    "title": "배틀 패스",
+    "season-missions": "시즌 미션",
+    "buy-premium": "프리미엄 획득",
+    "premium-tagline": "프리미엄 트랙 잠금 해제",
+    "premium-active": "프리미엄 활성",
+    "premium-thanks": "지원해 주셔서 감사합니다!",
+    "complete-chain": "체인 완료",
+    "rewards": "보상"
+  },
+  "ranking": {
+    "title": "글로벌 랭킹",
+    "subtitle": "세계 최고의 플레이어들",
+    "sort-label": "정렬",
+    "region-label": "지역",
+    "table": {
+      "player": "플레이어",
+      "elo": "ELO",
+      "atk-mastery": "공격 숙련도",
+      "def-mastery": "방어 숙련도",
+      "region": "지역"
+    },
+    "no-players": "플레이어를 찾을 수 없음"
+  },
+  "ranked": {
+    "title": "랭크",
+    "subtitle": "랭크 아레나",
+    "locked-title": "랭크 아레나",
+    "locked-body": "레벨 100부터 사용 가능",
+    "ranks-eyebrow": "랭크"
+  },
+  "bracket": {
+    "live": "라이브",
+    "champion": "챔피언",
+    "you-won": "승리!"
+  },
+  "pvp": {
+    "title": "PVP",
+    "subtitle": "전투",
+    "squad-incomplete": "스쿼드 완성을 위해 1명 더 초대하세요"
+  },
+  "pve": {
+    "title": "PVE"
+  },
+  "custom": {
+    "title": "커스텀",
+    "subtitle": "커스텀 경기"
+  },
+  "matchmaking": {
+    "searching": "상대 검색 중",
+    "queue-time": "대기 시간",
+    "tip-eyebrow": "팁"
+  },
   "battle": {
     "phase": {
       "movement-title-line-1": "턴",
