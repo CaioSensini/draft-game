@@ -490,9 +490,13 @@ export default class BattlePassScene extends Phaser.Scene {
     this.drawTrackLabel(trackX + 10, premCardY + PREMIUM_CARD_H / 2, t('scenes.battle-pass.track-premium'), BP.primary)
     this.drawTrackLabel(trackX + 10, freeCardY + FREE_CARD_H / 2, t('scenes.battle-pass.track-free'), state.success)
 
-    // Scrollable container for tiers
-    const contentX = trackX + 72
-    const contentW = trackW - 84
+    // Scrollable container for tiers — pushed 28 px further right (was
+    // trackX + 72) so the left rail has enough room for the longest
+    // localised "PREMIUM" / "GRATIS" pills (pt-BR overflowed by 10 px
+    // and bled onto the first tier card). contentW shrinks by the same
+    // 28 px so the right margin stays at 12 px.
+    const contentX = trackX + 100
+    const contentW = trackW - 112
     const container = this.add.container(contentX, 0)
     this.trackContainer = container
 
