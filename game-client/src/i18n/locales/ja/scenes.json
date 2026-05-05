@@ -458,7 +458,7 @@
           "title": "報酬と交換",
           "desc": "熟練度をショップで限定アイテム・スキン・リソースと交換"
         },
-        "cta": "了解",
+        "cta": "参加する",
         "preview-line": "次の標的予測 · Lv.{level} · 戦力 {power}",
         "cta-enter": "入場"
       }
@@ -708,5 +708,71 @@
   },
   "pack-open": {
     "tap-to-close": "タップして閉じる"
+  },
+  "raid-hub": {
+    "title": "レイドハブ",
+    "subtitle": "参加設定と王国の防衛を強化",
+    "counters": {
+      "attacks": "本日の攻撃",
+      "defenses": "本日の防衛"
+    },
+    "mastery": {
+      "title": "熟練度",
+      "attack-label": "攻撃",
+      "defense-label": "防御",
+      "value": "{available} 利用可 · {earned} 獲得"
+    },
+    "participating": {
+      "title": "オフラインモードに参加",
+      "body": "オンの時、他のプレイヤーを攻撃でき、攻撃を受けることもできます。"
+    },
+    "shop": {
+      "title": "要塞化",
+      "subtitle": "受けた防衛ごとに持続するバフ",
+      "buy": "購入",
+      "active": "有効 · 残り{remaining}回防衛",
+      "toast": {
+        "no-gold": "ゴールドが足りません",
+        "no-dg": "Draft Gemsが足りません"
+      }
+    },
+    "attack-cta": "今すぐ攻撃",
+    "attack-disabled-toggle-off": "攻撃するには参加をオンにしてください",
+    "attack-disabled-out-of-attacks": "本日の10回の攻撃を使い切りました",
+    "attack-no-targets": "レベル{level}で利用可能なプレイヤーがいません",
+    "items": {
+      "reforco-real": {
+        "name": "王の援軍",
+        "desc": "チーム全員の防御+15%"
+      },
+      "furia-coletiva": {
+        "name": "集団の怒り",
+        "desc": "チーム全員の攻撃+15%"
+      },
+      "trap-espinhos": {
+        "name": "茨のトラップ",
+        "desc": "侵入者の進路に3つの罠"
+      },
+      "muralha-reforcada": {
+        "name": "強化された壁",
+        "desc": "王のみ防御+25%"
+      },
+      "olho-vigia": {
+        "name": "警戒の目",
+        "desc": "侵入者のスキルを1ターン早く明かす"
+      },
+      "bandeira-sorte": {
+        "name": "幸運の旗",
+        "desc": "勝利防衛時に金貨+25%"
+      },
+      "esquiva-real": {
+        "name": "王の回避",
+        "desc": "王は防衛ごとに無料回避1回"
+      },
+      "avancada-rapida": {
+        "name": "迅速な前進",
+        "desc": "防衛の最初のターンに移動+1"
+      }
+    }
   }
 }
