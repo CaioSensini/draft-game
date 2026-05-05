@@ -459,7 +459,8 @@
           "desc": "Mağazada Ustalık ile özel eşyalar, kostümler ve kaynaklar al"
         },
         "cta": "ANLADIM",
-        "preview-line": "Sonraki hedef · Sv.{level} · Güç {power}"
+        "preview-line": "Sonraki hedef · Sv.{level} · Güç {power}",
+        "cta-enter": "GİR"
       }
     },
     "sound-toggle": {

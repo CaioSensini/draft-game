@@ -490,7 +490,8 @@
           "desc": "Use a Maestria na Loja para resgatar itens, skins e recursos exclusivos"
         },
         "cta": "ENTENDI",
-        "preview-line": "Próximo alvo previsto · Nv.{level} · Poder {power}"
+        "preview-line": "Próximo alvo previsto · Nv.{level} · Poder {power}",
+        "cta-enter": "ENTRAR"
       }
     },
     "sound-toggle": {

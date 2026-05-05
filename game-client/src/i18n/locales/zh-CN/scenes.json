@@ -459,7 +459,8 @@
           "desc": "在商店用熟练度换取专属道具、皮肤与资源"
         },
         "cta": "了解",
-        "preview-line": "预测下一个目标 · 等级{level} · 战力 {power}"
+        "preview-line": "预测下一个目标 · 等级{level} · 战力 {power}",
+        "cta-enter": "进入"
       }
     },
     "sound-toggle": {

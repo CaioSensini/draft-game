@@ -33,10 +33,21 @@ interface ResultData {
   winner: TeamSide | null
   round: number
   reason: string
-  pveMode: boolean
+  pveMode: boolean | string
   npcTeam: NpcTeamData | null
   difficulty: string
   playerSide: TeamSide
+  /**
+   * Set when the battle was launched as an Offline Raid. The standard
+   * gold/XP loot still flows through `npcTeam`; the raid-specific
+   * Mastery bonus (Attack on win) is applied here using these numbers.
+   */
+  raidTarget?: {
+    id: string
+    ownerName: string
+    ownerLevel: number
+    rewardEstimate: { masteryAttack: number; masteryDefense: number; gold: number }
+  }
 }
 
 // ── Skill drop pool (placeholder names) ──────────────────────────────────────
@@ -279,6 +290,13 @@ export default class BattleResultScene extends Phaser.Scene {
       // Persist rewards — SAME logic as before; only the UI changed.
       playerData.addBattleRewards(goldAmount, xpAmount, true)
       playerData.addMastery('attack', 5)
+
+      // Offline Raid bonus: extra Attack Mastery on top of the standard +5
+      // post-battle award. Scales with the target's level via the value
+      // baked into target.rewardEstimate.masteryAttack at matchmaking time.
+      if (data.raidTarget) {
+        playerData.addMastery('attack', data.raidTarget.rewardEstimate.masteryAttack)
+      }
 
       // Random skill drop chance (30%) — unchanged logic
       if (Math.random() < 0.3) {

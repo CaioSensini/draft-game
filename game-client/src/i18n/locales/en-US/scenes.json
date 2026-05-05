@@ -459,7 +459,8 @@
           "desc": "Spend Mastery in the Shop on exclusive items, skins, and resources"
         },
         "cta": "GOT IT",
-        "preview-line": "Predicted next target · Lv.{level} · Power {power}"
+        "preview-line": "Predicted next target · Lv.{level} · Power {power}",
+        "cta-enter": "ENTER"
       }
     },
     "sound-toggle": {
