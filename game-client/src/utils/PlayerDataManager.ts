@@ -121,16 +121,22 @@ export interface RaidProfile {
   defensesReceivedToday: number
   /** YYYY-MM-DD of the last day the counters were reset. */
   lastResetDate: string
-  /** Fortifications the player has purchased and not yet exhausted. Each
-   *  entry's `remainingDefenses` ticks down when a defense is received. */
+  /** Fortifications the player owns. Items live here as soon as they're
+   *  bought in the shop. Only entries with `equipped = true` are active
+   *  during defense and tick `remainingDefenses` down. Up to
+   *  `RAID_EQUIP_SLOTS` can be equipped at once. */
   ownedFortifications: Array<{
     itemId: string
     remainingDefenses: number
+    equipped: boolean
   }>
 }
 
 /** Daily cap on both raid attacks and raid defenses received. */
 export const RAID_DAILY_LIMIT = 10
+
+/** Maximum number of fortifications the player can equip at once. */
+export const RAID_EQUIP_SLOTS = 4
 
 import { getXPForLevel, getStatMultiplier as _getStatMult, getLevelUpGold, getLevelUpDG, MAX_LEVEL } from '../data/progression'
 import { createDefaultRankedProfile } from '../data/tournaments'
@@ -138,7 +144,7 @@ import { CURRENT_SEASON, PASS_XP_PER_TIER, PASS_MAX_TIER, SEASON_MISSION_CHAINS,
 import type { TierReward, MissionTrackKey } from '../data/battlePass'
 
 const STORAGE_KEY = 'draft_player_data'
-const DATA_VERSION = 12 // v12: offline raid profile + lifetime mastery counters
+const DATA_VERSION = 13 // v13: fortifications gain explicit equipped flag
 
 class PlayerDataManager {
   private data: PlayerData
@@ -227,6 +233,30 @@ class PlayerDataManager {
           if (!parsed.raid) parsed.raid = this.createDefaultRaidProfile()
           if (parsed.attackMasteryEarned == null)  parsed.attackMasteryEarned  = parsed.attackMastery ?? 0
           if (parsed.defenseMasteryEarned == null) parsed.defenseMasteryEarned = parsed.defenseMastery ?? 0
+          ;(parsed as unknown as Record<string, unknown>)._version = DATA_VERSION
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed))
+        }
+        // v12→v13 migration: fortifications now have an explicit `equipped`
+        // flag. Older entries used to behave as "always active" — backfill
+        // with `equipped = true` for the first RAID_EQUIP_SLOTS items so
+        // upgraders don't suddenly find their buffs disabled, and `false`
+        // for any extras that wouldn't fit in the new slot cap.
+        if (ver < 13) {
+          if (parsed.raid?.ownedFortifications) {
+            let equippedSoFar = 0
+            for (const f of parsed.raid.ownedFortifications) {
+              if (typeof (f as { equipped?: boolean }).equipped !== 'boolean') {
+                if (equippedSoFar < RAID_EQUIP_SLOTS) {
+                  ;(f as { equipped: boolean }).equipped = true
+                  equippedSoFar++
+                } else {
+                  ;(f as { equipped: boolean }).equipped = false
+                }
+              } else if ((f as { equipped: boolean }).equipped) {
+                equippedSoFar++
+              }
+            }
+          }
           ;(parsed as unknown as Record<string, unknown>)._version = DATA_VERSION
           localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed))
         }
@@ -627,7 +657,8 @@ class PlayerDataManager {
   /**
    * Record an incoming raid (offline-side, fired when another player
    * raids the local player). Decrements `remainingDefenses` on every
-   * owned fortification regardless of victory; items at 0 are dropped.
+   * EQUIPPED fortification regardless of victory; equipped items at 0
+   * are dropped. Inventory items (not equipped) are untouched.
    * Returns true if the counter was bumped, false if at quota.
    */
   recordRaidDefense(): boolean {
@@ -635,16 +666,20 @@ class PlayerDataManager {
     if (raid.defensesReceivedToday >= RAID_DAILY_LIMIT) return false
     raid.defensesReceivedToday += 1
     raid.ownedFortifications = raid.ownedFortifications
-      .map((f) => ({ ...f, remainingDefenses: f.remainingDefenses - 1 }))
-      .filter((f) => f.remainingDefenses > 0)
+      .map((f) => f.equipped
+        ? { ...f, remainingDefenses: f.remainingDefenses - 1 }
+        : f)
+      .filter((f) => !f.equipped || f.remainingDefenses > 0)
     this.save()
     return true
   }
 
   /**
-   * Add a freshly-purchased fortification to the player's owned list.
-   * If the item is already owned, its remaining-defenses counter is
-   * topped up (not stacked) so re-buying acts like a refresh.
+   * Add a freshly-purchased fortification to the player's inventory. If
+   * the item is already owned, its remaining-defenses counter is topped
+   * up (not stacked) so re-buying acts like a refresh. New purchases
+   * land UNEQUIPPED — the player chooses what to slot in the Hub's
+   * equip panel.
    */
   addRaidFortification(itemId: string, durationDefenses: number): void {
     const raid = this.getRaid()
@@ -652,9 +687,53 @@ class PlayerDataManager {
     if (existing) {
       existing.remainingDefenses = Math.max(existing.remainingDefenses, durationDefenses)
     } else {
-      raid.ownedFortifications.push({ itemId, remainingDefenses: durationDefenses })
+      raid.ownedFortifications.push({
+        itemId,
+        remainingDefenses: durationDefenses,
+        equipped: false,
+      })
     }
     this.save()
+  }
+
+  /** Equipped subset (active during defense). */
+  getEquippedFortifications(): RaidProfile['ownedFortifications'] {
+    return this.getRaid().ownedFortifications.filter((f) => f.equipped)
+  }
+
+  /** Inventory subset (owned but not currently equipped). */
+  getInventoryFortifications(): RaidProfile['ownedFortifications'] {
+    return this.getRaid().ownedFortifications.filter((f) => !f.equipped)
+  }
+
+  /**
+   * Move an inventory item into the equipped pool. Returns false if the
+   * item is already equipped, not owned, or all RAID_EQUIP_SLOTS are
+   * full.
+   */
+  equipFortification(itemId: string): boolean {
+    const raid = this.getRaid()
+    const equippedCount = raid.ownedFortifications.filter((f) => f.equipped).length
+    if (equippedCount >= RAID_EQUIP_SLOTS) return false
+    const target = raid.ownedFortifications.find((f) => f.itemId === itemId && !f.equipped)
+    if (!target) return false
+    target.equipped = true
+    this.save()
+    return true
+  }
+
+  /**
+   * Move an equipped item back into the inventory. Remaining-defenses
+   * count is preserved so the player can re-equip later without losing
+   * progress.
+   */
+  unequipFortification(itemId: string): boolean {
+    const raid = this.getRaid()
+    const target = raid.ownedFortifications.find((f) => f.itemId === itemId && f.equipped)
+    if (!target) return false
+    target.equipped = false
+    this.save()
+    return true
   }
 
   /**

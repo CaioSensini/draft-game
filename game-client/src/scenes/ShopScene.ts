@@ -20,6 +20,15 @@ import {
 } from '../data/skinCatalog'
 import { drawCharacterSprite, type SpriteRole } from '../utils/SpriteFactory'
 import { drawSwordIcon, drawShieldIcon } from '../utils/CombatIcons'
+import {
+  RAID_FORTIFICATIONS,
+  type FortificationDef,
+} from '../data/raidFortifications'
+import {
+  colorForType as colorForFortType,
+  hexForType as hexForFortType,
+  drawTypeIcon as drawFortIcon,
+} from './RaidHubScene'
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Constants
@@ -128,8 +137,10 @@ function getCardAccent(item: ShopItem): number {
 // Scene
 // ═══════════════════════════════════════════════════════════════════════════════
 
+type ShopTab = 'skills' | 'skins' | 'dg' | 'fortifications'
+
 export default class ShopScene extends Phaser.Scene {
-  private activeTab: 'skills' | 'skins' | 'dg' = 'skills'
+  private activeTab: ShopTab = 'skills'
   private cardContainer!: Phaser.GameObjects.Container
   private balanceGoldPill!: Phaser.GameObjects.Container
   private balanceDgPill!: Phaser.GameObjects.Container
@@ -139,6 +150,7 @@ export default class ShopScene extends Phaser.Scene {
   create(data?: { tab?: string }) {
     if (data?.tab === 'dg') this.activeTab = 'dg'
     else if (data?.tab === 'skins') this.activeTab = 'skins'
+    else if (data?.tab === 'fortifications') this.activeTab = 'fortifications'
     else this.activeTab = 'skills'
 
     UI.background(this)
@@ -185,15 +197,17 @@ export default class ShopScene extends Phaser.Scene {
 
   private drawTabs() {
     // Canonical UI.segmentedControl per Decision D — replaces the inline
-    // 3-tab indicator + per-tab hit boxes + recolor handlers.
-    UI.segmentedControl<'skills' | 'skins' | 'dg'>(this, W / 2, TAB_Y + 14, {
+    // tab indicator + per-tab hit boxes + recolor handlers. Width grows
+    // to fit the 4-tab arrangement once the Fortificações tab joins.
+    UI.segmentedControl<ShopTab>(this, W / 2, TAB_Y + 14, {
       options: [
-        { key: 'skills', label: t('scenes.shop.tabs.packs') },
-        { key: 'skins',  label: t('scenes.shop.tabs.skins') },
-        { key: 'dg',     label: 'DG' },
+        { key: 'skills',         label: t('scenes.shop.tabs.packs') },
+        { key: 'skins',          label: t('scenes.shop.tabs.skins') },
+        { key: 'fortifications', label: t('scenes.shop.tabs.fortifications') },
+        { key: 'dg',             label: 'DG' },
       ],
       value: this.activeTab,
-      width: 480,
+      width: 640,
       height: 36,
       onChange: (key) => {
         if (key === this.activeTab) return
@@ -213,6 +227,12 @@ export default class ShopScene extends Phaser.Scene {
     // Skins tab uses its own grid — 8 items arranged in 2 rows of 4.
     if (this.activeTab === 'skins') {
       this.drawSkinCards()
+      return
+    }
+
+    // Fortifications tab — 4×2 grid of raid-buff cards.
+    if (this.activeTab === 'fortifications') {
+      this.drawFortificationCards()
       return
     }
 
@@ -786,6 +806,246 @@ export default class ShopScene extends Phaser.Scene {
       duration: 600,
       delay: 1800,
       onComplete: () => { bg.destroy(); txt.destroy(); sub.destroy() },
+    })
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // FORTIFICATION CARDS — rendered grid for the FORTIFICATIONS tab
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Lay out every fortification on a 4×2 grid. Fortifications are bought
+   * here and equipped from the RaidHubScene, so the card surfaces price
+   * + duration + a "OWNED · n" badge on items the player already has in
+   * inventory (re-buying just refreshes the duration).
+   */
+  private drawFortificationCards() {
+    const COLS = 4
+    const FORT_CARD_W = 220
+    const FORT_CARD_H = 280
+    const GAP = 14
+    const rowWidth = COLS * FORT_CARD_W + (COLS - 1) * GAP
+    const startX = (W - rowWidth) / 2 + FORT_CARD_W / 2
+
+    RAID_FORTIFICATIONS.forEach((item, i) => {
+      const col = i % COLS
+      const row = Math.floor(i / COLS)
+      const cx = startX + col * (FORT_CARD_W + GAP)
+      const cy = GRID_TOP + FORT_CARD_H / 2 + row * (FORT_CARD_H + GAP)
+      this.cardContainer.add(this.createFortificationCard(cx, cy, FORT_CARD_W, FORT_CARD_H, item))
+    })
+  }
+
+  /**
+   * Renders a single fortification card. Visual language matches the
+   * skill-pack cards (banner + icon + name + desc + price pill + BUY)
+   * but each card is tinted by its `FortificationType` so the player
+   * can read the role at a glance — and a small "RAID" eyebrow below
+   * the rarity slot signals which tab the card belongs to.
+   */
+  private createFortificationCard(
+    cx: number, cy: number, cw: number, ch: number, item: FortificationDef,
+  ): Phaser.GameObjects.Container {
+    const accentColor = colorForFortType(item.type)
+    const accentHex   = hexForFortType(item.type)
+    const ownedEntry  = playerData.getRaid().ownedFortifications.find((f) => f.itemId === item.id)
+    const hw = cw / 2; const hh = ch / 2
+
+    // ── Background (multi-layer for depth) ──
+    const bg = this.add.graphics()
+    bg.fillStyle(0x000000, 0.45)
+    bg.fillRoundedRect(-hw + 4, -hh + 5, cw, ch, radii.lg)
+    bg.fillStyle(surface.panel, 1)
+    bg.fillRoundedRect(-hw, -hh, cw, ch, radii.lg)
+    // Bottom inset darken
+    bg.fillStyle(0x000000, 0.18)
+    bg.fillRoundedRect(-hw + 2, 0, cw - 4, hh - 2, { tl: 0, tr: 0, bl: radii.lg - 2, br: radii.lg - 2 })
+    // Top glass sheen
+    bg.fillStyle(0xffffff, 0.04)
+    bg.fillRoundedRect(-hw + 3, -hh + 3, cw - 6, 22, { tl: radii.lg - 1, tr: radii.lg - 1, bl: 0, br: 0 })
+    // Coloured banner wash by type
+    bg.fillStyle(accentColor, 0.18)
+    bg.fillRect(-hw + 3, -hh + 3, cw - 6, BANNER_H)
+    // Outer border
+    bg.lineStyle(1.5, accentColor, ownedEntry ? 0.85 : 0.55)
+    bg.strokeRoundedRect(-hw, -hh, cw, ch, radii.lg)
+    // Banner separator
+    bg.lineStyle(1, accentColor, 0.25)
+    bg.lineBetween(-hw + 14, -hh + BANNER_H + 4, hw - 14, -hh + BANNER_H + 4)
+
+    // Eyebrow label — uses the shop's "RAID" tab colour vocabulary
+    const eyebrow = this.add.text(0, -hh + BANNER_H / 2 + 2,
+      t('scenes.shop.fortifications.eyebrow').toUpperCase(), {
+        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+        color: accentHex, fontStyle: '700',
+      }).setOrigin(0.5).setLetterSpacing(1.6)
+
+    // ── Icon disc with type glyph ──
+    const iconY = -hh + 100
+    const iconBg = this.add.graphics()
+    iconBg.fillStyle(accentColor, 0.16)
+    iconBg.fillCircle(0, iconY, 32)
+    iconBg.lineStyle(1.5, accentColor, 0.55)
+    iconBg.strokeCircle(0, iconY, 32)
+    // Pulse glow
+    const glow = this.add.circle(0, iconY, 38, accentColor, 0)
+    this.tweens.add({ targets: glow, alpha: { from: 0.05, to: 0.18 }, duration: 1800, yoyo: true, repeat: -1, ease: 'Sine.InOut' })
+    const iconGfx = this.add.graphics()
+    drawFortIcon(iconGfx, 0, iconY, item.type, accentColor)
+    iconGfx.setScale(2)
+    // Re-draw at scale 1 so the line glyph isn't blurry: drawTypeIcon is
+    // sized for ~14 px discs, so we just re-draw it at "size 2" by hand.
+    iconGfx.clear()
+    drawFortIcon(iconGfx, 0, iconY, item.type, accentColor)
+    iconGfx.setScale(1.8)
+
+    // ── Name (i18n) — Cormorant h3 ──
+    const nameText = this.add.text(0, -hh + 158, t(item.nameKey), {
+      fontFamily: fontFamily.serif, fontSize: typeScale.h3,
+      color: fg.primaryHex, fontStyle: '600',
+      wordWrap: { width: cw - 24 }, align: 'center',
+    }).setOrigin(0.5)
+
+    // ── Description (i18n) ──
+    const descText = this.add.text(0, -hh + 192, t(item.descKey), {
+      fontFamily: fontFamily.body, fontSize: typeScale.small,
+      color: fg.tertiaryHex, fontStyle: '500',
+      wordWrap: { width: cw - 28 }, align: 'center',
+    }).setOrigin(0.5)
+
+    // ── Duration / owned badge ──
+    const badgeY = -hh + 226
+    const badgeGfx = this.add.graphics()
+    badgeGfx.fillStyle(accentColor, 0.16)
+    badgeGfx.fillRoundedRect(-58, badgeY - 9, 116, 18, 9)
+    badgeGfx.lineStyle(1, accentColor, 0.5)
+    badgeGfx.strokeRoundedRect(-58, badgeY - 9, 116, 18, 9)
+    const badgeText = ownedEntry
+      ? t('scenes.shop.fortifications.owned-badge', { remaining: ownedEntry.remainingDefenses })
+      : t('scenes.shop.fortifications.duration-badge', { count: item.durationDefenses })
+    const badgeLabel = this.add.text(0, badgeY, badgeText, {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: accentHex, fontStyle: '700',
+    }).setOrigin(0.5).setLetterSpacing(1.2)
+
+    // ── Price pill ──
+    const priceY = -hh + 252
+    const priceBgW = cw - 24
+    const priceBgH = 28
+    const priceBg = this.add.graphics()
+    priceBg.fillStyle(surface.deepest, 0.92)
+    priceBg.fillRoundedRect(-priceBgW / 2, priceY - priceBgH / 2, priceBgW, priceBgH, priceBgH / 2)
+    priceBg.lineStyle(1, border.subtle, 1)
+    priceBg.strokeRoundedRect(-priceBgW / 2, priceY - priceBgH / 2, priceBgW, priceBgH, priceBgH / 2)
+
+    const isGold = item.currency === 'gold'
+    const coin = this.add.graphics()
+    coin.fillStyle(isGold ? currency.goldCoin : currency.dgGem, 0.85)
+    coin.fillCircle(-22, priceY, 6)
+    coin.lineStyle(1, isGold ? currency.goldCoinEdge : currency.dgGemEdge, 1)
+    coin.strokeCircle(-22, priceY, 6)
+    const priceLabel = isGold ? `${item.cost}` : `${item.cost} DG`
+    const priceText = this.add.text(2, priceY, priceLabel, {
+      fontFamily: fontFamily.mono, fontSize: typeScale.small,
+      color: isGold ? currency.goldCoinHex : currency.dgGemHex, fontStyle: '700',
+    }).setOrigin(0.5)
+
+    // ── Hover glow ──
+    const glowG = this.add.graphics().setAlpha(0)
+    glowG.lineStyle(2, accentColor, 0.6)
+    glowG.strokeRoundedRect(-hw - 2, -hh - 2, cw + 4, ch + 4, radii.lg + 2)
+
+    // ── Hit ──
+    const hit = this.add.rectangle(0, 0, cw, ch, 0, 0.001).setInteractive({ useHandCursor: true })
+
+    const container = this.add.container(cx, cy, [
+      bg, eyebrow, iconBg, glow, iconGfx, nameText, descText,
+      badgeGfx, badgeLabel, priceBg, coin, priceText, glowG, hit,
+    ])
+
+    hit.on('pointerover', () => {
+      glowG.setAlpha(1)
+      this.tweens.add({ targets: container, scaleX: 1.04, scaleY: 1.04, duration: 120, ease: 'Quad.Out' })
+    })
+    hit.on('pointerout', () => {
+      glowG.setAlpha(0)
+      this.tweens.add({ targets: container, scaleX: 1, scaleY: 1, duration: 120, ease: 'Quad.Out' })
+    })
+    hit.on('pointerdown', () => {
+      this.tweens.add({
+        targets: container, scaleX: 0.96, scaleY: 0.96, duration: 60,
+        yoyo: true, ease: 'Quad.InOut',
+        onComplete: () => this.showFortificationPurchasePopup(item),
+      })
+    })
+
+    return container
+  }
+
+  private showFortificationPurchasePopup(item: FortificationDef) {
+    const isGold = item.currency === 'gold'
+    const canAfford = isGold
+      ? playerData.getGold() >= item.cost
+      : playerData.getDG()   >= item.cost
+    let modalClose: () => void = () => {}
+
+    const actions: Array<{ label: string; kind: 'primary' | 'secondary' | 'destructive' | 'ghost'; onClick: () => void }> = [
+      { label: t('common.actions.cancel'), kind: 'secondary', onClick: () => modalClose() },
+    ]
+    if (canAfford) {
+      const buyKey = isGold ? 'scenes.shop.modal.buy-gold' : 'scenes.shop.modal.buy-dg'
+      actions.push({
+        label: t(buyKey, { price: item.cost }),
+        kind: 'primary',
+        onClick: () => { modalClose(); this.executeFortificationPurchase(item) },
+      })
+    } else {
+      actions.push({
+        label: t('scenes.shop.modal.insufficient-balance'), kind: 'ghost',
+        onClick: () => modalClose(),
+      })
+    }
+
+    const { close } = UI.modal(this, {
+      eyebrow: t('scenes.shop.fortifications.eyebrow'),
+      title:   t('scenes.shop.modal.buy-title', { name: t(item.nameKey) }),
+      body:    t('scenes.shop.fortifications.modal-body', {
+        desc: t(item.descKey),
+        count: item.durationDefenses,
+      }),
+      actions,
+    }, { width: 480 })
+    modalClose = close
+  }
+
+  private executeFortificationPurchase(item: FortificationDef) {
+    const ok = item.currency === 'gold'
+      ? playerData.spendGold(item.cost)
+      : playerData.spendDG(item.cost)
+    if (!ok) return
+    playerData.addRaidFortification(item.id, item.durationDefenses)
+    this.refreshBalance()
+    this.drawCards()
+    // Brief on-screen confirmation
+    this.showPurchaseToast(t('scenes.shop.fortifications.toast-success', {
+      name: t(item.nameKey),
+    }))
+  }
+
+  private showPurchaseToast(message: string) {
+    const toast = this.add.text(W / 2, GRID_TOP + 320, message, {
+      fontFamily: fontFamily.body, fontSize: typeScale.small,
+      color: state.successHex, fontStyle: '700',
+      backgroundColor: '#0a0f1d', padding: { x: 16, y: 10 },
+    }).setOrigin(0.5).setDepth(200).setAlpha(0)
+    this.tweens.add({
+      targets: toast, alpha: 1, duration: 180,
+      onComplete: () => {
+        this.tweens.add({
+          targets: toast, alpha: 0, duration: 240, delay: 1400,
+          onComplete: () => toast.destroy(),
+        })
+      },
     })
   }
 
