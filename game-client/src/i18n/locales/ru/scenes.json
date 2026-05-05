@@ -433,7 +433,11 @@
       "title": "Атаки на отряды",
       "subtitle": "Оффлайн",
       "popup-eyebrow": "СКОРО",
-      "popup-body": "Система атак на отряды"
+      "popup-body": "Система атак на отряды",
+      "line-1": "РЕЙДЫ",
+      "line-2": "OFFLINE",
+      "locked-status": "ЗАБЛОКИРОВАНО",
+      "available-status": "СКОРО"
     },
     "sound-toggle": {
       "on": "Звук",

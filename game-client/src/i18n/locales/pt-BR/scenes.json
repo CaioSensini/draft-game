@@ -464,7 +464,11 @@
       "title": "Ataques às equipes",
       "subtitle": "Offline",
       "popup-eyebrow": "EM BREVE",
-      "popup-body": "Sistema de ataque equipes"
+      "popup-body": "Sistema de ataque equipes",
+      "line-1": "ATAQUES",
+      "line-2": "OFFLINE",
+      "locked-status": "BLOQUEADO",
+      "available-status": "EM BREVE"
     },
     "sound-toggle": {
       "on": "Som",

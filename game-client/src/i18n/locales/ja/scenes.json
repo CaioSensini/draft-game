@@ -433,7 +433,11 @@
       "title": "チームへの攻撃",
       "subtitle": "オフライン",
       "popup-eyebrow": "近日公開",
-      "popup-body": "チーム襲撃システム"
+      "popup-body": "チーム襲撃システム",
+      "line-1": "レイド",
+      "line-2": "オフライン",
+      "locked-status": "ロック中",
+      "available-status": "近日公開"
     },
     "sound-toggle": {
       "on": "音",

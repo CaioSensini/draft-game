@@ -433,7 +433,11 @@
       "title": "Team raids",
       "subtitle": "Offline",
       "popup-eyebrow": "COMING SOON",
-      "popup-body": "Team raid system"
+      "popup-body": "Team raid system",
+      "line-1": "RAIDS",
+      "line-2": "OFFLINE",
+      "locked-status": "LOCKED",
+      "available-status": "COMING SOON"
     },
     "sound-toggle": {
       "on": "Sound",

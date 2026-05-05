@@ -433,7 +433,11 @@
       "title": "Attacchi alle squadre",
       "subtitle": "Offline",
       "popup-eyebrow": "PROSSIMAMENTE",
-      "popup-body": "Sistema di attacco alle squadre"
+      "popup-body": "Sistema di attacco alle squadre",
+      "line-1": "ATTACCHI",
+      "line-2": "OFFLINE",
+      "locked-status": "BLOCCATO",
+      "available-status": "PROSSIMAMENTE"
     },
     "sound-toggle": {
       "on": "Audio",
