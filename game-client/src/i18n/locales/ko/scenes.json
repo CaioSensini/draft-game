@@ -47,7 +47,8 @@
     "unlocked": "잠금 해제",
     "tabs": {
       "packs": "팩",
-      "skins": "스킨"
+      "skins": "스킨",
+      "fortifications": "요새화"
     },
     "items": {
       "defense": "방어",
@@ -85,6 +86,13 @@
       "buy-dg": "구매 · {price} DG",
       "insufficient-balance": "잔액 부족",
       "pack-body": "{desc} · 랜덤 스킬 {count}개."
+    },
+    "fortifications": {
+      "eyebrow": "레이드",
+      "duration-badge": "{count}회 방어",
+      "owned-badge": "인벤토리 · 잔여 {remaining}",
+      "modal-body": "{desc}\n\n지속: 방어 {count}회 받을 때까지.",
+      "toast-success": "{name}을(를) 인벤토리에 추가"
     }
   },
   "battle-pass": {
@@ -726,16 +734,6 @@
       "title": "오프라인 모드 참여",
       "body": "켜면 다른 플레이어를 공격하고 공격받을 수 있습니다."
     },
-    "shop": {
-      "title": "요새화",
-      "subtitle": "받은 방어 횟수만큼 지속되는 버프",
-      "buy": "구매",
-      "active": "활성 · 방어 {remaining}회 남음",
-      "toast": {
-        "no-gold": "골드가 부족합니다",
-        "no-dg": "Draft Gems이 부족합니다"
-      }
-    },
     "attack-cta": "지금 공격",
     "attack-disabled-toggle-off": "공격하려면 참여를 켜세요",
     "attack-disabled-out-of-attacks": "오늘의 공격 10회를 모두 사용했습니다",
@@ -773,6 +771,17 @@
         "name": "빠른 진격",
         "desc": "방어 첫 턴 이동 +1"
       }
+    },
+    "equip": {
+      "title": "장착된 방어",
+      "slot-count": "{used}/{max}",
+      "shop-cta": "상점 보기",
+      "empty-hint": "장착",
+      "remaining": "{remaining}회 남음",
+      "picker-title": "요새화 선택",
+      "picker-subtitle": "인벤토리에서 이 슬롯에 장착할 아이템을 선택하세요",
+      "empty-inventory": "사용 가능한 요새화가 없습니다.",
+      "equip-btn": "장착"
     }
   }
 }

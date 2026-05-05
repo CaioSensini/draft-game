@@ -47,7 +47,8 @@
     "unlocked": "FREIGESCHALTET",
     "tabs": {
       "packs": "PAKETE",
-      "skins": "SKINS"
+      "skins": "SKINS",
+      "fortifications": "BEFESTIGUNGEN"
     },
     "items": {
       "defense": "Abwehr",
@@ -85,6 +86,13 @@
       "buy-dg": "KAUFEN · {price} DG",
       "insufficient-balance": "GUTHABEN ZU NIEDRIG",
       "pack-body": "{desc} · {count} zufällige Skill(s)."
+    },
+    "fortifications": {
+      "eyebrow": "RAID",
+      "duration-badge": "{count} VERTEIDIGUNGEN",
+      "owned-badge": "IM INVENTAR · {remaining}",
+      "modal-body": "{desc}\n\nDauer: {count} erhaltene Verteidigungen.",
+      "toast-success": "{name} zum Inventar hinzugefügt"
     }
   },
   "battle-pass": {
@@ -723,16 +731,6 @@
       "title": "Offline-Modus beitreten",
       "body": "Wenn aktiv, kannst du angreifen und von anderen Spielern angegriffen werden."
     },
-    "shop": {
-      "title": "Befestigungen",
-      "subtitle": "Buffs, die pro erhaltener Verteidigung anhalten",
-      "buy": "KAUFEN",
-      "active": "AKTIV · {remaining} VERTEIDIGUNGEN",
-      "toast": {
-        "no-gold": "Nicht genug Gold",
-        "no-dg": "Nicht genug Draft Gems"
-      }
-    },
     "attack-cta": "Jetzt angreifen",
     "attack-disabled-toggle-off": "Aktiviere die Teilnahme zum Angreifen",
     "attack-disabled-out-of-attacks": "Du hast deine 10 Angriffe heute verbraucht",
@@ -770,6 +768,17 @@
         "name": "Schneller Vorstoß",
         "desc": "+1 Bewegung im ersten Verteidigungszug"
       }
+    },
+    "equip": {
+      "title": "Ausgerüstete Verteidigungen",
+      "slot-count": "{used}/{max}",
+      "shop-cta": "Shop öffnen",
+      "empty-hint": "Ausrüsten",
+      "remaining": "Noch {remaining}",
+      "picker-title": "Wähle eine Befestigung",
+      "picker-subtitle": "Wähle einen Gegenstand aus dem Inventar für diesen Slot",
+      "empty-inventory": "Du besitzt noch keine Befestigungen.",
+      "equip-btn": "Ausrüsten"
     }
   }
 }

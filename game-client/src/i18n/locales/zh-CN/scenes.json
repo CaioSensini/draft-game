@@ -47,7 +47,8 @@
     "unlocked": "已解锁",
     "tabs": {
       "packs": "卡包",
-      "skins": "皮肤"
+      "skins": "皮肤",
+      "fortifications": "防御工事"
     },
     "items": {
       "defense": "防御",
@@ -85,6 +86,13 @@
       "buy-dg": "购买 · {price} DG",
       "insufficient-balance": "余额不足",
       "pack-body": "{desc} · {count}个随机技能。"
+    },
+    "fortifications": {
+      "eyebrow": "袭击",
+      "duration-badge": "{count}次防御",
+      "owned-badge": "背包中 · 剩{remaining}",
+      "modal-body": "{desc}\n\n持续：受到{count}次防御。",
+      "toast-success": "{name}已加入背包"
     }
   },
   "battle-pass": {
@@ -726,16 +734,6 @@
       "title": "加入离线模式",
       "body": "开启后，你可以攻击其他玩家，也可被其他玩家攻击。"
     },
-    "shop": {
-      "title": "防御工事",
-      "subtitle": "按受到的防御次数持续的增益",
-      "buy": "购买",
-      "active": "生效中 · 剩余{remaining}次防御",
-      "toast": {
-        "no-gold": "金币不足",
-        "no-dg": "Draft Gems 不足"
-      }
-    },
     "attack-cta": "立即攻击",
     "attack-disabled-toggle-off": "开启参与才能攻击",
     "attack-disabled-out-of-attacks": "你已用完今日的10次攻击",
@@ -773,6 +771,17 @@
         "name": "快速推进",
         "desc": "防御首回合移动+1"
       }
+    },
+    "equip": {
+      "title": "已装备防御",
+      "slot-count": "{used}/{max}",
+      "shop-cta": "查看商店",
+      "empty-hint": "装备",
+      "remaining": "剩余{remaining}",
+      "picker-title": "选择一个防御工事",
+      "picker-subtitle": "从背包中选择一个物品装备到此栏位",
+      "empty-inventory": "你还没有可用的防御工事。",
+      "equip-btn": "装备"
     }
   }
 }

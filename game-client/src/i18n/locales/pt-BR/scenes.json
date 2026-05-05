@@ -78,7 +78,8 @@
     "unlocked": "DESBLOQUEADO",
     "tabs": {
       "packs": "PACOTES",
-      "skins": "SKINS"
+      "skins": "SKINS",
+      "fortifications": "FORTIFICAÇÕES"
     },
     "items": {
       "defense": "Defesa",
@@ -116,6 +117,13 @@
       "buy-dg": "COMPRAR · {price} DG",
       "insufficient-balance": "SALDO INSUFICIENTE",
       "pack-body": "{desc} · {count} skill(s) aleatória(s)."
+    },
+    "fortifications": {
+      "eyebrow": "RAID",
+      "duration-badge": "{count} DEFESAS",
+      "owned-badge": "NO INVENTÁRIO · {remaining}",
+      "modal-body": "{desc}\n\nDuração: {count} defesas recebidas.",
+      "toast-success": "{name} adicionado ao inventário"
     }
   },
   "battle-pass": {
@@ -723,16 +731,6 @@
       "title": "Participar do modo offline",
       "body": "Quando ligado, você pode atacar e ser atacado por outros jogadores."
     },
-    "shop": {
-      "title": "Fortificações",
-      "subtitle": "Buffs que duram por defesas recebidas",
-      "buy": "COMPRAR",
-      "active": "ATIVO · {remaining} DEFESAS",
-      "toast": {
-        "no-gold": "Ouro insuficiente",
-        "no-dg": "Draft Gems insuficientes"
-      }
-    },
     "attack-cta": "Atacar agora",
     "attack-disabled-toggle-off": "Ative a participação para atacar",
     "attack-disabled-out-of-attacks": "Você usou seus 10 ataques de hoje",
@@ -770,6 +768,17 @@
         "name": "Avançada Rápida",
         "desc": "+1 movimento no primeiro turno da defesa"
       }
+    },
+    "equip": {
+      "title": "Defesas equipadas",
+      "slot-count": "{used}/{max}",
+      "shop-cta": "Ver loja",
+      "empty-hint": "Equipar",
+      "remaining": "Resta {remaining}",
+      "picker-title": "Escolha uma fortificação",
+      "picker-subtitle": "Selecione um item do seu inventário para ocupar este slot",
+      "empty-inventory": "Você não possui fortificações disponíveis.",
+      "equip-btn": "Equipar"
     }
   }
 }
