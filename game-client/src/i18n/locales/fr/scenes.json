@@ -779,6 +779,31 @@
       "picker-subtitle": "Sélectionnez un objet de l'inventaire pour cet emplacement",
       "empty-inventory": "Vous n'avez aucune fortification disponible.",
       "equip-btn": "Équiper"
+    },
+    "rules": {
+      "cta": "Comment ça marche",
+      "title": "Règles des raids",
+      "subtitle": "Comment fonctionne le mode raid hors-ligne",
+      "match": {
+        "title": "Même niveau",
+        "body": "L'appariement ne trouve que des joueurs réels à votre niveau exact avec participation activée — sans bots."
+      },
+      "quota": {
+        "title": "Limites quotidiennes",
+        "body": "Jusqu'à 10 attaques et 10 défenses par jour. Les compteurs se réinitialisent à minuit."
+      },
+      "reciprocity": {
+        "title": "Réciprocité",
+        "body": "Participation ACTIVE : jusqu'à 10 défenses/jour. INACTIVE : vous ne pouvez recevoir que le même nombre de défenses que d'attaques lancées aujourd'hui."
+      },
+      "attack-win": {
+        "title": "Victoire en attaque",
+        "body": "Gagner une attaque : +1 Maîtrise d'Attaque et 100 d'or volés à l'ennemi."
+      },
+      "defense-win": {
+        "title": "Victoire en défense",
+        "body": "Gagner une défense : +1 Maîtrise de Défense et 100 d'or reçus de l'envahisseur."
+      }
     }
   }
 }

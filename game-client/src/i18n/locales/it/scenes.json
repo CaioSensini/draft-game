@@ -779,6 +779,31 @@
       "picker-subtitle": "Seleziona un oggetto dal tuo inventario per questo slot",
       "empty-inventory": "Non possiedi alcuna fortificazione disponibile.",
       "equip-btn": "Equipaggia"
+    },
+    "rules": {
+      "cta": "Come funziona",
+      "title": "Regole delle incursioni",
+      "subtitle": "Come funziona la modalità incursione offline",
+      "match": {
+        "title": "Stesso livello",
+        "body": "Il matchmaking trova solo giocatori reali del tuo stesso livello con partecipazione attiva — niente bot."
+      },
+      "quota": {
+        "title": "Limiti giornalieri",
+        "body": "Fino a 10 attacchi e 10 difese al giorno. I contatori si resettano a mezzanotte."
+      },
+      "reciprocity": {
+        "title": "Reciprocità",
+        "body": "Partecipazione ATTIVA: fino a 10 difese/giorno. DISATTIVA: puoi ricevere solo tante difese quanti attacchi hai lanciato oggi."
+      },
+      "attack-win": {
+        "title": "Vittoria in attacco",
+        "body": "Vinci un attacco: +1 Maestria d'Attacco e 100 oro rubati al nemico."
+      },
+      "defense-win": {
+        "title": "Vittoria in difesa",
+        "body": "Vinci una difesa: +1 Maestria di Difesa e 100 oro ricevuti dal predone."
+      }
     }
   }
 }

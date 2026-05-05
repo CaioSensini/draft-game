@@ -779,6 +779,31 @@
       "picker-subtitle": "Select an inventory item to fill this slot",
       "empty-inventory": "You don't own any fortifications yet.",
       "equip-btn": "Equip"
+    },
+    "rules": {
+      "cta": "How it works",
+      "title": "Raid rules",
+      "subtitle": "How the offline raid mode works",
+      "match": {
+        "title": "Same level only",
+        "body": "Matchmaking only finds real players at your exact level with participation toggled on — no bots."
+      },
+      "quota": {
+        "title": "Daily limits",
+        "body": "Up to 10 attacks and 10 defenses per day. Counters reset at midnight."
+      },
+      "reciprocity": {
+        "title": "Reciprocity",
+        "body": "Participation ON: up to 10 defenses/day. OFF: you can only receive as many defenses as attacks you launched today."
+      },
+      "attack-win": {
+        "title": "Attack victory",
+        "body": "Win a raid attack: +1 Attack Mastery and 100 gold stolen from the enemy."
+      },
+      "defense-win": {
+        "title": "Defense victory",
+        "body": "Win a defense: +1 Defense Mastery and 100 gold received from the would-be raider."
+      }
     }
   }
 }

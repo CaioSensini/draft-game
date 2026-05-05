@@ -1,7 +1,7 @@
 import Phaser from 'phaser'
 import { GameState, GameStateManager } from '../core/GameState'
 import type { TeamSide } from '../types'
-import { playerData } from '../utils/PlayerDataManager'
+import { playerData, RAID_VICTORY_GOLD } from '../utils/PlayerDataManager'
 import { transitionTo } from '../utils/SceneTransition'
 import { UI } from '../utils/UIComponents'
 import {
@@ -270,7 +270,14 @@ export default class BattleResultScene extends Phaser.Scene {
       rewardDelay += 420
 
       // ── Gold pill (currencyPill kit) ──
-      const goldAmount = data.pveMode && data.npcTeam ? data.npcTeam.goldReward : 100
+      // Offline raids award a fixed 100 gold "stolen" from the defender
+      // (per the standardised raid rules), regardless of the target's
+      // level — keeps the economy predictable across players. Standard
+      // PvE keeps its scaled goldReward.
+      const isRaid = !!data.raidTarget
+      const goldAmount = isRaid
+        ? RAID_VICTORY_GOLD
+        : (data.pveMode && data.npcTeam ? data.npcTeam.goldReward : 100)
       const goldPill = UI.currencyPill(this, panelX, currentY + 16, {
         kind: 'gold', amount: goldAmount,
       }).setDepth(3).setAlpha(0)
@@ -287,15 +294,16 @@ export default class BattleResultScene extends Phaser.Scene {
       currentY += 44
       rewardDelay += 300
 
-      // Persist rewards — SAME logic as before; only the UI changed.
-      playerData.addBattleRewards(goldAmount, xpAmount, true)
-      playerData.addMastery('attack', 5)
-
-      // Offline Raid bonus: extra Attack Mastery on top of the standard +5
-      // post-battle award. Scales with the target's level via the value
-      // baked into target.rewardEstimate.masteryAttack at matchmaking time.
-      if (data.raidTarget) {
-        playerData.addMastery('attack', data.raidTarget.rewardEstimate.masteryAttack)
+      // Persist rewards. Raid victories ride the standardised
+      // applyRaidAttackVictory helper (+1 Attack Mastery + 100 gold);
+      // we still pump XP through addBattleRewards so the level-up flow
+      // fires. Standard PvE keeps the legacy +5 mastery.
+      if (isRaid) {
+        playerData.addBattleRewards(0, xpAmount, true)
+        playerData.applyRaidAttackVictory()
+      } else {
+        playerData.addBattleRewards(goldAmount, xpAmount, true)
+        playerData.addMastery('attack', 5)
       }
 
       // Random skill drop chance (30%) — unchanged logic
