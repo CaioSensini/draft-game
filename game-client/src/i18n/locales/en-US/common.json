@@ -12,7 +12,8 @@
     "ok": "OK",
     "save": "SAVE",
     "yes": "YES",
-    "no": "NO"
+    "no": "NO",
+    "back-titled": "Back"
   },
   "studio-name": "CODEFORJE VIO",
   "section": {
@@ -37,7 +38,7 @@
     "rei": "King"
   },
   "ranked-display": {
-    "placement": "? Unknown ({count}/3 tournaments to qualify)"
+    "placement": "Unknown ({count}/3 tournaments to qualify)"
   },
   "skill-card": {
     "categories": {

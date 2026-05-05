@@ -12,6 +12,8 @@ import { transitionTo } from '../utils/SceneTransition'
 import { t } from '../i18n'
 import {
   getPurchasableSkins,
+  getSkinName,
+  getSkinSubtitle,
   SKIN_RARITY_COLOR,
   SKIN_RARITY_HEX,
   type SkinDef,
@@ -620,7 +622,7 @@ export default class ShopScene extends Phaser.Scene {
 
     // ── Skin name — Cormorant h3 ──
     container.add(
-      this.add.text(0, -hh + 236, skin.displayName, {
+      this.add.text(0, -hh + 236, getSkinName(skin), {
         fontFamily: fontFamily.serif, fontSize: typeScale.h3,
         color: fg.primaryHex, fontStyle: '600',
       }).setOrigin(0.5),
@@ -737,7 +739,7 @@ export default class ShopScene extends Phaser.Scene {
           if (ok) {
             this.refreshBalance()
             this.drawCards()
-            this.showPurchasedToast(skin.displayName, SKIN_RARITY_COLOR[skin.rarity], SKIN_RARITY_HEX[skin.rarity])
+            this.showPurchasedToast(getSkinName(skin), SKIN_RARITY_COLOR[skin.rarity], SKIN_RARITY_HEX[skin.rarity])
           }
         },
       })
@@ -749,8 +751,8 @@ export default class ShopScene extends Phaser.Scene {
     }
     const { close } = UI.modal(this, {
       eyebrow: rarityLabel(skin.rarity),
-      title:   t('scenes.shop.modal.buy-title', { name: skin.displayName }),
-      body:    skin.subtitle,
+      title:   t('scenes.shop.modal.buy-title', { name: getSkinName(skin) }),
+      body:    getSkinSubtitle(skin),
       actions,
     }, { width: 460 })
     modalClose = close

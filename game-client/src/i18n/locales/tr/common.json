@@ -12,7 +12,8 @@
     "ok": "TAMAM",
     "save": "KAYDET",
     "yes": "EVET",
-    "no": "HAYIR"
+    "no": "HAYIR",
+    "back-titled": "Geri"
   },
   "studio-name": "CODEFORJE VIO",
   "section": {
@@ -30,14 +31,14 @@
   "ranked-tiers": {
     "desconhecido": "Bilinmiyor",
     "recruta": "Acemi",
-    "aprendiz": "??rak",
+    "aprendiz": "Çırak",
     "soldado": "Asker",
-    "veterano": "K?demli",
+    "veterano": "Kıdemli",
     "comandante": "Komutan",
     "rei": "Kral"
   },
   "ranked-display": {
-    "placement": "? Bilinmiyor ({count}/3 turnuva ile s?ralan?r)"
+    "placement": "Bilinmiyor ({count}/3 turnuva ile sıralanır)"
   },
   "skill-card": {
     "categories": {
@@ -46,17 +47,17 @@
     },
     "stats": {
       "damage": "HSR",
-      "heal": "?Y?L",
+      "heal": "İYİL",
       "shield": "KALK",
       "evade": "KA?",
-      "power": "G??"
+      "power": "GÜÇ"
     },
     "targets": {
       "single": "HEDEF",
       "self": "KEND?",
-      "ally": "M?TTEF",
-      "all-allies": "M?TTEF",
-      "line": "??ZG?",
+      "ally": "MÜTTF",
+      "all-allies": "MÜTTFLR",
+      "line": "ÇİZGİ",
       "cone": "KON?",
       "ring": "HALKA",
       "area": "ALAN",
@@ -66,44 +67,44 @@
       "single": "Tek hedef",
       "area": "Alan",
       "self": "Kendi",
-      "lowest-ally": "Zay?f m?ttefik",
-      "all-allies": "T?m m?ttefikler"
+      "lowest-ally": "Zayıf müttefik",
+      "all-allies": "Tüm müttefikler"
     },
     "detail-labels": {
       "damage": "HASAR",
-      "heal": "?Y?LE?ME",
+      "heal": "İYİLEŞME",
       "shield": "KALKAN",
       "extra-damage": "EK HASAR",
-      "extra-heal": "EK ?Y?LE?ME",
+      "extra-heal": "EK İYİLEŞME",
       "effect": "ETK?",
       "target": "HEDEF"
     },
     "effect-labels": {
       "damage": "Hasar",
       "area": "Alan",
-      "heal": "?yile?me",
+      "heal": "İyileşme",
       "shield": "Kalkan",
       "stun": "Sersemletme",
-      "snare": "K?k",
+      "snare": "Kök",
       "bleed": "Kanama",
       "burn": "Yanma",
       "poison": "Zehir",
-      "evade": "Ka??nma",
-      "reflect": "Yans?t",
+      "evade": "Kaçınma",
+      "reflect": "Yansıt",
       "regen": "Regen",
-      "mark": "??aret",
+      "mark": "İşaret",
       "revive": "Dirilt",
-      "lifesteal": "Can ?alma",
-      "true_damage": "Ger?ek hasar",
+      "lifesteal": "Can Çalma",
+      "true_damage": "Gerçek hasar",
       "cleanse": "Temizle",
-      "purge": "Ar?nd?r",
+      "purge": "Arındır",
       "def_up": "+SVN",
       "atk_up": "+SLD",
       "def_down": "-SVN",
       "atk_down": "-SLD",
-      "double_attack": "?ift",
+      "double_attack": "Çift",
       "silence_defense": "Sessizlik",
-      "push": "?t",
+      "push": "İt",
       "mov_down": "-HRK"
     }
   }

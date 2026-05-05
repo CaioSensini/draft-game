@@ -22,22 +22,22 @@
       "squad": "SQUAD"
     },
     "mode-bonus": {
-      "solo": "SOLO ? sans bonus",
-      "duo": "DUO ? +10% XP & Gold",
-      "squad": "SQUAD ? +20% XP & Gold"
+      "solo": "SOLO · sans bonus",
+      "duo": "DUO · +10% XP & Gold",
+      "squad": "SQUAD · +20% XP & Gold"
     },
     "invite-friend": "INVITER UN AMI",
-    "room-incomplete": "SALLE INCOMPL?TE ({current}/{max})",
+    "room-incomplete": "SALLE INCOMPLÈTE ({current}/{max})",
     "level-short": "NV {level}",
     "player-fallback": "Joueur",
     "bot": "Bot",
     "friend": "Ami",
     "invite-modal": {
-      "eyebrow": "BIENT?T",
+      "eyebrow": "BIENTÔT",
       "title": "INVITATION AMI",
-      "body-solo": "Le syst?me d?invitations est en d?veloppement. Pour l?instant, utilisez le mode Solo.",
-      "body-ranked": "Le syst?me d?invitations est en d?veloppement. Pour l?instant, jouez en ranked en Solo.",
-      "body-custom": "Le syst?me d?invitations est en d?veloppement. Pour l?instant, ajoutez des bots ? votre ?quipe."
+      "body-solo": "Le système d’invitations est en développement. Pour l’instant, utilisez le mode Solo.",
+      "body-ranked": "Le système d’invitations est en développement. Pour l’instant, jouez en ranked en Solo.",
+      "body-custom": "Le système d’invitations est en développement. Pour l’instant, ajoutez des bots à votre équipe."
     }
   },
   "shop": {
@@ -50,36 +50,41 @@
       "skins": "SKINS"
     },
     "items": {
-      "defense": "D?fense",
+      "defense": "Défense",
       "attack": "Attaque",
       "complete": "Complet",
       "dg-100": "100 DG",
       "dg-500": "500 DG"
     },
     "descriptions": {
-      "one-random-skill": "1 skill al?atoire",
-      "two-random-skills": "2 skills al?atoires",
-      "three-random-skills": "3 skills al?atoires",
-      "premium-skill-pack": "3 d?fense + 3 attaque",
-      "real-money": "Argent r?el"
+      "one-random-skill": "1 skill aléatoire",
+      "two-random-skills": "2 skills aléatoires",
+      "three-random-skills": "3 skills aléatoires",
+      "premium-skill-pack": "3 défense + 3 attaque",
+      "real-money": "Argent réel"
     },
     "rarity": {
       "basic": "BASIQUE",
       "medium": "MOYEN",
-      "advanced": "AVANC?",
-      "premium": "PREMIUM"
+      "advanced": "AVANCÉ",
+      "premium": "PREMIUM",
+      "default": "CLASSIQUE",
+      "common": "COMMUN",
+      "rare": "RARE",
+      "epic": "ÉPIQUE",
+      "legendary": "LÉGENDAIRE"
     },
-    "drop-pill": "?{count} SKILLS",
+    "drop-pill": "+{count} SKILLS",
     "skin-state": {
-      "equipped": "?QUIP?E",
+      "equipped": "ÉQUIPÉE",
       "owned": "ACQUISE"
     },
     "modal": {
       "buy-title": "Acheter {name} ?",
-      "buy-gold": "ACHETER ? {price} GOLD",
-      "buy-dg": "ACHETER ? {price} DG",
+      "buy-gold": "ACHETER · {price} GOLD",
+      "buy-dg": "ACHETER · {price} DG",
       "insufficient-balance": "SOLDE INSUFFISANT",
-      "pack-body": "{desc} ? {count} skill(s) al?atoire(s)."
+      "pack-body": "{desc} · {count} skill(s) aléatoire(s)."
     }
   },
   "battle-pass": {
@@ -90,7 +95,11 @@
     "premium-active": "PREMIUM ACTIF",
     "premium-thanks": "Merci pour votre soutien !",
     "complete-chain": "CHAÎNE COMPLÈTE",
-    "rewards": "RÉCOMPENSES"
+    "rewards": "RÉCOMPENSES",
+    "tier-max": "NIVEAU MAX",
+    "tier-current": "NIVEAU {tier}",
+    "track-premium": "PREMIUM",
+    "track-free": "GRATUIT"
   },
   "ranking": {
     "title": "CLASSEMENT MONDIAL",
@@ -108,7 +117,7 @@
     "filters": {
       "elo": "ELO",
       "attack": "ATTAQUE",
-      "defense": "D?FENSE",
+      "defense": "DÉFENSE",
       "global": "GLOBAL"
     }
   },
@@ -124,14 +133,40 @@
     "start-battle": "LANCER BATAILLE",
     "info": {
       "real-player-tournament": "Tournoi entre 8 vrais joueurs",
-      "double-elimination": "Double ?limination : les perdants s?affrontent",
-      "lp-placement": "LP selon le classement final (1er ? 8e)"
+      "double-elimination": "Double élimination : les perdants s’affrontent",
+      "lp-placement": "LP selon le classement final (1er à 8e)"
     }
   },
   "bracket": {
     "live": "EN DIRECT",
     "champion": "CHAMPION",
-    "you-won": "VOUS AVEZ GAGNÉ !"
+    "you-won": "VOUS AVEZ GAGNÉ !",
+    "rounds": {
+      "quarters": "QUARTS",
+      "semifinal": "DEMI-FINALE",
+      "final": "FINALE",
+      "champion": "CHAMPION"
+    },
+    "tbd": "— À DÉFINIR —",
+    "simulating": "Simulation : {a} vs {b}…",
+    "spectate-btn": "REGARDER",
+    "your-turn": "À VOUS · vs {opponent}",
+    "results": "RÉSULTATS",
+    "team-fallback": "Équipe {which}",
+    "spectate-round-prefix": "RD {round} · {line}",
+    "spectate-victory": "VICTOIRE · {winner}",
+    "spectate": {
+      "line-1": "{A} attaque avec Boule de Feu…",
+      "line-2": "{B} défend avec Bouclier Magique…",
+      "line-3": "{A} lance Flèche Glacée…",
+      "line-4": "{B} contre avec Charge…",
+      "line-5": "{A} utilise Soin Divin…",
+      "line-6": "{B} invoque Tempête Arcanique…",
+      "line-7": "{A} prépare Coup Dévastateur…",
+      "line-8": "{B} active Barrière de Vent…",
+      "line-9": "{A} porte un coup critique !",
+      "line-10": "{B} tente d’esquiver mais échoue…"
+    }
   },
   "pvp": {
     "title": "PVP",
@@ -139,10 +174,10 @@
     "squad-incomplete": "Invitez 1 joueur de plus pour compléter le squad",
     "search-opponents": "CHERCHER ADVERSAIRES",
     "info": {
-      "no-entry-cost": "Aucun co?t d?entr?e",
-      "level-matchmaking": "Matchmaking al?atoire par niveau",
-      "any-team-size": "Affronte toute taille d??quipe",
-      "gold-rewards": "R?compenses de Gold par victoire"
+      "no-entry-cost": "Aucun coût d’entrée",
+      "level-matchmaking": "Matchmaking aléatoire par niveau",
+      "any-team-size": "Affronte toute taille d’équipe",
+      "gold-rewards": "Récompenses de Gold par victoire"
     }
   },
   "pve": {
@@ -150,28 +185,44 @@
     "battle-title": "BATAILLE",
     "tournament-title": "TOURNOI",
     "start-match": "LANCER PARTIE",
-    "cost-format": "CO?T {cost}G",
+    "cost-format": "COÛT {cost}G",
     "info": {
-      "smart-bot": "Bot intelligent ? votre niveau",
+      "smart-bot": "Bot intelligent à votre niveau",
       "gold-bonus": "Bonus de Gold par victoire",
-      "eight-team-bracket": "Tableau ? 8 ?quipes",
-      "scaled-cost": "Co?t en Gold variable par tranche",
-      "scaled-reward": "R?compense ajust?e par manche"
+      "eight-team-bracket": "Tableau à 8 équipes",
+      "scaled-cost": "Coût en Gold variable par tranche",
+      "scaled-reward": "Récompense ajustée par manche"
     }
   },
   "custom": {
     "title": "PERSO",
     "subtitle": "PARTIE PERSONNALISÉE",
-    "blue-team": "?QUIPE BLEUE",
-    "red-team": "?QUIPE ROUGE",
+    "blue-team": "ÉQUIPE BLEUE",
+    "red-team": "ÉQUIPE ROUGE",
     "blue-team-short": "BLEU",
     "red-team-short": "ROUG",
-    "switch-team": "?  CHANGER ?QUIPE"
+    "switch-team": "↻  CHANGER D’ÉQUIPE"
   },
   "matchmaking": {
     "searching": "RECHERCHE D'ADVERSAIRE",
     "queue-time": "TEMPS EN FILE",
-    "tip-eyebrow": "ASTUCE"
+    "tip-eyebrow": "ASTUCE",
+    "tips": {
+      "protect-king": "Le Roi vivant est votre condition de victoire. Protégez-le avant tout.",
+      "heal-cap": "Le soin est plafonné à 2 par tour — utilisez le 3e emplacement avec intention.",
+      "overtime-damage": "Les dégâts après le tour 12 gagnent +10% par tour en overtime.",
+      "bleed-combo": "Le saignement double Coup Mortel et Tempête de Lames.",
+      "isolated-executor": "Un Exécuteur isolé frappe plus fort mais reçoit 10% de dégâts en plus.",
+      "specialist-cleanse": "Les Spécialistes retirent jusqu’à trois debuffs alliés en un tour.",
+      "shield-cap": "Les boucliers s’empilent jusqu’à 100 PV — au-delà, ils écrasent le plus faible.",
+      "card-cycle": "Les cartes en main tournent après usage : planifiez la séquence."
+    },
+    "mode-title": {
+      "ranked": "CLASSÉE",
+      "casual": "CASUAL",
+      "pve": "ENTRAÎNEMENT"
+    },
+    "queue-count": "Joueurs en file : {players}   ·   Ping : {ping} ms"
   },
   "battle": {
     "phase": {
@@ -212,9 +263,9 @@
       "skipped": "Passé",
       "stunned": "Étourdi",
       "dead": "Mort",
-      "no-targets": "? Aucune cible ? port?e !",
-      "death": "?? {name} est mort (Manche {round})",
-      "damage": "{name} subit {amount} d?g?ts (PV {hp})",
+      "no-targets": "⚠ Aucune cible à portée !",
+      "death": "✖ {name} est mort (Manche {round})",
+      "damage": "{name} subit {amount} dégâts (PV {hp})",
       "heal": "{name} soigne {amount} PV"
     },
     "outcome": {
@@ -488,7 +539,9 @@
       "sound-off": "Effets sonores désactivés"
     },
     "language": {
-      "field-label": "CHOISISSEZ VOTRE LANGUE"
+      "field-label": "CHOISISSEZ VOTRE LANGUE",
+      "busy-title": "Terminez la partie en cours",
+      "busy-body": "Vous êtes en partie ou en file d’attente. Terminez ou quittez avant de changer de langue."
     },
     "account": {
       "session-label": "SESSION",
@@ -508,13 +561,13 @@
     "sections": {
       "pvp": "PVP",
       "pve": "PVE",
-      "creation": "CR?ATION"
+      "creation": "CRÉATION"
     },
     "modes": {
       "ranked": {
-        "title": "Ar?ne class?e",
-        "desc": "Tournois class?s (Nv.100)",
-        "locked-desc": "Disponible ? partir du Nv.100"
+        "title": "Arène classée",
+        "desc": "Tournois classés (Nv.100)",
+        "locked-desc": "Disponible à partir du Nv.100"
       },
       "pvp": {
         "title": "Bataille PvP",
@@ -522,24 +575,107 @@
       },
       "pve-battle": {
         "title": "Bataille PvE",
-        "desc": "Affrontez un bot intelligent ? votre niveau"
+        "desc": "Affrontez un bot intelligent à votre niveau"
       },
       "pve-tournament": {
         "title": "Tournoi PvE",
         "desc": "Tableau par tranche de niveau"
       },
       "custom": {
-        "title": "Partie personnalis?e",
-        "desc": "Composez des ?quipes avec amis et bots"
+        "title": "Partie personnalisée",
+        "desc": "Composez des équipes avec amis et bots"
       }
     }
   },
   "skin-picker": {
     "title": "CHOISIR SKIN",
-    "locked-hint": "{count} skin(s) verrouill?e(s) ? achetez-les dans la boutique",
-    "all-unlocked-hint": "Toutes les skins sont d?bloqu?es ? touchez pour ?quiper",
-    "equipped": "?  ?QUIP?E",
-    "equip": "?QUIPER",
-    "in-shop": "BOUTIQUE"
+    "locked-hint": "{count} skin(s) verrouillée(s) · achetez-les dans la boutique",
+    "all-unlocked-hint": "Toutes les skins sont débloquées · touchez pour équiper",
+    "equipped": "✓  ÉQUIPÉE",
+    "equip": "ÉQUIPER",
+    "in-shop": "BOUTIQUE",
+    "role": {
+      "king": "ROI",
+      "warrior": "GUERRIER",
+      "specialist": "SPÉCIALISTE",
+      "executor": "EXÉCUTEUR"
+    }
+  },
+  "skins": {
+    "king": {
+      "idle": {
+        "name": "Roi Classique",
+        "subtitle": "La couronne éternelle du lignage originel"
+      },
+      "king_of_the_kingdom_idle": {
+        "name": "Roi du Royaume",
+        "subtitle": "Gardien des terres fondatrices"
+      },
+      "crimson_idle": {
+        "name": "Roi de l’Orage",
+        "subtitle": "Couronne qui commande foudres et tonnerres"
+      },
+      "eternal_idle": {
+        "name": "Roi de l’Horizon",
+        "subtitle": "Souverain de terres sans fin"
+      }
+    },
+    "warrior": {
+      "idle": {
+        "name": "Guerrier Classique",
+        "subtitle": "Le vétéran qui ouvre la voie"
+      },
+      "warrior_of_the_kingdom_idle": {
+        "name": "Guerrier du Royaume",
+        "subtitle": "Défenseur loyal des murailles"
+      },
+      "ashes_idle": {
+        "name": "Guerrier de la Montagne",
+        "subtitle": "Ferme comme la roche ancestrale"
+      },
+      "radiant_idle": {
+        "name": "Guerrier Radiant",
+        "subtitle": "Lame bénie par l’aurore"
+      }
+    },
+    "specialist": {
+      "idle": {
+        "name": "Spécialiste Classique",
+        "subtitle": "Maître des techniques ancestrales"
+      },
+      "specialist_of_the_kingdom_idle": {
+        "name": "Spécialiste du Royaume",
+        "subtitle": "Conseiller des savoirs anciens"
+      },
+      "arcane_idle": {
+        "name": "Spécialiste Rubis",
+        "subtitle": "Sagesse cristallisée en flamme rubis"
+      },
+      "cosmic_idle": {
+        "name": "Spécialiste Nébulaire",
+        "subtitle": "Tisseur de nébuleuses et de comètes"
+      }
+    },
+    "executor": {
+      "idle": {
+        "name": "Exécuteur Classique",
+        "subtitle": "Une ombre acérée et silencieuse"
+      },
+      "executor_of_the_kingdom_idle": {
+        "name": "Exécuteur du Royaume",
+        "subtitle": "Sentinelle des routes royales"
+      },
+      "spectral_idle": {
+        "name": "Exécuteur de la Brise",
+        "subtitle": "Plus léger que le vent du matin"
+      },
+      "shadow_idle": {
+        "name": "Exécuteur de l’Ombre",
+        "subtitle": "Pas silencieux du crépuscule"
+      }
+    }
+  },
+  "pack-open": {
+    "tap-to-close": "Touchez pour fermer"
   }
 }

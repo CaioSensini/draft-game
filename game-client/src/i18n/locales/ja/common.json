@@ -12,7 +12,8 @@
     "ok": "OK",
     "save": "保存",
     "yes": "はい",
-    "no": "いいえ"
+    "no": "いいえ",
+    "back-titled": "戻る"
   },
   "studio-name": "CODEFORJE VIO",
   "section": {
@@ -28,83 +29,83 @@
     "upgrade-action-broke": "Lv {level} · {cost}g"
   },
   "ranked-tiers": {
-    "desconhecido": "??",
-    "recruta": "??",
-    "aprendiz": "???",
-    "soldado": "??",
-    "veterano": "??",
-    "comandante": "???",
-    "rei": "?"
+    "desconhecido": "不明",
+    "recruta": "新兵",
+    "aprendiz": "見習い",
+    "soldado": "兵士",
+    "veterano": "熟練兵",
+    "comandante": "司令官",
+    "rei": "王"
   },
   "ranked-display": {
-    "placement": "? ???????{count}/3???"
+    "placement": "不明 ({count}/3 トーナメントで認定)"
   },
   "skill-card": {
     "categories": {
-      "attack": "??",
-      "defense": "??"
+      "attack": "攻撃",
+      "defense": "防御"
     },
     "stats": {
-      "damage": "DMG",
-      "heal": "??",
-      "shield": "?",
-      "evade": "??",
-      "power": "??"
+      "damage": "ダメ",
+      "heal": "回復",
+      "shield": "シルド",
+      "evade": "回避",
+      "power": "パワ"
     },
     "targets": {
-      "single": "??",
-      "self": "??",
-      "ally": "??",
-      "all-allies": "????",
-      "line": "??",
-      "cone": "??",
-      "ring": "?",
-      "area": "??",
-      "tile": "???"
+      "single": "対象",
+      "self": "自身",
+      "ally": "味方",
+      "all-allies": "全味方",
+      "line": "直線",
+      "cone": "扇状",
+      "ring": "環状",
+      "area": "範囲",
+      "tile": "マス"
     },
     "target-details": {
-      "single": "????",
-      "area": "??",
-      "self": "??",
-      "lowest-ally": "?????",
-      "all-allies": "????"
+      "single": "単体対象",
+      "area": "範囲",
+      "self": "自身",
+      "lowest-ally": "弱った味方",
+      "all-allies": "全味方"
     },
     "detail-labels": {
-      "damage": "????",
-      "heal": "??",
-      "shield": "????",
-      "extra-damage": "??????",
-      "extra-heal": "????",
-      "effect": "??",
-      "target": "??"
+      "damage": "ダメージ",
+      "heal": "回復",
+      "shield": "シールド",
+      "extra-damage": "追加ダメ",
+      "extra-heal": "追加回復",
+      "effect": "効果",
+      "target": "対象"
     },
     "effect-labels": {
-      "damage": "????",
-      "area": "??",
-      "heal": "??",
-      "shield": "????",
-      "stun": "???",
-      "snare": "??",
-      "bleed": "??",
-      "burn": "??",
-      "poison": "?",
-      "evade": "??",
-      "reflect": "??",
-      "regen": "??",
-      "mark": "???",
-      "revive": "??",
-      "lifesteal": "??",
-      "true_damage": "??????",
-      "cleanse": "??",
-      "purge": "??",
-      "def_up": "+??",
-      "atk_up": "+??",
-      "def_down": "-??",
-      "atk_down": "-??",
-      "double_attack": "???",
-      "silence_defense": "??",
-      "push": "????",
-      "mov_down": "-??"
+      "damage": "ダメージ",
+      "area": "範囲",
+      "heal": "回復",
+      "shield": "シールド",
+      "stun": "スタン",
+      "snare": "拘束",
+      "bleed": "出血",
+      "burn": "火傷",
+      "poison": "毒",
+      "evade": "回避",
+      "reflect": "反射",
+      "regen": "再生",
+      "mark": "刻印",
+      "revive": "復活",
+      "lifesteal": "吸収",
+      "true_damage": "純粋ダメ",
+      "cleanse": "浄化",
+      "purge": "パージ",
+      "def_up": "+防御",
+      "atk_up": "+攻撃",
+      "def_down": "-防御",
+      "atk_down": "-攻撃",
+      "double_attack": "2回攻撃",
+      "silence_defense": "沈黙",
+      "push": "押し",
+      "mov_down": "-移動"
     }
   }
 }

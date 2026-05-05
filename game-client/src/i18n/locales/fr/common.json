@@ -12,7 +12,8 @@
     "ok": "OK",
     "save": "ENREGISTRER",
     "yes": "OUI",
-    "no": "NON"
+    "no": "NON",
+    "back-titled": "Retour"
   },
   "studio-name": "CODEFORJE VIO",
   "section": {
@@ -32,17 +33,17 @@
     "recruta": "Recrue",
     "aprendiz": "Apprenti",
     "soldado": "Soldat",
-    "veterano": "V?t?ran",
+    "veterano": "Vétéran",
     "comandante": "Commandant",
     "rei": "Roi"
   },
   "ranked-display": {
-    "placement": "? Inconnu ({count}/3 tournois pour se classer)"
+    "placement": "Inconnu ({count}/3 tournois pour se classer)"
   },
   "skill-card": {
     "categories": {
       "attack": "ATTAQUE",
-      "defense": "D?FENSE"
+      "defense": "DÉFENSE"
     },
     "stats": {
       "damage": "DGT",
@@ -55,9 +56,9 @@
       "single": "CIBLE",
       "self": "SOI",
       "ally": "ALLI?",
-      "all-allies": "ALLI?S",
+      "all-allies": "ALLIÉS",
       "line": "LIGNE",
-      "cone": "C?NE",
+      "cone": "CÔNE",
       "ring": "ANNEAU",
       "area": "ZONE",
       "tile": "CASE"
@@ -66,35 +67,35 @@
       "single": "Cible unique",
       "area": "Zone",
       "self": "Soi",
-      "lowest-ally": "Alli? faible",
-      "all-allies": "Tous les alli?s"
+      "lowest-ally": "Allié faible",
+      "all-allies": "Tous les alliés"
     },
     "detail-labels": {
-      "damage": "D?G?TS",
+      "damage": "DÉGÂTS",
       "heal": "SOIN",
       "shield": "BOUCLIER",
-      "extra-damage": "D?G?TS EXTRA",
+      "extra-damage": "DÉGÂTS EXTRA",
       "extra-heal": "SOIN EXTRA",
       "effect": "EFFET",
       "target": "CIBLE"
     },
     "effect-labels": {
-      "damage": "D?g?ts",
+      "damage": "Dégâts",
       "area": "Zone",
       "heal": "Soin",
       "shield": "Bouclier",
-      "stun": "?tourdissement",
+      "stun": "Étourdissement",
       "snare": "Entrave",
       "bleed": "Saignement",
-      "burn": "Br?lure",
+      "burn": "Brûlure",
       "poison": "Poison",
       "evade": "Esquive",
       "reflect": "Renvoi",
       "regen": "Regen",
       "mark": "Marque",
-      "revive": "R?surrection",
+      "revive": "Résurrection",
       "lifesteal": "Vol de vie",
-      "true_damage": "D?g?ts purs",
+      "true_damage": "Dégâts purs",
       "cleanse": "Purifier",
       "purge": "Dissiper",
       "def_up": "+DEF",

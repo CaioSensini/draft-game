@@ -3,10 +3,10 @@
     "lang": "ru"
   },
   "lobby-shared": {
-    "your-team": "ВАША КОМАНДА",
+    "your-team": "ВАШ ОТРЯД",
     "your-badge": "ВЫ",
-    "your-badge-short": "ВЫ",
-    "team-bonus": "БОНУС КОМАНДЫ",
+    "your-badge-short": "ВАШ",
+    "team-bonus": "БОНУС ОТРЯДА",
     "team-info": "ИНФО",
     "current-badge": "ТЕКУЩИЙ",
     "empty-slot": "Пусто",
@@ -15,171 +15,222 @@
     "change-skin": "СМЕНИТЬ СКИН",
     "swap": "ПОМЕНЯТЬ",
     "level-range": "ДИАПАЗОН УРОВНЕЙ",
-    "change-mode": "??????? ?????",
+    "change-mode": "СМЕНИТЬ РЕЖИМ",
     "modes": {
       "solo": "SOLO",
       "duo": "DUO",
       "squad": "SQUAD"
     },
     "mode-bonus": {
-      "solo": "SOLO ? ??? ??????",
-      "duo": "DUO ? +10% XP & Gold",
-      "squad": "SQUAD ? +20% XP & Gold"
+      "solo": "SOLO · без бонуса",
+      "duo": "DUO · +10% XP и Gold",
+      "squad": "SQUAD · +20% XP и Gold"
     },
-    "invite-friend": "?????????? ?????",
-    "room-incomplete": "??????? ???????? ({current}/{max})",
-    "level-short": "?? {level}",
-    "player-fallback": "?????",
-    "bot": "???",
-    "friend": "????",
+    "invite-friend": "ПРИГЛАСИТЬ ДРУГА",
+    "room-incomplete": "ОТРЯД НЕПОЛНЫЙ ({current}/{max})",
+    "level-short": "Ур {level}",
+    "player-fallback": "Игрок",
+    "bot": "Бот",
+    "friend": "Друг",
     "invite-modal": {
-      "eyebrow": "?????",
-      "title": "??????????? ?????",
-      "body-solo": "??????? ??????????? ? ??????????. ???? ??????? ? ?????? Solo.",
-      "body-ranked": "??????? ??????????? ? ??????????. ???? ??????? ranked ? Solo.",
-      "body-custom": "??????? ??????????? ? ??????????. ???? ???????? ????? ? ???????."
+      "eyebrow": "СКОРО",
+      "title": "ПРИГЛАШЕНИЕ ДРУГА",
+      "body-solo": "Система приглашений в разработке. Пока используйте режим Solo.",
+      "body-ranked": "Система приглашений в разработке. Пока играйте в ранкед в Solo.",
+      "body-custom": "Система приглашений в разработке. Пока добавьте ботов в команду."
     }
   },
   "shop": {
     "title": "МАГАЗИН",
-    "all-owned": "ВСЁ ВАШЕ",
+    "all-owned": "УЖЕ ВСЕ КУПЛЕНО",
     "buy": "КУПИТЬ",
     "unlocked": "РАЗБЛОКИРОВАНО",
     "tabs": {
-      "packs": "??????",
-      "skins": "?????"
+      "packs": "НАБОРЫ",
+      "skins": "СКИНЫ"
     },
     "items": {
-      "defense": "??????",
-      "attack": "?????",
-      "complete": "??????",
+      "defense": "Защита",
+      "attack": "Атака",
+      "complete": "Полный",
       "dg-100": "100 DG",
       "dg-500": "500 DG"
     },
     "descriptions": {
-      "one-random-skill": "1 ????????? ?????",
-      "two-random-skills": "2 ????????? ??????",
-      "three-random-skills": "3 ????????? ??????",
-      "premium-skill-pack": "3 ?????? + 3 ?????",
-      "real-money": "???????? ??????"
+      "one-random-skill": "1 случайный скилл",
+      "two-random-skills": "2 случайных скилла",
+      "three-random-skills": "3 случайных скилла",
+      "premium-skill-pack": "3 защиты + 3 атаки",
+      "real-money": "Реальные деньги"
     },
     "rarity": {
-      "basic": "???????",
-      "medium": "???????",
-      "advanced": "???????????",
-      "premium": "???????"
+      "basic": "БАЗОВЫЙ",
+      "medium": "СРЕДНИЙ",
+      "advanced": "ПРОДВИНУТЫЙ",
+      "premium": "ПРЕМИУМ",
+      "default": "КЛАССИКА",
+      "common": "ОБЫЧНЫЙ",
+      "rare": "РЕДКИЙ",
+      "epic": "ЭПИЧЕСКИЙ",
+      "legendary": "ЛЕГЕНДАРНЫЙ"
     },
-    "drop-pill": "?{count} ??????",
+    "drop-pill": "+{count} СКИЛЛОВ",
     "skin-state": {
-      "equipped": "???????????",
-      "owned": "????????"
+      "equipped": "НАДЕТ",
+      "owned": "ПРИОБРЕТЕН"
     },
     "modal": {
-      "buy-title": "?????? {name}?",
-      "buy-gold": "?????? ? {price} GOLD",
-      "buy-dg": "?????? ? {price} DG",
-      "insufficient-balance": "???????????? ???????",
-      "pack-body": "{desc} ? {count} ????????? ??????(??)."
+      "buy-title": "Купить {name}?",
+      "buy-gold": "КУПИТЬ · {price} GOLD",
+      "buy-dg": "КУПИТЬ · {price} DG",
+      "insufficient-balance": "НЕДОСТАТОЧНО СРЕДСТВ",
+      "pack-body": "{desc} · {count} случайный(х) скилл(ов)."
     }
   },
   "battle-pass": {
     "title": "БОЕВОЙ ПРОПУСК",
     "season-missions": "МИССИИ СЕЗОНА",
-    "buy-premium": "ПОЛУЧИТЬ ПРЕМИУМ",
-    "premium-tagline": "Открывает премиум путь",
+    "buy-premium": "КУПИТЬ ПРЕМИУМ",
+    "premium-tagline": "Открывает премиум-трек",
     "premium-active": "ПРЕМИУМ АКТИВЕН",
     "premium-thanks": "Спасибо за поддержку!",
-    "complete-chain": "ЦЕПОЧКА ЗАВЕРШЕНА",
-    "rewards": "НАГРАДЫ"
+    "complete-chain": "ЦЕПЬ ЗАВЕРШЕНА",
+    "rewards": "НАГРАДЫ",
+    "tier-max": "МАКС УРОВЕНЬ",
+    "tier-current": "УРОВЕНЬ {tier}",
+    "track-premium": "ПРЕМИУМ",
+    "track-free": "БЕСПЛАТНО"
   },
   "ranking": {
     "title": "ГЛОБАЛЬНЫЙ РЕЙТИНГ",
     "subtitle": "Лучшие игроки мира",
-    "sort-label": "СОРТ",
+    "sort-label": "СОРТИРОВКА",
     "region-label": "РЕГИОН",
     "table": {
       "player": "ИГРОК",
       "elo": "ELO",
-      "atk-mastery": "МАСТ. АТАКИ",
-      "def-mastery": "МАСТ. ЗАЩИТЫ",
+      "atk-mastery": "М. АТАКИ",
+      "def-mastery": "М. ЗАЩИТЫ",
       "region": "РЕГИОН"
     },
     "no-players": "Игроки не найдены",
     "filters": {
       "elo": "ELO",
-      "attack": "?????",
-      "defense": "??????",
-      "global": "???"
+      "attack": "АТАКА",
+      "defense": "ЗАЩИТА",
+      "global": "ГЛОБАЛЬНО"
     }
   },
   "ranked": {
-    "title": "РЕЙТИНГ",
-    "subtitle": "РЕЙТИНГОВАЯ АРЕНА",
-    "locked-title": "РЕЙТИНГОВАЯ АРЕНА",
-    "locked-body": "Доступно с Уровня 100",
-    "ranks-eyebrow": "РАНГИ",
+    "title": "РАНКЕД",
+    "subtitle": "РАНКЕД-АРЕНА",
+    "locked-title": "РАНКЕД-АРЕНА",
+    "locked-body": "Доступно с уровня 100",
+    "ranks-eyebrow": "ЗВАНИЯ",
     "queue": {
-      "duo": "DUO"
+      "duo": "ДУО"
     },
-    "start-battle": "?????? ?????",
+    "start-battle": "НАЧАТЬ БОЙ",
     "info": {
-      "real-player-tournament": "?????? ??? 8 ???????? ???????",
-      "double-elimination": "Double elimination: ??????????? ?????? ????? ?????",
-      "lp-placement": "LP ?? ????????? ????? (1-8)"
+      "real-player-tournament": "Турнир из 8 реальных игроков",
+      "double-elimination": "Двойное выбывание: проигравшие играют между собой",
+      "lp-placement": "LP на основе финального места (1 — 8)"
     }
   },
   "bracket": {
     "live": "В ЭФИРЕ",
     "champion": "ЧЕМПИОН",
-    "you-won": "ВЫ ВЫИГРАЛИ!"
+    "you-won": "ВЫ ПОБЕДИЛИ!",
+    "rounds": {
+      "quarters": "ЧЕТВЕРТЬ",
+      "semifinal": "ПОЛУФИНАЛ",
+      "final": "ФИНАЛ",
+      "champion": "ЧЕМПИОН"
+    },
+    "tbd": "— БУДЕТ ОПРЕДЕЛЕНО —",
+    "simulating": "Симуляция: {a} vs {b}…",
+    "spectate-btn": "СМОТРЕТЬ",
+    "your-turn": "ВАШ ХОД · vs {opponent}",
+    "results": "РЕЗУЛЬТАТЫ",
+    "team-fallback": "Команда {which}",
+    "spectate-round-prefix": "RD {round} · {line}",
+    "spectate-victory": "ПОБЕДА · {winner}",
+    "spectate": {
+      "line-1": "{A} атакует Огненным Шаром…",
+      "line-2": "{B} защищается Магическим Щитом…",
+      "line-3": "{A} запускает Ледяную Стрелу…",
+      "line-4": "{B} контратакует Натиском…",
+      "line-5": "{A} использует Божественное Лечение…",
+      "line-6": "{B} вызывает Магическую Бурю…",
+      "line-7": "{A} готовит Сокрушающий Удар…",
+      "line-8": "{B} активирует Барьер Ветра…",
+      "line-9": "{A} наносит критический удар!",
+      "line-10": "{B} пытается уклониться, но не успевает…"
+    }
   },
   "pvp": {
     "title": "PVP",
     "subtitle": "БИТВА",
-    "squad-incomplete": "Пригласите ещё 1 игрока, чтобы заполнить отряд",
-    "search-opponents": "?????? ??????????",
+    "squad-incomplete": "Пригласите ещё 1 игрока, чтобы завершить отряд",
+    "search-opponents": "ИСКАТЬ СОПЕРНИКОВ",
     "info": {
-      "no-entry-cost": "??? ????? ?? ????",
-      "level-matchmaking": "????????? ?????? ?? ??????",
-      "any-team-size": "????? ?????? ??????? ?????????",
-      "gold-rewards": "Gold ?? ??????"
+      "no-entry-cost": "Без стоимости входа",
+      "level-matchmaking": "Случайный подбор по уровню",
+      "any-team-size": "Любой размер команды",
+      "gold-rewards": "Награды Gold за победу"
     }
   },
   "pve": {
     "title": "PVE",
-    "battle-title": "?????",
-    "tournament-title": "??????",
-    "start-match": "?????? ????",
-    "cost-format": "????????? {cost}G",
+    "battle-title": "БИТВА",
+    "tournament-title": "ТУРНИР",
+    "start-match": "НАЧАТЬ МАТЧ",
+    "cost-format": "ЦЕНА {cost}G",
     "info": {
-      "smart-bot": "????? ??? ?????? ??????",
-      "gold-bonus": "????? Gold ?? ??????",
-      "eight-team-bracket": "????? ?? 8 ??????",
-      "scaled-cost": "????????? Gold ??????? ?? ?????????",
-      "scaled-reward": "??????? ?????? ?? ???????"
+      "smart-bot": "Умный бот вашего уровня",
+      "gold-bonus": "Бонус Gold за победу",
+      "eight-team-bracket": "Сетка из 8 команд",
+      "scaled-cost": "Цена в Gold зависит от диапазона",
+      "scaled-reward": "Награда растёт с раундом"
     }
   },
   "custom": {
-    "title": "СВОЯ",
-    "subtitle": "СВОЯ ИГРА",
-    "blue-team": "????? ???????",
-    "red-team": "??????? ???????",
-    "blue-team-short": "???",
-    "red-team-short": "????",
-    "switch-team": "?  ??????? ???????"
+    "title": "CUSTOM",
+    "subtitle": "ПЕРСОНАЛЬНЫЙ МАТЧ",
+    "blue-team": "СИНЯЯ КОМАНДА",
+    "red-team": "КРАСНАЯ КОМАНДА",
+    "blue-team-short": "СИНЯЯ",
+    "red-team-short": "КРАСН",
+    "switch-team": "↻  СМЕНИТЬ КОМАНДУ"
   },
   "matchmaking": {
-    "searching": "ПОИСК ПРОТИВНИКА",
+    "searching": "ПОИСК СОПЕРНИКА",
     "queue-time": "ВРЕМЯ В ОЧЕРЕДИ",
-    "tip-eyebrow": "СОВЕТ"
+    "tip-eyebrow": "СОВЕТ",
+    "tips": {
+      "protect-king": "Живой Король — ваше условие победы. Берегите его прежде всего.",
+      "heal-cap": "Лечение ограничено 2 за ход — используйте третий слот с умом.",
+      "overtime-damage": "Урон после 12 хода получает +10% за ход в овертайме.",
+      "bleed-combo": "Кровотечение удваивает Смертельный Удар и Бурю Клинков.",
+      "isolated-executor": "Изолированный Исполнитель бьёт сильнее, но получает на 10% больше урона.",
+      "specialist-cleanse": "Специалисты снимают до трёх дебаффов с союзников за ход.",
+      "shield-cap": "Щиты складываются до 100 HP — выше перезаписывают слабейший.",
+      "card-cycle": "Карты в руке циклически меняются: планируйте всю последовательность."
+    },
+    "mode-title": {
+      "ranked": "РЕЙТИНГ",
+      "casual": "CASUAL",
+      "pve": "ТРЕНИРОВКА"
+    },
+    "queue-count": "Игроков в очереди: {players}   ·   Ping: {ping} мс"
   },
   "battle": {
     "phase": {
       "movement-title-line-1": "ХОД",
       "movement-title-line-2": "ДВИЖЕНИЕ",
-      "movement-sub": "Двигайте своих\nперсонажей",
+      "movement-sub": "Двигайте\nперсонажей",
       "action-title": "ДЕЙСТВИЕ",
-      "action-sub": "Выберите свои навыки",
+      "action-sub": "Выбирайте умения",
       "movement-label": "Ход движения",
       "action-label": "Ход действия",
       "role-turn": "Ход {role}",
@@ -190,9 +241,9 @@
       "ally-eyebrow": "СОЮЗНИК",
       "enemy-eyebrow": "ВРАГ",
       "ally-name-fallback": "Вы",
-      "enemy-name-fallback": "Противник",
+      "enemy-name-fallback": "Соперник",
       "left-color": "Синий",
-      "right-color": "Фиолетовый"
+      "right-color": "Красный"
     },
     "phase-side-format": "{phase} — {side}",
     "tracker-side-movement": "{side} — Движение",
@@ -202,26 +253,26 @@
       "round-label-default": "Раунд 1",
       "header-both": "Действие — Оба",
       "title": "ПОРЯДОК ДЕЙСТВИЙ",
-      "history-button": "СМ. ИСТОРИЮ",
+      "history-button": "ИСТОРИЯ",
       "history-popup-title": "ИСТОРИЯ ДЕЙСТВИЙ",
       "history-popup-hint": "Кликните вне, чтобы закрыть",
       "wait-indicator": "· · ·",
       "placeholder": "…"
     },
     "log": {
-      "skipped": "Пропуск",
+      "skipped": "Пропустил",
       "stunned": "Оглушён",
       "dead": "Мёртв",
-      "no-targets": "? ??? ????? ? ???????!",
-      "death": "?? {name} ????? (????? {round})",
-      "damage": "{name} ???????? {amount} ????? (HP {hp})",
-      "heal": "{name} ????? {amount} HP"
+      "no-targets": "⚠ Нет целей в радиусе!",
+      "death": "✖ {name} погиб (Раунд {round})",
+      "damage": "{name} получает {amount} урона (HP {hp})",
+      "heal": "{name} лечит {amount} HP"
     },
     "outcome": {
       "victory": "Победа!",
       "defeat": "Поражение!",
       "draw": "Ничья!",
-      "opponent-forfeit": "Противник сдался!",
+      "opponent-forfeit": "Соперник сдался!",
       "self-forfeit": "Вы сдались!"
     },
     "victory-overlay": {
@@ -229,17 +280,17 @@
         "king_slain": "Король повержен",
         "simultaneous_kings": "Одновременная ничья",
         "timeout": "Время вышло",
-        "forfeit": "Сдача"
+        "forfeit": "Капитуляция"
       },
-      "detail-forfeit": "{reason} — Противник покинул матч",
+      "detail-forfeit": "{reason} — Соперник сдался",
       "detail-normal": "{reason} — Раунд {round}"
     },
     "actions": {
       "confirm": "Подтвердить",
       "cancel": "Отмена",
       "skip": "Пропустить",
-      "end-movement": "Конец Движения",
-      "main-menu": "Главное Меню"
+      "end-movement": "Конец движения",
+      "main-menu": "Главное меню"
     },
     "popup": {
       "confirmation-eyebrow": "Подтверждение",
@@ -249,17 +300,17 @@
       "skip-body": "Ваш персонаж не действует в этом ходу.",
       "skip-confirm": "Пропустить",
       "confirm-action-title": "Подтвердить действие?",
-      "confirm-action-body": "Выбранные навыки попадают в очередь и разрешаются в этом ходу.",
+      "confirm-action-body": "Выбранные умения попадут в очередь и будут разрешены в этом ходу.",
       "surrender-title": "Сдаться?",
-      "surrender-body-solo": "Сдача влияет на ваш ранг и не может быть отменена.",
-      "surrender-vote-title": "Голосовать за сдачу?",
-      "surrender-vote-body": "Ваш голос засчитывается за {required}. Вся команда должна согласиться, чтобы сдаться.",
+      "surrender-body-solo": "Уход с матча влияет на ранг и не может быть отменён.",
+      "surrender-vote-title": "Голосовать за капитуляцию?",
+      "surrender-vote-body": "Ваш голос засчитан как {required}. Вся команда должна согласиться.",
       "surrender-vote-button": "Голосовать",
       "surrender-confirm": "Сдаться",
       "surrender-button-label": "  Сдаться"
     },
     "status": {
-      "shield-suffix": "ЩТ +{amount}",
+      "shield-suffix": "SH +{amount}",
       "wall-bonus": "СТЕНА +{pct}%"
     },
     "effect-shorthand": {
@@ -269,18 +320,18 @@
       "shield": "Щит"
     },
     "role-abbr": {
-      "king": "???",
-      "warrior": "???",
-      "executor": "???",
-      "specialist": "???"
+      "king": "КРЛ",
+      "warrior": "ВОИН",
+      "executor": "ИСП",
+      "specialist": "СПЕЦ"
     },
     "stats": {
       "atk": "ATK",
       "def": "DEF",
       "mov": "MOV"
     },
-    "round-heading": "????? {round}",
-    "dummy-name": "??????? {role}"
+    "round-heading": "РАУНД {round}",
+    "dummy-name": "Манекен {role}"
   },
   "battle-result": {
     "title": {
@@ -292,12 +343,12 @@
       "king-slain": "Король повержен",
       "simultaneous-kings": "Одновременная ничья",
       "timeout": "Время вышло",
-      "forfeit": "Сдача"
+      "forfeit": "Капитуляция"
     },
-    "opponent-fallback": "Противник",
+    "opponent-fallback": "Соперник",
     "sub-meta": "Раунд {round}  ·  vs {enemy}  ·  {reason}",
     "rewards-header": "НАГРАДЫ",
-    "new-skill": "Новый навык: {name}!",
+    "new-skill": "Новый скилл: {name}!",
     "next-match": "СЛЕДУЮЩИЙ МАТЧ",
     "try-again": "ПОПРОБОВАТЬ СНОВА",
     "play-again": "ИГРАТЬ СНОВА",
@@ -314,26 +365,26 @@
     "subtitle": "Выберите 2 карты на группу для каждого класса.",
     "difficulty-eyebrow": "СЛОЖНОСТЬ",
     "difficulty": {
-      "easy": "Легко",
-      "normal": "Нормально",
-      "hard": "Сложно"
+      "easy": "Лёгкая",
+      "normal": "Нормальная",
+      "hard": "Сложная"
     },
     "groups": {
       "attack1": "АТАКА · УРОН",
       "attack2": "АТАКА · КОНТРОЛЬ",
       "defense1": "ЗАЩИТА · СИЛЬНАЯ",
       "defense2": "ЗАЩИТА · ЛЁГКАЯ",
-      "attack1-tooltip": "Атака - Урон",
-      "attack2-tooltip": "Атака - Контроль",
-      "defense1-tooltip": "Защита - Сильная",
-      "defense2-tooltip": "Защита - Лёгкая"
+      "attack1-tooltip": "Атака — Урон",
+      "attack2-tooltip": "Атака — Контроль",
+      "defense1-tooltip": "Защита — Сильная",
+      "defense2-tooltip": "Защита — Лёгкая"
     },
     "targets": {
-      "single": "Цель: 1 Враг",
-      "self": "Цель: Себя",
-      "lowest_ally": "Цель: Союзник с наименьшим HP",
-      "all_allies": "Цель: Все Союзники",
-      "area": "Цель: Область 3x3"
+      "single": "Цель: 1 враг",
+      "self": "Цель: на себя",
+      "lowest_ally": "Цель: союзник с наим. HP",
+      "all_allies": "Цель: все союзники",
+      "area": "Цель: область 3x3"
     },
     "tooltip": {
       "power-with": "Сила {power}",
@@ -342,30 +393,30 @@
     },
     "footer": {
       "deck-label": "КОЛОДА",
-      "atk-label": "АТК",
-      "def-label": "ЗАЩ",
+      "atk-label": "ATK",
+      "def-label": "DEF",
       "empty-slot": "—",
-      "power-prefix": "СИЛ {power}",
-      "shortcuts": "Горячие клавиши · 1-4 выбрать · Tab сменить класс · Enter играть",
-      "progress": "ЕДИНИЦЫ ГОТОВЫ · {done} / 4    ВЫБЕРИТЕ 2 КАРТЫ В КОЛОНКЕ"
+      "power-prefix": "PWR {power}",
+      "shortcuts": "Шорткаты · 1-4 выбор · Tab сменить класс · Enter играть",
+      "progress": "ОТРЯД ГОТОВ · {done} / 4    ВЫБЕРИТЕ 2 КАРТЫ В КОЛОНКЕ"
     },
     "buttons": {
       "random": "Случайно",
       "default": "По умолчанию",
       "restore": "Восстановить",
-      "start": "СТАРТ"
+      "start": "НАЧАТЬ"
     },
     "tab-ready-suffix": "{role} ✓",
     "passives": {
-      "king": "Пассивка: Королевская Защита — Щит обновляется каждый ход, -15% получаемого урона.",
-      "warrior": "Пассивка: Защитник — Соседние союзники получают -15% урона.",
-      "specialist": "Пассивка: Горение — Атаки снижают вражеское лечение на 20% на 1 ход.",
-      "executor": "Пассивка: Изолированный — +15% урона, когда никого нет рядом."
+      "king": "Пассивка: Королевская защита — щит обновляется каждый ход, -15% получаемого урона.",
+      "warrior": "Пассивка: Защитник — соседние союзники получают -15% митигации урона.",
+      "specialist": "Пассивка: Поджог — атаки снижают лечение врагов на 20% на 1 ход.",
+      "executor": "Пассивка: Изоляция — +15% урона без соседних союзников."
     }
   },
   "lobby": {
     "central-play-title": "ИГРАТЬ",
-    "central-play-subtitle": "Выберите режим битвы",
+    "central-play-subtitle": "Выберите режим боя",
     "play-modes-title": "РЕЖИМЫ ИГРЫ",
     "nav": {
       "shop": "МАГАЗИН",
@@ -379,16 +430,16 @@
       "rewards-max": "НАГРАДЫ MAX"
     },
     "offline": {
-      "title": "Налёты на команды",
+      "title": "Атаки на отряды",
       "subtitle": "Оффлайн",
       "popup-eyebrow": "СКОРО",
-      "popup-body": "Система налётов на команды"
+      "popup-body": "Система атак на отряды"
     },
     "sound-toggle": {
       "on": "Звук",
-      "muted": "Без звука"
+      "muted": "Тихо"
     },
-    "news-ticker": "     Добро пожаловать в Draft Game!  •  Новые наборы в магазине!  •  PvP битва открыта!  •  Тренировка доступна!     "
+    "news-ticker": "     Добро пожаловать в Draft Game!  •  Новые наборы в магазине!  •  PvP-битвы открыты!  •  Тренировка доступна!     "
   },
   "login": {
     "tab": {
@@ -400,35 +451,35 @@
     "submit-login": "ВОЙТИ",
     "submit-register": "СОЗДАТЬ АККАУНТ",
     "fields": {
-      "username-label": "ПОЛЬЗОВАТЕЛЬ",
+      "username-label": "ИМЯ",
       "username-placeholder": "Ник",
       "password-label": "ПАРОЛЬ",
       "password-placeholder": "••••••••",
-      "email-label": "EMAIL",
-      "email-placeholder": "ты@пример.com",
+      "email-label": "ПОЧТА",
+      "email-placeholder": "vy@example.com",
       "register-password-hint": "Минимум 6 символов"
     },
-    "remember-me": "Запомнить меня",
+    "remember-me": "Запомнить",
     "forgot-password": "Забыли пароль?",
     "verify": {
       "eyebrow": "ВЕРИФИКАЦИЯ",
-      "title": "EMAIL КОД",
-      "body": "На вашу почту отправлен 6-значный код.\nВведите его ниже.",
+      "title": "КОД ИЗ ПОЧТЫ",
+      "body": "6-значный код был отправлен\nна вашу почту. Введите его ниже.",
       "code-label": "КОД",
       "code-placeholder": "000000",
       "submit": "ПРОВЕРИТЬ",
-      "resend": "Отправить код повторно",
+      "resend": "Отправить снова",
       "sending": "Отправка…"
     }
   },
   "menu": {
     "title": "DRAFT",
     "subtitle": "ТАКТИЧЕСКИЕ БИТВЫ",
-    "studio-credit": "от Codeforje VIO",
+    "studio-credit": "by Codeforje VIO",
     "studio-name": "Codeforje VIO",
-    "tagline-1": "Стратегия. Тактика. Завоевание.",
-    "tagline-2": "Соберите свою колоду и победите вражеского Короля в битвах 4 на 4",
-    "hint": "Кликните, чтобы войти",
+    "tagline-1": "Стратегия. Тактика. Победа.",
+    "tagline-2": "Соберите колоду и сразите вражеского Короля в боях 4v4",
+    "hint": "Нажмите, чтобы войти",
     "version-tag": "v1.0"
   },
   "profile": {
@@ -438,9 +489,9 @@
       "wins": "ПОБЕДЫ",
       "losses": "ПОРАЖЕНИЯ",
       "win-rate": "WIN RATE",
-      "gold": "ЗОЛОТО",
+      "gold": "GOLD",
       "dg": "DG",
-      "ranked-points": "РЕЙТИНГ. ОЧКИ"
+      "ranked-points": "ОЧКИ РАНКЕДА"
     },
     "mastery-eyebrow": "МАСТЕРСТВО",
     "mastery": {
@@ -451,20 +502,20 @@
   "skill-upgrade": {
     "title": "УПРАВЛЕНИЕ НАВЫКАМИ",
     "deck-section": {
-      "header": "ЭКИПИРОВАННЫЕ НАВЫКИ",
+      "header": "НАДЕТЫЕ НАВЫКИ",
       "equipped-counter": "{equipped} / 8",
       "empty-slot": "Пусто",
       "slots": {
-        "atk1": "АТК 1",
-        "atk2": "АТК 2",
-        "def1": "ЗАЩ 1",
-        "def2": "ЗАЩ 2"
+        "atk1": "ATK 1",
+        "atk2": "ATK 2",
+        "def1": "DEF 1",
+        "def2": "DEF 2"
       }
     },
     "inventory-section": {
       "header": "ИНВЕНТАРЬ",
-      "hint": "Кликните или перетащите, чтобы экипировать",
-      "all-equipped": "Все экипированы",
+      "hint": "Нажмите или перетащите для надевания",
+      "all-equipped": "Все надеты",
       "owned-counter": "{owned} / {max}"
     },
     "groups": {
@@ -473,7 +524,7 @@
       "defense1": "ЗАЩИТА · СИЛЬНАЯ",
       "defense2": "ЗАЩИТА · ЛЁГКАЯ"
     },
-    "level-up-banner": "ПОВЫШЕНИЕ УРОВНЯ!"
+    "level-up-banner": "LEVEL UP!"
   },
   "settings": {
     "title": "НАСТРОЙКИ",
@@ -488,7 +539,9 @@
       "sound-off": "Звуковые эффекты выключены"
     },
     "language": {
-      "field-label": "ВЫБЕРИТЕ ВАШ ЯЗЫК"
+      "field-label": "ВЫБЕРИТЕ ЯЗЫК",
+      "busy-title": "Завершите текущий матч",
+      "busy-body": "Вы в матче или в очереди. Завершите или выйдите перед сменой языка."
     },
     "gameplay": {
       "bot-difficulty-label": "СЛОЖНОСТЬ БОТА"
@@ -496,53 +549,136 @@
     "account": {
       "session-label": "СЕССИЯ",
       "session-description": "Выйти из текущего аккаунта",
-      "logout-button": "ВЫХОД"
+      "logout-button": "ВЫЙТИ"
     },
     "logout-modal": {
-      "title": "Выход",
-      "body": "Вы будете отключены от королевства. Продолжить?",
-      "confirm": "ВЫЙТИ"
+      "title": "Выйти из аккаунта",
+      "body": "Вы будете отключены от королевства. Уверены?",
+      "confirm": "ВЫЙТИ ИЗ АККАУНТА"
     },
     "footer": {
-      "credits": "Draft Game v1.0  ·  от Caio Sensini"
+      "credits": "Draft Game v1.0  ·  by Caio Sensini"
     }
   },
   "play-modes": {
     "sections": {
       "pvp": "PVP",
       "pve": "PVE",
-      "creation": "????????"
+      "creation": "СОЗДАНИЕ"
     },
     "modes": {
       "ranked": {
-        "title": "???????? ?????",
-        "desc": "???????? ??????? (??.100)",
-        "locked-desc": "???????? ? ??.100"
+        "title": "Ранкед-арена",
+        "desc": "Ранкед-турниры (Ур.100)",
+        "locked-desc": "Доступно с Ур.100"
       },
       "pvp": {
-        "title": "PvP-?????",
-        "desc": "?????????? ? ???????? ??????? ??????"
+        "title": "Битва PvP",
+        "desc": "Сразитесь с игроками вашего уровня"
       },
       "pve-battle": {
-        "title": "PvE-?????",
-        "desc": "????????? ? ????? ????? ?????? ??????"
+        "title": "Битва PvE",
+        "desc": "Сразитесь с умным ботом вашего уровня"
       },
       "pve-tournament": {
-        "title": "PvE-??????",
-        "desc": "????? ?? ????????? ???????"
+        "title": "Турнир PvE",
+        "desc": "Сетка по диапазонам уровня"
       },
       "custom": {
-        "title": "???? ????",
-        "desc": "???????? ??????? ? ???????? ? ??????"
+        "title": "Персональный матч",
+        "desc": "Соберите команды с друзьями и ботами"
       }
     }
   },
   "skin-picker": {
-    "title": "????? ?????",
-    "locked-hint": "????????????? ??????: {count} ? ?????? ?? ? ????????",
-    "all-unlocked-hint": "??? ????? ??????? ? ???????, ????? ???????????",
-    "equipped": "?  ???????????",
-    "equip": "???????????",
-    "in-shop": "? ????????"
+    "title": "ВЫБРАТЬ СКИН",
+    "locked-hint": "{count} скин(ов) заблокировано · купите в магазине",
+    "all-unlocked-hint": "Все скины открыты · нажмите, чтобы надеть",
+    "equipped": "✓  НАДЕТ",
+    "equip": "НАДЕТЬ",
+    "in-shop": "В МАГАЗИНЕ",
+    "role": {
+      "king": "КОРОЛЬ",
+      "warrior": "ВОИН",
+      "specialist": "СПЕЦИАЛИСТ",
+      "executor": "ИСПОЛНИТЕЛЬ"
+    }
+  },
+  "skins": {
+    "king": {
+      "idle": {
+        "name": "Классический Король",
+        "subtitle": "Вечная корона изначальной линии"
+      },
+      "king_of_the_kingdom_idle": {
+        "name": "Король Королевства",
+        "subtitle": "Страж земель основателей"
+      },
+      "crimson_idle": {
+        "name": "Король Бури",
+        "subtitle": "Корона, повелевающая молниями и громом"
+      },
+      "eternal_idle": {
+        "name": "Король Горизонта",
+        "subtitle": "Властитель земель без конца"
+      }
+    },
+    "warrior": {
+      "idle": {
+        "name": "Классический Воин",
+        "subtitle": "Ветеран, прокладывающий путь"
+      },
+      "warrior_of_the_kingdom_idle": {
+        "name": "Воин Королевства",
+        "subtitle": "Преданный страж стен"
+      },
+      "ashes_idle": {
+        "name": "Воин Горы",
+        "subtitle": "Твёрдый, как древний камень"
+      },
+      "radiant_idle": {
+        "name": "Сияющий Воин",
+        "subtitle": "Клинок, благословлённый зарёй"
+      }
+    },
+    "specialist": {
+      "idle": {
+        "name": "Классический Специалист",
+        "subtitle": "Мастер древних техник"
+      },
+      "specialist_of_the_kingdom_idle": {
+        "name": "Специалист Королевства",
+        "subtitle": "Советник древних знаний"
+      },
+      "arcane_idle": {
+        "name": "Рубиновый Специалист",
+        "subtitle": "Мудрость в рубиновом пламени"
+      },
+      "cosmic_idle": {
+        "name": "Туманный Специалист",
+        "subtitle": "Ткач туманностей и комет"
+      }
+    },
+    "executor": {
+      "idle": {
+        "name": "Классический Исполнитель",
+        "subtitle": "Острая и тихая тень"
+      },
+      "executor_of_the_kingdom_idle": {
+        "name": "Исполнитель Королевства",
+        "subtitle": "Страж королевских дорог"
+      },
+      "spectral_idle": {
+        "name": "Исполнитель Бриза",
+        "subtitle": "Легче утреннего ветра"
+      },
+      "shadow_idle": {
+        "name": "Исполнитель Тени",
+        "subtitle": "Тихий шаг сумерек"
+      }
+    }
+  },
+  "pack-open": {
+    "tap-to-close": "Нажмите, чтобы закрыть"
   }
 }

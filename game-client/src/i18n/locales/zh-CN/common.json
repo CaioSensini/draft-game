@@ -12,7 +12,8 @@
     "ok": "确定",
     "save": "保存",
     "yes": "是",
-    "no": "否"
+    "no": "否",
+    "back-titled": "返回"
   },
   "studio-name": "CODEFORJE VIO",
   "section": {
@@ -28,83 +29,83 @@
     "upgrade-action-broke": "Lv {level} · {cost}金"
   },
   "ranked-tiers": {
-    "desconhecido": "??",
-    "recruta": "??",
-    "aprendiz": "??",
-    "soldado": "??",
-    "veterano": "??",
-    "comandante": "???",
-    "rei": "??"
+    "desconhecido": "未知",
+    "recruta": "新兵",
+    "aprendiz": "学徒",
+    "soldado": "士兵",
+    "veterano": "老兵",
+    "comandante": "指挥官",
+    "rei": "王者"
   },
   "ranked-display": {
-    "placement": "? ???{count}/3 ?????"
+    "placement": "未知 ({count}/3 场赛事认定)"
   },
   "skill-card": {
     "categories": {
-      "attack": "??",
-      "defense": "??"
+      "attack": "攻击",
+      "defense": "防御"
     },
     "stats": {
-      "damage": "??",
-      "heal": "??",
-      "shield": "??",
-      "evade": "??",
-      "power": "??"
+      "damage": "伤害",
+      "heal": "治疗",
+      "shield": "护盾",
+      "evade": "闪避",
+      "power": "威力"
     },
     "targets": {
-      "single": "??",
-      "self": "??",
-      "ally": "??",
-      "all-allies": "???",
-      "line": "??",
-      "cone": "??",
-      "ring": "??",
-      "area": "??",
-      "tile": "?"
+      "single": "目标",
+      "self": "自身",
+      "ally": "友军",
+      "all-allies": "全友军",
+      "line": "直线",
+      "cone": "锥形",
+      "ring": "环形",
+      "area": "区域",
+      "tile": "格子"
     },
     "target-details": {
-      "single": "????",
-      "area": "??",
-      "self": "??",
-      "lowest-ally": "????",
-      "all-allies": "????"
+      "single": "单体目标",
+      "area": "区域",
+      "self": "自身",
+      "lowest-ally": "虚弱友军",
+      "all-allies": "全部友军"
     },
     "detail-labels": {
-      "damage": "??",
-      "heal": "??",
-      "shield": "??",
-      "extra-damage": "????",
-      "extra-heal": "????",
-      "effect": "??",
-      "target": "??"
+      "damage": "伤害",
+      "heal": "治疗",
+      "shield": "护盾",
+      "extra-damage": "额外伤害",
+      "extra-heal": "额外治疗",
+      "effect": "效果",
+      "target": "目标"
     },
     "effect-labels": {
-      "damage": "??",
-      "area": "??",
-      "heal": "??",
-      "shield": "??",
-      "stun": "??",
-      "snare": "??",
-      "bleed": "??",
-      "burn": "??",
-      "poison": "??",
-      "evade": "??",
-      "reflect": "??",
-      "regen": "??",
-      "mark": "??",
-      "revive": "??",
-      "lifesteal": "??",
-      "true_damage": "????",
-      "cleanse": "??",
-      "purge": "??",
-      "def_up": "+??",
-      "atk_up": "+??",
-      "def_down": "-??",
-      "atk_down": "-??",
-      "double_attack": "??",
-      "silence_defense": "??",
-      "push": "??",
-      "mov_down": "-??"
+      "damage": "伤害",
+      "area": "区域",
+      "heal": "治疗",
+      "shield": "护盾",
+      "stun": "眩晕",
+      "snare": "禁锢",
+      "bleed": "流血",
+      "burn": "燃烧",
+      "poison": "中毒",
+      "evade": "闪避",
+      "reflect": "反射",
+      "regen": "回复",
+      "mark": "印记",
+      "revive": "复活",
+      "lifesteal": "吸血",
+      "true_damage": "真实伤害",
+      "cleanse": "净化",
+      "purge": "驱散",
+      "def_up": "+防",
+      "atk_up": "+攻",
+      "def_down": "-防",
+      "atk_down": "-攻",
+      "double_attack": "双击",
+      "silence_defense": "沉默",
+      "push": "击退",
+      "mov_down": "-移"
     }
   }
 }

@@ -22,9 +22,9 @@
       "squad": "SQUAD"
     },
     "mode-bonus": {
-      "solo": "SOLO ? nessun bonus",
-      "duo": "DUO ? +10% XP & Gold",
-      "squad": "SQUAD ? +20% XP & Gold"
+      "solo": "SOLO · nessun bonus",
+      "duo": "DUO · +10% XP & Gold",
+      "squad": "SQUAD · +20% XP & Gold"
     },
     "invite-friend": "INVITA AMICO",
     "room-incomplete": "STANZA INCOMPLETA ({current}/{max})",
@@ -35,9 +35,9 @@
     "invite-modal": {
       "eyebrow": "PROSSIMAMENTE",
       "title": "INVITO AMICO",
-      "body-solo": "Il sistema di inviti ? in sviluppo. Per ora usa la modalit? Solo.",
-      "body-ranked": "Il sistema di inviti ? in sviluppo. Per ora gioca ranked in Solo.",
-      "body-custom": "Il sistema di inviti ? in sviluppo. Per ora aggiungi bot alla tua squadra."
+      "body-solo": "Il sistema di inviti è in sviluppo. Per ora usa la modalità Solo.",
+      "body-ranked": "Il sistema di inviti è in sviluppo. Per ora gioca ranked in Solo.",
+      "body-custom": "Il sistema di inviti è in sviluppo. Per ora aggiungi bot alla tua squadra."
     }
   },
   "shop": {
@@ -67,19 +67,24 @@
       "basic": "BASE",
       "medium": "MEDIO",
       "advanced": "AVANZATO",
-      "premium": "PREMIUM"
+      "premium": "PREMIUM",
+      "default": "CLASSICA",
+      "common": "COMUNE",
+      "rare": "RARA",
+      "epic": "EPICA",
+      "legendary": "LEGGENDARIA"
     },
-    "drop-pill": "?{count} SKILL",
+    "drop-pill": "+{count} SKILL",
     "skin-state": {
       "equipped": "EQUIPAGGIATA",
       "owned": "ACQUISTATA"
     },
     "modal": {
       "buy-title": "Comprare {name}?",
-      "buy-gold": "COMPRA ? {price} GOLD",
-      "buy-dg": "COMPRA ? {price} DG",
+      "buy-gold": "COMPRA · {price} GOLD",
+      "buy-dg": "COMPRA · {price} DG",
       "insufficient-balance": "SALDO INSUFFICIENTE",
-      "pack-body": "{desc} ? {count} skill casuale/i."
+      "pack-body": "{desc} · {count} skill casuale/i."
     }
   },
   "battle-pass": {
@@ -90,7 +95,11 @@
     "premium-active": "PREMIUM ATTIVO",
     "premium-thanks": "Grazie per il supporto!",
     "complete-chain": "CATENA COMPLETA",
-    "rewards": "RICOMPENSE"
+    "rewards": "RICOMPENSE",
+    "tier-max": "LIVELLO MAX",
+    "tier-current": "LIVELLO {tier}",
+    "track-premium": "PREMIUM",
+    "track-free": "GRATIS"
   },
   "ranking": {
     "title": "CLASSIFICA GLOBALE",
@@ -125,13 +134,39 @@
     "info": {
       "real-player-tournament": "Torneo tra 8 giocatori reali",
       "double-elimination": "Double elimination: i perdenti giocano tra loro",
-      "lp-placement": "LP in base alla posizione finale (1?-8?)"
+      "lp-placement": "LP in base alla posizione finale (1º-8º)"
     }
   },
   "bracket": {
     "live": "DAL VIVO",
     "champion": "CAMPIONE",
-    "you-won": "HAI VINTO!"
+    "you-won": "HAI VINTO!",
+    "rounds": {
+      "quarters": "QUARTI",
+      "semifinal": "SEMIFINALE",
+      "final": "FINALE",
+      "champion": "CAMPIONE"
+    },
+    "tbd": "— DA DEFINIRE —",
+    "simulating": "Simulazione: {a} vs {b}…",
+    "spectate-btn": "GUARDA",
+    "your-turn": "TUO TURNO · vs {opponent}",
+    "results": "RISULTATI",
+    "team-fallback": "Squadra {which}",
+    "spectate-round-prefix": "RD {round} · {line}",
+    "spectate-victory": "VITTORIA · {winner}",
+    "spectate": {
+      "line-1": "{A} attacca con Palla di Fuoco…",
+      "line-2": "{B} difende con Scudo Magico…",
+      "line-3": "{A} lancia Freccia Gelida…",
+      "line-4": "{B} contrattacca con Carica…",
+      "line-5": "{A} usa Cura Divina…",
+      "line-6": "{B} invoca Tempesta Arcana…",
+      "line-7": "{A} prepara Colpo Devastante…",
+      "line-8": "{B} attiva Barriera di Vento…",
+      "line-9": "{A} sferra un colpo critico!",
+      "line-10": "{B} prova a schivare ma fallisce…"
+    }
   },
   "pvp": {
     "title": "PVP",
@@ -166,12 +201,28 @@
     "red-team": "SQUADRA ROSSA",
     "blue-team-short": "BLU",
     "red-team-short": "ROSS",
-    "switch-team": "?  CAMBIA SQUADRA"
+    "switch-team": "↻  CAMBIA SQUADRA"
   },
   "matchmaking": {
     "searching": "RICERCA AVVERSARIO",
     "queue-time": "TEMPO IN CODA",
-    "tip-eyebrow": "SUGGERIMENTO"
+    "tip-eyebrow": "SUGGERIMENTO",
+    "tips": {
+      "protect-king": "Il Re vivo è la tua condizione di vittoria. Proteggilo sopra ogni cosa.",
+      "heal-cap": "La cura è limitata a 2 per turno — usa il terzo slot con criterio.",
+      "overtime-damage": "Il danno dal turno 12 guadagna +10% per turno in overtime.",
+      "bleed-combo": "L’emorragia raddoppia Colpo Mortale e Tempesta di Lame.",
+      "isolated-executor": "Un Esecutore isolato colpisce più forte ma riceve 10% di danno in più.",
+      "specialist-cleanse": "Gli Specialisti rimuovono fino a tre debuff in un turno.",
+      "shield-cap": "Gli scudi si accumulano fino a 100 HP — oltre sovrascrivono il più debole.",
+      "card-cycle": "Le carte ruotano dopo l’uso: pianifica la sequenza."
+    },
+    "mode-title": {
+      "ranked": "CLASSIFICATA",
+      "casual": "CASUAL",
+      "pve": "ALLENAMENTO"
+    },
+    "queue-count": "Giocatori in coda: {players}   ·   Ping: {ping} ms"
   },
   "battle": {
     "phase": {
@@ -212,8 +263,8 @@
       "skipped": "Saltato",
       "stunned": "Stordito",
       "dead": "Morto",
-      "no-targets": "? Nessun bersaglio a portata!",
-      "death": "?? {name} ? morto (Round {round})",
+      "no-targets": "⚠ Nessun bersaglio a portata!",
+      "death": "✖ {name} è morto (Round {round})",
       "damage": "{name} subisce {amount} danni (HP {hp})",
       "heal": "{name} cura {amount} HP"
     },
@@ -488,7 +539,9 @@
       "sound-off": "Effetti sonori disattivati"
     },
     "language": {
-      "field-label": "SCEGLI LA TUA LINGUA"
+      "field-label": "SCEGLI LA TUA LINGUA",
+      "busy-title": "Termina la partita in corso",
+      "busy-body": "Sei in una partita o in coda. Concludi o esci prima di cambiare lingua."
     },
     "account": {
       "session-label": "SESSIONE",
@@ -536,10 +589,93 @@
   },
   "skin-picker": {
     "title": "SCEGLI SKIN",
-    "locked-hint": "{count} skin bloccata/e ? acquistala nel negozio",
-    "all-unlocked-hint": "Tutte le skin sbloccate ? tocca per equipaggiare",
-    "equipped": "?  EQUIPAGGIATA",
+    "locked-hint": "{count} skin bloccata/e · acquistala nel negozio",
+    "all-unlocked-hint": "Tutte le skin sbloccate · tocca per equipaggiare",
+    "equipped": "✓  EQUIPAGGIATA",
     "equip": "EQUIPAGGIA",
-    "in-shop": "NEGOZIO"
+    "in-shop": "NEGOZIO",
+    "role": {
+      "king": "RE",
+      "warrior": "GUERRIERO",
+      "specialist": "SPECIALISTA",
+      "executor": "ESECUTORE"
+    }
+  },
+  "skins": {
+    "king": {
+      "idle": {
+        "name": "Re Classico",
+        "subtitle": "La corona eterna del lignaggio originale"
+      },
+      "king_of_the_kingdom_idle": {
+        "name": "Re del Regno",
+        "subtitle": "Custode delle terre fondatrici"
+      },
+      "crimson_idle": {
+        "name": "Re della Tempesta",
+        "subtitle": "Corona che comanda fulmini e tuoni"
+      },
+      "eternal_idle": {
+        "name": "Re dell’Orizzonte",
+        "subtitle": "Sovrano di terre senza fine"
+      }
+    },
+    "warrior": {
+      "idle": {
+        "name": "Guerriero Classico",
+        "subtitle": "Il veterano che apre la via"
+      },
+      "warrior_of_the_kingdom_idle": {
+        "name": "Guerriero del Regno",
+        "subtitle": "Leale difensore delle mura"
+      },
+      "ashes_idle": {
+        "name": "Guerriero della Montagna",
+        "subtitle": "Saldo come la roccia ancestrale"
+      },
+      "radiant_idle": {
+        "name": "Guerriero Radiante",
+        "subtitle": "Lama benedetta dall’aurora"
+      }
+    },
+    "specialist": {
+      "idle": {
+        "name": "Specialista Classico",
+        "subtitle": "Maestro delle tecniche ancestrali"
+      },
+      "specialist_of_the_kingdom_idle": {
+        "name": "Specialista del Regno",
+        "subtitle": "Consigliere dei saperi antichi"
+      },
+      "arcane_idle": {
+        "name": "Specialista Rubino",
+        "subtitle": "Sapienza cristallizzata in fiamma rubino"
+      },
+      "cosmic_idle": {
+        "name": "Specialista Nebulare",
+        "subtitle": "Tessitore di nebulose e comete"
+      }
+    },
+    "executor": {
+      "idle": {
+        "name": "Esecutore Classico",
+        "subtitle": "Un’ombra affilata e silenziosa"
+      },
+      "executor_of_the_kingdom_idle": {
+        "name": "Esecutore del Regno",
+        "subtitle": "Sentinella delle strade reali"
+      },
+      "spectral_idle": {
+        "name": "Esecutore della Brezza",
+        "subtitle": "Più leggero del vento del mattino"
+      },
+      "shadow_idle": {
+        "name": "Esecutore dell’Ombra",
+        "subtitle": "Passo silenzioso del crepuscolo"
+      }
+    }
+  },
+  "pack-open": {
+    "tap-to-close": "Tocca per chiudere"
   }
 }

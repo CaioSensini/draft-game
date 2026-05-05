@@ -6,6 +6,7 @@ import {
 } from './DesignTokens'
 import { SKILL_CATALOG } from '../data/skillCatalog'
 import { UI } from './UIComponents'
+import { t } from '../i18n'
 
 const W = SCREEN.W, H = SCREEN.H
 
@@ -152,9 +153,9 @@ export function showPackOpen(
       const revealDelay = 450
       scene.time.delayedCall(revealDelay, () => {
         revealSkillCards(scene, drops, depth + 5, track, () => {
-          // ── 7. "Toque para fechar" ───────────────────────────────────
+          // ── 7. "Tap to close" ────────────────────────────────────────
           const closeText = track(
-            scene.add.text(W / 2, H - 50, 'Toque para fechar', {
+            scene.add.text(W / 2, H - 50, t('scenes.pack-open.tap-to-close'), {
               fontFamily: fontFamily.body, fontSize: typeScale.meta,
               color: fg.tertiaryHex, fontStyle: 'bold',
             }).setOrigin(0.5).setDepth(depth + 10).setAlpha(0).setLetterSpacing(1.6),

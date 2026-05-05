@@ -12,7 +12,8 @@
     "ok": "OK",
     "save": "SPEICHERN",
     "yes": "JA",
-    "no": "NEIN"
+    "no": "NEIN",
+    "back-titled": "Zurück"
   },
   "studio-name": "CODEFORJE VIO",
   "section": {
@@ -34,10 +35,10 @@
     "soldado": "Soldat",
     "veterano": "Veteran",
     "comandante": "Kommandant",
-    "rei": "K?nig"
+    "rei": "König"
   },
   "ranked-display": {
-    "placement": "? Unbekannt ({count}/3 Turniere zur Einstufung)"
+    "placement": "Unbekannt ({count}/3 Turniere zur Einstufung)"
   },
   "skill-card": {
     "categories": {
@@ -66,8 +67,8 @@
       "single": "Einzelziel",
       "area": "Bereich",
       "self": "Selbst",
-      "lowest-ally": "Schwacher Verb?ndeter",
-      "all-allies": "Alle Verb?ndeten"
+      "lowest-ally": "Schwacher Verbündeter",
+      "all-allies": "Alle Verbündeten"
     },
     "detail-labels": {
       "damage": "SCHADEN",
@@ -83,7 +84,7 @@
       "area": "Bereich",
       "heal": "Heilung",
       "shield": "Schild",
-      "stun": "Bet?ubung",
+      "stun": "Betäubung",
       "snare": "Fessel",
       "bleed": "Blutung",
       "burn": "Brand",
@@ -103,7 +104,7 @@
       "atk_down": "-ANG",
       "double_attack": "Doppelt",
       "silence_defense": "Stille",
-      "push": "Sto?en",
+      "push": "Stoßen",
       "mov_down": "-BEW"
     }
   }

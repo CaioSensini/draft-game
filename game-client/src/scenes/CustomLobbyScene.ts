@@ -596,7 +596,7 @@ export default class CustomLobbyScene extends Phaser.Scene {
   private _drawSwapTeamButton(): void {
     const cx = TEAM_PANEL_X + TEAM_PANEL_W / 2
     const cy = BLUE_PANEL_Y + TEAM_PANEL_H + 25
-    UI.buttonSecondary(this, cx, cy, '⇅  TROCAR DE TIME', {
+    UI.buttonSecondary(this, cx, cy, t('scenes.custom.switch-team'), {
       w: 200,
       h: 36,
       onPress: () => this._swapTeam(),

@@ -4,112 +4,121 @@
   },
   "lobby-shared": {
     "your-team": "당신의 팀",
-    "your-badge": "당신",
-    "your-badge-short": "당신",
+    "your-badge": "나",
+    "your-badge-short": "내",
     "team-bonus": "팀 보너스",
     "team-info": "정보",
     "current-badge": "현재",
-    "empty-slot": "비어있음",
+    "empty-slot": "빈 자리",
     "waiting": "대기 중…",
     "invite": "초대",
     "change-skin": "스킨 변경",
     "swap": "교체",
     "level-range": "레벨 범위",
-    "change-mode": "?? ??",
+    "change-mode": "모드 변경",
     "modes": {
       "solo": "SOLO",
       "duo": "DUO",
       "squad": "SQUAD"
     },
     "mode-bonus": {
-      "solo": "SOLO ? ??? ??",
-      "duo": "DUO ? +10% XP & Gold",
-      "squad": "SQUAD ? +20% XP & Gold"
+      "solo": "SOLO · 보너스 없음",
+      "duo": "DUO · +10% XP & Gold",
+      "squad": "SQUAD · +20% XP & Gold"
     },
-    "invite-friend": "?? ??",
-    "room-incomplete": "? ??? ({current}/{max})",
-    "level-short": "LV {level}",
-    "player-fallback": "????",
-    "bot": "?",
-    "friend": "??",
+    "invite-friend": "친구 초대",
+    "room-incomplete": "방이 불완전 ({current}/{max})",
+    "level-short": "Lv {level}",
+    "player-fallback": "플레이어",
+    "bot": "봇",
+    "friend": "친구",
     "invite-modal": {
-      "eyebrow": "? ??",
-      "title": "?? ??",
-      "body-solo": "?? ???? ?? ????. ??? ?? ??? ??????.",
-      "body-ranked": "?? ???? ?? ????. ??? ??? ???? ??????.",
-      "body-custom": "?? ???? ?? ????. ??? ?? ?? ?????."
+      "eyebrow": "곧 출시",
+      "title": "친구 초대",
+      "body-solo": "초대 시스템이 개발 중입니다. 지금은 솔로 모드를 이용해 주세요.",
+      "body-ranked": "초대 시스템이 개발 중입니다. 지금은 솔로로 랭크를 플레이해 주세요.",
+      "body-custom": "초대 시스템이 개발 중입니다. 지금은 팀에 봇을 추가해 주세요."
     }
   },
   "shop": {
     "title": "상점",
-    "all-owned": "이미 모두 보유",
+    "all-owned": "전부 보유 중",
     "buy": "구매",
     "unlocked": "잠금 해제",
     "tabs": {
-      "packs": "?",
-      "skins": "??"
+      "packs": "팩",
+      "skins": "스킨"
     },
     "items": {
-      "defense": "??",
-      "attack": "??",
-      "complete": "??",
+      "defense": "방어",
+      "attack": "공격",
+      "complete": "컴플리트",
       "dg-100": "100 DG",
       "dg-500": "500 DG"
     },
     "descriptions": {
-      "one-random-skill": "?? ?? 1?",
-      "two-random-skills": "?? ?? 2?",
-      "three-random-skills": "?? ?? 3?",
-      "premium-skill-pack": "?? 3 + ?? 3",
-      "real-money": "?? ??"
+      "one-random-skill": "랜덤 스킬 1개",
+      "two-random-skills": "랜덤 스킬 2개",
+      "three-random-skills": "랜덤 스킬 3개",
+      "premium-skill-pack": "방어 3 + 공격 3",
+      "real-money": "실제 통화"
     },
     "rarity": {
-      "basic": "??",
-      "medium": "??",
-      "advanced": "??",
-      "premium": "????"
+      "basic": "기본",
+      "medium": "중급",
+      "advanced": "고급",
+      "premium": "프리미엄",
+      "default": "클래식",
+      "common": "일반",
+      "rare": "희귀",
+      "epic": "영웅",
+      "legendary": "전설"
     },
-    "drop-pill": "?{count} ??",
+    "drop-pill": "+{count} 스킬",
     "skin-state": {
-      "equipped": "???",
-      "owned": "???"
+      "equipped": "장착 중",
+      "owned": "보유"
     },
     "modal": {
-      "buy-title": "{name} ???",
-      "buy-gold": "?? ? {price} GOLD",
-      "buy-dg": "?? ? {price} DG",
-      "insufficient-balance": "?? ??",
-      "pack-body": "{desc} ? ?? ?? {count}?."
+      "buy-title": "{name}을(를) 구매하시겠습니까?",
+      "buy-gold": "구매 · {price} GOLD",
+      "buy-dg": "구매 · {price} DG",
+      "insufficient-balance": "잔액 부족",
+      "pack-body": "{desc} · 랜덤 스킬 {count}개."
     }
   },
   "battle-pass": {
     "title": "배틀 패스",
-    "season-missions": "시즌 미션",
-    "buy-premium": "프리미엄 획득",
+    "season-missions": "시즌 임무",
+    "buy-premium": "프리미엄 구매",
     "premium-tagline": "프리미엄 트랙 잠금 해제",
     "premium-active": "프리미엄 활성",
-    "premium-thanks": "지원해 주셔서 감사합니다!",
+    "premium-thanks": "응원해 주셔서 감사합니다!",
     "complete-chain": "체인 완료",
-    "rewards": "보상"
+    "rewards": "보상",
+    "tier-max": "최대 레벨",
+    "tier-current": "레벨 {tier}",
+    "track-premium": "프리미엄",
+    "track-free": "무료"
   },
   "ranking": {
     "title": "글로벌 랭킹",
-    "subtitle": "세계 최고의 플레이어들",
+    "subtitle": "세계 최고의 플레이어",
     "sort-label": "정렬",
     "region-label": "지역",
     "table": {
       "player": "플레이어",
       "elo": "ELO",
-      "atk-mastery": "공격 숙련도",
-      "def-mastery": "방어 숙련도",
+      "atk-mastery": "공격 숙련",
+      "def-mastery": "방어 숙련",
       "region": "지역"
     },
-    "no-players": "플레이어를 찾을 수 없음",
+    "no-players": "플레이어를 찾을 수 없습니다",
     "filters": {
       "elo": "ELO",
-      "attack": "??",
-      "defense": "??",
-      "global": "???"
+      "attack": "공격",
+      "defense": "방어",
+      "global": "글로벌"
     }
   },
   "ranked": {
@@ -119,79 +128,121 @@
     "locked-body": "레벨 100부터 사용 가능",
     "ranks-eyebrow": "랭크",
     "queue": {
-      "duo": "DUO"
+      "duo": "듀오"
     },
-    "start-battle": "?? ??",
+    "start-battle": "전투 시작",
     "info": {
-      "real-player-tournament": "?? ???? 8? ????",
-      "double-elimination": "?? ??????: ???? ??",
-      "lp-placement": "?? ??? ?? LP ?? (1~8?)"
+      "real-player-tournament": "실제 플레이어 8명 토너먼트",
+      "double-elimination": "더블 엘리미네이션: 패자끼리 다시 격돌",
+      "lp-placement": "최종 순위에 따른 LP (1위~8위)"
     }
   },
   "bracket": {
-    "live": "라이브",
+    "live": "실시간",
     "champion": "챔피언",
-    "you-won": "승리!"
+    "you-won": "승리!",
+    "rounds": {
+      "quarters": "8강",
+      "semifinal": "준결승",
+      "final": "결승",
+      "champion": "챔피언"
+    },
+    "tbd": "— 미정 —",
+    "simulating": "시뮬레이션: {a} vs {b}…",
+    "spectate-btn": "관전",
+    "your-turn": "당신 차례 · vs {opponent}",
+    "results": "결과",
+    "team-fallback": "팀 {which}",
+    "spectate-round-prefix": "RD {round} · {line}",
+    "spectate-victory": "승리 · {winner}",
+    "spectate": {
+      "line-1": "{A}가 파이어볼로 공격…",
+      "line-2": "{B}가 마법 방패로 방어…",
+      "line-3": "{A}가 얼음 화살 발사…",
+      "line-4": "{B}가 돌격으로 반격…",
+      "line-5": "{A}가 신성 치유 사용…",
+      "line-6": "{B}가 비전 폭풍 소환…",
+      "line-7": "{A}가 파괴적 일격 준비…",
+      "line-8": "{B}가 바람 장벽 발동…",
+      "line-9": "{A}가 치명타 발동!",
+      "line-10": "{B}가 회피 시도, 실패…"
+    }
   },
   "pvp": {
     "title": "PVP",
     "subtitle": "전투",
-    "squad-incomplete": "스쿼드 완성을 위해 1명 더 초대하세요",
-    "search-opponents": "?? ??",
+    "squad-incomplete": "스쿼드 완성을 위해 1명 더 초대",
+    "search-opponents": "상대 찾기",
     "info": {
-      "no-entry-cost": "?? ?? ??",
-      "level-matchmaking": "??? ??? ??",
-      "any-team-size": "?? ? ??? ??",
-      "gold-rewards": "?? ? Gold ??"
+      "no-entry-cost": "입장 비용 없음",
+      "level-matchmaking": "레벨 기반 랜덤 매치메이킹",
+      "any-team-size": "모든 팀 크기에 매칭",
+      "gold-rewards": "승리 시 Gold 보상"
     }
   },
   "pve": {
     "title": "PVE",
-    "battle-title": "??",
-    "tournament-title": "????",
-    "start-match": "?? ??",
-    "cost-format": "?? {cost}G",
+    "battle-title": "전투",
+    "tournament-title": "토너먼트",
+    "start-match": "매치 시작",
+    "cost-format": "비용 {cost}G",
     "info": {
-      "smart-bot": "? ??? ??? ?",
-      "gold-bonus": "?? ? Gold ???",
-      "eight-team-bracket": "8? ???",
-      "scaled-cost": "Gold ??? ???? ??",
-      "scaled-reward": "???? ?? ??"
+      "smart-bot": "내 레벨의 똑똑한 봇",
+      "gold-bonus": "승리 시 Gold 보너스",
+      "eight-team-bracket": "8팀 토너먼트",
+      "scaled-cost": "Gold 비용은 구간에 따라 변동",
+      "scaled-reward": "라운드별 보상 증가"
     }
   },
   "custom": {
-    "title": "커스텀",
-    "subtitle": "커스텀 경기",
-    "blue-team": "?? ?",
-    "red-team": "?? ?",
-    "blue-team-short": "??",
-    "red-team-short": "??",
-    "switch-team": "?  ? ??"
+    "title": "CUSTOM",
+    "subtitle": "커스텀 매치",
+    "blue-team": "청팀",
+    "red-team": "적팀",
+    "blue-team-short": "청",
+    "red-team-short": "적",
+    "switch-team": "↻  팀 전환"
   },
   "matchmaking": {
     "searching": "상대 검색 중",
-    "queue-time": "대기 시간",
-    "tip-eyebrow": "팁"
+    "queue-time": "대기열 시간",
+    "tip-eyebrow": "팁",
+    "tips": {
+      "protect-king": "살아있는 왕이 승리 조건입니다. 무엇보다 왕을 지키세요.",
+      "heal-cap": "치유는 턴당 2회로 제한 — 세 번째 슬롯은 의도적으로 사용.",
+      "overtime-damage": "12턴 이후 피해는 연장전 매 턴 +10%.",
+      "bleed-combo": "출혈은 치명타와 칼날 폭풍의 피해를 두 배로.",
+      "isolated-executor": "고립된 집행자는 더 세게 치지만 10% 추가 피해를 입음.",
+      "specialist-cleanse": "전문가는 한 턴에 최대 3개의 디버프를 정화.",
+      "shield-cap": "보호막은 최대 100HP까지 누적 — 그 이상은 가장 약한 것을 덮어씀.",
+      "card-cycle": "사용한 카드는 순환됩니다 — 단발 플레이가 아닌 시퀀스를 계획."
+    },
+    "mode-title": {
+      "ranked": "랭크",
+      "casual": "캐주얼",
+      "pve": "훈련"
+    },
+    "queue-count": "대기열 인원: {players}   ·   Ping: {ping} ms"
   },
   "battle": {
     "phase": {
       "movement-title-line-1": "턴",
       "movement-title-line-2": "이동",
-      "movement-sub": "캐릭터를\n이동시키세요",
+      "movement-sub": "캐릭터를\n이동",
       "action-title": "행동",
-      "action-sub": "스킬을 선택하세요",
+      "action-sub": "스킬 선택",
       "movement-label": "이동 턴",
       "action-label": "행동 턴",
-      "role-turn": "{role}의 턴",
+      "role-turn": "{role} 턴",
       "phase-movement": "이동",
       "phase-action": "행동"
     },
     "team": {
       "ally-eyebrow": "아군",
-      "enemy-eyebrow": "적군",
-      "ally-name-fallback": "당신",
+      "enemy-eyebrow": "적",
+      "ally-name-fallback": "나",
       "enemy-name-fallback": "상대",
-      "left-color": "파랑",
+      "left-color": "청색",
       "right-color": "보라"
     },
     "phase-side-format": "{phase} — {side}",
@@ -204,34 +255,34 @@
       "title": "행동 순서",
       "history-button": "기록 보기",
       "history-popup-title": "행동 기록",
-      "history-popup-hint": "외부 클릭으로 닫기",
+      "history-popup-hint": "바깥쪽 클릭으로 닫기",
       "wait-indicator": "· · ·",
       "placeholder": "…"
     },
     "log": {
-      "skipped": "건너뜀",
+      "skipped": "스킵",
       "stunned": "기절",
       "dead": "사망",
-      "no-targets": "? ??? ?? ??? ????!",
-      "death": "?? {name} ?? (??? {round})",
-      "damage": "{name}?(?) {amount} ??? ?? (HP {hp})",
-      "heal": "{name}?(?) {amount} HP ??"
+      "no-targets": "⚠ 사거리 내 대상 없음!",
+      "death": "✖ {name} 사망 (라운드 {round})",
+      "damage": "{name}이(가) {amount} 피해를 입음 (HP {hp})",
+      "heal": "{name}이(가) {amount} HP 치유"
     },
     "outcome": {
       "victory": "승리!",
       "defeat": "패배!",
       "draw": "무승부!",
       "opponent-forfeit": "상대가 항복!",
-      "self-forfeit": "당신이 항복했습니다!"
+      "self-forfeit": "항복!"
     },
     "victory-overlay": {
       "reasons": {
-        "king_slain": "왕이 쓰러짐",
-        "simultaneous_kings": "동시 무승부",
+        "king_slain": "왕 처치",
+        "simultaneous_kings": "동시 왕 처치",
         "timeout": "시간 종료",
         "forfeit": "항복"
       },
-      "detail-forfeit": "{reason} — 상대가 경기를 포기했습니다",
+      "detail-forfeit": "{reason} — 상대가 매치 포기",
       "detail-normal": "{reason} — 라운드 {round}"
     },
     "actions": {
@@ -245,42 +296,42 @@
       "confirmation-eyebrow": "확인",
       "warning-eyebrow": "주의",
       "vote-eyebrow": "투표",
-      "skip-title": "턴을 건너뛸까요?",
-      "skip-body": "이번 턴 캐릭터가 행동하지 않습니다.",
+      "skip-title": "턴을 건너뛰시겠습니까?",
+      "skip-body": "이번 턴 캐릭터는 행동하지 않습니다.",
       "skip-confirm": "건너뛰기",
-      "confirm-action-title": "행동을 확정?",
-      "confirm-action-body": "선택된 스킬은 큐에 들어가 이번 턴에 해결됩니다.",
-      "surrender-title": "항복?",
-      "surrender-body-solo": "항복은 랭크에 영향을 주며 되돌릴 수 없습니다.",
-      "surrender-vote-title": "항복에 투표?",
-      "surrender-vote-body": "당신의 표는 {required}에 카운트됩니다. 항복하려면 팀 전원이 동의해야 합니다.",
+      "confirm-action-title": "행동을 확정하시겠습니까?",
+      "confirm-action-body": "선택한 스킬이 큐에 들어가 이번 턴에 처리됩니다.",
+      "surrender-title": "항복하시겠습니까?",
+      "surrender-body-solo": "매치 포기는 랭크에 영향을 주며 되돌릴 수 없습니다.",
+      "surrender-vote-title": "항복에 투표하시겠습니까?",
+      "surrender-vote-body": "귀하의 투표는 {required}로 집계됩니다. 팀 전원이 동의해야 항복합니다.",
       "surrender-vote-button": "투표",
       "surrender-confirm": "항복",
       "surrender-button-label": "  항복"
     },
     "status": {
-      "shield-suffix": "방패 +{amount}",
+      "shield-suffix": "SH +{amount}",
       "wall-bonus": "벽 +{pct}%"
     },
     "effect-shorthand": {
-      "damage": "데미지",
+      "damage": "피해",
       "area": "범위",
       "heal": "치유",
-      "shield": "방패"
+      "shield": "보호막"
     },
     "role-abbr": {
-      "king": "?",
-      "warrior": "?",
-      "executor": "?",
-      "specialist": "??"
+      "king": "왕",
+      "warrior": "전사",
+      "executor": "집",
+      "specialist": "특"
     },
     "stats": {
       "atk": "ATK",
       "def": "DEF",
       "mov": "MOV"
     },
-    "round-heading": "??? {round}",
-    "dummy-name": "?? {role}"
+    "round-heading": "라운드 {round}",
+    "dummy-name": "{role} 더미"
   },
   "battle-result": {
     "title": {
@@ -289,8 +340,8 @@
       "draw": "무승부"
     },
     "reasons": {
-      "king-slain": "왕이 쓰러짐",
-      "simultaneous-kings": "동시 무승부",
+      "king-slain": "왕 처치",
+      "simultaneous-kings": "동시 왕 처치",
       "timeout": "시간 종료",
       "forfeit": "항복"
     },
@@ -298,10 +349,10 @@
     "sub-meta": "라운드 {round}  ·  vs {enemy}  ·  {reason}",
     "rewards-header": "보상",
     "new-skill": "새 스킬: {name}!",
-    "next-match": "다음 경기",
+    "next-match": "다음 매치",
     "try-again": "다시 시도",
     "play-again": "다시 플레이",
-    "back-to-lobby": "로비로",
+    "back-to-lobby": "로비로 돌아가기",
     "xp": {
       "level-current": "레벨 {level}",
       "level-up": "레벨 {from}  ›  {to}",
@@ -310,8 +361,8 @@
     }
   },
   "deck-build": {
-    "title": "덱 구축",
-    "subtitle": "각 클래스의 그룹마다 카드 2장을 선택하세요.",
+    "title": "덱 구성",
+    "subtitle": "각 클래스마다 그룹별 카드 2장 선택.",
     "difficulty-eyebrow": "난이도",
     "difficulty": {
       "easy": "쉬움",
@@ -319,19 +370,19 @@
       "hard": "어려움"
     },
     "groups": {
-      "attack1": "공격 · 데미지",
+      "attack1": "공격 · 피해",
       "attack2": "공격 · 제어",
       "defense1": "방어 · 강",
-      "defense2": "방어 · 경",
-      "attack1-tooltip": "공격 - 데미지",
-      "attack2-tooltip": "공격 - 제어",
-      "defense1-tooltip": "방어 - 강",
-      "defense2-tooltip": "방어 - 경"
+      "defense2": "방어 · 약",
+      "attack1-tooltip": "공격 — 피해",
+      "attack2-tooltip": "공격 — 제어",
+      "defense1-tooltip": "방어 — 강",
+      "defense2-tooltip": "방어 — 약"
     },
     "targets": {
       "single": "대상: 적 1명",
       "self": "대상: 자신",
-      "lowest_ally": "대상: 최저 HP 아군",
+      "lowest_ally": "대상: HP가 가장 낮은 아군",
       "all_allies": "대상: 모든 아군",
       "area": "대상: 3x3 범위"
     },
@@ -342,30 +393,30 @@
     },
     "footer": {
       "deck-label": "덱",
-      "atk-label": "공",
-      "def-label": "방",
+      "atk-label": "ATK",
+      "def-label": "DEF",
       "empty-slot": "—",
-      "power-prefix": "위력 {power}",
-      "shortcuts": "단축키 · 1-4 선택 · Tab 클래스 전환 · Enter 플레이",
-      "progress": "유닛 준비 완료 · {done} / 4    각 열에 2장씩 선택"
+      "power-prefix": "PWR {power}",
+      "shortcuts": "단축키 · 1-4 선택 · Tab 클래스 변경 · Enter 시작",
+      "progress": "유닛 준비 · {done} / 4    각 열에서 카드 2장 선택"
     },
     "buttons": {
-      "random": "무작위",
+      "random": "랜덤",
       "default": "기본",
-      "restore": "복원",
+      "restore": "복구",
       "start": "시작"
     },
     "tab-ready-suffix": "{role} ✓",
     "passives": {
-      "king": "패시브: 왕의 보호 — 매 턴 방패 갱신, 받는 데미지 -15%.",
-      "warrior": "패시브: 수호자 — 인접한 아군 -15% 데미지 감소.",
-      "specialist": "패시브: 연소 — 공격 시 적의 치유 20% 감소 (1턴).",
-      "executor": "패시브: 고립 — 인접자가 없을 때 데미지 +15%."
+      "king": "패시브: 왕의 수호 — 매 턴 보호막 갱신, 받는 피해 -15%.",
+      "warrior": "패시브: 수호자 — 인접 아군 받는 피해 -15% 경감.",
+      "specialist": "패시브: 화상 — 공격 시 적 치유 -20% (1턴).",
+      "executor": "패시브: 고립 — 인접 아군 없을 때 +15% 피해."
     }
   },
   "lobby": {
     "central-play-title": "플레이",
-    "central-play-subtitle": "전투 모드를 선택하세요",
+    "central-play-subtitle": "전투 모드 선택",
     "play-modes-title": "게임 모드",
     "nav": {
       "shop": "상점",
@@ -379,44 +430,44 @@
       "rewards-max": "보상 MAX"
     },
     "offline": {
-      "title": "팀 습격",
+      "title": "팀 공격",
       "subtitle": "오프라인",
       "popup-eyebrow": "곧 출시",
       "popup-body": "팀 습격 시스템"
     },
     "sound-toggle": {
-      "on": "사운드",
+      "on": "소리",
       "muted": "음소거"
     },
-    "news-ticker": "     Draft Game에 오신 것을 환영합니다!  •  상점에 새 팩!  •  PvP 전투 잠금 해제!  •  훈련 모드 사용 가능!     "
+    "news-ticker": "     Draft Game에 오신 것을 환영합니다!  •  상점에 새 팩!  •  PvP 전투 오픈!  •  훈련 사용 가능!     "
   },
   "login": {
     "tab": {
       "login": "로그인",
-      "register": "가입"
+      "register": "회원가입"
     },
     "title-login": "로그인",
-    "title-register": "계정 생성",
+    "title-register": "계정 만들기",
     "submit-login": "로그인",
-    "submit-register": "계정 생성",
+    "submit-register": "계정 만들기",
     "fields": {
-      "username-label": "사용자",
-      "username-placeholder": "Nick",
+      "username-label": "닉네임",
+      "username-placeholder": "닉",
       "password-label": "비밀번호",
       "password-placeholder": "••••••••",
       "email-label": "이메일",
       "email-placeholder": "you@example.com",
       "register-password-hint": "최소 6자"
     },
-    "remember-me": "로그인 유지",
+    "remember-me": "기억하기",
     "forgot-password": "비밀번호를 잊으셨나요?",
     "verify": {
       "eyebrow": "인증",
-      "title": "이메일 코드",
-      "body": "이메일로 6자리 코드를 보냈습니다.\n아래에 입력하세요.",
+      "title": "이메일 인증 코드",
+      "body": "6자리 인증 코드가 이메일로 발송되었습니다.\n아래에 입력해 주세요.",
       "code-label": "코드",
       "code-placeholder": "000000",
-      "submit": "인증",
+      "submit": "확인",
       "resend": "코드 재전송",
       "sending": "전송 중…"
     }
@@ -424,10 +475,10 @@
   "menu": {
     "title": "DRAFT",
     "subtitle": "전술 전투",
-    "studio-credit": "Codeforje VIO 제작",
+    "studio-credit": "by Codeforje VIO",
     "studio-name": "Codeforje VIO",
     "tagline-1": "전략. 전술. 정복.",
-    "tagline-2": "덱을 구축하고 4v4 전투에서 적의 왕을 물리치세요",
+    "tagline-2": "덱을 짜고 4v4 전투에서 적의 왕을 쓰러뜨리세요",
     "hint": "클릭하여 입장",
     "version-tag": "v1.0"
   },
@@ -438,7 +489,7 @@
       "wins": "승리",
       "losses": "패배",
       "win-rate": "승률",
-      "gold": "골드",
+      "gold": "GOLD",
       "dg": "DG",
       "ranked-points": "랭크 포인트"
     },
@@ -451,14 +502,14 @@
   "skill-upgrade": {
     "title": "스킬 관리",
     "deck-section": {
-      "header": "장착된 스킬",
+      "header": "장착 스킬",
       "equipped-counter": "{equipped} / 8",
       "empty-slot": "비어있음",
       "slots": {
-        "atk1": "공 1",
-        "atk2": "공 2",
-        "def1": "방 1",
-        "def2": "방 2"
+        "atk1": "ATK 1",
+        "atk2": "ATK 2",
+        "def1": "DEF 1",
+        "def2": "DEF 2"
       }
     },
     "inventory-section": {
@@ -468,10 +519,10 @@
       "owned-counter": "{owned} / {max}"
     },
     "groups": {
-      "attack1": "공격 · 데미지",
+      "attack1": "공격 · 피해",
       "attack2": "공격 · 제어",
       "defense1": "방어 · 강",
-      "defense2": "방어 · 경"
+      "defense2": "방어 · 약"
     },
     "level-up-banner": "레벨 업!"
   },
@@ -483,12 +534,14 @@
       "account": "계정"
     },
     "audio": {
-      "sound-label": "사운드",
+      "sound-label": "소리",
       "sound-on": "효과음 켜짐",
       "sound-off": "효과음 꺼짐"
     },
     "language": {
-      "field-label": "언어를 선택하세요"
+      "field-label": "언어 선택",
+      "busy-title": "현재 매치를 먼저 마치세요",
+      "busy-body": "매치 또는 대기열에 있습니다. 언어를 변경하기 전에 종료하거나 나가세요."
     },
     "gameplay": {
       "bot-difficulty-label": "봇 난이도"
@@ -499,50 +552,133 @@
       "logout-button": "로그아웃"
     },
     "logout-modal": {
-      "title": "로그아웃",
-      "body": "왕국에서 연결이 끊어집니다. 계속하시겠습니까?",
-      "confirm": "로그아웃"
+      "title": "계정 로그아웃",
+      "body": "왕국에서 로그아웃됩니다. 계속하시겠습니까?",
+      "confirm": "계정 로그아웃"
     },
     "footer": {
-      "credits": "Draft Game v1.0  ·  Caio Sensini 제작"
+      "credits": "Draft Game v1.0  ·  by Caio Sensini"
     }
   },
   "play-modes": {
     "sections": {
       "pvp": "PVP",
       "pve": "PVE",
-      "creation": "??"
+      "creation": "생성"
     },
     "modes": {
       "ranked": {
-        "title": "?? ???",
-        "desc": "?? ???? (Lv.100)",
-        "locked-desc": "Lv.100?? ?? ??"
+        "title": "랭크 아레나",
+        "desc": "랭크 토너먼트 (Lv.100)",
+        "locked-desc": "Lv.100부터 사용 가능"
       },
       "pvp": {
-        "title": "PvP ??",
-        "desc": "??? ??? ????? ??"
+        "title": "PvP 전투",
+        "desc": "비슷한 레벨의 플레이어와 대결"
       },
       "pve-battle": {
-        "title": "PvE ??",
-        "desc": "? ??? ??? ?? ??"
+        "title": "PvE 전투",
+        "desc": "내 레벨의 똑똑한 봇과 대결"
       },
       "pve-tournament": {
-        "title": "PvE ????",
-        "desc": "?? ??? ???"
+        "title": "PvE 토너먼트",
+        "desc": "레벨 구간별 대진표"
       },
       "custom": {
-        "title": "??? ??",
-        "desc": "??? ??? ? ??"
+        "title": "커스텀 매치",
+        "desc": "친구와 봇으로 팀 구성"
       }
     }
   },
   "skin-picker": {
-    "title": "?? ??",
-    "locked-hint": "{count}? ?? ?? ? ???? ??",
-    "all-unlocked-hint": "?? ?? ?? ?? ? ??? ??",
-    "equipped": "?  ???",
-    "equip": "??",
-    "in-shop": "??"
+    "title": "스킨 선택",
+    "locked-hint": "잠긴 스킨 {count}개 · 상점에서 구매",
+    "all-unlocked-hint": "모든 스킨 해금 · 탭하여 장착",
+    "equipped": "✓  장착 중",
+    "equip": "장착",
+    "in-shop": "상점",
+    "role": {
+      "king": "왕",
+      "warrior": "전사",
+      "specialist": "전문가",
+      "executor": "집행자"
+    }
+  },
+  "skins": {
+    "king": {
+      "idle": {
+        "name": "클래식 왕",
+        "subtitle": "본래 혈통의 영원한 왕관"
+      },
+      "king_of_the_kingdom_idle": {
+        "name": "왕국의 왕",
+        "subtitle": "건국의 땅의 수호자"
+      },
+      "crimson_idle": {
+        "name": "폭풍의 왕",
+        "subtitle": "번개와 천둥을 명하는 왕관"
+      },
+      "eternal_idle": {
+        "name": "지평선의 왕",
+        "subtitle": "끝없는 땅의 군주"
+      }
+    },
+    "warrior": {
+      "idle": {
+        "name": "클래식 전사",
+        "subtitle": "길을 여는 노련한 전사"
+      },
+      "warrior_of_the_kingdom_idle": {
+        "name": "왕국의 전사",
+        "subtitle": "성벽을 충직히 지키는 자"
+      },
+      "ashes_idle": {
+        "name": "산의 전사",
+        "subtitle": "고대의 바위처럼 굳건"
+      },
+      "radiant_idle": {
+        "name": "찬란한 전사",
+        "subtitle": "여명의 축복을 받은 검"
+      }
+    },
+    "specialist": {
+      "idle": {
+        "name": "클래식 전문가",
+        "subtitle": "고대 기술의 대가"
+      },
+      "specialist_of_the_kingdom_idle": {
+        "name": "왕국의 전문가",
+        "subtitle": "고대 지식의 자문관"
+      },
+      "arcane_idle": {
+        "name": "루비 전문가",
+        "subtitle": "루비 불꽃에 결정된 지혜"
+      },
+      "cosmic_idle": {
+        "name": "성운 전문가",
+        "subtitle": "성운과 혜성을 짜는 자"
+      }
+    },
+    "executor": {
+      "idle": {
+        "name": "클래식 집행자",
+        "subtitle": "날카롭고 조용한 그림자"
+      },
+      "executor_of_the_kingdom_idle": {
+        "name": "왕국의 집행자",
+        "subtitle": "왕도의 파수꾼"
+      },
+      "spectral_idle": {
+        "name": "산들바람 집행자",
+        "subtitle": "아침 바람보다 가벼운 발걸음"
+      },
+      "shadow_idle": {
+        "name": "그림자 집행자",
+        "subtitle": "황혼의 조용한 걸음"
+      }
+    }
+  },
+  "pack-open": {
+    "tap-to-close": "눌러서 닫기"
   }
 }

@@ -9,169 +9,220 @@
     "team-bonus": "队伍奖励",
     "team-info": "信息",
     "current-badge": "当前",
-    "empty-slot": "空",
+    "empty-slot": "空位",
     "waiting": "等待中…",
     "invite": "邀请",
     "change-skin": "更换皮肤",
-    "swap": "更换",
+    "swap": "交换",
     "level-range": "等级范围",
-    "change-mode": "????",
+    "change-mode": "切换模式",
     "modes": {
       "solo": "SOLO",
       "duo": "DUO",
       "squad": "SQUAD"
     },
     "mode-bonus": {
-      "solo": "SOLO ? ???",
-      "duo": "DUO ? +10% XP & Gold",
-      "squad": "SQUAD ? +20% XP & Gold"
+      "solo": "SOLO · 无奖励",
+      "duo": "DUO · +10% XP & Gold",
+      "squad": "SQUAD · +20% XP & Gold"
     },
-    "invite-friend": "????",
-    "room-incomplete": "?????{current}/{max}?",
-    "level-short": "?? {level}",
-    "player-fallback": "??",
-    "bot": "???",
-    "friend": "??",
+    "invite-friend": "邀请好友",
+    "room-incomplete": "房间未满 ({current}/{max})",
+    "level-short": "Lv {level}",
+    "player-fallback": "玩家",
+    "bot": "机器人",
+    "friend": "好友",
     "invite-modal": {
-      "eyebrow": "????",
-      "title": "????",
-      "body-solo": "??????????????????????",
-      "body-ranked": "????????????????????????",
-      "body-custom": "??????????????????????"
+      "eyebrow": "即将推出",
+      "title": "好友邀请",
+      "body-solo": "邀请系统正在开发中。请暂时使用Solo模式游玩。",
+      "body-ranked": "邀请系统正在开发中。请暂时以Solo模式游玩排位。",
+      "body-custom": "邀请系统正在开发中。请暂时为队伍添加机器人。"
     }
   },
   "shop": {
     "title": "商店",
-    "all-owned": "全部已拥有",
+    "all-owned": "已全部拥有",
     "buy": "购买",
     "unlocked": "已解锁",
     "tabs": {
-      "packs": "??",
-      "skins": "??"
+      "packs": "卡包",
+      "skins": "皮肤"
     },
     "items": {
-      "defense": "??",
-      "attack": "??",
-      "complete": "??",
+      "defense": "防御",
+      "attack": "攻击",
+      "complete": "完整",
       "dg-100": "100 DG",
       "dg-500": "500 DG"
     },
     "descriptions": {
-      "one-random-skill": "1 ?????",
-      "two-random-skills": "2 ?????",
-      "three-random-skills": "3 ?????",
-      "premium-skill-pack": "3 ?? + 3 ??",
-      "real-money": "??"
+      "one-random-skill": "1个随机技能",
+      "two-random-skills": "2个随机技能",
+      "three-random-skills": "3个随机技能",
+      "premium-skill-pack": "3防御+3攻击",
+      "real-money": "真实货币"
     },
     "rarity": {
-      "basic": "??",
-      "medium": "??",
-      "advanced": "??",
-      "premium": "??"
+      "basic": "基础",
+      "medium": "中级",
+      "advanced": "进阶",
+      "premium": "高级",
+      "default": "经典",
+      "common": "普通",
+      "rare": "稀有",
+      "epic": "史诗",
+      "legendary": "传说"
     },
-    "drop-pill": "?{count} ??",
+    "drop-pill": "+{count} 技能",
     "skin-state": {
-      "equipped": "???",
-      "owned": "???"
+      "equipped": "已装备",
+      "owned": "已拥有"
     },
     "modal": {
-      "buy-title": "?? {name}?",
-      "buy-gold": "?? ? {price} GOLD",
-      "buy-dg": "?? ? {price} DG",
-      "insufficient-balance": "????",
-      "pack-body": "{desc} ? {count} ??????"
+      "buy-title": "购买{name}？",
+      "buy-gold": "购买 · {price} GOLD",
+      "buy-dg": "购买 · {price} DG",
+      "insufficient-balance": "余额不足",
+      "pack-body": "{desc} · {count}个随机技能。"
     }
   },
   "battle-pass": {
     "title": "战斗通行证",
     "season-missions": "赛季任务",
     "buy-premium": "获取高级版",
-    "premium-tagline": "解锁高级路径",
-    "premium-active": "高级已激活",
-    "premium-thanks": "感谢您的支持！",
-    "complete-chain": "链条完成",
-    "rewards": "奖励"
+    "premium-tagline": "解锁高级轨道",
+    "premium-active": "高级版生效",
+    "premium-thanks": "感谢支持！",
+    "complete-chain": "链路完成",
+    "rewards": "奖励",
+    "tier-max": "满级",
+    "tier-current": "等级 {tier}",
+    "track-premium": "高级",
+    "track-free": "免费"
   },
   "ranking": {
-    "title": "全球排名",
-    "subtitle": "世界顶级玩家",
+    "title": "全球排行",
+    "subtitle": "世界顶尖玩家",
     "sort-label": "排序",
-    "region-label": "地区",
+    "region-label": "区域",
     "table": {
       "player": "玩家",
       "elo": "ELO",
-      "atk-mastery": "攻击精通",
-      "def-mastery": "防御精通",
-      "region": "地区"
+      "atk-mastery": "攻熟",
+      "def-mastery": "防熟",
+      "region": "区域"
     },
     "no-players": "未找到玩家",
     "filters": {
       "elo": "ELO",
-      "attack": "??",
-      "defense": "??",
-      "global": "??"
+      "attack": "攻击",
+      "defense": "防御",
+      "global": "全球"
     }
   },
   "ranked": {
     "title": "排位",
-    "subtitle": "排位赛场",
-    "locked-title": "排位赛场",
-    "locked-body": "等级100起可用",
+    "subtitle": "排位竞技场",
+    "locked-title": "排位竞技场",
+    "locked-body": "100级解锁",
     "ranks-eyebrow": "段位",
     "queue": {
-      "duo": "DUO"
+      "duo": "双人"
     },
-    "start-battle": "????",
+    "start-battle": "开始战斗",
     "info": {
-      "real-player-tournament": "8????????",
-      "double-elimination": "???????????",
-      "lp-placement": "LP?????????1??8?"
+      "real-player-tournament": "8名真实玩家锦标赛",
+      "double-elimination": "双败淘汰：败者之间继续对战",
+      "lp-placement": "基于最终排名的LP（第1～8名）"
     }
   },
   "bracket": {
     "live": "直播",
     "champion": "冠军",
-    "you-won": "你赢了！"
+    "you-won": "你赢了！",
+    "rounds": {
+      "quarters": "四强",
+      "semifinal": "半决赛",
+      "final": "决赛",
+      "champion": "冠军"
+    },
+    "tbd": "— 待定 —",
+    "simulating": "模拟中: {a} vs {b}…",
+    "spectate-btn": "观战",
+    "your-turn": "轮到你 · vs {opponent}",
+    "results": "结果",
+    "team-fallback": "队伍 {which}",
+    "spectate-round-prefix": "RD {round} · {line}",
+    "spectate-victory": "胜利 · {winner}",
+    "spectate": {
+      "line-1": "{A}使用火球攻击…",
+      "line-2": "{B}用法师之盾防御…",
+      "line-3": "{A}施放冰冻箭…",
+      "line-4": "{B}用冲锋反击…",
+      "line-5": "{A}使用神圣治疗…",
+      "line-6": "{B}召唤奥术风暴…",
+      "line-7": "{A}准备毁灭一击…",
+      "line-8": "{B}激活风之屏障…",
+      "line-9": "{A}打出暴击！",
+      "line-10": "{B}试图闪避但失败…"
+    }
   },
   "pvp": {
     "title": "PVP",
     "subtitle": "战斗",
-    "squad-incomplete": "再邀请1名玩家以完成小队",
-    "search-opponents": "????",
+    "squad-incomplete": "再邀请1名玩家以组成小队",
+    "search-opponents": "搜索对手",
     "info": {
-      "no-entry-cost": "?????",
-      "level-matchmaking": "???????",
-      "any-team-size": "?????????",
-      "gold-rewards": "????Gold??"
+      "no-entry-cost": "无需入场费",
+      "level-matchmaking": "按等级随机匹配",
+      "any-team-size": "匹配任意队伍规模",
+      "gold-rewards": "胜利获得Gold奖励"
     }
   },
   "pve": {
     "title": "PVE",
-    "battle-title": "??",
-    "tournament-title": "???",
-    "start-match": "????",
-    "cost-format": "?? {cost}G",
+    "battle-title": "战斗",
+    "tournament-title": "锦标赛",
+    "start-match": "开始比赛",
+    "cost-format": "消耗 {cost}G",
     "info": {
-      "smart-bot": "????????????",
-      "gold-bonus": "????Gold??",
-      "eight-team-bracket": "8???",
-      "scaled-cost": "Gold???????",
-      "scaled-reward": "???????"
+      "smart-bot": "与你同等级的智能机器人",
+      "gold-bonus": "胜利获得Gold奖金",
+      "eight-team-bracket": "8队对阵图",
+      "scaled-cost": "Gold消耗按等级浮动",
+      "scaled-reward": "奖励随回合提升"
     }
   },
   "custom": {
-    "title": "自定义",
-    "subtitle": "自定义比赛",
-    "blue-team": "??",
-    "red-team": "??",
-    "blue-team-short": "?",
-    "red-team-short": "?",
-    "switch-team": "?  ????"
+    "title": "CUSTOM",
+    "subtitle": "自定义对局",
+    "blue-team": "蓝队",
+    "red-team": "红队",
+    "blue-team-short": "蓝",
+    "red-team-short": "红",
+    "switch-team": "↻  切换队伍"
   },
   "matchmaking": {
-    "searching": "搜索对手中",
+    "searching": "正在寻找对手",
     "queue-time": "排队时间",
-    "tip-eyebrow": "提示"
+    "tip-eyebrow": "提示",
+    "tips": {
+      "protect-king": "存活的王者是你的胜利条件。优先保护他。",
+      "heal-cap": "每回合最多治疗2次 — 第三个位置要有意识地使用。",
+      "overtime-damage": "第12回合后伤害在加时每回合+10%。",
+      "bleed-combo": "流血使致命斩与刀刃风暴的伤害翻倍。",
+      "isolated-executor": "孤立的执行者打击更狠，但受到10%额外伤害。",
+      "specialist-cleanse": "专家一回合可净化最多三个友军负面状态。",
+      "shield-cap": "护盾可叠加至100 HP — 超出则覆盖最弱者。",
+      "card-cycle": "手牌使用后循环：规划顺序，而不仅是单次出牌。"
+    },
+    "mode-title": {
+      "ranked": "排位",
+      "casual": "休闲",
+      "pve": "训练"
+    },
+    "queue-count": "队列中玩家: {players}   ·   Ping: {ping} ms"
   },
   "battle": {
     "phase": {
@@ -179,16 +230,16 @@
       "movement-title-line-2": "移动",
       "movement-sub": "移动你的\n角色",
       "action-title": "行动",
-      "action-sub": "选择你的技能",
+      "action-sub": "选择技能",
       "movement-label": "移动回合",
       "action-label": "行动回合",
-      "role-turn": "{role}的回合",
+      "role-turn": "{role}回合",
       "phase-movement": "移动",
       "phase-action": "行动"
     },
     "team": {
-      "ally-eyebrow": "盟友",
-      "enemy-eyebrow": "敌人",
+      "ally-eyebrow": "友军",
+      "enemy-eyebrow": "敌方",
       "ally-name-fallback": "你",
       "enemy-name-fallback": "对手",
       "left-color": "蓝",
@@ -196,10 +247,10 @@
     },
     "phase-side-format": "{phase} — {side}",
     "tracker-side-movement": "{side} — 移动",
-    "log-round-marker": "— 回合 {round} —",
+    "log-round-marker": "— 第 {round} 回合 —",
     "tracker": {
-      "round": "回合 {round}",
-      "round-label-default": "回合 1",
+      "round": "第 {round} 回合",
+      "round-label-default": "第 1 回合",
       "header-both": "行动 — 双方",
       "title": "行动顺序",
       "history-button": "查看历史",
@@ -211,28 +262,28 @@
     "log": {
       "skipped": "跳过",
       "stunned": "眩晕",
-      "dead": "死亡",
-      "no-targets": "? ????????",
-      "death": "?? {name}?????{round}???",
-      "damage": "{name} ?? {amount} ????HP {hp}?",
-      "heal": "{name} ?? {amount} HP"
+      "dead": "阵亡",
+      "no-targets": "⚠ 攻击范围内无目标！",
+      "death": "✖ {name}阵亡（第 {round} 回合）",
+      "damage": "{name}受到{amount}点伤害（HP {hp}）",
+      "heal": "{name}回复{amount}点HP"
     },
     "outcome": {
       "victory": "胜利！",
       "defeat": "失败！",
       "draw": "平局！",
-      "opponent-forfeit": "对手投降！",
-      "self-forfeit": "你投降了！"
+      "opponent-forfeit": "对手认输！",
+      "self-forfeit": "你认输！"
     },
     "victory-overlay": {
       "reasons": {
-        "king_slain": "国王陨落",
-        "simultaneous_kings": "同时平局",
-        "timeout": "时间到",
-        "forfeit": "投降"
+        "king_slain": "王已被击败",
+        "simultaneous_kings": "双王同亡平局",
+        "timeout": "时间已到",
+        "forfeit": "认输"
       },
-      "detail-forfeit": "{reason} — 对手放弃了比赛",
-      "detail-normal": "{reason} — 回合 {round}"
+      "detail-forfeit": "{reason} — 对手放弃比赛",
+      "detail-normal": "{reason} — 第 {round} 回合"
     },
     "actions": {
       "confirm": "确认",
@@ -243,44 +294,44 @@
     },
     "popup": {
       "confirmation-eyebrow": "确认",
-      "warning-eyebrow": "警告",
+      "warning-eyebrow": "注意",
       "vote-eyebrow": "投票",
-      "skip-title": "跳过回合？",
-      "skip-body": "你的角色这回合不行动。",
+      "skip-title": "跳过本回合？",
+      "skip-body": "本回合你的角色不行动。",
       "skip-confirm": "跳过",
       "confirm-action-title": "确认行动？",
-      "confirm-action-body": "选定的技能进入队列，将在本回合解决。",
+      "confirm-action-body": "所选技能将进入队列并在本回合结算。",
       "surrender-title": "投降？",
-      "surrender-body-solo": "投降会影响你的排名且无法撤销。",
+      "surrender-body-solo": "放弃比赛会影响段位且无法撤销。",
       "surrender-vote-title": "投票投降？",
-      "surrender-vote-body": "你的票算入{required}。全体队员必须同意才能投降。",
+      "surrender-vote-body": "你的票计为{required}。全队同意才会投降。",
       "surrender-vote-button": "投票",
       "surrender-confirm": "投降",
       "surrender-button-label": "  投降"
     },
     "status": {
-      "shield-suffix": "盾 +{amount}",
+      "shield-suffix": "SH +{amount}",
       "wall-bonus": "墙 +{pct}%"
     },
     "effect-shorthand": {
       "damage": "伤害",
-      "area": "范围",
+      "area": "区域",
       "heal": "治疗",
       "shield": "护盾"
     },
     "role-abbr": {
-      "king": "?",
-      "warrior": "?",
-      "executor": "?",
-      "specialist": "?"
+      "king": "王",
+      "warrior": "战",
+      "executor": "执",
+      "specialist": "专"
     },
     "stats": {
       "atk": "ATK",
       "def": "DEF",
       "mov": "MOV"
     },
-    "round-heading": "? {round} ??",
-    "dummy-name": "??{role}"
+    "round-heading": "第 {round} 回合",
+    "dummy-name": "{role}木桩"
   },
   "battle-result": {
     "title": {
@@ -289,17 +340,17 @@
       "draw": "平局"
     },
     "reasons": {
-      "king-slain": "国王陨落",
-      "simultaneous-kings": "同时平局",
-      "timeout": "时间到",
-      "forfeit": "投降"
+      "king-slain": "王已被击败",
+      "simultaneous-kings": "双王同亡平局",
+      "timeout": "时间已到",
+      "forfeit": "认输"
     },
     "opponent-fallback": "对手",
-    "sub-meta": "回合 {round}  ·  vs {enemy}  ·  {reason}",
+    "sub-meta": "第 {round} 回合  ·  vs {enemy}  ·  {reason}",
     "rewards-header": "奖励",
     "new-skill": "新技能：{name}！",
     "next-match": "下一场",
-    "try-again": "重试",
+    "try-again": "再试一次",
     "play-again": "再玩一次",
     "back-to-lobby": "返回大厅",
     "xp": {
@@ -310,8 +361,8 @@
     }
   },
   "deck-build": {
-    "title": "卡组构建",
-    "subtitle": "为每个职业每组选择2张卡。",
+    "title": "组牌",
+    "subtitle": "每个职业从每组中选2张。",
     "difficulty-eyebrow": "难度",
     "difficulty": {
       "easy": "简单",
@@ -321,19 +372,19 @@
     "groups": {
       "attack1": "攻击 · 伤害",
       "attack2": "攻击 · 控制",
-      "defense1": "防御 · 强力",
-      "defense2": "防御 · 轻型",
-      "attack1-tooltip": "攻击 - 伤害",
-      "attack2-tooltip": "攻击 - 控制",
-      "defense1-tooltip": "防御 - 强力",
-      "defense2-tooltip": "防御 - 轻型"
+      "defense1": "防御 · 重",
+      "defense2": "防御 · 轻",
+      "attack1-tooltip": "攻击 — 伤害",
+      "attack2-tooltip": "攻击 — 控制",
+      "defense1-tooltip": "防御 — 重",
+      "defense2-tooltip": "防御 — 轻"
     },
     "targets": {
       "single": "目标：1名敌人",
       "self": "目标：自身",
-      "lowest_ally": "目标：最低HP盟友",
-      "all_allies": "目标：所有盟友",
-      "area": "目标：3x3范围"
+      "lowest_ally": "目标：HP最低的友军",
+      "all_allies": "目标：所有友军",
+      "area": "目标：3x3区域"
     },
     "tooltip": {
       "power-with": "威力 {power}",
@@ -341,13 +392,13 @@
       "target-prefix": "目标 · {target}"
     },
     "footer": {
-      "deck-label": "卡组",
-      "atk-label": "攻",
-      "def-label": "防",
+      "deck-label": "套牌",
+      "atk-label": "ATK",
+      "def-label": "DEF",
       "empty-slot": "—",
-      "power-prefix": "威 {power}",
-      "shortcuts": "快捷键 · 1-4选择 · Tab切换职业 · Enter开始",
-      "progress": "单位就绪 · {done} / 4    每列选择2张卡"
+      "power-prefix": "PWR {power}",
+      "shortcuts": "快捷键 · 1-4 选择 · Tab 切换职业 · Enter 开战",
+      "progress": "单位准备 · {done} / 4    每列选2张"
     },
     "buttons": {
       "random": "随机",
@@ -357,21 +408,21 @@
     },
     "tab-ready-suffix": "{role} ✓",
     "passives": {
-      "king": "被动：王者保护 — 每回合护盾刷新，受到伤害-15%。",
-      "warrior": "被动：守护者 — 相邻盟友减伤-15%。",
-      "specialist": "被动：燃烧 — 攻击使敌方治疗减少20%持续1回合。",
-      "executor": "被动：孤立 — 没有相邻者时伤害+15%。"
+      "king": "被动：王者守护 — 每回合护盾再生，受到伤害-15%。",
+      "warrior": "被动：守护者 — 邻近友军受到伤害减免-15%。",
+      "specialist": "被动：燃烧 — 攻击使敌方治疗-20%（1回合）。",
+      "executor": "被动：孤立 — 无邻近友军时+15%伤害。"
     }
   },
   "lobby": {
-    "central-play-title": "开始",
+    "central-play-title": "游玩",
     "central-play-subtitle": "选择战斗模式",
     "play-modes-title": "游戏模式",
     "nav": {
       "shop": "商店",
       "skills": "技能",
       "training": "训练",
-      "ranking": "排名"
+      "ranking": "排行"
     },
     "battlepass": {
       "line-1": "战斗",
@@ -379,16 +430,16 @@
       "rewards-max": "奖励MAX"
     },
     "offline": {
-      "title": "团队突袭",
+      "title": "攻击队伍",
       "subtitle": "离线",
       "popup-eyebrow": "即将推出",
-      "popup-body": "团队突袭系统"
+      "popup-body": "队伍突袭系统"
     },
     "sound-toggle": {
       "on": "声音",
       "muted": "静音"
     },
-    "news-ticker": "     欢迎来到Draft Game！  •  商店有新卡包！  •  PvP战斗已开放！  •  训练模式可用！     "
+    "news-ticker": "     欢迎来到Draft Game！  •  商店上新卡包！  •  PvP战斗已开放！  •  训练可用！     "
   },
   "login": {
     "tab": {
@@ -396,38 +447,38 @@
       "register": "注册"
     },
     "title-login": "登录",
-    "title-register": "创建账户",
+    "title-register": "创建账号",
     "submit-login": "登录",
-    "submit-register": "创建账户",
+    "submit-register": "创建账号",
     "fields": {
       "username-label": "用户名",
-      "username-placeholder": "Nick",
+      "username-placeholder": "昵称",
       "password-label": "密码",
       "password-placeholder": "••••••••",
       "email-label": "邮箱",
       "email-placeholder": "you@example.com",
-      "register-password-hint": "至少6个字符"
+      "register-password-hint": "至少6位"
     },
     "remember-me": "记住我",
     "forgot-password": "忘记密码？",
     "verify": {
       "eyebrow": "验证",
       "title": "邮箱验证码",
-      "body": "已向你的邮箱发送6位验证码。\n请在下方输入。",
+      "body": "6位验证码已发送到您的邮箱，\n请在下方输入。",
       "code-label": "验证码",
       "code-placeholder": "000000",
       "submit": "验证",
-      "resend": "重新发送验证码",
+      "resend": "重新发送",
       "sending": "发送中…"
     }
   },
   "menu": {
     "title": "DRAFT",
     "subtitle": "战术对战",
-    "studio-credit": "由 Codeforje VIO 出品",
+    "studio-credit": "by Codeforje VIO",
     "studio-name": "Codeforje VIO",
-    "tagline-1": "策略。战术。征服。",
-    "tagline-2": "组建你的卡组，在4v4战斗中击败敌方国王",
+    "tagline-1": "策略·战术·征服。",
+    "tagline-2": "组建套牌击败敌方王者，4v4战斗",
     "hint": "点击进入",
     "version-tag": "v1.0"
   },
@@ -435,14 +486,14 @@
     "title": "个人资料",
     "tagline": "王国召唤师",
     "stats": {
-      "wins": "胜利",
-      "losses": "失败",
+      "wins": "胜场",
+      "losses": "败场",
       "win-rate": "胜率",
-      "gold": "金币",
+      "gold": "GOLD",
       "dg": "DG",
-      "ranked-points": "排位分"
+      "ranked-points": "排位积分"
     },
-    "mastery-eyebrow": "精通",
+    "mastery-eyebrow": "熟练度",
     "mastery": {
       "attack": "攻击",
       "defense": "防御"
@@ -455,23 +506,23 @@
       "equipped-counter": "{equipped} / 8",
       "empty-slot": "空",
       "slots": {
-        "atk1": "攻 1",
-        "atk2": "攻 2",
-        "def1": "防 1",
-        "def2": "防 2"
+        "atk1": "ATK 1",
+        "atk2": "ATK 2",
+        "def1": "DEF 1",
+        "def2": "DEF 2"
       }
     },
     "inventory-section": {
       "header": "背包",
-      "hint": "点击或拖动以装备",
-      "all-equipped": "全部已装备",
+      "hint": "点击或拖拽以装备",
+      "all-equipped": "已全部装备",
       "owned-counter": "{owned} / {max}"
     },
     "groups": {
       "attack1": "攻击 · 伤害",
       "attack2": "攻击 · 控制",
-      "defense1": "防御 · 强力",
-      "defense2": "防御 · 轻型"
+      "defense1": "防御 · 重",
+      "defense2": "防御 · 轻"
     },
     "level-up-banner": "升级！"
   },
@@ -480,69 +531,154 @@
     "sections": {
       "audio": "音频",
       "language": "语言",
-      "account": "账户"
+      "account": "账号"
     },
     "audio": {
       "sound-label": "声音",
-      "sound-on": "音效已开启",
-      "sound-off": "音效已关闭"
+      "sound-on": "音效开启",
+      "sound-off": "音效关闭"
     },
     "language": {
-      "field-label": "选择你的语言"
+      "field-label": "选择语言",
+      "busy-title": "请先结束当前对局",
+      "busy-body": "你正在比赛或排队中。请先结束或退出再切换语言。"
     },
     "gameplay": {
       "bot-difficulty-label": "机器人难度"
     },
     "account": {
       "session-label": "会话",
-      "session-description": "退出当前账户",
-      "logout-button": "退出"
+      "session-description": "退出当前账号",
+      "logout-button": "退出登录"
     },
     "logout-modal": {
-      "title": "退出",
-      "body": "你将与王国断开连接。继续？",
-      "confirm": "退出登录"
+      "title": "退出账号",
+      "body": "你将被踢出王国。确定继续吗？",
+      "confirm": "退出账号"
     },
     "footer": {
-      "credits": "Draft Game v1.0  ·  由 Caio Sensini 制作"
+      "credits": "Draft Game v1.0  ·  by Caio Sensini"
     }
   },
   "play-modes": {
     "sections": {
       "pvp": "PVP",
       "pve": "PVE",
-      "creation": "??"
+      "creation": "创建"
     },
     "modes": {
       "ranked": {
-        "title": "?????",
-        "desc": "??????100??",
-        "locked-desc": "100???"
+        "title": "排位竞技场",
+        "desc": "排位锦标赛 (Lv.100)",
+        "locked-desc": "Lv.100解锁"
       },
       "pvp": {
-        "title": "PvP??",
-        "desc": "?????????"
+        "title": "PvP战斗",
+        "desc": "与同等级玩家对战"
       },
       "pve-battle": {
-        "title": "PvE??",
-        "desc": "??????????????"
+        "title": "PvE战斗",
+        "desc": "挑战同等级智能机器人"
       },
       "pve-tournament": {
-        "title": "PvE???",
-        "desc": "???????"
+        "title": "PvE锦标赛",
+        "desc": "按等级段位组成对阵图"
       },
       "custom": {
-        "title": "?????",
-        "desc": "?????????"
+        "title": "自定义对局",
+        "desc": "与好友和机器人组队"
       }
     }
   },
   "skin-picker": {
-    "title": "????",
-    "locked-hint": "{count} ?????? ? ??????",
-    "all-unlocked-hint": "??????? ? ????",
-    "equipped": "?  ???",
-    "equip": "??",
-    "in-shop": "??"
+    "title": "选择皮肤",
+    "locked-hint": "{count}个皮肤已锁定 · 在商店中购买",
+    "all-unlocked-hint": "所有皮肤已解锁 · 点击装备",
+    "equipped": "✓  已装备",
+    "equip": "装备",
+    "in-shop": "商店",
+    "role": {
+      "king": "王者",
+      "warrior": "战士",
+      "specialist": "专家",
+      "executor": "执行者"
+    }
+  },
+  "skins": {
+    "king": {
+      "idle": {
+        "name": "经典王者",
+        "subtitle": "原初血脉的永恒之冠"
+      },
+      "king_of_the_kingdom_idle": {
+        "name": "王国之王",
+        "subtitle": "建国之地的守护者"
+      },
+      "crimson_idle": {
+        "name": "风暴之王",
+        "subtitle": "号令雷霆的王冠"
+      },
+      "eternal_idle": {
+        "name": "地平线之王",
+        "subtitle": "无边疆土的主宰"
+      }
+    },
+    "warrior": {
+      "idle": {
+        "name": "经典战士",
+        "subtitle": "开路的老兵"
+      },
+      "warrior_of_the_kingdom_idle": {
+        "name": "王国战士",
+        "subtitle": "城墙的忠诚守护者"
+      },
+      "ashes_idle": {
+        "name": "山岳战士",
+        "subtitle": "坚如远古磐石"
+      },
+      "radiant_idle": {
+        "name": "辉光战士",
+        "subtitle": "受晨曦祝福的利刃"
+      }
+    },
+    "specialist": {
+      "idle": {
+        "name": "经典专家",
+        "subtitle": "古老技艺的大师"
+      },
+      "specialist_of_the_kingdom_idle": {
+        "name": "王国专家",
+        "subtitle": "古老知识的顾问"
+      },
+      "arcane_idle": {
+        "name": "红宝石专家",
+        "subtitle": "凝于宝石之焰中的智慧"
+      },
+      "cosmic_idle": {
+        "name": "星云专家",
+        "subtitle": "星云与彗星的编织者"
+      }
+    },
+    "executor": {
+      "idle": {
+        "name": "经典执行者",
+        "subtitle": "锋锐而沉默的影子"
+      },
+      "executor_of_the_kingdom_idle": {
+        "name": "王国执行者",
+        "subtitle": "王道的哨兵"
+      },
+      "spectral_idle": {
+        "name": "清风执行者",
+        "subtitle": "比晨风更轻盈"
+      },
+      "shadow_idle": {
+        "name": "暗影执行者",
+        "subtitle": "黄昏的无声脚步"
+      }
+    }
+  },
+  "pack-open": {
+    "tap-to-close": "点击关闭"
   }
 }

@@ -12,7 +12,8 @@
     "ok": "OK",
     "save": "GUARDAR",
     "yes": "SÍ",
-    "no": "NO"
+    "no": "NO",
+    "back-titled": "Volver"
   },
   "studio-name": "CODEFORJE VIO",
   "section": {
@@ -37,7 +38,7 @@
     "rei": "Rey"
   },
   "ranked-display": {
-    "placement": "? Desconocido ({count}/3 torneos para clasificar)"
+    "placement": "Desconocido ({count}/3 torneos para clasificar)"
   },
   "skill-card": {
     "categories": {
@@ -45,7 +46,7 @@
       "defense": "DEFENSA"
     },
     "stats": {
-      "damage": "DA?O",
+      "damage": "DAÑO",
       "heal": "CURA",
       "shield": "ESC",
       "evade": "EVADIR",
@@ -56,31 +57,31 @@
       "self": "PROPIO",
       "ally": "ALIADO",
       "all-allies": "ALIADOS",
-      "line": "L?NEA",
+      "line": "LÍNEA",
       "cone": "CONO",
       "ring": "ANILLO",
-      "area": "?REA",
+      "area": "ÁREA",
       "tile": "CASILLA"
     },
     "target-details": {
-      "single": "Objetivo ?nico",
-      "area": "?rea",
+      "single": "Único objetivo",
+      "area": "Área",
       "self": "Propio",
-      "lowest-ally": "Aliado d?bil",
+      "lowest-ally": "Aliado débil",
       "all-allies": "Todos aliados"
     },
     "detail-labels": {
-      "damage": "DA?O",
+      "damage": "DAÑO",
       "heal": "CURA",
       "shield": "ESCUDO",
-      "extra-damage": "DA?O EXTRA",
+      "extra-damage": "DAÑO EXTRA",
       "extra-heal": "CURA EXTRA",
       "effect": "EFECTO",
       "target": "OBJETIVO"
     },
     "effect-labels": {
-      "damage": "Da?o",
-      "area": "?rea",
+      "damage": "Daño",
+      "area": "Área",
       "heal": "Cura",
       "shield": "Escudo",
       "stun": "Aturdimiento",
@@ -88,13 +89,13 @@
       "bleed": "Sangrado",
       "burn": "Quemadura",
       "poison": "Veneno",
-      "evade": "Evasi?n",
+      "evade": "Evasión",
       "reflect": "Reflejar",
       "regen": "Regen",
       "mark": "Marca",
       "revive": "Revivir",
       "lifesteal": "Robo de vida",
-      "true_damage": "Da?o puro",
+      "true_damage": "Daño puro",
       "cleanse": "Purificar",
       "purge": "Disipar",
       "def_up": "+DEF",
@@ -103,7 +104,7 @@
       "atk_down": "-ATQ",
       "double_attack": "Doble",
       "silence_defense": "Silencio",
-      "push": "Empujar",
+      "push": "Empuje",
       "mov_down": "-MOV"
     }
   }
