@@ -53,9 +53,9 @@
       "squad": "SQUAD"
     },
     "mode-bonus": {
-      "solo": "SOLO ? sem b?nus",
-      "duo": "DUO ? +10% XP e Gold",
-      "squad": "SQUAD ? +20% XP e Gold"
+      "solo": "SOLO · sem bônus",
+      "duo": "DUO · +10% XP e Gold",
+      "squad": "SQUAD · +20% XP e Gold"
     },
     "invite-friend": "CONVIDAR AMIGO",
     "room-incomplete": "SALA INCOMPLETA ({current}/{max})",
@@ -64,11 +64,11 @@
     "bot": "Bot",
     "friend": "Amigo",
     "invite-modal": {
-      "eyebrow": "PR?XIMAMENTE",
+      "eyebrow": "EM BREVE",
       "title": "CONVITE DE AMIGO",
-      "body-solo": "O sistema de convites est? em desenvolvimento. Por enquanto, use modo Solo para jogar.",
-      "body-ranked": "O sistema de convites est? em desenvolvimento. Por enquanto, use modo Solo para jogar ranqueada.",
-      "body-custom": "O sistema de convites est? em desenvolvimento. Por enquanto, adicione bots ao seu time."
+      "body-solo": "O sistema de convites está em desenvolvimento. Por enquanto, use modo Solo para jogar.",
+      "body-ranked": "O sistema de convites está em desenvolvimento. Por enquanto, use modo Solo para jogar ranqueada.",
+      "body-custom": "O sistema de convites está em desenvolvimento. Por enquanto, adicione bots ao seu time."
     }
   },
   "shop": {
@@ -88,29 +88,34 @@
       "dg-500": "500 DG"
     },
     "descriptions": {
-      "one-random-skill": "1 skill aleat?ria",
-      "two-random-skills": "2 skills aleat?rias",
-      "three-random-skills": "3 skills aleat?rias",
+      "one-random-skill": "1 skill aleatória",
+      "two-random-skills": "2 skills aleatórias",
+      "three-random-skills": "3 skills aleatórias",
       "premium-skill-pack": "3 defesa + 3 ataque",
       "real-money": "Dinheiro real"
     },
     "rarity": {
-      "basic": "B?SICO",
-      "medium": "M?DIO",
-      "advanced": "AVAN?ADO",
-      "premium": "PREMIUM"
+      "basic": "BÁSICO",
+      "medium": "MÉDIO",
+      "advanced": "AVANÇADO",
+      "premium": "PREMIUM",
+      "default": "CLÁSSICO",
+      "common": "COMUM",
+      "rare": "RARO",
+      "epic": "ÉPICO",
+      "legendary": "LENDÁRIO"
     },
-    "drop-pill": "?{count} SKILLS",
+    "drop-pill": "+{count} SKILLS",
     "skin-state": {
       "equipped": "EQUIPADA",
       "owned": "ADQUIRIDA"
     },
     "modal": {
       "buy-title": "Comprar {name}?",
-      "buy-gold": "COMPRAR ? {price} GOLD",
-      "buy-dg": "COMPRAR ? {price} DG",
+      "buy-gold": "COMPRAR · {price} GOLD",
+      "buy-dg": "COMPRAR · {price} DG",
       "insufficient-balance": "SALDO INSUFICIENTE",
-      "pack-body": "{desc} ? {count} skill(s) aleat?ria(s)."
+      "pack-body": "{desc} · {count} skill(s) aleatória(s)."
     }
   },
   "battle-pass": {
@@ -156,7 +161,7 @@
     "info": {
       "real-player-tournament": "Torneio entre 8 jogadores reais",
       "double-elimination": "Double elimination: perdedores jogam entre si",
-      "lp-placement": "LP baseado na posi??o final (1? ao 8?)"
+      "lp-placement": "LP baseado na posição final (1º ao 8º)"
     }
   },
   "bracket": {
@@ -171,9 +176,9 @@
     "search-opponents": "PROCURAR OPONENTES",
     "info": {
       "no-entry-cost": "Sem custo de entrada",
-      "level-matchmaking": "Matchmaking aleat?rio por n?vel",
+      "level-matchmaking": "Matchmaking aleatório por nível",
       "any-team-size": "Enfrenta qualquer tamanho de equipe",
-      "gold-rewards": "Recompensas de Gold por vit?ria"
+      "gold-rewards": "Recompensas de Gold por vitória"
     }
   },
   "pve": {
@@ -183,8 +188,8 @@
     "start-match": "INICIAR PARTIDA",
     "cost-format": "CUSTO {cost}G",
     "info": {
-      "smart-bot": "Bot inteligente do seu n?vel",
-      "gold-bonus": "B?nus de Gold por vit?ria",
+      "smart-bot": "Bot inteligente do seu nível",
+      "gold-bonus": "Bônus de Gold por vitória",
       "eight-team-bracket": "Chaveamento de 8 times",
       "scaled-cost": "Custo em Gold varia por faixa",
       "scaled-reward": "Recompensa escalada por round"
@@ -197,7 +202,7 @@
     "red-team": "TIME VERMELHO",
     "blue-team-short": "AZUL",
     "red-team-short": "VERM",
-    "switch-team": "?  TROCAR DE TIME"
+    "switch-team": "↻  TROCAR DE TIME"
   },
   "matchmaking": {
     "searching": "PROCURANDO ADVERSÁRIO",
@@ -243,8 +248,8 @@
       "skipped": "Pulou",
       "stunned": "Atordoado",
       "dead": "Morto",
-      "no-targets": "? Sem alvos ao alcance!",
-      "death": "?? {name} morreu (Round {round})",
+      "no-targets": "⚠ Sem alvos ao alcance!",
+      "death": "✖ {name} morreu (Round {round})",
       "damage": "{name} recebe {amount} dano (HP {hp})",
       "heal": "{name} cura {amount} HP"
     },
@@ -508,25 +513,25 @@
     "sections": {
       "pvp": "PVP",
       "pve": "PVE",
-      "creation": "CRIA??O"
+      "creation": "CRIAÇÃO"
     },
     "modes": {
       "ranked": {
         "title": "Arena Rankeada",
         "desc": "Torneios rankeados (Lv.100)",
-        "locked-desc": "Dispon?vel a partir do Lv.100"
+        "locked-desc": "Disponível a partir do Lv.100"
       },
       "pvp": {
         "title": "Batalha PvP",
-        "desc": "Enfrente jogadores de n?vel similar"
+        "desc": "Enfrente jogadores de nível similar"
       },
       "pve-battle": {
         "title": "Batalha PvE",
-        "desc": "Enfrente um bot inteligente do seu n?vel"
+        "desc": "Enfrente um bot inteligente do seu nível"
       },
       "pve-tournament": {
         "title": "Torneio PvE",
-        "desc": "Chaveamento por faixa de n?vel"
+        "desc": "Chaveamento por faixa de nível"
       },
       "custom": {
         "title": "Partida Personalizada",
@@ -536,10 +541,16 @@
   },
   "skin-picker": {
     "title": "ESCOLHER SKIN",
-    "locked-hint": "{count} skin(s) bloqueada(s) ? compre na loja",
-    "all-unlocked-hint": "Todas as skins desbloqueadas ? toque para equipar",
-    "equipped": "?  EQUIPADA",
+    "locked-hint": "{count} skin(s) bloqueada(s) · compre na loja",
+    "all-unlocked-hint": "Todas as skins desbloqueadas · toque para equipar",
+    "equipped": "✓  EQUIPADA",
     "equip": "EQUIPAR",
-    "in-shop": "NA LOJA"
+    "in-shop": "NA LOJA",
+    "role": {
+      "king": "REI",
+      "warrior": "GUERREIRO",
+      "specialist": "ESPECIALISTA",
+      "executor": "EXECUTOR"
+    }
   }
 }

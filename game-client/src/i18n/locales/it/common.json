@@ -37,7 +37,7 @@
     "rei": "Re"
   },
   "ranked-display": {
-    "placement": "? Sconosciuto ({count}/3 tornei per qualificarti)"
+    "placement": "Sconosciuto ({count}/3 tornei per qualificarti)"
   },
   "skill-card": {
     "categories": {

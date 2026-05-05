@@ -22,9 +22,9 @@
       "squad": "SQUAD"
     },
     "mode-bonus": {
-      "solo": "SOLO ? no bonus",
-      "duo": "DUO ? +10% XP and Gold",
-      "squad": "SQUAD ? +20% XP and Gold"
+      "solo": "SOLO · no bonus",
+      "duo": "DUO · +10% XP and Gold",
+      "squad": "SQUAD · +20% XP and Gold"
     },
     "invite-friend": "INVITE FRIEND",
     "room-incomplete": "ROOM INCOMPLETE ({current}/{max})",
@@ -67,19 +67,24 @@
       "basic": "BASIC",
       "medium": "MEDIUM",
       "advanced": "ADVANCED",
-      "premium": "PREMIUM"
+      "premium": "PREMIUM",
+      "default": "CLASSIC",
+      "common": "COMMON",
+      "rare": "RARE",
+      "epic": "EPIC",
+      "legendary": "LEGENDARY"
     },
-    "drop-pill": "?{count} SKILLS",
+    "drop-pill": "+{count} SKILLS",
     "skin-state": {
       "equipped": "EQUIPPED",
       "owned": "OWNED"
     },
     "modal": {
       "buy-title": "Buy {name}?",
-      "buy-gold": "BUY ? {price} GOLD",
-      "buy-dg": "BUY ? {price} DG",
+      "buy-gold": "BUY · {price} GOLD",
+      "buy-dg": "BUY · {price} DG",
       "insufficient-balance": "INSUFFICIENT BALANCE",
-      "pack-body": "{desc} ? {count} random skill(s)."
+      "pack-body": "{desc} · {count} random skill(s)."
     }
   },
   "battle-pass": {
@@ -125,7 +130,7 @@
     "info": {
       "real-player-tournament": "Tournament with 8 real players",
       "double-elimination": "Double elimination: losers play each other",
-      "lp-placement": "LP based on final placement (1st to 8th)"
+      "lp-placement": "LP based on final standing (1st to 8th)"
     }
   },
   "bracket": {
@@ -142,7 +147,7 @@
       "no-entry-cost": "No entry cost",
       "level-matchmaking": "Random matchmaking by level",
       "any-team-size": "Faces any team size",
-      "gold-rewards": "Gold rewards for victory"
+      "gold-rewards": "Gold rewards on victory"
     }
   },
   "pve": {
@@ -153,7 +158,7 @@
     "cost-format": "COST {cost}G",
     "info": {
       "smart-bot": "Smart bot at your level",
-      "gold-bonus": "Gold bonus for victory",
+      "gold-bonus": "Gold bonus on victory",
       "eight-team-bracket": "8-team bracket",
       "scaled-cost": "Gold cost varies by range",
       "scaled-reward": "Reward scales by round"
@@ -166,7 +171,7 @@
     "red-team": "RED TEAM",
     "blue-team-short": "BLUE",
     "red-team-short": "RED",
-    "switch-team": "?  SWITCH TEAM"
+    "switch-team": "↻  SWITCH TEAM"
   },
   "matchmaking": {
     "searching": "SEARCHING FOR OPPONENT",
@@ -212,8 +217,8 @@
       "skipped": "Skipped",
       "stunned": "Stunned",
       "dead": "Dead",
-      "no-targets": "? No targets in range!",
-      "death": "?? {name} died (Round {round})",
+      "no-targets": "⚠ No targets in range!",
+      "death": "✖ {name} died (Round {round})",
       "damage": "{name} takes {amount} damage (HP {hp})",
       "heal": "{name} heals {amount} HP"
     },
@@ -518,7 +523,7 @@
       },
       "pvp": {
         "title": "PvP Battle",
-        "desc": "Face players at a similar level"
+        "desc": "Face players of similar level"
       },
       "pve-battle": {
         "title": "PvE Battle",
@@ -536,10 +541,16 @@
   },
   "skin-picker": {
     "title": "CHOOSE SKIN",
-    "locked-hint": "{count} locked skin(s) ? buy them in the shop",
-    "all-unlocked-hint": "All skins unlocked ? tap to equip",
-    "equipped": "?  EQUIPPED",
+    "locked-hint": "{count} locked skin(s) · buy them in the shop",
+    "all-unlocked-hint": "All skins unlocked · tap to equip",
+    "equipped": "✓  EQUIPPED",
     "equip": "EQUIP",
-    "in-shop": "IN SHOP"
+    "in-shop": "IN SHOP",
+    "role": {
+      "king": "KING",
+      "warrior": "WARRIOR",
+      "specialist": "SPECIALIST",
+      "executor": "EXECUTOR"
+    }
   }
 }

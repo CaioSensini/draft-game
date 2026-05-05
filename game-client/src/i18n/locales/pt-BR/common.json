@@ -37,7 +37,7 @@
     "rei": "Rei"
   },
   "ranked-display": {
-    "placement": "? Desconhecido ({count}/3 torneios para classificar)"
+    "placement": "Desconhecido ({count}/3 torneios para classificar)"
   },
   "skill-card": {
     "categories": {
@@ -53,19 +53,19 @@
     },
     "targets": {
       "single": "ALVO",
-      "self": "PR?PRIO",
+      "self": "PRÓPRIO",
       "ally": "ALIADO",
       "all-allies": "ALIADOS",
       "line": "LINHA",
       "cone": "CONE",
       "ring": "ANEL",
-      "area": "?REA",
+      "area": "ÁREA",
       "tile": "TILE"
     },
     "target-details": {
-      "single": "Alvo ?nico",
-      "area": "?rea",
-      "self": "Pr?prio",
+      "single": "Alvo único",
+      "area": "Área",
+      "self": "Próprio",
       "lowest-ally": "Aliado fraco",
       "all-allies": "Todos aliados"
     },
@@ -80,13 +80,13 @@
     },
     "effect-labels": {
       "damage": "Dano",
-      "area": "?rea",
+      "area": "Área",
       "heal": "Cura",
       "shield": "Escudo",
       "stun": "Stun",
       "snare": "Snare",
       "bleed": "Sangramento",
-      "burn": "Queima??o",
+      "burn": "Queimação",
       "poison": "Veneno",
       "evade": "Esquiva",
       "reflect": "Refletir",
@@ -102,8 +102,8 @@
       "def_down": "-DEF",
       "atk_down": "-ATK",
       "double_attack": "Duplo",
-      "silence_defense": "Sil?ncio",
-      "push": "Empurr?o",
+      "silence_defense": "Silêncio",
+      "push": "Empurrão",
       "mov_down": "-MOV"
     }
   }

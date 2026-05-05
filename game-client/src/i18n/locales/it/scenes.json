@@ -22,9 +22,9 @@
       "squad": "SQUAD"
     },
     "mode-bonus": {
-      "solo": "SOLO ? nessun bonus",
-      "duo": "DUO ? +10% XP & Gold",
-      "squad": "SQUAD ? +20% XP & Gold"
+      "solo": "SOLO · nessun bonus",
+      "duo": "DUO · +10% XP & Gold",
+      "squad": "SQUAD · +20% XP & Gold"
     },
     "invite-friend": "INVITA AMICO",
     "room-incomplete": "STANZA INCOMPLETA ({current}/{max})",
@@ -35,9 +35,9 @@
     "invite-modal": {
       "eyebrow": "PROSSIMAMENTE",
       "title": "INVITO AMICO",
-      "body-solo": "Il sistema di inviti ? in sviluppo. Per ora usa la modalit? Solo.",
-      "body-ranked": "Il sistema di inviti ? in sviluppo. Per ora gioca ranked in Solo.",
-      "body-custom": "Il sistema di inviti ? in sviluppo. Per ora aggiungi bot alla tua squadra."
+      "body-solo": "Il sistema di inviti è in sviluppo. Per ora usa la modalità Solo.",
+      "body-ranked": "Il sistema di inviti è in sviluppo. Per ora gioca ranked in Solo.",
+      "body-custom": "Il sistema di inviti è in sviluppo. Per ora aggiungi bot alla tua squadra."
     }
   },
   "shop": {
@@ -67,19 +67,24 @@
       "basic": "BASE",
       "medium": "MEDIO",
       "advanced": "AVANZATO",
-      "premium": "PREMIUM"
+      "premium": "PREMIUM",
+      "default": "CLASSICA",
+      "common": "COMUNE",
+      "rare": "RARA",
+      "epic": "EPICA",
+      "legendary": "LEGGENDARIA"
     },
-    "drop-pill": "?{count} SKILL",
+    "drop-pill": "+{count} SKILL",
     "skin-state": {
       "equipped": "EQUIPAGGIATA",
       "owned": "ACQUISTATA"
     },
     "modal": {
       "buy-title": "Comprare {name}?",
-      "buy-gold": "COMPRA ? {price} GOLD",
-      "buy-dg": "COMPRA ? {price} DG",
+      "buy-gold": "COMPRA · {price} GOLD",
+      "buy-dg": "COMPRA · {price} DG",
       "insufficient-balance": "SALDO INSUFFICIENTE",
-      "pack-body": "{desc} ? {count} skill casuale/i."
+      "pack-body": "{desc} · {count} skill casuale/i."
     }
   },
   "battle-pass": {
@@ -125,7 +130,7 @@
     "info": {
       "real-player-tournament": "Torneo tra 8 giocatori reali",
       "double-elimination": "Double elimination: i perdenti giocano tra loro",
-      "lp-placement": "LP in base alla posizione finale (1?-8?)"
+      "lp-placement": "LP in base alla posizione finale (1º-8º)"
     }
   },
   "bracket": {
@@ -166,7 +171,7 @@
     "red-team": "SQUADRA ROSSA",
     "blue-team-short": "BLU",
     "red-team-short": "ROSS",
-    "switch-team": "?  CAMBIA SQUADRA"
+    "switch-team": "↻  CAMBIA SQUADRA"
   },
   "matchmaking": {
     "searching": "RICERCA AVVERSARIO",
@@ -212,8 +217,8 @@
       "skipped": "Saltato",
       "stunned": "Stordito",
       "dead": "Morto",
-      "no-targets": "? Nessun bersaglio a portata!",
-      "death": "?? {name} ? morto (Round {round})",
+      "no-targets": "⚠ Nessun bersaglio a portata!",
+      "death": "✖ {name} è morto (Round {round})",
       "damage": "{name} subisce {amount} danni (HP {hp})",
       "heal": "{name} cura {amount} HP"
     },
@@ -536,10 +541,16 @@
   },
   "skin-picker": {
     "title": "SCEGLI SKIN",
-    "locked-hint": "{count} skin bloccata/e ? acquistala nel negozio",
-    "all-unlocked-hint": "Tutte le skin sbloccate ? tocca per equipaggiare",
-    "equipped": "?  EQUIPAGGIATA",
+    "locked-hint": "{count} skin bloccata/e · acquistala nel negozio",
+    "all-unlocked-hint": "Tutte le skin sbloccate · tocca per equipaggiare",
+    "equipped": "✓  EQUIPAGGIATA",
     "equip": "EQUIPAGGIA",
-    "in-shop": "NEGOZIO"
+    "in-shop": "NEGOZIO",
+    "role": {
+      "king": "RE",
+      "warrior": "GUERRIERO",
+      "specialist": "SPECIALISTA",
+      "executor": "ESECUTORE"
+    }
   }
 }

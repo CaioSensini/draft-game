@@ -22,22 +22,22 @@
       "squad": "SQUAD"
     },
     "mode-bonus": {
-      "solo": "SOLO ? kein Bonus",
-      "duo": "DUO ? +10% XP & Gold",
-      "squad": "SQUAD ? +20% XP & Gold"
+      "solo": "SOLO · kein Bonus",
+      "duo": "DUO · +10% XP & Gold",
+      "squad": "SQUAD · +20% XP & Gold"
     },
     "invite-friend": "FREUND EINLADEN",
-    "room-incomplete": "RAUM UNVOLLST?NDIG ({current}/{max})",
+    "room-incomplete": "RAUM UNVOLLSTÄNDIG ({current}/{max})",
     "level-short": "ST {level}",
     "player-fallback": "Spieler",
     "bot": "Bot",
     "friend": "Freund",
     "invite-modal": {
-      "eyebrow": "DEMN?CHST",
+      "eyebrow": "DEMNÄCHST",
       "title": "FREUND EINLADEN",
       "body-solo": "Das Einladungssystem ist in Entwicklung. Nutze vorerst den Solo-Modus.",
       "body-ranked": "Das Einladungssystem ist in Entwicklung. Spiele vorerst Ranked im Solo-Modus.",
-      "body-custom": "Das Einladungssystem ist in Entwicklung. F?ge vorerst Bots deinem Team hinzu."
+      "body-custom": "Das Einladungssystem ist in Entwicklung. Füge vorerst Bots deinem Team hinzu."
     }
   },
   "shop": {
@@ -57,9 +57,9 @@
       "dg-500": "500 DG"
     },
     "descriptions": {
-      "one-random-skill": "1 zuf?llige Skill",
-      "two-random-skills": "2 zuf?llige Skills",
-      "three-random-skills": "3 zuf?llige Skills",
+      "one-random-skill": "1 zufällige Skill",
+      "two-random-skills": "2 zufällige Skills",
+      "three-random-skills": "3 zufällige Skills",
       "premium-skill-pack": "3 Abwehr + 3 Angriff",
       "real-money": "Echtgeld"
     },
@@ -67,19 +67,24 @@
       "basic": "BASIS",
       "medium": "MITTEL",
       "advanced": "FORTGESCHRITTEN",
-      "premium": "PREMIUM"
+      "premium": "PREMIUM",
+      "default": "KLASSISCH",
+      "common": "NORMAL",
+      "rare": "SELTEN",
+      "epic": "EPISCH",
+      "legendary": "LEGENDÄR"
     },
-    "drop-pill": "?{count} SKILLS",
+    "drop-pill": "+{count} SKILLS",
     "skin-state": {
-      "equipped": "AUSGER?STET",
+      "equipped": "AUSGERÜSTET",
       "owned": "ERWORBEN"
     },
     "modal": {
       "buy-title": "{name} kaufen?",
-      "buy-gold": "KAUFEN ? {price} GOLD",
-      "buy-dg": "KAUFEN ? {price} DG",
+      "buy-gold": "KAUFEN · {price} GOLD",
+      "buy-dg": "KAUFEN · {price} DG",
       "insufficient-balance": "GUTHABEN ZU NIEDRIG",
-      "pack-body": "{desc} ? {count} zuf?llige Skill(s)."
+      "pack-body": "{desc} · {count} zufällige Skill(s)."
     }
   },
   "battle-pass": {
@@ -140,8 +145,8 @@
     "search-opponents": "GEGNER SUCHEN",
     "info": {
       "no-entry-cost": "Keine Eintrittskosten",
-      "level-matchmaking": "Zuf?lliges Matchmaking nach Stufe",
-      "any-team-size": "Gegen jede Teamgr??e",
+      "level-matchmaking": "Zufälliges Matchmaking nach Stufe",
+      "any-team-size": "Gegen jede Teamgröße",
       "gold-rewards": "Gold-Belohnungen pro Sieg"
     }
   },
@@ -166,7 +171,7 @@
     "red-team": "ROTES TEAM",
     "blue-team-short": "BLAU",
     "red-team-short": "ROT",
-    "switch-team": "?  TEAM WECHSELN"
+    "switch-team": "↻  TEAM WECHSELN"
   },
   "matchmaking": {
     "searching": "SUCHE GEGNER",
@@ -212,8 +217,8 @@
       "skipped": "Übersprungen",
       "stunned": "Betäubt",
       "dead": "Tot",
-      "no-targets": "? Keine Ziele in Reichweite!",
-      "death": "?? {name} ist gefallen (Runde {round})",
+      "no-targets": "⚠ Keine Ziele in Reichweite!",
+      "death": "✖ {name} ist gefallen (Runde {round})",
       "damage": "{name} erleidet {amount} Schaden (HP {hp})",
       "heal": "{name} heilt {amount} HP"
     },
@@ -269,7 +274,7 @@
       "shield": "Schild"
     },
     "role-abbr": {
-      "king": "K?N",
+      "king": "KÖN",
       "warrior": "KRG",
       "executor": "EXE",
       "specialist": "SPZ"
@@ -514,11 +519,11 @@
       "ranked": {
         "title": "Ranglisten-Arena",
         "desc": "Ranglisten-Turniere (St.100)",
-        "locked-desc": "Verf?gbar ab St.100"
+        "locked-desc": "Verfügbar ab St.100"
       },
       "pvp": {
         "title": "PvP-Kampf",
-        "desc": "Tritt gegen Spieler ?hnlicher Stufe an"
+        "desc": "Tritt gegen Spieler ähnlicher Stufe an"
       },
       "pve-battle": {
         "title": "PvE-Kampf",
@@ -535,11 +540,17 @@
     }
   },
   "skin-picker": {
-    "title": "SKIN W?HLEN",
-    "locked-hint": "{count} Skin(s) gesperrt ? im Shop kaufen",
-    "all-unlocked-hint": "Alle Skins freigeschaltet ? zum Ausr?sten tippen",
-    "equipped": "?  AUSGER?STET",
-    "equip": "AUSR?STEN",
-    "in-shop": "IM SHOP"
+    "title": "SKIN WÄHLEN",
+    "locked-hint": "{count} Skin(s) gesperrt · im Shop kaufen",
+    "all-unlocked-hint": "Alle Skins freigeschaltet · zum Ausrüsten tippen",
+    "equipped": "✓  AUSGERÜSTET",
+    "equip": "AUSRÜSTEN",
+    "in-shop": "IM SHOP",
+    "role": {
+      "king": "KÖNIG",
+      "warrior": "KRIEGER",
+      "specialist": "SPEZIALIST",
+      "executor": "VOLLSTRECKER"
+    }
   }
 }

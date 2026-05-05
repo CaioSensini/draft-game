@@ -37,7 +37,7 @@
     "rei": "King"
   },
   "ranked-display": {
-    "placement": "? Unknown ({count}/3 tournaments to qualify)"
+    "placement": "Unknown ({count}/3 tournaments to qualify)"
   },
   "skill-card": {
     "categories": {

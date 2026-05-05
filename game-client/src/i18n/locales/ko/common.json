@@ -28,83 +28,83 @@
     "upgrade-action-broke": "Lv {level} · {cost}골"
   },
   "ranked-tiers": {
-    "desconhecido": "? ? ??",
-    "recruta": "??",
-    "aprendiz": "??",
-    "soldado": "??",
-    "veterano": "???",
-    "comandante": "???",
-    "rei": "?"
+    "desconhecido": "알 수 없음",
+    "recruta": "신병",
+    "aprendiz": "수련생",
+    "soldado": "병사",
+    "veterano": "베테랑",
+    "comandante": "지휘관",
+    "rei": "왕"
   },
   "ranked-display": {
-    "placement": "? ? ? ?? ({count}/3 ???? ? ??)"
+    "placement": "알 수 없음 ({count}/3 토너먼트로 분류)"
   },
   "skill-card": {
     "categories": {
-      "attack": "??",
-      "defense": "??"
+      "attack": "공격",
+      "defense": "방어"
     },
     "stats": {
-      "damage": "??",
-      "heal": "??",
-      "shield": "???",
-      "evade": "??",
-      "power": "??"
+      "damage": "피해",
+      "heal": "치유",
+      "shield": "보호막",
+      "evade": "회피",
+      "power": "위력"
     },
     "targets": {
-      "single": "??",
-      "self": "??",
-      "ally": "??",
-      "all-allies": "?? ??",
-      "line": "??",
-      "cone": "???",
-      "ring": "??",
-      "area": "??",
-      "tile": "?"
+      "single": "대상",
+      "self": "자신",
+      "ally": "아군",
+      "all-allies": "모든 아군",
+      "line": "직선",
+      "cone": "부채꼴",
+      "ring": "고리",
+      "area": "범위",
+      "tile": "칸"
     },
     "target-details": {
-      "single": "?? ??",
-      "area": "??",
-      "self": "??",
-      "lowest-ally": "?? ??",
-      "all-allies": "?? ??"
+      "single": "단일 대상",
+      "area": "범위",
+      "self": "자신",
+      "lowest-ally": "약한 아군",
+      "all-allies": "모든 아군"
     },
     "detail-labels": {
-      "damage": "??",
-      "heal": "??",
-      "shield": "???",
-      "extra-damage": "?? ??",
-      "extra-heal": "?? ??",
-      "effect": "??",
-      "target": "??"
+      "damage": "피해",
+      "heal": "치유",
+      "shield": "보호막",
+      "extra-damage": "추가 피해",
+      "extra-heal": "추가 치유",
+      "effect": "효과",
+      "target": "대상"
     },
     "effect-labels": {
-      "damage": "??",
-      "area": "??",
-      "heal": "??",
-      "shield": "???",
-      "stun": "??",
-      "snare": "??",
-      "bleed": "??",
-      "burn": "??",
-      "poison": "?",
-      "evade": "??",
-      "reflect": "??",
-      "regen": "??",
-      "mark": "??",
-      "revive": "??",
-      "lifesteal": "??",
-      "true_damage": "?? ??",
-      "cleanse": "??",
-      "purge": "??",
-      "def_up": "+??",
-      "atk_up": "+??",
-      "def_down": "-??",
-      "atk_down": "-??",
-      "double_attack": "??",
-      "silence_defense": "??",
-      "push": "???",
-      "mov_down": "-??"
+      "damage": "피해",
+      "area": "범위",
+      "heal": "치유",
+      "shield": "보호막",
+      "stun": "기절",
+      "snare": "속박",
+      "bleed": "출혈",
+      "burn": "화상",
+      "poison": "중독",
+      "evade": "회피",
+      "reflect": "반사",
+      "regen": "재생",
+      "mark": "표식",
+      "revive": "부활",
+      "lifesteal": "흡혈",
+      "true_damage": "고정 피해",
+      "cleanse": "정화",
+      "purge": "제거",
+      "def_up": "+방어",
+      "atk_up": "+공격",
+      "def_down": "-방어",
+      "atk_down": "-공격",
+      "double_attack": "연속 공격",
+      "silence_defense": "침묵",
+      "push": "밀기",
+      "mov_down": "-이동"
     }
   }
 }

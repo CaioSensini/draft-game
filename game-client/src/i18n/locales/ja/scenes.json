@@ -5,88 +5,93 @@
   "lobby-shared": {
     "your-team": "あなたのチーム",
     "your-badge": "あなた",
-    "your-badge-short": "あなた",
+    "your-badge-short": "自分",
     "team-bonus": "チームボーナス",
     "team-info": "情報",
     "current-badge": "現在",
-    "empty-slot": "空",
+    "empty-slot": "空き",
     "waiting": "待機中…",
     "invite": "招待",
     "change-skin": "スキン変更",
-    "swap": "交換",
+    "swap": "交代",
     "level-range": "レベル範囲",
-    "change-mode": "?????",
+    "change-mode": "モード変更",
     "modes": {
       "solo": "SOLO",
       "duo": "DUO",
       "squad": "SQUAD"
     },
     "mode-bonus": {
-      "solo": "SOLO ? ??????",
-      "duo": "DUO ? +10% XP & Gold",
-      "squad": "SQUAD ? +20% XP & Gold"
+      "solo": "SOLO · ボーナスなし",
+      "duo": "DUO · +10% XP & Gold",
+      "squad": "SQUAD · +20% XP & Gold"
     },
-    "invite-friend": "??????",
-    "room-incomplete": "???????{current}/{max}?",
+    "invite-friend": "フレンドを招待",
+    "room-incomplete": "ルーム未完成 ({current}/{max})",
     "level-short": "Lv {level}",
-    "player-fallback": "?????",
-    "bot": "???",
-    "friend": "????",
+    "player-fallback": "プレイヤー",
+    "bot": "ボット",
+    "friend": "フレンド",
     "invite-modal": {
-      "eyebrow": "????",
-      "title": "??????",
-      "body-solo": "???????????????????????????????",
-      "body-ranked": "?????????????????????????????????",
-      "body-custom": "????????????????????????????????"
+      "eyebrow": "近日公開",
+      "title": "フレンド招待",
+      "body-solo": "招待システムは開発中です。今はSoloモードでプレイしてください。",
+      "body-ranked": "招待システムは開発中です。今はSoloでランクをプレイしてください。",
+      "body-custom": "招待システムは開発中です。今はチームにボットを追加してください。"
     }
   },
   "shop": {
     "title": "ショップ",
-    "all-owned": "すべて所有済み",
+    "all-owned": "全て所持済み",
     "buy": "購入",
-    "unlocked": "解除済み",
+    "unlocked": "アンロック",
     "tabs": {
-      "packs": "???",
-      "skins": "???"
+      "packs": "パック",
+      "skins": "スキン"
     },
     "items": {
-      "defense": "??",
-      "attack": "??",
-      "complete": "??",
+      "defense": "防御",
+      "attack": "攻撃",
+      "complete": "完全",
       "dg-100": "100 DG",
       "dg-500": "500 DG"
     },
     "descriptions": {
-      "one-random-skill": "???????1?",
-      "two-random-skills": "???????2?",
-      "three-random-skills": "???????3?",
-      "premium-skill-pack": "??3 + ??3",
-      "real-money": "??????"
+      "one-random-skill": "ランダムスキル1つ",
+      "two-random-skills": "ランダムスキル2つ",
+      "three-random-skills": "ランダムスキル3つ",
+      "premium-skill-pack": "防御3 + 攻撃3",
+      "real-money": "実通貨"
     },
     "rarity": {
-      "basic": "??",
-      "medium": "??",
-      "advanced": "??",
-      "premium": "?????"
+      "basic": "ベーシック",
+      "medium": "ミドル",
+      "advanced": "アドバンス",
+      "premium": "プレミアム",
+      "default": "クラシック",
+      "common": "コモン",
+      "rare": "レア",
+      "epic": "エピック",
+      "legendary": "レジェンド"
     },
-    "drop-pill": "?{count} ???",
+    "drop-pill": "+{count} スキル",
     "skin-state": {
-      "equipped": "???",
-      "owned": "????"
+      "equipped": "装備中",
+      "owned": "所持済"
     },
     "modal": {
-      "buy-title": "{name}????",
-      "buy-gold": "?? ? {price} GOLD",
-      "buy-dg": "?? ? {price} DG",
-      "insufficient-balance": "????",
-      "pack-body": "{desc} ? ???????{count}??"
+      "buy-title": "{name}を購入しますか？",
+      "buy-gold": "購入 · {price} GOLD",
+      "buy-dg": "購入 · {price} DG",
+      "insufficient-balance": "残高不足",
+      "pack-body": "{desc} · {count}個のランダムスキル。"
     }
   },
   "battle-pass": {
     "title": "バトルパス",
     "season-missions": "シーズンミッション",
-    "buy-premium": "プレミアム入手",
-    "premium-tagline": "プレミアムトラックを解除",
+    "buy-premium": "プレミアム購入",
+    "premium-tagline": "プレミアムトラックを解放",
     "premium-active": "プレミアム有効",
     "premium-thanks": "ご支援ありがとうございます！",
     "complete-chain": "チェーン完了",
@@ -94,90 +99,90 @@
   },
   "ranking": {
     "title": "グローバルランキング",
-    "subtitle": "世界トップのプレイヤー",
+    "subtitle": "世界トッププレイヤー",
     "sort-label": "並び替え",
     "region-label": "地域",
     "table": {
       "player": "プレイヤー",
       "elo": "ELO",
-      "atk-mastery": "攻撃熟練",
-      "def-mastery": "防御熟練",
+      "atk-mastery": "攻熟度",
+      "def-mastery": "防熟度",
       "region": "地域"
     },
     "no-players": "プレイヤーが見つかりません",
     "filters": {
       "elo": "ELO",
-      "attack": "??",
-      "defense": "??",
-      "global": "?????"
+      "attack": "攻撃",
+      "defense": "防御",
+      "global": "グローバル"
     }
   },
   "ranked": {
-    "title": "ランク",
-    "subtitle": "ランクアリーナ",
-    "locked-title": "ランクアリーナ",
+    "title": "ランクド",
+    "subtitle": "ランクドアリーナ",
+    "locked-title": "ランクドアリーナ",
     "locked-body": "レベル100から利用可能",
     "ranks-eyebrow": "ランク",
     "queue": {
-      "duo": "DUO"
+      "duo": "デュオ"
     },
-    "start-battle": "?????",
+    "start-battle": "戦闘開始",
     "info": {
-      "real-player-tournament": "??????8????????",
-      "double-elimination": "???????????????????",
-      "lp-placement": "?????LP???1??8??"
+      "real-player-tournament": "実プレイヤー8人のトーナメント",
+      "double-elimination": "ダブルエリミ：敗者は敗者同士で戦う",
+      "lp-placement": "最終順位に基づくLP（1位～8位）"
     }
   },
   "bracket": {
     "live": "ライブ",
     "champion": "チャンピオン",
-    "you-won": "勝利！"
+    "you-won": "あなたの勝利！"
   },
   "pvp": {
     "title": "PVP",
     "subtitle": "バトル",
-    "squad-incomplete": "スカッドを完成させるためにあと1人招待",
-    "search-opponents": "???????",
+    "squad-incomplete": "スクワッドを揃えるためあと1人招待",
+    "search-opponents": "相手を探す",
     "info": {
-      "no-entry-cost": "???????",
-      "level-matchmaking": "?????????????",
-      "any-team-size": "???????????",
-      "gold-rewards": "???Gold??"
+      "no-entry-cost": "エントリー費用なし",
+      "level-matchmaking": "レベルによるランダムマッチ",
+      "any-team-size": "どのチームサイズでも対戦",
+      "gold-rewards": "勝利でGold報酬"
     }
   },
   "pve": {
     "title": "PVE",
-    "battle-title": "???",
-    "tournament-title": "??????",
-    "start-match": "?????",
-    "cost-format": "??? {cost}G",
+    "battle-title": "バトル",
+    "tournament-title": "トーナメント",
+    "start-match": "マッチ開始",
+    "cost-format": "コスト {cost}G",
     "info": {
-      "smart-bot": "????????????",
-      "gold-bonus": "???Gold????",
-      "eight-team-bracket": "8????????",
-      "scaled-cost": "Gold???????????",
-      "scaled-reward": "??????????"
+      "smart-bot": "あなたのレベルの賢いボット",
+      "gold-bonus": "勝利でGoldボーナス",
+      "eight-team-bracket": "8チームのブラケット",
+      "scaled-cost": "GoldコストはTier毎に変動",
+      "scaled-reward": "ラウンド毎に報酬増加"
     }
   },
   "custom": {
-    "title": "カスタム",
+    "title": "CUSTOM",
     "subtitle": "カスタムマッチ",
-    "blue-team": "????",
-    "red-team": "????",
-    "blue-team-short": "?",
-    "red-team-short": "?",
-    "switch-team": "?  ?????"
+    "blue-team": "青チーム",
+    "red-team": "赤チーム",
+    "blue-team-short": "青",
+    "red-team-short": "赤",
+    "switch-team": "↻  チーム切替"
   },
   "matchmaking": {
-    "searching": "対戦相手を検索中",
-    "queue-time": "待機時間",
+    "searching": "相手を検索中",
+    "queue-time": "キュー時間",
     "tip-eyebrow": "ヒント"
   },
   "battle": {
     "phase": {
       "movement-title-line-1": "ターン",
       "movement-title-line-2": "移動",
-      "movement-sub": "キャラクターを\n動かそう",
+      "movement-sub": "キャラを\n移動",
       "action-title": "アクション",
       "action-sub": "スキルを選択",
       "movement-label": "移動ターン",
@@ -201,37 +206,37 @@
       "round": "ラウンド {round}",
       "round-label-default": "ラウンド 1",
       "header-both": "アクション — 両陣営",
-      "title": "アクション順",
-      "history-button": "履歴を見る",
+      "title": "行動順序",
+      "history-button": "履歴",
       "history-popup-title": "アクション履歴",
-      "history-popup-hint": "外をクリックで閉じる",
+      "history-popup-hint": "外側をクリックで閉じる",
       "wait-indicator": "· · ·",
       "placeholder": "…"
     },
     "log": {
       "skipped": "スキップ",
-      "stunned": "気絶",
-      "dead": "死亡",
-      "no-targets": "? ????????????",
-      "death": "?? {name}?????????{round}?",
-      "damage": "{name}?{amount}?????????HP {hp}?",
-      "heal": "{name}?{amount} HP??"
+      "stunned": "スタン中",
+      "dead": "戦闘不能",
+      "no-targets": "⚠ 範囲内に対象なし！",
+      "death": "✖ {name}が倒れた（ラウンド {round}）",
+      "damage": "{name}に{amount}ダメージ（HP {hp}）",
+      "heal": "{name}が{amount}HP回復"
     },
     "outcome": {
       "victory": "勝利！",
       "defeat": "敗北！",
       "draw": "引き分け！",
       "opponent-forfeit": "相手が降参！",
-      "self-forfeit": "あなたは降参しました！"
+      "self-forfeit": "あなたが降参！"
     },
     "victory-overlay": {
       "reasons": {
-        "king_slain": "王が倒れた",
-        "simultaneous_kings": "同時引き分け",
-        "timeout": "時間切れ",
+        "king_slain": "王を撃破",
+        "simultaneous_kings": "王同時撃破",
+        "timeout": "タイムアップ",
         "forfeit": "降参"
       },
-      "detail-forfeit": "{reason} — 相手は試合を放棄した",
+      "detail-forfeit": "{reason} — 相手が試合を放棄",
       "detail-normal": "{reason} — ラウンド {round}"
     },
     "actions": {
@@ -245,42 +250,42 @@
       "confirmation-eyebrow": "確認",
       "warning-eyebrow": "注意",
       "vote-eyebrow": "投票",
-      "skip-title": "ターンをスキップ？",
-      "skip-body": "このターン、キャラクターは行動しません。",
+      "skip-title": "ターンをスキップしますか？",
+      "skip-body": "このターン、キャラは行動しません。",
       "skip-confirm": "スキップ",
-      "confirm-action-title": "アクションを確認？",
-      "confirm-action-body": "選択したスキルはキューに入り、このターンで解決されます。",
-      "surrender-title": "降参する？",
-      "surrender-body-solo": "降参はランクに影響し、取り消せません。",
-      "surrender-vote-title": "降参に投票？",
-      "surrender-vote-body": "あなたの票は{required}に数えられます。降参にはチーム全員の同意が必要です。",
+      "confirm-action-title": "アクションを確認しますか？",
+      "confirm-action-body": "選択したスキルがキューに入り、このターンで処理されます。",
+      "surrender-title": "降参しますか？",
+      "surrender-body-solo": "マッチ放棄はランクに影響し、取り消せません。",
+      "surrender-vote-title": "降参に投票しますか？",
+      "surrender-vote-body": "あなたの投票は{required}票としてカウント。全員の同意で降参します。",
       "surrender-vote-button": "投票",
       "surrender-confirm": "降参",
       "surrender-button-label": "  降参"
     },
     "status": {
-      "shield-suffix": "盾 +{amount}",
+      "shield-suffix": "SH +{amount}",
       "wall-bonus": "壁 +{pct}%"
     },
     "effect-shorthand": {
       "damage": "ダメージ",
       "area": "範囲",
       "heal": "回復",
-      "shield": "盾"
+      "shield": "シールド"
     },
     "role-abbr": {
-      "king": "?",
-      "warrior": "?",
-      "executor": "?",
-      "specialist": "?"
+      "king": "王",
+      "warrior": "戦士",
+      "executor": "執",
+      "specialist": "専"
     },
     "stats": {
       "atk": "ATK",
       "def": "DEF",
       "mov": "MOV"
     },
-    "round-heading": "???? {round}",
-    "dummy-name": "???{role}"
+    "round-heading": "ラウンド {round}",
+    "dummy-name": "{role}の人形"
   },
   "battle-result": {
     "title": {
@@ -289,18 +294,18 @@
       "draw": "引き分け"
     },
     "reasons": {
-      "king-slain": "王が倒れた",
-      "simultaneous-kings": "同時引き分け",
-      "timeout": "時間切れ",
+      "king-slain": "王を撃破",
+      "simultaneous-kings": "王同時撃破",
+      "timeout": "タイムアップ",
       "forfeit": "降参"
     },
     "opponent-fallback": "相手",
     "sub-meta": "ラウンド {round}  ·  vs {enemy}  ·  {reason}",
     "rewards-header": "報酬",
-    "new-skill": "新しいスキル: {name}！",
-    "next-match": "次の試合",
+    "new-skill": "新スキル：{name}！",
+    "next-match": "次のマッチ",
     "try-again": "再挑戦",
-    "play-again": "もう一度プレイ",
+    "play-again": "もう一度",
     "back-to-lobby": "ロビーへ戻る",
     "xp": {
       "level-current": "レベル {level}",
@@ -311,43 +316,43 @@
   },
   "deck-build": {
     "title": "デッキ構築",
-    "subtitle": "各クラスのグループごとに2枚のカードを選択。",
+    "subtitle": "各クラスにつきグループから2枚を選択。",
     "difficulty-eyebrow": "難易度",
     "difficulty": {
-      "easy": "簡単",
-      "normal": "ノーマル",
+      "easy": "易しい",
+      "normal": "普通",
       "hard": "難しい"
     },
     "groups": {
       "attack1": "攻撃 · ダメージ",
       "attack2": "攻撃 · 制御",
-      "defense1": "防御 · 強",
+      "defense1": "防御 · 重",
       "defense2": "防御 · 軽",
-      "attack1-tooltip": "攻撃 - ダメージ",
-      "attack2-tooltip": "攻撃 - 制御",
-      "defense1-tooltip": "防御 - 強",
-      "defense2-tooltip": "防御 - 軽"
+      "attack1-tooltip": "攻撃 — ダメージ",
+      "attack2-tooltip": "攻撃 — 制御",
+      "defense1-tooltip": "防御 — 重",
+      "defense2-tooltip": "防御 — 軽"
     },
     "targets": {
-      "single": "対象: 敵1体",
-      "self": "対象: 自身",
-      "lowest_ally": "対象: HP最少の味方",
-      "all_allies": "対象: 味方全員",
-      "area": "対象: 3x3範囲"
+      "single": "対象：敵1体",
+      "self": "対象：自身",
+      "lowest_ally": "対象：HP最少の味方",
+      "all_allies": "対象：全味方",
+      "area": "対象：3x3範囲"
     },
     "tooltip": {
-      "power-with": "威力 {power}",
-      "power-none": "威力 —",
+      "power-with": "パワー {power}",
+      "power-none": "パワー —",
       "target-prefix": "対象 · {target}"
     },
     "footer": {
       "deck-label": "デッキ",
-      "atk-label": "攻",
-      "def-label": "防",
+      "atk-label": "ATK",
+      "def-label": "DEF",
       "empty-slot": "—",
-      "power-prefix": "威力 {power}",
-      "shortcuts": "ショートカット · 1-4選択 · Tabクラス切替 · Enterプレイ",
-      "progress": "ユニット準備完了 · {done} / 4    各列で2枚ずつ選択"
+      "power-prefix": "PWR {power}",
+      "shortcuts": "ショートカット · 1-4 選択 · Tab クラス切替 · Enter プレイ",
+      "progress": "ユニット準備 · {done} / 4    各列から2枚選択"
     },
     "buttons": {
       "random": "ランダム",
@@ -357,10 +362,10 @@
     },
     "tab-ready-suffix": "{role} ✓",
     "passives": {
-      "king": "パッシブ: 王の保護 — 毎ターン盾が更新、被ダメージ-15%。",
-      "warrior": "パッシブ: 守護者 — 隣接する味方は被ダメージ-15%軽減。",
-      "specialist": "パッシブ: 燃焼 — 攻撃で敵の回復を1ターン20%減少。",
-      "executor": "パッシブ: 孤立 — 隣接者がいない時、ダメージ+15%。"
+      "king": "パッシブ：王の守護 — 毎ターン盾再生、被ダメ-15%。",
+      "warrior": "パッシブ：守護者 — 隣接味方の被ダメ-15%軽減。",
+      "specialist": "パッシブ：火傷 — 攻撃で敵の回復-20%（1ターン）。",
+      "executor": "パッシブ：孤立 — 隣接者なしで+15%ダメ。"
     }
   },
   "lobby": {
@@ -379,56 +384,56 @@
       "rewards-max": "報酬MAX"
     },
     "offline": {
-      "title": "チームレイド",
+      "title": "チームへの攻撃",
       "subtitle": "オフライン",
       "popup-eyebrow": "近日公開",
-      "popup-body": "チームレイドシステム"
+      "popup-body": "チーム襲撃システム"
     },
     "sound-toggle": {
-      "on": "音声",
-      "muted": "ミュート"
+      "on": "音",
+      "muted": "無音"
     },
-    "news-ticker": "     Draft Gameへようこそ！  •  ショップに新しいパック！  •  PvPバトル解禁！  •  訓練モード利用可能！     "
+    "news-ticker": "     Draft Gameへようこそ！  •  ショップに新パック！  •  PvPバトル開放！  •  訓練可能！     "
   },
   "login": {
     "tab": {
       "login": "ログイン",
-      "register": "登録"
+      "register": "新規登録"
     },
-    "title-login": "サインイン",
+    "title-login": "ログイン",
     "title-register": "アカウント作成",
-    "submit-login": "サインイン",
+    "submit-login": "ログイン",
     "submit-register": "アカウント作成",
     "fields": {
-      "username-label": "ユーザー",
-      "username-placeholder": "Nick",
+      "username-label": "ユーザー名",
+      "username-placeholder": "ニックネーム",
       "password-label": "パスワード",
       "password-placeholder": "••••••••",
       "email-label": "メール",
       "email-placeholder": "you@example.com",
       "register-password-hint": "6文字以上"
     },
-    "remember-me": "ログイン状態を保持",
-    "forgot-password": "パスワードをお忘れ？",
+    "remember-me": "記憶する",
+    "forgot-password": "パスワードをお忘れですか？",
     "verify": {
       "eyebrow": "認証",
-      "title": "メールコード",
-      "body": "6桁のコードがメールに送信されました。\n下に入力してください。",
+      "title": "メール認証コード",
+      "body": "6桁の認証コードを\nメールに送信しました。",
       "code-label": "コード",
       "code-placeholder": "000000",
-      "submit": "認証",
-      "resend": "コードを再送信",
+      "submit": "確認",
+      "resend": "コードを再送",
       "sending": "送信中…"
     }
   },
   "menu": {
     "title": "DRAFT",
     "subtitle": "戦術バトル",
-    "studio-credit": "Codeforje VIO 制作",
+    "studio-credit": "by Codeforje VIO",
     "studio-name": "Codeforje VIO",
-    "tagline-1": "戦略。戦術。征服。",
-    "tagline-2": "デッキを構築し、4対4のバトルで敵の王を倒せ",
-    "hint": "クリックして入る",
+    "tagline-1": "戦略・戦術・征服。",
+    "tagline-2": "デッキを組み4対4で敵の王を倒せ",
+    "hint": "クリックして開始",
     "version-tag": "v1.0"
   },
   "profile": {
@@ -438,9 +443,9 @@
       "wins": "勝利",
       "losses": "敗北",
       "win-rate": "勝率",
-      "gold": "ゴールド",
+      "gold": "GOLD",
       "dg": "DG",
-      "ranked-points": "ランクポイント"
+      "ranked-points": "ランクド・ポイント"
     },
     "mastery-eyebrow": "熟練度",
     "mastery": {
@@ -451,26 +456,26 @@
   "skill-upgrade": {
     "title": "スキル管理",
     "deck-section": {
-      "header": "装備中のスキル",
+      "header": "装備中スキル",
       "equipped-counter": "{equipped} / 8",
-      "empty-slot": "空",
+      "empty-slot": "空き",
       "slots": {
-        "atk1": "攻 1",
-        "atk2": "攻 2",
-        "def1": "防 1",
-        "def2": "防 2"
+        "atk1": "ATK 1",
+        "atk2": "ATK 2",
+        "def1": "DEF 1",
+        "def2": "DEF 2"
       }
     },
     "inventory-section": {
       "header": "インベントリ",
       "hint": "クリックまたはドラッグで装備",
-      "all-equipped": "すべて装備済み",
+      "all-equipped": "全て装備中",
       "owned-counter": "{owned} / {max}"
     },
     "groups": {
       "attack1": "攻撃 · ダメージ",
       "attack2": "攻撃 · 制御",
-      "defense1": "防御 · 強",
+      "defense1": "防御 · 重",
       "defense2": "防御 · 軽"
     },
     "level-up-banner": "レベルアップ！"
@@ -478,12 +483,12 @@
   "settings": {
     "title": "設定",
     "sections": {
-      "audio": "サウンド",
+      "audio": "オーディオ",
       "language": "言語",
       "account": "アカウント"
     },
     "audio": {
-      "sound-label": "サウンド",
+      "sound-label": "音",
       "sound-on": "効果音オン",
       "sound-off": "効果音オフ"
     },
@@ -501,48 +506,54 @@
     "logout-modal": {
       "title": "ログアウト",
       "body": "王国から切断されます。続行しますか？",
-      "confirm": "ログアウト"
+      "confirm": "ログアウトする"
     },
     "footer": {
-      "credits": "Draft Game v1.0  ·  Caio Sensini 制作"
+      "credits": "Draft Game v1.0  ·  by Caio Sensini"
     }
   },
   "play-modes": {
     "sections": {
       "pvp": "PVP",
       "pve": "PVE",
-      "creation": "??"
+      "creation": "作成"
     },
     "modes": {
       "ranked": {
-        "title": "???????",
-        "desc": "??????????Lv.100?",
-        "locked-desc": "Lv.100??????"
+        "title": "ランクドアリーナ",
+        "desc": "ランクド・トーナメント (Lv.100)",
+        "locked-desc": "Lv.100から利用可能"
       },
       "pvp": {
-        "title": "PvP???",
-        "desc": "??????????????"
+        "title": "PvPバトル",
+        "desc": "同レベルのプレイヤーと対戦"
       },
       "pve-battle": {
-        "title": "PvE???",
-        "desc": "???????????????"
+        "title": "PvEバトル",
+        "desc": "同レベルの賢いボットと対戦"
       },
       "pve-tournament": {
-        "title": "PvE??????",
-        "desc": "??????????"
+        "title": "PvEトーナメント",
+        "desc": "レベル帯のブラケット"
       },
       "custom": {
-        "title": "???????",
-        "desc": "??????????????"
+        "title": "カスタムマッチ",
+        "desc": "フレンドとボットでチーム編成"
       }
     }
   },
   "skin-picker": {
-    "title": "?????",
-    "locked-hint": "{count}?????????? ? ???????",
-    "all-unlocked-hint": "???????????? ? ??????",
-    "equipped": "?  ???",
-    "equip": "??",
-    "in-shop": "????"
+    "title": "スキン選択",
+    "locked-hint": "{count}個のスキンがロック中 · ショップで購入",
+    "all-unlocked-hint": "全スキン解放済 · タップで装備",
+    "equipped": "✓  装備中",
+    "equip": "装備",
+    "in-shop": "ショップ",
+    "role": {
+      "king": "王",
+      "warrior": "戦士",
+      "specialist": "スペシャリスト",
+      "executor": "執行者"
+    }
   }
 }

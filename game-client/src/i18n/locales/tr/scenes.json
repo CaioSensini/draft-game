@@ -15,29 +15,29 @@
     "change-skin": "SKİN DEĞİŞTİR",
     "swap": "DEĞİŞTİR",
     "level-range": "SEVİYE ARALIĞI",
-    "change-mode": "MOD DE???T?R",
+    "change-mode": "MOD DEĞİŞTİR",
     "modes": {
       "solo": "SOLO",
       "duo": "DUO",
       "squad": "SQUAD"
     },
     "mode-bonus": {
-      "solo": "SOLO ? bonus yok",
-      "duo": "DUO ? +10% XP & Gold",
-      "squad": "SQUAD ? +20% XP & Gold"
+      "solo": "SOLO · bonus yok",
+      "duo": "DUO · +10% XP & Gold",
+      "squad": "SQUAD · +20% XP & Gold"
     },
-    "invite-friend": "ARKADA? DAVET ET",
-    "room-incomplete": "ODA EKS?K ({current}/{max})",
+    "invite-friend": "ARKADAŞ DAVET ET",
+    "room-incomplete": "ODA EKSİK ({current}/{max})",
     "level-short": "SV {level}",
     "player-fallback": "Oyuncu",
     "bot": "Bot",
     "friend": "Arkada?",
     "invite-modal": {
       "eyebrow": "YAKINDA",
-      "title": "ARKADA? DAVET?",
-      "body-solo": "Davet sistemi geli?tiriliyor. ?imdilik Solo modunu kullan.",
-      "body-ranked": "Davet sistemi geli?tiriliyor. ?imdilik ranked i?in Solo oyna.",
-      "body-custom": "Davet sistemi geli?tiriliyor. ?imdilik tak?m?na bot ekle."
+      "title": "ARKADAŞ DAVETİ",
+      "body-solo": "Davet sistemi geliştiriliyor. Şimdilik Solo modunu kullan.",
+      "body-ranked": "Davet sistemi geliştiriliyor. Şimdilik ranked için Solo oyna.",
+      "body-custom": "Davet sistemi geliştiriliyor. Şimdilik takımına bot ekle."
     }
   },
   "shop": {
@@ -51,7 +51,7 @@
     },
     "items": {
       "defense": "Savunma",
-      "attack": "Sald?r?",
+      "attack": "Saldırı",
       "complete": "Tam",
       "dg-100": "100 DG",
       "dg-500": "500 DG"
@@ -60,26 +60,31 @@
       "one-random-skill": "1 rastgele skill",
       "two-random-skills": "2 rastgele skill",
       "three-random-skills": "3 rastgele skill",
-      "premium-skill-pack": "3 savunma + 3 sald?r?",
-      "real-money": "Ger?ek para"
+      "premium-skill-pack": "3 savunma + 3 saldırı",
+      "real-money": "Gerçek para"
     },
     "rarity": {
       "basic": "TEMEL",
       "medium": "ORTA",
-      "advanced": "GEL??M??",
-      "premium": "PREMIUM"
+      "advanced": "GELİŞMİŞ",
+      "premium": "PREMİUM",
+      "default": "KLASİK",
+      "common": "SIRADAN",
+      "rare": "NADİR",
+      "epic": "EFSANEVİ",
+      "legendary": "EFSANE"
     },
-    "drop-pill": "?{count} SKILL",
+    "drop-pill": "+{count} SKILL",
     "skin-state": {
-      "equipped": "KU?ANILDI",
+      "equipped": "KUŞANILDI",
       "owned": "ALINDI"
     },
     "modal": {
-      "buy-title": "{name} sat?n al?ns?n m??",
-      "buy-gold": "SATIN AL ? {price} GOLD",
-      "buy-dg": "SATIN AL ? {price} DG",
-      "insufficient-balance": "YETERS?Z BAK?YE",
-      "pack-body": "{desc} ? {count} rastgele skill."
+      "buy-title": "{name} satın alınsın mı?",
+      "buy-gold": "SATIN AL · {price} GOLD",
+      "buy-dg": "SATIN AL · {price} DG",
+      "insufficient-balance": "YETERSİZ BAKİYE",
+      "pack-body": "{desc} · {count} rastgele skill."
     }
   },
   "battle-pass": {
@@ -121,11 +126,11 @@
     "queue": {
       "duo": "DUO"
     },
-    "start-battle": "SAVA?I BA?LAT",
+    "start-battle": "SAVAŞI BAŞLAT",
     "info": {
-      "real-player-tournament": "8 ger?ek oyunculu turnuva",
-      "double-elimination": "?ifte eleme: kaybedenler kendi aras?nda oynar",
-      "lp-placement": "LP final s?ras?na g?re (1-8)"
+      "real-player-tournament": "8 gerçek oyunculu turnuva",
+      "double-elimination": "Çifte eleme: kaybedenler kendi arasında oynar",
+      "lp-placement": "LP final sırasına göre (1-8)"
     }
   },
   "bracket": {
@@ -137,36 +142,36 @@
     "title": "PVP",
     "subtitle": "SAVAŞ",
     "squad-incomplete": "Squad'ı tamamlamak için 1 oyuncu daha davet et",
-    "search-opponents": "RAK?P ARA",
+    "search-opponents": "RAKİP ARA",
     "info": {
-      "no-entry-cost": "Giri? ?creti yok",
-      "level-matchmaking": "Seviyeye g?re rastgele e?le?me",
-      "any-team-size": "Her tak?m boyutuyla e?le?ir",
-      "gold-rewards": "Zafer i?in Gold ?d?l?"
+      "no-entry-cost": "Giriş ücreti yok",
+      "level-matchmaking": "Seviyeye göre rastgele eşleşme",
+      "any-team-size": "Her takım boyutuyla eşleşir",
+      "gold-rewards": "Zafer için Gold ödülü"
     }
   },
   "pve": {
     "title": "PVE",
     "battle-title": "SAVA?",
     "tournament-title": "TURNUVA",
-    "start-match": "MA?I BA?LAT",
-    "cost-format": "?CRET {cost}G",
+    "start-match": "MAÇI BAŞLAT",
+    "cost-format": "ÜCRET {cost}G",
     "info": {
-      "smart-bot": "Seviyendeki ak?ll? bot",
-      "gold-bonus": "Zafer i?in Gold bonusu",
-      "eight-team-bracket": "8 tak?ml? e?le?me",
-      "scaled-cost": "Gold ?creti aral??a g?re de?i?ir",
-      "scaled-reward": "?d?l raunta g?re artar"
+      "smart-bot": "Seviyendeki akıllı bot",
+      "gold-bonus": "Zafer için Gold bonusu",
+      "eight-team-bracket": "8 takımlı eşleşme",
+      "scaled-cost": "Gold ücreti aralığa göre değişir",
+      "scaled-reward": "Ödül raunta göre artar"
     }
   },
   "custom": {
     "title": "ÖZEL",
     "subtitle": "ÖZEL MAÇ",
-    "blue-team": "MAV? TAKIM",
+    "blue-team": "MAVİ TAKIM",
     "red-team": "KIRMIZI TAKIM",
     "blue-team-short": "MAV?",
     "red-team-short": "KIRM",
-    "switch-team": "?  TAKIM DE???T?R"
+    "switch-team": "↻  TAKIM DEĞİŞTİR"
   },
   "matchmaking": {
     "searching": "RAKİP ARANIYOR",
@@ -212,10 +217,10 @@
       "skipped": "Atladı",
       "stunned": "Sersem",
       "dead": "Ölü",
-      "no-targets": "? Menzilde hedef yok!",
-      "death": "?? {name} ?ld? (Raunt {round})",
-      "damage": "{name} {amount} hasar al?r (HP {hp})",
-      "heal": "{name} {amount} HP iyile?tirir"
+      "no-targets": "⚠ Menzilde hedef yok!",
+      "death": "✖ {name} öldü (Raunt {round})",
+      "damage": "{name} {amount} hasar alır (HP {hp})",
+      "heal": "{name} {amount} HP iyileştirir"
     },
     "outcome": {
       "victory": "Zafer!",
@@ -271,7 +276,7 @@
     "role-abbr": {
       "king": "KRL",
       "warrior": "SV?",
-      "executor": "?NF",
+      "executor": "İNF",
       "specialist": "UZM"
     },
     "stats": {
@@ -511,38 +516,44 @@
     "sections": {
       "pvp": "PVP",
       "pve": "PVE",
-      "creation": "OLU?TURMA"
+      "creation": "OLUŞTURMA"
     },
     "modes": {
       "ranked": {
         "title": "Ranked Arena",
         "desc": "Ranked turnuvalar (Sv.100)",
-        "locked-desc": "Sv.100?den itibaren a??k"
+        "locked-desc": "Sv.100'den itibaren açık"
       },
       "pvp": {
-        "title": "PvP Sava??",
+        "title": "PvP Savaşı",
         "desc": "Benzer seviyedeki oyuncularla sava?"
       },
       "pve-battle": {
-        "title": "PvE Sava??",
-        "desc": "Seviyendeki ak?ll? botla sava?"
+        "title": "PvE Savaşı",
+        "desc": "Seviyendeki akıllı botla savaş"
       },
       "pve-tournament": {
         "title": "PvE Turnuvas?",
-        "desc": "Seviye aral???na g?re e?le?me"
+        "desc": "Seviye aralığına göre eşleşme"
       },
       "custom": {
-        "title": "?zel Ma?",
-        "desc": "Arkada?lar ve botlarla tak?m kur"
+        "title": "Özel Maç",
+        "desc": "Arkadaşlar ve botlarla takım kur"
       }
     }
   },
   "skin-picker": {
     "title": "SKIN SE?",
-    "locked-hint": "{count} skin kilitli ? ma?azadan sat?n al",
-    "all-unlocked-hint": "T?m skinler a??k ? ku?anmak i?in dokun",
-    "equipped": "?  KU?ANILDI",
-    "equip": "KU?AN",
-    "in-shop": "MA?AZADA"
+    "locked-hint": "{count} skin kilitli · mağazadan satın al",
+    "all-unlocked-hint": "Tüm skinler açık · kuşanmak için dokun",
+    "equipped": "✓  KUŞANILDI",
+    "equip": "KUŞAN",
+    "in-shop": "MAĞAZADA",
+    "role": {
+      "king": "KRAL",
+      "warrior": "SAVAŞÇI",
+      "specialist": "UZMAN",
+      "executor": "İNFAZCI"
+    }
   }
 }

@@ -22,9 +22,9 @@
       "squad": "SQUAD"
     },
     "mode-bonus": {
-      "solo": "SOLO ? sin bonificaci?n",
-      "duo": "DUO ? +10% XP & Gold",
-      "squad": "SQUAD ? +20% XP & Gold"
+      "solo": "SOLO · sin bonus",
+      "duo": "DUO · +10% XP y Oro",
+      "squad": "SQUAD · +20% XP y Oro"
     },
     "invite-friend": "INVITAR AMIGO",
     "room-incomplete": "SALA INCOMPLETA ({current}/{max})",
@@ -33,11 +33,11 @@
     "bot": "Bot",
     "friend": "Amigo",
     "invite-modal": {
-      "eyebrow": "PR?XIMAMENTE",
-      "title": "INVITACI?N DE AMIGO",
-      "body-solo": "El sistema de invitaciones est? en desarrollo. Por ahora, usa el modo Solo para jugar.",
-      "body-ranked": "El sistema de invitaciones est? en desarrollo. Por ahora, usa Solo para jugar ranked.",
-      "body-custom": "El sistema de invitaciones est? en desarrollo. Por ahora, a?ade bots a tu equipo."
+      "eyebrow": "PRÓXIMAMENTE",
+      "title": "INVITACIÓN DE AMIGO",
+      "body-solo": "El sistema de invitaciones está en desarrollo. Por ahora, usa el modo Solo para jugar.",
+      "body-ranked": "El sistema de invitaciones está en desarrollo. Por ahora, usa el modo Solo para jugar clasificatorias.",
+      "body-custom": "El sistema de invitaciones está en desarrollo. Por ahora, añade bots a tu equipo."
     }
   },
   "shop": {
@@ -57,29 +57,34 @@
       "dg-500": "500 DG"
     },
     "descriptions": {
-      "one-random-skill": "1 skill aleatoria",
-      "two-random-skills": "2 skills aleatorias",
-      "three-random-skills": "3 skills aleatorias",
+      "one-random-skill": "1 habilidad aleatoria",
+      "two-random-skills": "2 habilidades aleatorias",
+      "three-random-skills": "3 habilidades aleatorias",
       "premium-skill-pack": "3 defensa + 3 ataque",
       "real-money": "Dinero real"
     },
     "rarity": {
-      "basic": "B?SICO",
+      "basic": "BÁSICO",
       "medium": "MEDIO",
       "advanced": "AVANZADO",
-      "premium": "PREMIUM"
+      "premium": "PREMIUM",
+      "default": "CLÁSICO",
+      "common": "COMÚN",
+      "rare": "RARO",
+      "epic": "ÉPICO",
+      "legendary": "LEGENDARIO"
     },
-    "drop-pill": "?{count} SKILLS",
+    "drop-pill": "+{count} HABILIDADES",
     "skin-state": {
       "equipped": "EQUIPADA",
       "owned": "ADQUIRIDA"
     },
     "modal": {
-      "buy-title": "?Comprar {name}?",
-      "buy-gold": "COMPRAR ? {price} GOLD",
-      "buy-dg": "COMPRAR ? {price} DG",
+      "buy-title": "¿Comprar {name}?",
+      "buy-gold": "COMPRAR · {price} ORO",
+      "buy-dg": "COMPRAR · {price} DG",
       "insufficient-balance": "SALDO INSUFICIENTE",
-      "pack-body": "{desc} ? {count} skill(s) aleatoria(s)."
+      "pack-body": "{desc} · {count} habilidad(es) aleatoria(s)."
     }
   },
   "battle-pass": {
@@ -124,8 +129,8 @@
     "start-battle": "INICIAR BATALLA",
     "info": {
       "real-player-tournament": "Torneo entre 8 jugadores reales",
-      "double-elimination": "Doble eliminaci?n: perdedores juegan entre s?",
-      "lp-placement": "LP seg?n posici?n final (1.? a 8.?)"
+      "double-elimination": "Doble eliminación: perdedores juegan entre sí",
+      "lp-placement": "LP basado en posición final (1.º al 8.º)"
     }
   },
   "bracket": {
@@ -140,9 +145,9 @@
     "search-opponents": "BUSCAR OPONENTES",
     "info": {
       "no-entry-cost": "Sin costo de entrada",
-      "level-matchmaking": "Matchmaking aleatorio por nivel",
-      "any-team-size": "Enfrenta cualquier tama?o de equipo",
-      "gold-rewards": "Recompensas de Gold por victoria"
+      "level-matchmaking": "Emparejamiento aleatorio por nivel",
+      "any-team-size": "Enfrenta cualquier tamaño de equipo",
+      "gold-rewards": "Recompensas de Oro por victoria"
     }
   },
   "pve": {
@@ -153,9 +158,9 @@
     "cost-format": "COSTO {cost}G",
     "info": {
       "smart-bot": "Bot inteligente de tu nivel",
-      "gold-bonus": "Bono de Gold por victoria",
+      "gold-bonus": "Bonificación de Oro por victoria",
       "eight-team-bracket": "Llave de 8 equipos",
-      "scaled-cost": "El costo en Gold var?a por rango",
+      "scaled-cost": "El costo en Gold varía por rango",
       "scaled-reward": "Recompensa escalada por ronda"
     }
   },
@@ -166,7 +171,7 @@
     "red-team": "EQUIPO ROJO",
     "blue-team-short": "AZUL",
     "red-team-short": "ROJO",
-    "switch-team": "?  CAMBIAR EQUIPO"
+    "switch-team": "↻  CAMBIAR DE EQUIPO"
   },
   "matchmaking": {
     "searching": "BUSCANDO ADVERSARIO",
@@ -212,9 +217,9 @@
       "skipped": "Saltó",
       "stunned": "Aturdido",
       "dead": "Muerto",
-      "no-targets": "? ?No hay objetivos al alcance!",
-      "death": "?? {name} muri? (Ronda {round})",
-      "damage": "{name} recibe {amount} de da?o (HP {hp})",
+      "no-targets": "⚠ ¡Sin objetivos al alcance!",
+      "death": "✖ {name} murió (Ronda {round})",
+      "damage": "{name} recibe {amount} de daño (HP {hp})",
       "heal": "{name} cura {amount} HP"
     },
     "outcome": {
@@ -280,7 +285,7 @@
       "mov": "MOV"
     },
     "round-heading": "RONDA {round}",
-    "dummy-name": "Mu?eco {role}"
+    "dummy-name": "Muñeco {role}"
   },
   "battle-result": {
     "title": {
@@ -508,25 +513,25 @@
     "sections": {
       "pvp": "PVP",
       "pve": "PVE",
-      "creation": "CREACI?N"
+      "creation": "CREACIÓN"
     },
     "modes": {
       "ranked": {
         "title": "Arena Ranked",
         "desc": "Torneos ranked (Nv.100)",
-        "locked-desc": "Disponible desde Nv.100"
+        "locked-desc": "Disponible a partir del Nv.100"
       },
       "pvp": {
         "title": "Batalla PvP",
-        "desc": "Enfrenta jugadores de nivel similar"
+        "desc": "Enfréntate a jugadores de tu nivel"
       },
       "pve-battle": {
         "title": "Batalla PvE",
-        "desc": "Enfrenta un bot inteligente de tu nivel"
+        "desc": "Enfréntate a un bot inteligente de tu nivel"
       },
       "pve-tournament": {
         "title": "Torneo PvE",
-        "desc": "Llave por rango de nivel"
+        "desc": "Cuadro por rango de nivel"
       },
       "custom": {
         "title": "Partida personalizada",
@@ -536,10 +541,16 @@
   },
   "skin-picker": {
     "title": "ELEGIR SKIN",
-    "locked-hint": "{count} skin(s) bloqueada(s) ? c?mpralas en la tienda",
-    "all-unlocked-hint": "Todas las skins desbloqueadas ? toca para equipar",
-    "equipped": "?  EQUIPADA",
+    "locked-hint": "{count} skin(s) bloqueada(s) · cómpralas en la tienda",
+    "all-unlocked-hint": "Todas las skins desbloqueadas · toca para equipar",
+    "equipped": "✓  EQUIPADA",
     "equip": "EQUIPAR",
-    "in-shop": "EN TIENDA"
+    "in-shop": "EN TIENDA",
+    "role": {
+      "king": "REY",
+      "warrior": "GUERRERO",
+      "specialist": "ESPECIALISTA",
+      "executor": "EJECUTOR"
+    }
   }
 }
