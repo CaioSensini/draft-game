@@ -1191,28 +1191,20 @@ export default class LobbyScene extends Phaser.Scene {
       const glyphColor = isMastery ? TREASURE.border : (palette?.border ?? TREASURE.border)
       const glyphAlpha = 0.95
       const iconGfx = this.add.graphics()
-      iconGfx.lineStyle(2.2, glyphColor, glyphAlpha)
-      iconGfx.fillStyle(glyphColor, glyphAlpha)
 
+      // Sword (attack) and shield (defense) reuse the shop's medieval
+      // drawings so the iconography stays consistent across the game.
+      // Trophy and gem stay inline since they have no shop equivalent.
       switch (f.icon) {
         case 'sword':
-          iconGfx.lineBetween(iconX - 7, rowY + 7, iconX + 7, rowY - 7)
-          iconGfx.lineBetween(iconX - 9, rowY - 1, iconX - 1, rowY - 9)
-          iconGfx.fillCircle(iconX - 8, rowY + 8, 1.6)
+          drawSwordIcon(iconGfx, iconX, rowY, glyphColor, 0.5)
           break
         case 'shield':
-          iconGfx.beginPath()
-          iconGfx.moveTo(iconX - 7, rowY - 7)
-          iconGfx.lineTo(iconX + 7, rowY - 7)
-          iconGfx.lineTo(iconX + 7, rowY + 1)
-          iconGfx.lineTo(iconX, rowY + 8)
-          iconGfx.lineTo(iconX - 7, rowY + 1)
-          iconGfx.closePath()
-          iconGfx.strokePath()
-          iconGfx.lineBetween(iconX, rowY - 4, iconX, rowY + 4)
-          iconGfx.lineBetween(iconX - 4, rowY - 1, iconX + 4, rowY - 1)
+          drawShieldIcon(iconGfx, iconX, rowY, glyphColor, 0.55)
           break
         case 'trophy':
+          iconGfx.lineStyle(2.2, glyphColor, glyphAlpha)
+          iconGfx.fillStyle(glyphColor, glyphAlpha)
           iconGfx.lineBetween(iconX - 5, rowY - 7, iconX + 5, rowY - 7)
           iconGfx.lineBetween(iconX - 5, rowY - 7, iconX - 4, rowY + 2)
           iconGfx.lineBetween(iconX + 5, rowY - 7, iconX + 4, rowY + 2)
@@ -1223,6 +1215,8 @@ export default class LobbyScene extends Phaser.Scene {
           iconGfx.lineBetween(iconX + 5, rowY - 5, iconX + 8, rowY - 2)
           break
         case 'gem':
+          iconGfx.lineStyle(2.2, glyphColor, glyphAlpha)
+          iconGfx.fillStyle(glyphColor, glyphAlpha)
           iconGfx.beginPath()
           iconGfx.moveTo(iconX, rowY - 8)
           iconGfx.lineTo(iconX + 7, rowY - 1)
