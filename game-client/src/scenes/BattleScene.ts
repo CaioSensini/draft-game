@@ -3283,7 +3283,7 @@ export default class BattleScene extends Phaser.Scene {
     // arrow-left icon replacing the ← unicode glyph.
     const btnX = GRID_X + 108
     const btnY = TOP_BAR_H2 / 2
-    const { container } = UI.buttonGhost(this, btnX, btnY, '  Voltar', {
+    const { container } = UI.buttonGhost(this, btnX, btnY, '  ' + t('common.actions.back-titled'), {
       w: 92, h: 24, depth: 9,
       onPress: () => transitionTo(this, 'LobbyScene'),
     })
