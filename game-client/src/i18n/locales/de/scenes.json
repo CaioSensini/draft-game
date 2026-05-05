@@ -459,7 +459,8 @@
           "desc": "Gib Meisterschaft im Shop für exklusive Gegenstände, Skins und Ressourcen aus"
         },
         "cta": "VERSTANDEN",
-        "preview-line": "Nächstes Ziel · St.{level} · Stärke {power}"
+        "preview-line": "Nächstes Ziel · St.{level} · Stärke {power}",
+        "cta-enter": "BETRETEN"
       }
     },
     "sound-toggle": {

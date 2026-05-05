@@ -11,6 +11,11 @@ import {
 import { PASS_XP_PER_TIER, PASS_MAX_TIER } from '../data/battlePass'
 import { showPlayModesOverlay, type PlayModesOverlayHandle } from '../utils/PlayModesOverlay'
 import { drawSwordIcon, drawShieldIcon } from '../utils/CombatIcons'
+import {
+  buildRaidBattlePayload,
+  findOfflineRaidTargets,
+  isOfflineRaidEnterUnlocked,
+} from '../utils/OfflineRaidMatchmaking'
 import { t } from '../i18n'
 
 // ---- Layout constants (1280 x 720) -----------------------------------------
@@ -1256,67 +1261,101 @@ export default class LobbyScene extends Phaser.Scene {
     // four feature rows alone, which keeps the modal less crowded and
     // pushes the CTA to a more comfortable thumb-reach position.)
 
-    // ── CTA button — drawn manually so the label can use a 20 px font
+    // ── CTA buttons — drawn manually so the label can use a 20 px font
     // (UI.buttonPrimary clamps every variant to typeScale.meta = 11 px,
-    // which read too small on mobile in the playtest). Same surface
-    // language as the design-system button (rounded rect, gold fill,
-    // dark border, tiny shadow) just bigger type. ──
+    // which read too small on mobile). The popup ships TWO CTAs:
+    //   - ENTRAR (left, red attack-themed) — launches the raid right
+    //     away. Disabled when isOfflineRaidEnterUnlocked() returns false
+    //     so the launch-time lock can flip without changing the layout.
+    //   - ENTENDI (right, gold) — dismisses the popup.
     const ctaY = HH - 56
-    const ctaW = 270
+    const ctaW = 230
     const ctaH = 62
+    const ctaGap = 24
 
-    const ctaShadow = this.add.graphics()
-    ctaShadow.fillStyle(0x000000, 0.45)
-    ctaShadow.fillRoundedRect(-ctaW / 2 + 1, ctaY - ctaH / 2 + 4, ctaW, ctaH, 10)
-    popupContainer.add(ctaShadow)
+    /**
+     * Local helper: draws a 230 × 62 themed CTA button (shadow + body +
+     * inset highlight + border + label + hit area + hover/press states).
+     * Returns the hit rect so the caller can override pointerdown.
+     */
+    const buildCta = (
+      cx: number,
+      label: string,
+      fill: number,
+      fillHover: number,
+      labelHex: string,
+      onPress: () => void,
+      enabled = true,
+    ) => {
+      const left = cx - ctaW / 2
+      const top  = ctaY - ctaH / 2
 
-    const ctaBg = this.add.graphics()
-    ctaBg.fillStyle(TREASURE.border, 1)
-    ctaBg.fillRoundedRect(-ctaW / 2, ctaY - ctaH / 2, ctaW, ctaH, 10)
-    ctaBg.fillStyle(0xffffff, 0.10)
-    ctaBg.fillRoundedRect(-ctaW / 2 + 2, ctaY - ctaH / 2 + 2, ctaW - 4, 10,
-      { tl: 8, tr: 8, bl: 0, br: 0 })
-    ctaBg.lineStyle(1, 0x000000, 0.4)
-    ctaBg.strokeRoundedRect(-ctaW / 2, ctaY - ctaH / 2, ctaW, ctaH, 10)
-    popupContainer.add(ctaBg)
+      const shadow = this.add.graphics()
+      shadow.fillStyle(0x000000, 0.45)
+      shadow.fillRoundedRect(left + 1, top + 4, ctaW, ctaH, 10)
+      popupContainer.add(shadow)
 
-    const ctaLabel = this.add.text(0, ctaY,
-      t('scenes.lobby.offline.popup.cta').toUpperCase(), {
+      const bg = this.add.graphics()
+      const drawBg = (hover: boolean, pressed = false) => {
+        bg.clear()
+        const baseAlpha = enabled ? 1 : 0.5
+        bg.fillStyle(hover ? fillHover : fill, baseAlpha)
+        bg.fillRoundedRect(left, top + (pressed ? 1 : 0), ctaW, ctaH, 10)
+        bg.fillStyle(0xffffff, hover ? 0.12 : 0.10)
+        bg.fillRoundedRect(left + 2, top + 2 + (pressed ? 1 : 0), ctaW - 4, 10,
+          { tl: 8, tr: 8, bl: 0, br: 0 })
+        bg.lineStyle(1, 0x000000, 0.4)
+        bg.strokeRoundedRect(left, top + (pressed ? 1 : 0), ctaW, ctaH, 10)
+      }
+      drawBg(false)
+      popupContainer.add(bg)
+
+      const labelObj = this.add.text(cx, ctaY, label.toUpperCase(), {
         fontFamily: fontFamily.body, fontSize: '20px',
-        color: '#1a1408', fontStyle: '900',
+        color: enabled ? labelHex : '#6a7080', fontStyle: '900',
       }).setOrigin(0.5).setLetterSpacing(2.4)
-    popupContainer.add(ctaLabel)
+      popupContainer.add(labelObj)
 
-    const ctaHit = this.add.rectangle(0, ctaY, ctaW, ctaH, 0x000000, 0.001)
-      .setInteractive({ useHandCursor: true })
-    popupContainer.add(ctaHit)
-    ctaHit.on('pointerover', () => {
-      ctaBg.clear()
-      ctaBg.fillStyle(0xfcd34d, 1)  // brighter on hover
-      ctaBg.fillRoundedRect(-ctaW / 2, ctaY - ctaH / 2, ctaW, ctaH, 10)
-      ctaBg.fillStyle(0xffffff, 0.12)
-      ctaBg.fillRoundedRect(-ctaW / 2 + 2, ctaY - ctaH / 2 + 2, ctaW - 4, 10,
-        { tl: 8, tr: 8, bl: 0, br: 0 })
-      ctaBg.lineStyle(1, 0x000000, 0.4)
-      ctaBg.strokeRoundedRect(-ctaW / 2, ctaY - ctaH / 2, ctaW, ctaH, 10)
-    })
-    ctaHit.on('pointerout', () => {
-      ctaBg.clear()
-      ctaBg.fillStyle(TREASURE.border, 1)
-      ctaBg.fillRoundedRect(-ctaW / 2, ctaY - ctaH / 2, ctaW, ctaH, 10)
-      ctaBg.fillStyle(0xffffff, 0.10)
-      ctaBg.fillRoundedRect(-ctaW / 2 + 2, ctaY - ctaH / 2 + 2, ctaW - 4, 10,
-        { tl: 8, tr: 8, bl: 0, br: 0 })
-      ctaBg.lineStyle(1, 0x000000, 0.4)
-      ctaBg.strokeRoundedRect(-ctaW / 2, ctaY - ctaH / 2, ctaW, ctaH, 10)
-    })
-    ctaHit.on('pointerdown', () => {
-      this.tweens.add({
-        targets: ctaLabel, scaleX: 0.95, scaleY: 0.95,
-        duration: 80, yoyo: true, ease: 'Sine.InOut',
-        onComplete: () => this.closePlayModes(),
-      })
-    })
+      const hit = this.add.rectangle(cx, ctaY, ctaW, ctaH, 0x000000, 0.001)
+        .setInteractive({ useHandCursor: enabled })
+      popupContainer.add(hit)
+
+      if (enabled) {
+        hit.on('pointerover', () => drawBg(true))
+        hit.on('pointerout',  () => drawBg(false))
+        hit.on('pointerdown', () => {
+          drawBg(true, true)
+          this.tweens.add({
+            targets: labelObj, scaleX: 0.95, scaleY: 0.95,
+            duration: 80, yoyo: true, ease: 'Sine.InOut',
+            onComplete: () => onPress(),
+          })
+        })
+      }
+
+      return { bg, labelObj, hit }
+    }
+
+    // ENTRAR (primary action — red attack theme).
+    // The matchmaking lookup runs on press so the player sees the latest
+    // closest target every time they enter the raid.
+    buildCta(
+      -ctaW / 2 - ctaGap / 2,
+      t('scenes.lobby.offline.popup.cta-enter'),
+      ATTACK.border, 0xf87171,            // bright red on hover
+      '#ffffff',
+      () => this._launchOfflineRaid(),
+      isOfflineRaidEnterUnlocked(),
+    )
+
+    // ENTENDI (dismiss — gold theme, same as the previous CTA).
+    buildCta(
+      ctaW / 2 + ctaGap / 2,
+      t('scenes.lobby.offline.popup.cta'),
+      TREASURE.border, 0xfcd34d,         // brighter gold on hover
+      '#1a1408',
+      () => this.closePlayModes(),
+    )
 
     // ── Modal entrance animation ──
     this.tweens.add({
@@ -1324,6 +1363,38 @@ export default class LobbyScene extends Phaser.Scene {
       alpha: 1, scaleX: 1, scaleY: 1,
       duration: 280, ease: 'Back.Out',
     })
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // OFFLINE RAID LAUNCH — fired by the popup's "ENTRAR" CTA
+  // ═══════════════════════════════════════════════════════════════════════════
+  //
+  // Looks up the closest-level raid target via the matchmaking utility,
+  // builds the BattleScene payload (PvE-mode + npcTeam + raidTarget tag),
+  // closes the explainer popup and launches the battle. The post-battle
+  // BattleResultScene awards the standard PvE loot plus the raid-specific
+  // Mastery bonus baked into the target's rewardEstimate.
+  //
+  // No-op when matchmaking returns no candidates (shouldn't happen with
+  // the synthesized pool, but guarded for the future server path) or when
+  // the launch button is locked at release time via `isOfflineRaidEnterUnlocked`.
+
+  private _launchOfflineRaid(): void {
+    if (!isOfflineRaidEnterUnlocked()) return
+
+    const targets = findOfflineRaidTargets({
+      localLevel: playerData.getLevel(),
+      limit:      1,
+    })
+    if (targets.length === 0) return
+
+    const payload = buildRaidBattlePayload(targets[0], {
+      deckConfig: playerData.getDeckConfig(),
+      skinConfig: playerData.getSkinConfig(),
+    })
+
+    this.closePlayModes()
+    transitionTo(this, 'BattleScene', payload)
   }
 
   // ═══════════════════════════════════════════════════════════════════════════

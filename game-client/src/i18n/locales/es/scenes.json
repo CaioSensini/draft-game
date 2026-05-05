@@ -459,7 +459,8 @@
           "desc": "Usa Maestría en la Tienda para objetos, skins y recursos exclusivos"
         },
         "cta": "ENTENDIDO",
-        "preview-line": "Próximo objetivo previsto · Nv.{level} · Poder {power}"
+        "preview-line": "Próximo objetivo previsto · Nv.{level} · Poder {power}",
+        "cta-enter": "ENTRAR"
       }
     },
     "sound-toggle": {

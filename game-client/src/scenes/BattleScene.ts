@@ -238,6 +238,18 @@ interface SceneData {
   playerSide?: 'left' | 'right'
   /** Specific character IDs the player controls (for duo/squad). If omitted, controls all on playerSide. */
   playerCharIds?: string[]
+  /**
+   * Set when the battle was launched as an Offline Raid. The opponent stats
+   * come from the standard pveMode/npcTeam path; this field is forwarded to
+   * BattleResultScene so it can pay out the raid-specific Mastery rewards
+   * on top of the regular gold/XP loot.
+   */
+  raidTarget?: {
+    id: string
+    ownerName: string
+    ownerLevel: number
+    rewardEstimate: { masteryAttack: number; masteryDefense: number; gold: number }
+  }
 }
 
 // ── BattleScene ───────────────────────────────────────────────────────────────
@@ -358,6 +370,7 @@ export default class BattleScene extends Phaser.Scene {
    */
   private _skinConfig: Record<UnitRole, string> | null = null
   private _playerCharIds: Set<string> | null = null  // null = all on playerSide
+  private _raidTarget: SceneData['raidTarget'] = undefined
 
   // ── PvP battle level (average of all players, rounded up) ──────────────────
   private _battleLevel: number = 0
@@ -460,6 +473,7 @@ export default class BattleScene extends Phaser.Scene {
     this._skinConfig = data.skinConfig ?? null
     this._playerSide = data.playerSide ?? 'left'
     this._playerCharIds = data.playerCharIds ? new Set(data.playerCharIds) : null
+    this._raidTarget = data.raidTarget
     // Surrender threshold: majority of HUMAN players on the team (bots don't count)
     // playersPerSide = number of human players (1=solo, 2=duo, up to 4=squad)
     const humanPlayers = data.playersPerSide ?? 1
@@ -1104,6 +1118,7 @@ export default class BattleScene extends Phaser.Scene {
               npcTeam: this._npcTeam,
               difficulty: this._difficulty,
               playerSide: this._playerSide,
+              raidTarget: this._raidTarget,
             })
           }
         })

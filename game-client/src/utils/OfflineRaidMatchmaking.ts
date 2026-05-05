@@ -65,6 +65,68 @@ export function isOfflineRaidLive(): boolean {
 }
 
 /**
+ * Whether the "ENTRAR" CTA on the explainer popup is interactive.
+ *
+ * The user wanted the button reachable for QA but plans to lock it before
+ * launch. Flip to false at release time; the popup will keep showing the
+ * button at full opacity but the click handler short-circuits.
+ *
+ * Kept separate from `isOfflineRaidLive` because that flag governs the
+ * lobby tile's primary action (target picker vs. explainer), while this
+ * flag governs only the "Enter" CTA inside the explainer.
+ */
+export function isOfflineRaidEnterUnlocked(): boolean {
+  return true
+}
+
+/**
+ * Build the BattleScene payload that launches a raid against `target`.
+ * Routes through the existing PvE pipeline (pveMode + npcTeam) so the
+ * post-battle BattleResultScene already shows the loot, and tags the
+ * payload with a `raidTarget` field so the result screen can award
+ * mastery on top of the standard PvE rewards.
+ *
+ * The caller passes the player's deckConfig + skinConfig (typically from
+ * `playerData`) so the player's personalised loadout/skins travel into
+ * the battle.
+ */
+export interface RaidBattlePayload {
+  pveMode: 'offlineRaid'
+  npcTeam: {
+    name: string
+    levelMin: number
+    levelMax: number
+    goldReward: number
+    xpReward: number
+  }
+  raidTarget: OfflineRaidTarget
+  deckConfig?: unknown
+  skinConfig?: unknown
+}
+
+export function buildRaidBattlePayload(
+  target: OfflineRaidTarget,
+  loadout: { deckConfig?: unknown; skinConfig?: unknown } = {},
+): RaidBattlePayload {
+  return {
+    pveMode:    'offlineRaid',
+    npcTeam: {
+      name:       target.ownerName,
+      levelMin:   target.ownerLevel,
+      levelMax:   target.ownerLevel,
+      goldReward: target.rewardEstimate.gold,
+      // XP reward stays the standard 50 for now; the bespoke loot the raid
+      // adds is mastery, paid out by BattleResultScene when raidTarget is
+      // present in the scene data.
+      xpReward:   50,
+    },
+    raidTarget: target,
+    deckConfig: loadout.deckConfig,
+    skinConfig: loadout.skinConfig,
+  }
+}
+
+/**
  * Pick offline raid targets for the given local level.
  *
  * Mock implementation walks a deterministic synthesized pool (~30 entries)

@@ -459,7 +459,8 @@
           "desc": "Spendi la Maestria al Negozio per oggetti, skin e risorse esclusive"
         },
         "cta": "CAPITO",
-        "preview-line": "Prossimo bersaglio · Lv.{level} · Potenza {power}"
+        "preview-line": "Prossimo bersaglio · Lv.{level} · Potenza {power}",
+        "cta-enter": "ENTRA"
       }
     },
     "sound-toggle": {

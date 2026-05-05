@@ -459,7 +459,8 @@
           "desc": "熟練度をショップで限定アイテム・スキン・リソースと交換"
         },
         "cta": "了解",
-        "preview-line": "次の標的予測 · Lv.{level} · 戦力 {power}"
+        "preview-line": "次の標的予測 · Lv.{level} · 戦力 {power}",
+        "cta-enter": "入場"
       }
     },
     "sound-toggle": {

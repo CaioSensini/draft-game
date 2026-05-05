@@ -459,7 +459,8 @@
           "desc": "Dépense la Maîtrise à la Boutique pour des objets, skins et ressources exclusifs"
         },
         "cta": "COMPRIS",
-        "preview-line": "Prochaine cible prévue · Nv.{level} · Puissance {power}"
+        "preview-line": "Prochaine cible prévue · Nv.{level} · Puissance {power}",
+        "cta-enter": "ENTRER"
       }
     },
     "sound-toggle": {

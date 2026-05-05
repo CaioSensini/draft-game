@@ -459,7 +459,8 @@
           "desc": "상점에서 숙련도로 전용 아이템, 스킨, 자원을 교환할 수 있습니다"
         },
         "cta": "확인",
-        "preview-line": "다음 대상 예상 · Lv.{level} · 전력 {power}"
+        "preview-line": "다음 대상 예상 · Lv.{level} · 전력 {power}",
+        "cta-enter": "입장"
       }
     },
     "sound-toggle": {
