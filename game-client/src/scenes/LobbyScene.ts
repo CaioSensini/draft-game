@@ -283,25 +283,25 @@ export default class LobbyScene extends Phaser.Scene {
     })
 
     // "JOGAR" title — Cinzel h1 via typeScale, accent.primary + letter-spacing
-    const title = this.add.text(0, -panelH / 2 + 52, t('scenes.lobby.central-play-title'), {
-      fontFamily: fontFamily.display, fontSize: '44px',
+    const title = this.add.text(0, -panelH / 2 + 56, t('scenes.lobby.central-play-title'), {
+      fontFamily: fontFamily.display, fontSize: '50px',
       color:      accent.primaryHex,
       fontStyle:  '900',
       shadow:     SHADOW.goldGlow,
     }).setOrigin(0.5)
     const anyTitle = title as unknown as { setLetterSpacing?: (n: number) => void }
-    if (typeof anyTitle.setLetterSpacing === 'function') anyTitle.setLetterSpacing(3.5)
+    if (typeof anyTitle.setLetterSpacing === 'function') anyTitle.setLetterSpacing(4)
     container.add(title)
 
-    const titleShimmer = UI.shimmer(this, panelX, panelY - panelH / 2 + 52, 220, 50, 4500)
+    const titleShimmer = UI.shimmer(this, panelX, panelY - panelH / 2 + 56, 250, 56, 4500)
     titleShimmer.setDepth(5)
 
     // Crossed swords → Lucide 'swords' icon, gold tint, large
-    const swordsIcon = UI.lucideIcon(this, 'swords', 0, 22, 48, accent.primary)
+    const swordsIcon = UI.lucideIcon(this, 'swords', 0, 28, 56, accent.primary)
     container.add(swordsIcon)
 
     // Swords glow pulse
-    const swordsGlow = this.add.circle(0, 22, 50, accent.primary, 0)
+    const swordsGlow = this.add.circle(0, 28, 58, accent.primary, 0)
     container.addAt(swordsGlow, container.list.indexOf(swordsIcon))
     this.tweens.add({
       targets: swordsGlow,
@@ -312,9 +312,10 @@ export default class LobbyScene extends Phaser.Scene {
       ease: 'Sine.InOut',
     })
 
-    // Subtitle (Manrope body, fg.secondary)
-    const subtitle = this.add.text(0, 92, t('scenes.lobby.central-play-subtitle'), {
-      fontFamily: fontFamily.body, fontSize: typeScale.body,
+    // Subtitle (Manrope body, fg.secondary) — bumped 15→17 px to scale with
+    // the larger title and emblem above it.
+    const subtitle = this.add.text(0, 102, t('scenes.lobby.central-play-subtitle'), {
+      fontFamily: fontFamily.body, fontSize: '17px',
       color:      fg.secondaryHex,
       fontStyle:  '500',
     }).setOrigin(0.5)
@@ -392,7 +393,7 @@ export default class LobbyScene extends Phaser.Scene {
     const stdTotalW = stdCount * stdIconW + (stdCount - 1) * stdGap
     const stdStartCenterX = (W - stdTotalW) / 2 + stdIconW / 2   // first icon center
     const stdFirstLeftX = stdStartCenterX - stdIconW / 2         // first icon left edge
-    const centerY = 525 + stdIconH / 2                           // same Y as other icons
+    const centerY = 485 + stdIconH / 2                           // same Y as other icons
 
     // Battle pass button is slightly taller + wider for emphasis
     const btnW = 192
@@ -652,7 +653,7 @@ export default class LobbyScene extends Phaser.Scene {
     const stdTotalW = stdCount * stdIconW + (stdCount - 1) * stdGap
     const stdStartCenterX = (W - stdTotalW) / 2 + stdIconW / 2     // first icon center
     const stdLastRightX = stdStartCenterX - stdIconW / 2 + stdTotalW   // last icon right edge
-    const centerY = 525 + stdIconH / 2                              // same Y as other icons
+    const centerY = 485 + stdIconH / 2                              // same Y as other icons
 
     // Same dimensions as the BattlePass button for visual symmetry
     const btnW = 192
@@ -1034,7 +1035,7 @@ export default class LobbyScene extends Phaser.Scene {
     const gap = 24
     const totalW = BOTTOM_ICONS.length * iconW + (BOTTOM_ICONS.length - 1) * gap
     const startX = (W - totalW) / 2 + iconW / 2
-    const centerY = 525 + iconH / 2
+    const centerY = 485 + iconH / 2
 
     BOTTOM_ICONS.forEach((cfg, i) => {
       const x = startX + i * (iconW + gap)
