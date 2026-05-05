@@ -140,7 +140,33 @@
   "bracket": {
     "live": "直播",
     "champion": "冠军",
-    "you-won": "你赢了！"
+    "you-won": "你赢了！",
+    "rounds": {
+      "quarters": "四强",
+      "semifinal": "半决赛",
+      "final": "决赛",
+      "champion": "冠军"
+    },
+    "tbd": "— 待定 —",
+    "simulating": "模拟中: {a} vs {b}…",
+    "spectate-btn": "观战",
+    "your-turn": "轮到你 · vs {opponent}",
+    "results": "结果",
+    "team-fallback": "队伍 {which}",
+    "spectate-round-prefix": "RD {round} · {line}",
+    "spectate-victory": "胜利 · {winner}",
+    "spectate": {
+      "line-1": "{A}使用火球攻击…",
+      "line-2": "{B}用法师之盾防御…",
+      "line-3": "{A}施放冰冻箭…",
+      "line-4": "{B}用冲锋反击…",
+      "line-5": "{A}使用神圣治疗…",
+      "line-6": "{B}召唤奥术风暴…",
+      "line-7": "{A}准备毁灭一击…",
+      "line-8": "{B}激活风之屏障…",
+      "line-9": "{A}打出暴击！",
+      "line-10": "{B}试图闪避但失败…"
+    }
   },
   "pvp": {
     "title": "PVP",
@@ -180,7 +206,23 @@
   "matchmaking": {
     "searching": "正在寻找对手",
     "queue-time": "排队时间",
-    "tip-eyebrow": "提示"
+    "tip-eyebrow": "提示",
+    "tips": {
+      "protect-king": "存活的王者是你的胜利条件。优先保护他。",
+      "heal-cap": "每回合最多治疗2次 — 第三个位置要有意识地使用。",
+      "overtime-damage": "第12回合后伤害在加时每回合+10%。",
+      "bleed-combo": "流血使致命斩与刀刃风暴的伤害翻倍。",
+      "isolated-executor": "孤立的执行者打击更狠，但受到10%额外伤害。",
+      "specialist-cleanse": "专家一回合可净化最多三个友军负面状态。",
+      "shield-cap": "护盾可叠加至100 HP — 超出则覆盖最弱者。",
+      "card-cycle": "手牌使用后循环：规划顺序，而不仅是单次出牌。"
+    },
+    "mode-title": {
+      "ranked": "排位",
+      "casual": "休闲",
+      "pve": "训练"
+    },
+    "queue-count": "队列中玩家: {players}   ·   Ping: {ping} ms"
   },
   "battle": {
     "phase": {

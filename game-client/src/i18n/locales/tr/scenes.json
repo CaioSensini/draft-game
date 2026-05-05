@@ -140,7 +140,33 @@
   "bracket": {
     "live": "CANLI",
     "champion": "ŞAMPİYON",
-    "you-won": "KAZANDIN!"
+    "you-won": "KAZANDIN!",
+    "rounds": {
+      "quarters": "ÇEYREK",
+      "semifinal": "YARI FİNAL",
+      "final": "FİNAL",
+      "champion": "ŞAMPİYON"
+    },
+    "tbd": "— BELİRLENECEK —",
+    "simulating": "Simülasyon: {a} vs {b}…",
+    "spectate-btn": "İZLE",
+    "your-turn": "SIRA SENDE · vs {opponent}",
+    "results": "SONUÇLAR",
+    "team-fallback": "Takım {which}",
+    "spectate-round-prefix": "RD {round} · {line}",
+    "spectate-victory": "ZAFER · {winner}",
+    "spectate": {
+      "line-1": "{A} Ateş Topu ile saldırır…",
+      "line-2": "{B} Sihir Kalkanı ile savunur…",
+      "line-3": "{A} Buz Oku fırlatır…",
+      "line-4": "{B} Hücum ile karşılık verir…",
+      "line-5": "{A} İlahi İyileştirme kullanır…",
+      "line-6": "{B} Gizem Fırtınası çağırır…",
+      "line-7": "{A} Yıkıcı Darbeye hazırlanır…",
+      "line-8": "{B} Rüzgâr Bariyeri etkinleştirir…",
+      "line-9": "{A} kritik vuruş yapar!",
+      "line-10": "{B} kaçmaya çalışır ama başaramaz…"
+    }
   },
   "pvp": {
     "title": "PVP",
@@ -180,7 +206,23 @@
   "matchmaking": {
     "searching": "RAKİP ARANIYOR",
     "queue-time": "SIRA SÜRESİ",
-    "tip-eyebrow": "İPUCU"
+    "tip-eyebrow": "İPUCU",
+    "tips": {
+      "protect-king": "Yaşayan Kral zafer şartındır. Onu her şeyden önce koru.",
+      "heal-cap": "İyileşme tur başına 2 ile sınırlı — üçüncü slotu bilinçli kullan.",
+      "overtime-damage": "12. turdan sonra hasar uzatmada tur başına +10% kazanır.",
+      "bleed-combo": "Kanama, Ölümcül Kesik ve Bıçak Fırtınası değerini ikiye katlar.",
+      "isolated-executor": "Yalnız bir İnfazcı daha sert vurur ama 10% daha fazla hasar alır.",
+      "specialist-cleanse": "Uzmanlar bir turda en fazla üç debuff temizler.",
+      "shield-cap": "Kalkanlar 100 HP'ye kadar yığılır — üstü en zayıfı silinir.",
+      "card-cycle": "Kullanılan kartlar döngüye girer: sırasını planla."
+    },
+    "mode-title": {
+      "ranked": "DERECELİ",
+      "casual": "CASUAL",
+      "pve": "EĞİTİM"
+    },
+    "queue-count": "Sıradaki oyuncu: {players}   ·   Ping: {ping} ms"
   },
   "battle": {
     "phase": {

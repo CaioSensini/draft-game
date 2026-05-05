@@ -140,7 +140,33 @@
   "bracket": {
     "live": "LIVE",
     "champion": "CHAMPION",
-    "you-won": "YOU WON!"
+    "you-won": "YOU WON!",
+    "rounds": {
+      "quarters": "QUARTERS",
+      "semifinal": "SEMIFINAL",
+      "final": "FINAL",
+      "champion": "CHAMPION"
+    },
+    "tbd": "— TBD —",
+    "simulating": "Simulating: {a} vs {b}…",
+    "spectate-btn": "WATCH",
+    "your-turn": "YOUR TURN · vs {opponent}",
+    "results": "RESULTS",
+    "team-fallback": "Team {which}",
+    "spectate-round-prefix": "RD {round} · {line}",
+    "spectate-victory": "VICTORY · {winner}",
+    "spectate": {
+      "line-1": "{A} attacks with Fireball…",
+      "line-2": "{B} defends with Mage Shield…",
+      "line-3": "{A} casts Frost Arrow…",
+      "line-4": "{B} counters with Charge…",
+      "line-5": "{A} uses Divine Heal…",
+      "line-6": "{B} summons Arcane Storm…",
+      "line-7": "{A} prepares Devastating Blow…",
+      "line-8": "{B} activates Wind Barrier…",
+      "line-9": "{A} lands a critical hit!",
+      "line-10": "{B} tries to dodge but fails…"
+    }
   },
   "pvp": {
     "title": "PVP",
@@ -180,7 +206,23 @@
   "matchmaking": {
     "searching": "SEARCHING FOR OPPONENT",
     "queue-time": "QUEUE TIME",
-    "tip-eyebrow": "TIP"
+    "tip-eyebrow": "TIP",
+    "tips": {
+      "protect-king": "The living King is your victory condition. Protect him above all.",
+      "heal-cap": "Heal is capped at 2 per turn — use the third slot with intent.",
+      "overtime-damage": "Damage past turn 12 gains +10% per turn in overtime.",
+      "bleed-combo": "Bleed doubles the value of Death Strike and Blade Storm.",
+      "isolated-executor": "An isolated Executor hits harder but takes 10% more damage.",
+      "specialist-cleanse": "Specialists clear up to three debuffs from allies in a single turn.",
+      "shield-cap": "Shields stack up to 100 HP — above that, they overwrite the weakest.",
+      "card-cycle": "Cards in hand cycle after use: plan the sequence, not just the play."
+    },
+    "mode-title": {
+      "ranked": "RANKED",
+      "casual": "CASUAL",
+      "pve": "TRAINING"
+    },
+    "queue-count": "Players in queue: {players}   ·   Ping: {ping} ms"
   },
   "battle": {
     "phase": {

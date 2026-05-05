@@ -7,7 +7,7 @@ import {
   fontFamily, typeScale, radii,
 } from '../utils/DesignTokens'
 import { getClassSigilKey } from '../utils/AssetPaths'
-import { t } from '../i18n'
+import { t, getCurrentLang } from '../i18n'
 
 // ─── Layout ─────────────────────────────────────────────────────────────────
 
@@ -34,24 +34,30 @@ export interface MatchmakingData {
 }
 
 // ─── Tips (flavor rotating during the wait) ─────────────────────────────────
+// Resolved at render-time via t() so a language switch picks up new strings
+// the next time _rotateTip() fires (or when the scene restarts on lang change).
 
-const TIPS: string[] = [
-  'O Rei vivo é sua condição de vitória. Proteja-o acima de tudo.',
-  'Cura é limitada a 2 por turno — use o terceiro slot com intenção.',
-  'Dano a partir do turno 12 ganha +10% por turno em overtime.',
-  'Sangramento dobra o valor de Corte Mortal e Tempestade de Lâminas.',
-  'Um Executor isolado bate mais forte, mas toma 10% mais de dano.',
-  'Especialistas removem até três debuffs de aliados num único turno.',
-  'Escudos stackam até 100 HP — acima disso, sobrescrevem o mais fraco.',
-  'Cartas na mão rodam após usar: planeje a sequência, não só a jogada.',
-]
+const TIP_KEYS = [
+  'scenes.matchmaking.tips.protect-king',
+  'scenes.matchmaking.tips.heal-cap',
+  'scenes.matchmaking.tips.overtime-damage',
+  'scenes.matchmaking.tips.bleed-combo',
+  'scenes.matchmaking.tips.isolated-executor',
+  'scenes.matchmaking.tips.specialist-cleanse',
+  'scenes.matchmaking.tips.shield-cap',
+  'scenes.matchmaking.tips.card-cycle',
+] as const
+
+function getTips(): string[] {
+  return TIP_KEYS.map(k => t(k))
+}
 
 // ─── Mode labels ────────────────────────────────────────────────────────────
 
-const MODE_TITLE: Record<MatchmakingData['mode'], string> = {
-  ranked: 'RANQUEADA',
-  casual: 'CASUAL',
-  pve:    'TREINO',
+const MODE_TITLE_KEY: Record<MatchmakingData['mode'], string> = {
+  ranked: 'scenes.matchmaking.mode-title.ranked',
+  casual: 'scenes.matchmaking.mode-title.casual',
+  pve:    'scenes.matchmaking.mode-title.pve',
 }
 
 const COUNT_LABEL: Record<1 | 2 | 4, string> = {
@@ -92,7 +98,7 @@ export default class MatchmakingScene extends Phaser.Scene {
     this.returnTo = data?.returnTo ?? 'LobbyScene'
     this.returnData = data?.returnData ?? {}
     this.elapsed = 0
-    this.tipIndex = Math.floor(Math.random() * TIPS.length)
+    this.tipIndex = Math.floor(Math.random() * TIP_KEYS.length)
 
     this._drawBackground()
     this._drawHeaderBand()
@@ -129,7 +135,7 @@ export default class MatchmakingScene extends Phaser.Scene {
     bandG.fillStyle(border.subtle, 1)
     bandG.fillRect(0, bandY + bandH - 1, W, 1)
 
-    const modeTitle = `${MODE_TITLE[this.mode]}  ·  ${COUNT_LABEL[this.playerCount]}`
+    const modeTitle = `${t(MODE_TITLE_KEY[this.mode])}  ·  ${COUNT_LABEL[this.playerCount]}`
     this.add.text(W / 2, bandY + bandH / 2, modeTitle, {
       fontFamily: fontFamily.display,
       fontSize:   typeScale.h2,
@@ -269,7 +275,10 @@ export default class MatchmakingScene extends Phaser.Scene {
         const players = 1200 + Math.floor(Math.random() * 150)
         const ping = 30 + Math.floor(Math.random() * 20)
         this.queueCountText.setText(
-          `Jogadores na fila: ${players.toLocaleString('pt-BR')}   ·   Ping: ${ping} ms`,
+          t('scenes.matchmaking.queue-count', {
+            players: players.toLocaleString(getCurrentLang()),
+            ping,
+          }),
         )
       },
     })
@@ -286,7 +295,8 @@ export default class MatchmakingScene extends Phaser.Scene {
       fontStyle:  '700',
     }).setOrigin(0.5).setDepth(3).setLetterSpacing(1.6)
 
-    this.tipText = this.add.text(W / 2, y + 10, TIPS[this.tipIndex], {
+    const tips = getTips()
+    this.tipText = this.add.text(W / 2, y + 10, tips[this.tipIndex], {
       fontFamily: fontFamily.serif,
       fontSize:   typeScale.body,
       color:      fg.secondaryHex,
@@ -307,8 +317,9 @@ export default class MatchmakingScene extends Phaser.Scene {
       targets: this.tipText, alpha: 0, duration: 240, ease: 'Quad.Out',
       onComplete: () => {
         if (!this.tipText) return
-        this.tipIndex = (this.tipIndex + 1) % TIPS.length
-        this.tipText.setText(TIPS[this.tipIndex])
+        const tips = getTips()
+        this.tipIndex = (this.tipIndex + 1) % tips.length
+        this.tipText.setText(tips[this.tipIndex])
         this.tweens.add({ targets: this.tipText, alpha: 1, duration: 240 })
       },
     })
@@ -317,7 +328,7 @@ export default class MatchmakingScene extends Phaser.Scene {
   // ── Cancel button ──
 
   private _drawCancelButton() {
-    const { container } = UI.buttonSecondary(this, W / 2, H - 44, 'CANCELAR', {
+    const { container } = UI.buttonSecondary(this, W / 2, H - 44, t('common.actions.cancel'), {
       w: 200, h: 44,
       onPress: () => this._cancel(),
     })

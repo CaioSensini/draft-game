@@ -140,7 +140,33 @@
   "bracket": {
     "live": "ライブ",
     "champion": "チャンピオン",
-    "you-won": "あなたの勝利！"
+    "you-won": "あなたの勝利！",
+    "rounds": {
+      "quarters": "準々決勝",
+      "semifinal": "準決勝",
+      "final": "決勝",
+      "champion": "チャンピオン"
+    },
+    "tbd": "— 未定 —",
+    "simulating": "シミュレート中: {a} vs {b}…",
+    "spectate-btn": "観戦",
+    "your-turn": "あなたの番 · vs {opponent}",
+    "results": "結果",
+    "team-fallback": "チーム {which}",
+    "spectate-round-prefix": "RD {round} · {line}",
+    "spectate-victory": "勝利 · {winner}",
+    "spectate": {
+      "line-1": "{A}がファイアボールで攻撃…",
+      "line-2": "{B}がマジックシールドで防御…",
+      "line-3": "{A}がフロストアロー…",
+      "line-4": "{B}が突進で反撃…",
+      "line-5": "{A}が神聖治癒…",
+      "line-6": "{B}が秘術の嵐を召喚…",
+      "line-7": "{A}が壊滅の一撃を準備…",
+      "line-8": "{B}が風の障壁を発動…",
+      "line-9": "{A}がクリティカル！",
+      "line-10": "{B}が回避を試みるが失敗…"
+    }
   },
   "pvp": {
     "title": "PVP",
@@ -180,7 +206,23 @@
   "matchmaking": {
     "searching": "相手を検索中",
     "queue-time": "キュー時間",
-    "tip-eyebrow": "ヒント"
+    "tip-eyebrow": "ヒント",
+    "tips": {
+      "protect-king": "生存中の王が勝利条件。何よりも王を守ろう。",
+      "heal-cap": "回復はターン2回まで — 3スロット目は意図を持って使用。",
+      "overtime-damage": "12ターン以降のダメージはオーバータイムで毎ターン+10%。",
+      "bleed-combo": "出血はデスストライクとブレードストームの効果を倍化。",
+      "isolated-executor": "孤立した執行者は強打するが、被ダメージが10%増加。",
+      "specialist-cleanse": "スペシャリストは1ターンに最大3デバフを浄化。",
+      "shield-cap": "シールドは100HPまでスタック — それ以上は最弱を上書き。",
+      "card-cycle": "使った手札は循環。プレイだけでなく順序も計画して。"
+    },
+    "mode-title": {
+      "ranked": "ランクド",
+      "casual": "カジュアル",
+      "pve": "トレーニング"
+    },
+    "queue-count": "キュー中のプレイヤー: {players}   ·   Ping: {ping} ms"
   },
   "battle": {
     "phase": {

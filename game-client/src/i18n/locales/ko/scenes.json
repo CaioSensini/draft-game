@@ -140,7 +140,33 @@
   "bracket": {
     "live": "실시간",
     "champion": "챔피언",
-    "you-won": "승리!"
+    "you-won": "승리!",
+    "rounds": {
+      "quarters": "8강",
+      "semifinal": "준결승",
+      "final": "결승",
+      "champion": "챔피언"
+    },
+    "tbd": "— 미정 —",
+    "simulating": "시뮬레이션: {a} vs {b}…",
+    "spectate-btn": "관전",
+    "your-turn": "당신 차례 · vs {opponent}",
+    "results": "결과",
+    "team-fallback": "팀 {which}",
+    "spectate-round-prefix": "RD {round} · {line}",
+    "spectate-victory": "승리 · {winner}",
+    "spectate": {
+      "line-1": "{A}가 파이어볼로 공격…",
+      "line-2": "{B}가 마법 방패로 방어…",
+      "line-3": "{A}가 얼음 화살 발사…",
+      "line-4": "{B}가 돌격으로 반격…",
+      "line-5": "{A}가 신성 치유 사용…",
+      "line-6": "{B}가 비전 폭풍 소환…",
+      "line-7": "{A}가 파괴적 일격 준비…",
+      "line-8": "{B}가 바람 장벽 발동…",
+      "line-9": "{A}가 치명타 발동!",
+      "line-10": "{B}가 회피 시도, 실패…"
+    }
   },
   "pvp": {
     "title": "PVP",
@@ -180,7 +206,23 @@
   "matchmaking": {
     "searching": "상대 검색 중",
     "queue-time": "대기열 시간",
-    "tip-eyebrow": "팁"
+    "tip-eyebrow": "팁",
+    "tips": {
+      "protect-king": "살아있는 왕이 승리 조건입니다. 무엇보다 왕을 지키세요.",
+      "heal-cap": "치유는 턴당 2회로 제한 — 세 번째 슬롯은 의도적으로 사용.",
+      "overtime-damage": "12턴 이후 피해는 연장전 매 턴 +10%.",
+      "bleed-combo": "출혈은 치명타와 칼날 폭풍의 피해를 두 배로.",
+      "isolated-executor": "고립된 집행자는 더 세게 치지만 10% 추가 피해를 입음.",
+      "specialist-cleanse": "전문가는 한 턴에 최대 3개의 디버프를 정화.",
+      "shield-cap": "보호막은 최대 100HP까지 누적 — 그 이상은 가장 약한 것을 덮어씀.",
+      "card-cycle": "사용한 카드는 순환됩니다 — 단발 플레이가 아닌 시퀀스를 계획."
+    },
+    "mode-title": {
+      "ranked": "랭크",
+      "casual": "캐주얼",
+      "pve": "훈련"
+    },
+    "queue-count": "대기열 인원: {players}   ·   Ping: {ping} ms"
   },
   "battle": {
     "phase": {

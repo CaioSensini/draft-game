@@ -140,7 +140,33 @@
   "bracket": {
     "live": "LIVE",
     "champion": "CHAMPION",
-    "you-won": "DU HAST GEWONNEN!"
+    "you-won": "DU HAST GEWONNEN!",
+    "rounds": {
+      "quarters": "VIERTEL",
+      "semifinal": "HALBFINALE",
+      "final": "FINALE",
+      "champion": "CHAMPION"
+    },
+    "tbd": "— OFFEN —",
+    "simulating": "Simuliere: {a} vs {b}…",
+    "spectate-btn": "ZUSCHAUEN",
+    "your-turn": "DU BIST DRAN · vs {opponent}",
+    "results": "ERGEBNISSE",
+    "team-fallback": "Team {which}",
+    "spectate-round-prefix": "RD {round} · {line}",
+    "spectate-victory": "SIEG · {winner}",
+    "spectate": {
+      "line-1": "{A} greift mit Feuerball an…",
+      "line-2": "{B} verteidigt mit Magieschild…",
+      "line-3": "{A} wirft Frostpfeil…",
+      "line-4": "{B} kontert mit Sturmangriff…",
+      "line-5": "{A} nutzt Göttliche Heilung…",
+      "line-6": "{B} ruft Arkanen Sturm…",
+      "line-7": "{A} bereitet Vernichtenden Schlag vor…",
+      "line-8": "{B} aktiviert Windbarriere…",
+      "line-9": "{A} landet einen kritischen Treffer!",
+      "line-10": "{B} versucht auszuweichen, scheitert…"
+    }
   },
   "pvp": {
     "title": "PVP",
@@ -180,7 +206,23 @@
   "matchmaking": {
     "searching": "SUCHE GEGNER",
     "queue-time": "WARTEZEIT",
-    "tip-eyebrow": "TIPP"
+    "tip-eyebrow": "TIPP",
+    "tips": {
+      "protect-king": "Der lebende König ist deine Siegbedingung. Beschütze ihn vor allem.",
+      "heal-cap": "Heilung ist auf 2 pro Zug begrenzt — nutze den 3. Slot bewusst.",
+      "overtime-damage": "Schaden ab Zug 12 erhält +10% pro Zug in der Verlängerung.",
+      "bleed-combo": "Blutung verdoppelt Tödlicher Schnitt und Klingensturm.",
+      "isolated-executor": "Ein isolierter Vollstrecker schlägt härter, erleidet aber 10% mehr Schaden.",
+      "specialist-cleanse": "Spezialisten entfernen bis zu drei Debuffs von Verbündeten pro Zug.",
+      "shield-cap": "Schilde stapeln bis 100 LP — darüber überschreiben sie den schwächsten.",
+      "card-cycle": "Karten in der Hand rotieren nach Gebrauch: plane die Sequenz."
+    },
+    "mode-title": {
+      "ranked": "RANGLISTE",
+      "casual": "CASUAL",
+      "pve": "TRAINING"
+    },
+    "queue-count": "Spieler in Warteschlange: {players}   ·   Ping: {ping} ms"
   },
   "battle": {
     "phase": {

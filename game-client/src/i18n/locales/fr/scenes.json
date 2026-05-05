@@ -140,7 +140,33 @@
   "bracket": {
     "live": "EN DIRECT",
     "champion": "CHAMPION",
-    "you-won": "VOUS AVEZ GAGNÉ !"
+    "you-won": "VOUS AVEZ GAGNÉ !",
+    "rounds": {
+      "quarters": "QUARTS",
+      "semifinal": "DEMI-FINALE",
+      "final": "FINALE",
+      "champion": "CHAMPION"
+    },
+    "tbd": "— À DÉFINIR —",
+    "simulating": "Simulation : {a} vs {b}…",
+    "spectate-btn": "REGARDER",
+    "your-turn": "À VOUS · vs {opponent}",
+    "results": "RÉSULTATS",
+    "team-fallback": "Équipe {which}",
+    "spectate-round-prefix": "RD {round} · {line}",
+    "spectate-victory": "VICTOIRE · {winner}",
+    "spectate": {
+      "line-1": "{A} attaque avec Boule de Feu…",
+      "line-2": "{B} défend avec Bouclier Magique…",
+      "line-3": "{A} lance Flèche Glacée…",
+      "line-4": "{B} contre avec Charge…",
+      "line-5": "{A} utilise Soin Divin…",
+      "line-6": "{B} invoque Tempête Arcanique…",
+      "line-7": "{A} prépare Coup Dévastateur…",
+      "line-8": "{B} active Barrière de Vent…",
+      "line-9": "{A} porte un coup critique !",
+      "line-10": "{B} tente d’esquiver mais échoue…"
+    }
   },
   "pvp": {
     "title": "PVP",
@@ -180,7 +206,23 @@
   "matchmaking": {
     "searching": "RECHERCHE D'ADVERSAIRE",
     "queue-time": "TEMPS EN FILE",
-    "tip-eyebrow": "ASTUCE"
+    "tip-eyebrow": "ASTUCE",
+    "tips": {
+      "protect-king": "Le Roi vivant est votre condition de victoire. Protégez-le avant tout.",
+      "heal-cap": "Le soin est plafonné à 2 par tour — utilisez le 3e emplacement avec intention.",
+      "overtime-damage": "Les dégâts après le tour 12 gagnent +10% par tour en overtime.",
+      "bleed-combo": "Le saignement double Coup Mortel et Tempête de Lames.",
+      "isolated-executor": "Un Exécuteur isolé frappe plus fort mais reçoit 10% de dégâts en plus.",
+      "specialist-cleanse": "Les Spécialistes retirent jusqu’à trois debuffs alliés en un tour.",
+      "shield-cap": "Les boucliers s’empilent jusqu’à 100 PV — au-delà, ils écrasent le plus faible.",
+      "card-cycle": "Les cartes en main tournent après usage : planifiez la séquence."
+    },
+    "mode-title": {
+      "ranked": "CLASSÉE",
+      "casual": "CASUAL",
+      "pve": "ENTRAÎNEMENT"
+    },
+    "queue-count": "Joueurs en file : {players}   ·   Ping : {ping} ms"
   },
   "battle": {
     "phase": {

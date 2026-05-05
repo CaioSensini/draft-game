@@ -171,7 +171,33 @@
   "bracket": {
     "live": "AO VIVO",
     "champion": "CAMPEÃO",
-    "you-won": "VOCÊ VENCEU!"
+    "you-won": "VOCÊ VENCEU!",
+    "rounds": {
+      "quarters": "QUARTAS",
+      "semifinal": "SEMIFINAL",
+      "final": "FINAL",
+      "champion": "CAMPEÃO"
+    },
+    "tbd": "— A DEFINIR —",
+    "simulating": "Simulando: {a} vs {b}…",
+    "spectate-btn": "ASSISTIR",
+    "your-turn": "SUA VEZ · vs {opponent}",
+    "results": "RESULTADOS",
+    "team-fallback": "Time {which}",
+    "spectate-round-prefix": "RD {round} · {line}",
+    "spectate-victory": "VITÓRIA · {winner}",
+    "spectate": {
+      "line-1": "{A} ataca com Bola de Fogo…",
+      "line-2": "{B} defende com Escudo Mágico…",
+      "line-3": "{A} lança Flecha Congelante…",
+      "line-4": "{B} contra-ataca com Investida…",
+      "line-5": "{A} usa Cura Divina…",
+      "line-6": "{B} invoca Tempestade Arcana…",
+      "line-7": "{A} prepara Golpe Devastador…",
+      "line-8": "{B} ativa Barreira de Vento…",
+      "line-9": "{A} desfere ataque crítico!",
+      "line-10": "{B} tenta esquivar mas falha…"
+    }
   },
   "pvp": {
     "title": "PVP",
@@ -211,7 +237,23 @@
   "matchmaking": {
     "searching": "PROCURANDO ADVERSÁRIO",
     "queue-time": "TEMPO NA FILA",
-    "tip-eyebrow": "DICA"
+    "tip-eyebrow": "DICA",
+    "tips": {
+      "protect-king": "O Rei vivo é sua condição de vitória. Proteja-o acima de tudo.",
+      "heal-cap": "Cura é limitada a 2 por turno — use o terceiro slot com intenção.",
+      "overtime-damage": "Dano a partir do turno 12 ganha +10% por turno em overtime.",
+      "bleed-combo": "Sangramento dobra o valor de Corte Mortal e Tempestade de Lâminas.",
+      "isolated-executor": "Um Executor isolado bate mais forte, mas toma 10% mais de dano.",
+      "specialist-cleanse": "Especialistas removem até três debuffs de aliados num único turno.",
+      "shield-cap": "Escudos stackam até 100 HP — acima disso, sobrescrevem o mais fraco.",
+      "card-cycle": "Cartas na mão rodam após usar: planeje a sequência, não só a jogada."
+    },
+    "mode-title": {
+      "ranked": "RANQUEADA",
+      "casual": "CASUAL",
+      "pve": "TREINO"
+    },
+    "queue-count": "Jogadores na fila: {players}   ·   Ping: {ping} ms"
   },
   "battle": {
     "phase": {

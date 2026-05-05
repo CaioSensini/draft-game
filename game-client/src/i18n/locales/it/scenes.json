@@ -140,7 +140,33 @@
   "bracket": {
     "live": "DAL VIVO",
     "champion": "CAMPIONE",
-    "you-won": "HAI VINTO!"
+    "you-won": "HAI VINTO!",
+    "rounds": {
+      "quarters": "QUARTI",
+      "semifinal": "SEMIFINALE",
+      "final": "FINALE",
+      "champion": "CAMPIONE"
+    },
+    "tbd": "— DA DEFINIRE —",
+    "simulating": "Simulazione: {a} vs {b}…",
+    "spectate-btn": "GUARDA",
+    "your-turn": "TUO TURNO · vs {opponent}",
+    "results": "RISULTATI",
+    "team-fallback": "Squadra {which}",
+    "spectate-round-prefix": "RD {round} · {line}",
+    "spectate-victory": "VITTORIA · {winner}",
+    "spectate": {
+      "line-1": "{A} attacca con Palla di Fuoco…",
+      "line-2": "{B} difende con Scudo Magico…",
+      "line-3": "{A} lancia Freccia Gelida…",
+      "line-4": "{B} contrattacca con Carica…",
+      "line-5": "{A} usa Cura Divina…",
+      "line-6": "{B} invoca Tempesta Arcana…",
+      "line-7": "{A} prepara Colpo Devastante…",
+      "line-8": "{B} attiva Barriera di Vento…",
+      "line-9": "{A} sferra un colpo critico!",
+      "line-10": "{B} prova a schivare ma fallisce…"
+    }
   },
   "pvp": {
     "title": "PVP",
@@ -180,7 +206,23 @@
   "matchmaking": {
     "searching": "RICERCA AVVERSARIO",
     "queue-time": "TEMPO IN CODA",
-    "tip-eyebrow": "SUGGERIMENTO"
+    "tip-eyebrow": "SUGGERIMENTO",
+    "tips": {
+      "protect-king": "Il Re vivo è la tua condizione di vittoria. Proteggilo sopra ogni cosa.",
+      "heal-cap": "La cura è limitata a 2 per turno — usa il terzo slot con criterio.",
+      "overtime-damage": "Il danno dal turno 12 guadagna +10% per turno in overtime.",
+      "bleed-combo": "L’emorragia raddoppia Colpo Mortale e Tempesta di Lame.",
+      "isolated-executor": "Un Esecutore isolato colpisce più forte ma riceve 10% di danno in più.",
+      "specialist-cleanse": "Gli Specialisti rimuovono fino a tre debuff in un turno.",
+      "shield-cap": "Gli scudi si accumulano fino a 100 HP — oltre sovrascrivono il più debole.",
+      "card-cycle": "Le carte ruotano dopo l’uso: pianifica la sequenza."
+    },
+    "mode-title": {
+      "ranked": "CLASSIFICATA",
+      "casual": "CASUAL",
+      "pve": "ALLENAMENTO"
+    },
+    "queue-count": "Giocatori in coda: {players}   ·   Ping: {ping} ms"
   },
   "battle": {
     "phase": {

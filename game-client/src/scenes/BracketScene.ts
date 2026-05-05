@@ -62,20 +62,25 @@ const CARD_H = 32
 const CARD_GAP = 8
 const ROUND_GAP_X = 190
 
-const ROUND_LABELS = ['QUARTAS', 'SEMIFINAL', 'FINAL', 'CAMPEÃO']
+const ROUND_LABEL_KEYS = [
+  'scenes.bracket.rounds.quarters',
+  'scenes.bracket.rounds.semifinal',
+  'scenes.bracket.rounds.final',
+  'scenes.bracket.rounds.champion',
+] as const
 
-const SPECTATE_LINES = [
-  '{A} ataca com Bola de Fogo…',
-  '{B} defende com Escudo Mágico…',
-  '{A} lança Flecha Congelante…',
-  '{B} contra-ataca com Investida…',
-  '{A} usa Cura Divina…',
-  '{B} invoca Tempestade Arcana…',
-  '{A} prepara Golpe Devastador…',
-  '{B} ativa Barreira de Vento…',
-  '{A} desfere ataque crítico!',
-  '{B} tenta esquivar mas falha…',
-]
+const SPECTATE_LINE_KEYS = [
+  'scenes.bracket.spectate.line-1',
+  'scenes.bracket.spectate.line-2',
+  'scenes.bracket.spectate.line-3',
+  'scenes.bracket.spectate.line-4',
+  'scenes.bracket.spectate.line-5',
+  'scenes.bracket.spectate.line-6',
+  'scenes.bracket.spectate.line-7',
+  'scenes.bracket.spectate.line-8',
+  'scenes.bracket.spectate.line-9',
+  'scenes.bracket.spectate.line-10',
+] as const
 
 // ── Persisted bracket state (survives scene restart) ────────────────────────
 
@@ -247,9 +252,9 @@ export default class BracketScene extends Phaser.Scene {
     }).setOrigin(0.5).setLetterSpacing(3)
 
     // Column headers (fade in on reveal)
-    for (let r = 0; r < ROUND_LABELS.length; r++) {
+    for (let r = 0; r < ROUND_LABEL_KEYS.length; r++) {
       const colX = this.getColumnX(Math.min(r, 3))
-      const lbl = this.add.text(colX, 88, ROUND_LABELS[r], {
+      const lbl = this.add.text(colX, 88, t(ROUND_LABEL_KEYS[r]), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.meta,
         color:      fg.tertiaryHex,
@@ -427,7 +432,7 @@ export default class BracketScene extends Phaser.Scene {
         parent.add(indText)
       }
     } else if (isEmpty) {
-      const emptyText = this.add.text(0, localY, '— A DEFINIR —', {
+      const emptyText = this.add.text(0, localY, t('scenes.bracket.tbd'), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.meta,
         color:      fg.disabledHex,
@@ -620,7 +625,7 @@ export default class BracketScene extends Phaser.Scene {
       const t1Name = match.team1 >= 0 ? this.teams[match.team1].name : '?'
       const t2Name = match.team2 >= 0 ? this.teams[match.team2].name : '?'
 
-      const simText = this.add.text(W / 2 - 120, barY, `Simulando: ${t1Name} vs ${t2Name}…`, {
+      const simText = this.add.text(W / 2 - 120, barY, t('scenes.bracket.simulating', { a: t1Name, b: t2Name }), {
         fontFamily: fontFamily.serif,
         fontSize:   typeScale.body,
         color:      fg.secondaryHex,
@@ -628,7 +633,7 @@ export default class BracketScene extends Phaser.Scene {
       }).setOrigin(0.5)
       this.bottomBarContainer.add(simText)
 
-      const { container: specBtn } = UI.buttonSecondary(this, W / 2 + 140, barY, 'ASSISTIR', {
+      const { container: specBtn } = UI.buttonSecondary(this, W / 2 + 140, barY, t('scenes.bracket.spectate-btn'), {
         w: 140, h: 34,
         onPress: () => this.showSpectateOverlay(match),
       })
@@ -639,7 +644,7 @@ export default class BracketScene extends Phaser.Scene {
         ? this.teams[match.team1].name
         : match.team2 >= 0 ? this.teams[match.team2].name : '?'
 
-      const vsText = this.add.text(W / 2 - 140, barY, `SUA VEZ · vs ${opponent}`, {
+      const vsText = this.add.text(W / 2 - 140, barY, t('scenes.bracket.your-turn', { opponent }), {
         fontFamily: fontFamily.body,
         fontSize:   typeScale.small,
         color:      fg.primaryHex,
@@ -647,7 +652,7 @@ export default class BracketScene extends Phaser.Scene {
       }).setOrigin(0.5).setLetterSpacing(1.4)
       this.bottomBarContainer.add(vsText)
 
-      const { container: playBtn } = UI.buttonPrimary(this, W / 2 + 140, barY, 'JOGAR', {
+      const { container: playBtn } = UI.buttonPrimary(this, W / 2 + 140, barY, t('common.actions.play'), {
         w: 180, h: 40,
         onPress: () => {
           if (onPlayPress) onPlayPress()
@@ -663,7 +668,7 @@ export default class BracketScene extends Phaser.Scene {
       })
 
     } else if (this.phase === 'complete') {
-      const { container: resultBtn } = UI.buttonPrimary(this, W / 2, barY, 'RESULTADOS', {
+      const { container: resultBtn } = UI.buttonPrimary(this, W / 2, barY, t('scenes.bracket.results'), {
         w: 240, h: 40,
         onPress: () => {
           transitionTo(this, 'PvELobbyScene', { pveType: 'tournament' })
@@ -678,8 +683,8 @@ export default class BracketScene extends Phaser.Scene {
   private showSpectateOverlay(match: MatchInfo): void {
     if (this.spectateOverlay) return
 
-    const t1Name = match.team1 >= 0 ? this.teams[match.team1].name : 'Time A'
-    const t2Name = match.team2 >= 0 ? this.teams[match.team2].name : 'Time B'
+    const t1Name = match.team1 >= 0 ? this.teams[match.team1].name : t('scenes.bracket.team-fallback', { which: 'A' })
+    const t2Name = match.team2 >= 0 ? this.teams[match.team2].name : t('scenes.bracket.team-fallback', { which: 'B' })
 
     this.spectateOverlay = this.add.container(0, 0).setDepth(50)
 
@@ -715,9 +720,7 @@ export default class BracketScene extends Phaser.Scene {
     const lineH = 24
     const logTexts: Phaser.GameObjects.Text[] = []
 
-    const lines = SPECTATE_LINES.map(line =>
-      line.replace('{A}', t1Name).replace('{B}', t2Name)
-    )
+    const lines = SPECTATE_LINE_KEYS.map(key => t(key, { A: t1Name, B: t2Name }))
 
     let lineIdx = 0
     const addLine = () => {
@@ -727,7 +730,7 @@ export default class BracketScene extends Phaser.Scene {
       const txt = this.add.text(
         W / 2 - panelW / 2 + 24,
         logStartY + logTexts.length * lineH,
-        `RD ${roundNum} · ${lines[lineIdx]}`,
+        t('scenes.bracket.spectate-round-prefix', { round: roundNum, line: lines[lineIdx] }),
         {
           fontFamily: fontFamily.body,
           fontSize:   typeScale.small,
@@ -752,7 +755,7 @@ export default class BracketScene extends Phaser.Scene {
 
           const victoryText = this.add.text(
             W / 2, logStartY + logTexts.length * lineH + 18,
-            `VITÓRIA · ${winnerName.toUpperCase()}`,
+            t('scenes.bracket.spectate-victory', { winner: winnerName.toUpperCase() }),
             {
               fontFamily: fontFamily.display,
               fontSize:   typeScale.h3,
@@ -767,7 +770,7 @@ export default class BracketScene extends Phaser.Scene {
     }
     this.time.delayedCall(500, addLine)
 
-    const { container: closeBtn } = UI.buttonSecondary(this, W / 2, H / 2 + panelH / 2 - 32, 'FECHAR', {
+    const { container: closeBtn } = UI.buttonSecondary(this, W / 2, H / 2 + panelH / 2 - 32, t('common.actions.close'), {
       w: 140, h: 34, depth: 51,
       onPress: () => this.closeSpectateOverlay(),
     })

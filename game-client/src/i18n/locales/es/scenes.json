@@ -140,7 +140,33 @@
   "bracket": {
     "live": "EN VIVO",
     "champion": "CAMPEÓN",
-    "you-won": "¡GANASTE!"
+    "you-won": "¡GANASTE!",
+    "rounds": {
+      "quarters": "CUARTOS",
+      "semifinal": "SEMIFINAL",
+      "final": "FINAL",
+      "champion": "CAMPEÓN"
+    },
+    "tbd": "— POR DEFINIR —",
+    "simulating": "Simulando: {a} vs {b}…",
+    "spectate-btn": "VER",
+    "your-turn": "TU TURNO · vs {opponent}",
+    "results": "RESULTADOS",
+    "team-fallback": "Equipo {which}",
+    "spectate-round-prefix": "RD {round} · {line}",
+    "spectate-victory": "VICTORIA · {winner}",
+    "spectate": {
+      "line-1": "{A} ataca con Bola de Fuego…",
+      "line-2": "{B} defiende con Escudo Mágico…",
+      "line-3": "{A} lanza Flecha Congelante…",
+      "line-4": "{B} contraataca con Embestida…",
+      "line-5": "{A} usa Cura Divina…",
+      "line-6": "{B} invoca Tormenta Arcana…",
+      "line-7": "{A} prepara Golpe Devastador…",
+      "line-8": "{B} activa Barrera de Viento…",
+      "line-9": "{A} ¡acierta un crítico!",
+      "line-10": "{B} intenta esquivar pero falla…"
+    }
   },
   "pvp": {
     "title": "PVP",
@@ -180,7 +206,23 @@
   "matchmaking": {
     "searching": "BUSCANDO ADVERSARIO",
     "queue-time": "TIEMPO EN COLA",
-    "tip-eyebrow": "CONSEJO"
+    "tip-eyebrow": "CONSEJO",
+    "tips": {
+      "protect-king": "El Rey vivo es tu condición de victoria. Protégelo ante todo.",
+      "heal-cap": "La cura está limitada a 2 por turno — usa el tercer slot con intención.",
+      "overtime-damage": "El daño a partir del turno 12 gana +10% por turno en overtime.",
+      "bleed-combo": "El sangrado duplica el valor de Corte Mortal y Tempestad de Cuchillas.",
+      "isolated-executor": "Un Ejecutor aislado golpea más fuerte pero recibe 10% más daño.",
+      "specialist-cleanse": "Los Especialistas eliminan hasta tres debuffs de aliados en un turno.",
+      "shield-cap": "Los escudos se acumulan hasta 100 HP — más allá, sobrescriben al más débil.",
+      "card-cycle": "Las cartas rotan tras usarse: planifica la secuencia, no solo la jugada."
+    },
+    "mode-title": {
+      "ranked": "CLASIFICATORIA",
+      "casual": "CASUAL",
+      "pve": "ENTRENAMIENTO"
+    },
+    "queue-count": "Jugadores en cola: {players}   ·   Ping: {ping} ms"
   },
   "battle": {
     "phase": {
