@@ -300,28 +300,38 @@ export default class RaidHubScene extends Phaser.Scene {
     const cardH = 56
     const cx = W / 2
 
-    // Render the texts off-screen first so the card can auto-fit to the
-    // wider of the two — keeps the panel compact across translations.
-    const titleObj = this.add.text(-9999, cy - 10,
-      t('scenes.raid-hub.participating.title').toUpperCase(), {
-        fontFamily: fontFamily.body, fontSize: '13px',
-        color: fg.primaryHex, fontStyle: '700',
-      }).setOrigin(0, 0.5).setLetterSpacing(1.6)
+    const titleStr = t('scenes.raid-hub.participating.title').toUpperCase()
+    const bodyStr  = t('scenes.raid-hub.participating.body')
+    const titleStyle: Phaser.Types.GameObjects.Text.TextStyle = {
+      fontFamily: fontFamily.body, fontSize: '13px',
+      color: '#ffffff', fontStyle: '700',
+    }
+    const bodyStyle: Phaser.Types.GameObjects.Text.TextStyle = {
+      fontFamily: fontFamily.body, fontSize: '12px',
+      color: fg.secondaryHex, fontStyle: '500',
+    }
 
-    const bodyObj = this.add.text(-9999, cy + 10,
-      t('scenes.raid-hub.participating.body'), {
-        fontFamily: fontFamily.body, fontSize: '12px',
-        color: fg.tertiaryHex, fontStyle: '500',
-      }).setOrigin(0, 0.5)
+    // Off-screen pass to measure the wider of the two labels — keeps the
+    // panel compact across translations. Throwaway objects are destroyed
+    // so the real ones can be drawn ON TOP of the card background below.
+    const tempTitle = this.add.text(-9999, 0, titleStr, titleStyle).setLetterSpacing(1.6)
+    const tempBody  = this.add.text(-9999, 0, bodyStr,  bodyStyle)
+    const titleW = tempTitle.width
+    const bodyW  = tempBody.width
+    tempTitle.destroy()
+    tempBody.destroy()
 
     const togW = 64
     const togH = 28
     const padL = 22
     const padR = 22
     const gap  = 20
-    const textBlockW = Math.max(titleObj.width, bodyObj.width)
+    const textBlockW = Math.max(titleW, bodyW)
     const cardW = padL + textBlockW + gap + togW + padR
 
+    // Background FIRST so subsequent text + toggle render on top of it
+    // (Phaser draws by add-order; the bg covered the labels and washed
+    // them out in the previous build).
     const g = this.add.graphics()
     g.fillStyle(0x000000, 0.45)
     g.fillRoundedRect(cx - cardW / 2 + 2, cy - cardH / 2 + 4, cardW, cardH, radii.md)
@@ -330,8 +340,10 @@ export default class RaidHubScene extends Phaser.Scene {
     g.lineStyle(1, border.default, 1)
     g.strokeRoundedRect(cx - cardW / 2, cy - cardH / 2, cardW, cardH, radii.md)
 
-    titleObj.setX(cx - cardW / 2 + padL)
-    bodyObj.setX(cx - cardW / 2 + padL)
+    this.add.text(cx - cardW / 2 + padL, cy - 10, titleStr, titleStyle)
+      .setOrigin(0, 0.5).setLetterSpacing(1.6)
+    this.add.text(cx - cardW / 2 + padL, cy + 10, bodyStr, bodyStyle)
+      .setOrigin(0, 0.5)
 
     const togCx = cx + cardW / 2 - togW / 2 - padR
     const togCy = cy
