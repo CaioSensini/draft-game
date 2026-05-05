@@ -437,7 +437,30 @@
       "line-1": "ATAQUES",
       "line-2": "OFFLINE",
       "locked-status": "DISPONIBLE PRONTO",
-      "available-status": "PRÓXIMAMENTE"
+      "available-status": "PRÓXIMAMENTE",
+      "popup": {
+        "title": "ATAQUES OFFLINE",
+        "subtitle": "Saquea reinos mientras tus rivales duermen",
+        "coming-soon": "PRÓXIMAMENTE",
+        "feature-1": {
+          "title": "CAZA EQUIPOS OFFLINE",
+          "desc": "Emparejamiento automático con jugadores de tu nivel para combates equilibrados"
+        },
+        "feature-2": {
+          "title": "DEFIENDE TU REINO",
+          "desc": "Tu equipo puede ser atacado por otros mientras estés ausente"
+        },
+        "feature-3": {
+          "title": "GANA MAESTRÍA",
+          "desc": "Victorias y defensas exitosas otorgan Maestría de Ataque y Defensa"
+        },
+        "feature-4": {
+          "title": "CANJEA RECOMPENSAS",
+          "desc": "Usa Maestría en la Tienda para objetos, skins y recursos exclusivos"
+        },
+        "cta": "ENTENDIDO",
+        "preview-line": "Próximo objetivo previsto · Nv.{level} · Poder {power}"
+      }
     },
     "sound-toggle": {
       "on": "Sonido",

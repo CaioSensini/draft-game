@@ -437,7 +437,30 @@
       "line-1": "RAIDS",
       "line-2": "OFFLINE",
       "locked-status": "BIENTÔT DISPONIBLE",
-      "available-status": "BIENTÔT"
+      "available-status": "BIENTÔT",
+      "popup": {
+        "title": "RAIDS HORS LIGNE",
+        "subtitle": "Pille les royaumes pendant que tes rivaux dorment",
+        "coming-soon": "BIENTÔT",
+        "feature-1": {
+          "title": "CHASSE LES ÉQUIPES HORS LIGNE",
+          "desc": "Matchmaking automatique avec des joueurs de ton niveau pour des combats équilibrés"
+        },
+        "feature-2": {
+          "title": "DÉFENDS TON ROYAUME",
+          "desc": "Ton équipe peut être attaquée par d’autres pillards quand tu es hors ligne"
+        },
+        "feature-3": {
+          "title": "GAGNE DE LA MAÎTRISE",
+          "desc": "Les raids et défenses réussis rapportent de la Maîtrise d’Attaque et de Défense"
+        },
+        "feature-4": {
+          "title": "ÉCHANGE CONTRE DES RÉCOMPENSES",
+          "desc": "Dépense la Maîtrise à la Boutique pour des objets, skins et ressources exclusifs"
+        },
+        "cta": "COMPRIS",
+        "preview-line": "Prochaine cible prévue · Nv.{level} · Puissance {power}"
+      }
     },
     "sound-toggle": {
       "on": "Son",

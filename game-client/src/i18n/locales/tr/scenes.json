@@ -437,7 +437,30 @@
       "line-1": "SALDIRI",
       "line-2": "OFFLINE",
       "locked-status": "YAKINDA HAZIR",
-      "available-status": "YAKINDA"
+      "available-status": "YAKINDA",
+      "popup": {
+        "title": "OFFLINE BASKINLAR",
+        "subtitle": "Rakiplerin uyurken krallıklarını yağmala",
+        "coming-soon": "YAKINDA",
+        "feature-1": {
+          "title": "OFFLINE TAKIMLARI AVLA",
+          "desc": "Otomatik eşleştirme seviyene yakın oyuncuları dengeli savaş için bulur"
+        },
+        "feature-2": {
+          "title": "KRALLIĞINI SAVUN",
+          "desc": "Sen yokken takımına başka yağmacılar saldırabilir"
+        },
+        "feature-3": {
+          "title": "USTALIK KAZAN",
+          "desc": "Başarılı baskınlar ve savunmalar Saldırı ve Savunma Ustalığı kazandırır"
+        },
+        "feature-4": {
+          "title": "ÖDÜLLER İÇİN TAKAS ET",
+          "desc": "Mağazada Ustalık ile özel eşyalar, kostümler ve kaynaklar al"
+        },
+        "cta": "ANLADIM",
+        "preview-line": "Sonraki hedef · Sv.{level} · Güç {power}"
+      }
     },
     "sound-toggle": {
       "on": "Ses",

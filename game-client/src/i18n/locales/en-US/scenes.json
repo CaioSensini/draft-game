@@ -437,7 +437,30 @@
       "line-1": "RAIDS",
       "line-2": "OFFLINE",
       "locked-status": "AVAILABLE SOON",
-      "available-status": "COMING SOON"
+      "available-status": "COMING SOON",
+      "popup": {
+        "title": "OFFLINE RAIDS",
+        "subtitle": "Plunder kingdoms while your rivals sleep",
+        "coming-soon": "COMING SOON",
+        "feature-1": {
+          "title": "HUNT OFFLINE TEAMS",
+          "desc": "Automatic matchmaking finds players close to your level for balanced fights"
+        },
+        "feature-2": {
+          "title": "DEFEND YOUR REALM",
+          "desc": "Your team can be attacked by other raiders while you are away"
+        },
+        "feature-3": {
+          "title": "EARN MASTERY",
+          "desc": "Successful raids and defenses grant Attack and Defense Mastery"
+        },
+        "feature-4": {
+          "title": "REDEEM REWARDS",
+          "desc": "Spend Mastery in the Shop on exclusive items, skins, and resources"
+        },
+        "cta": "GOT IT",
+        "preview-line": "Predicted next target · Lv.{level} · Power {power}"
+      }
     },
     "sound-toggle": {
       "on": "Sound",

@@ -437,7 +437,30 @@
       "line-1": "ATTACCHI",
       "line-2": "OFFLINE",
       "locked-status": "PRESTO DISPONIBILE",
-      "available-status": "PROSSIMAMENTE"
+      "available-status": "PROSSIMAMENTE",
+      "popup": {
+        "title": "ATTACCHI OFFLINE",
+        "subtitle": "Saccheggia regni mentre i tuoi rivali dormono",
+        "coming-soon": "PROSSIMAMENTE",
+        "feature-1": {
+          "title": "CACCIA SQUADRE OFFLINE",
+          "desc": "Matchmaking automatico con giocatori del tuo livello per combattimenti equilibrati"
+        },
+        "feature-2": {
+          "title": "DIFENDI IL TUO REGNO",
+          "desc": "La tua squadra può essere attaccata da altri predoni mentre sei offline"
+        },
+        "feature-3": {
+          "title": "GUADAGNA MAESTRIA",
+          "desc": "Vittorie e difese riuscite concedono Maestria di Attacco e Difesa"
+        },
+        "feature-4": {
+          "title": "RISCATTA RICOMPENSE",
+          "desc": "Spendi la Maestria al Negozio per oggetti, skin e risorse esclusive"
+        },
+        "cta": "CAPITO",
+        "preview-line": "Prossimo bersaglio · Lv.{level} · Potenza {power}"
+      }
     },
     "sound-toggle": {
       "on": "Audio",

@@ -468,7 +468,30 @@
       "line-1": "ATAQUES",
       "line-2": "OFFLINE",
       "locked-status": "DISPONÍVEL EM BREVE",
-      "available-status": "EM BREVE"
+      "available-status": "EM BREVE",
+      "popup": {
+        "title": "ATAQUES OFFLINE",
+        "subtitle": "Saqueie reinos enquanto seus rivais dormem",
+        "coming-soon": "EM BREVE",
+        "feature-1": {
+          "title": "CACE EQUIPES OFFLINE",
+          "desc": "Busca automática por jogadores de nível próximo ao seu para uma batalha equilibrada"
+        },
+        "feature-2": {
+          "title": "DEFENDA SEU REINO",
+          "desc": "Sua equipe pode ser atacada por outros invasores enquanto você estiver fora"
+        },
+        "feature-3": {
+          "title": "GANHE MAESTRIA",
+          "desc": "Vitórias e defesas bem-sucedidas rendem Maestria de Ataque e Defesa"
+        },
+        "feature-4": {
+          "title": "TROQUE POR RECOMPENSAS",
+          "desc": "Use a Maestria na Loja para resgatar itens, skins e recursos exclusivos"
+        },
+        "cta": "ENTENDI",
+        "preview-line": "Próximo alvo previsto · Nv.{level} · Poder {power}"
+      }
     },
     "sound-toggle": {
       "on": "Som",
