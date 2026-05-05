@@ -433,7 +433,11 @@
       "title": "Ataques a equipos",
       "subtitle": "Sin conexión",
       "popup-eyebrow": "PRÓXIMAMENTE",
-      "popup-body": "Sistema de ataques a equipos"
+      "popup-body": "Sistema de ataques a equipos",
+      "line-1": "ATAQUES",
+      "line-2": "OFFLINE",
+      "locked-status": "BLOQUEADO",
+      "available-status": "PRÓXIMAMENTE"
     },
     "sound-toggle": {
       "on": "Sonido",

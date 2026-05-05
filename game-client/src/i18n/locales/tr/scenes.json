@@ -433,7 +433,11 @@
       "title": "Takım baskınları",
       "subtitle": "Çevrimdışı",
       "popup-eyebrow": "YAKINDA",
-      "popup-body": "Takım saldırı sistemi"
+      "popup-body": "Takım saldırı sistemi",
+      "line-1": "SALDIRI",
+      "line-2": "OFFLINE",
+      "locked-status": "KİLİTLİ",
+      "available-status": "YAKINDA"
     },
     "sound-toggle": {
       "on": "Ses",

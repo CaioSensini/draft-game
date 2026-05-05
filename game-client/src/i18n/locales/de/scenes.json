@@ -433,7 +433,11 @@
       "title": "Team-Überfälle",
       "subtitle": "Offline",
       "popup-eyebrow": "DEMNÄCHST",
-      "popup-body": "Team-Angriffssystem"
+      "popup-body": "Team-Angriffssystem",
+      "line-1": "RAIDS",
+      "line-2": "OFFLINE",
+      "locked-status": "GESPERRT",
+      "available-status": "DEMNÄCHST"
     },
     "sound-toggle": {
       "on": "Ton",

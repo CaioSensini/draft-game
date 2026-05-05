@@ -23,7 +23,6 @@ const GOLD_HEX     = accent.primary
 const GOLD_DIM     = accent.dimHex
 const ICE_BLUE     = C.infoHex
 const ICE_BLUE_HEX = C.info
-const TEXT_MUTED   = fg.tertiaryHex
 const BTN_FILL     = surface.raised
 
 // ---- Bottom icons data ------------------------------------------------------
@@ -623,203 +622,307 @@ export default class LobbyScene extends Phaser.Scene {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // OFFLINE ATTACK LINK — Mini-panel with icon
+  // OFFLINE ATTACK CARD — Portrait tile mirroring the BattlePass button
   // ═══════════════════════════════════════════════════════════════════════════
+  //
+  // Geometry mirrors drawBattlePassButton(): same 150 × 116 portrait card
+  // and same Y center as the standard bottom-row icons. The BattlePass
+  // sits on the LEFT of the icon row (purple/gem theme) and this card sits
+  // on the RIGHT (crimson/raid theme) so the bar reads as
+  //
+  //   [BATTLEPASS] [SHOP] [SKILLS] [TRAINING] [RANKING] [OFFLINE-RAID]
+  //
+  // The visual language is bespoke for "Ataques às equipes":
+  //   - Crimson + amber palette (warband / siege colours, NOT BattlePass purple)
+  //   - Crossed swords emblem flanked by a shield silhouette
+  //   - Iron rivets at the four corners (replacing battlepass's gem jewels)
+  //   - Red→amber base gradient with double border
+  //   - When locked (player level < 30): grey wash + Lv.30 lock pill bottom strip
+  //   - When unlocked: ember pulse + "EM BREVE" status (feature still WIP)
 
   private drawOfflineAttackLink() {
     const p = playerData.get()
-    const btnY = 488
     const available = p.level >= 30
-    const accentColor = available ? 0xffa726 : 0x555555
-    const accentHex = available ? '#ffa726' : TEXT_MUTED
 
-    const btnW = 280
-    const btnH = 44
-    const container = this.add.container(W / 2, btnY).setAlpha(0)
+    // ── Geometry — mirror drawBattlePassButton() so we hug the LAST icon ──
+    const stdIconW = 120
+    const stdIconH = 100
+    const stdGap = 24
+    const stdCount = BOTTOM_ICONS.length
+    const stdTotalW = stdCount * stdIconW + (stdCount - 1) * stdGap
+    const stdStartCenterX = (W - stdTotalW) / 2 + stdIconW / 2     // first icon center
+    const stdLastRightX = stdStartCenterX - stdIconW / 2 + stdTotalW   // last icon right edge
+    const centerY = 525 + stdIconH / 2                              // same Y as other icons
+
+    // Same dimensions as the BattlePass button for visual symmetry
+    const btnW = 150
+    const btnH = 116
+    const btnGap = 26
+    const bx = stdLastRightX + btnGap + btnW / 2
+    const by = centerY
+
+    // ── Crimson raid palette ──
+    // Locked variant uses muted greys; unlocked uses ember crimson + amber.
+    const palette = available
+      ? {
+          base:        0x2a0808,   // deep crimson body
+          gradTop:     0xc23a1f,   // ember red (top wash)
+          gradBottom:  0x5a1212,   // dark blood (bottom wash)
+          borderOuter: 0xc23a1f,   // ember
+          borderInner: 0xffa726,   // amber highlight
+          aura:        0xc23a1f,
+          accent:      0xffa726,   // amber accent (jewel rivets, divider, emblem highlights)
+          accentHex:   '#ffa726',
+          textPrimary: '#ffffff',
+          textSecondary: '#ffa726',
+          shadowDeep:  '#3a0808',
+          jewel:       0xffa726,
+        }
+      : {
+          base:        0x10141d,
+          gradTop:     0x202733,
+          gradBottom:  0x14181f,
+          borderOuter: 0x4a4f5a,
+          borderInner: 0x6a7080,
+          aura:        0x4a4f5a,
+          accent:      0x808595,
+          accentHex:   '#808595',
+          textPrimary: '#cbd5e1',
+          textSecondary: '#808595',
+          shadowDeep:  '#000000',
+          jewel:       0x808595,
+        }
+
+    const container = this.add.container(bx, by).setAlpha(0).setScale(0.9)
     this.offlineContainer = container
 
-    // Button background with depth
+    // ── Pulsing aura (behind everything, only when unlocked) ──
+    if (available) {
+      const aura = this.add.graphics()
+      aura.fillStyle(palette.aura, 0.18)
+      aura.fillRoundedRect(-btnW / 2 - 6, -btnH / 2 - 6, btnW + 12, btnH + 12, S.borderRadiusLarge + 3)
+      container.add(aura)
+      this.tweens.add({
+        targets: aura,
+        alpha: { from: 0.30, to: 0.70 },
+        duration: 1400, yoyo: true, repeat: -1, ease: 'Sine.InOut',
+      })
+    }
+
+    // ── Main background: crimson gradient w/ double border ──
     const bgGfx = this.add.graphics()
-    // Shadow
-    bgGfx.fillStyle(0x000000, 0.2)
-    bgGfx.fillRoundedRect(-btnW / 2 + 2, -btnH / 2 + 3, btnW, btnH, 8)
-    // Main fill
-    bgGfx.fillStyle(available ? 0x1a1408 : 0x0e1018, 0.9)
-    bgGfx.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, 8)
+    // Outer soft shadow
+    bgGfx.fillStyle(0x000000, 0.3)
+    bgGfx.fillRoundedRect(-btnW / 2 + 2, -btnH / 2 + 4, btnW, btnH, S.borderRadiusLarge)
+    // Dark crimson base
+    bgGfx.fillStyle(palette.base, 0.98)
+    bgGfx.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, S.borderRadiusLarge)
+    // Crimson gradient (top wash)
+    bgGfx.fillStyle(palette.gradTop, 0.22)
+    bgGfx.fillRoundedRect(-btnW / 2 + 1, -btnH / 2 + 1, btnW - 2, btnH / 2,
+      { tl: S.borderRadiusLarge - 1, tr: S.borderRadiusLarge - 1, bl: 0, br: 0 })
+    bgGfx.fillStyle(palette.gradBottom, 0.25)
+    bgGfx.fillRoundedRect(-btnW / 2 + 1, 0, btnW - 2, btnH / 2 - 1,
+      { tl: 0, tr: 0, bl: S.borderRadiusLarge - 1, br: S.borderRadiusLarge - 1 })
     // Top gloss
-    bgGfx.fillStyle(0xffffff, 0.02)
-    bgGfx.fillRoundedRect(-btnW / 2 + 2, -btnH / 2 + 2, btnW - 4, btnH * 0.35,
-      { tl: 6, tr: 6, bl: 0, br: 0 })
-    // Left accent bar
-    bgGfx.fillStyle(accentColor, available ? 0.8 : 0.3)
-    bgGfx.fillRoundedRect(-btnW / 2, -btnH / 2, 4, btnH,
-      { tl: 8, bl: 8, tr: 0, br: 0 })
-    // Border
-    bgGfx.lineStyle(1, accentColor, available ? 0.4 : 0.2)
-    bgGfx.strokeRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, 8)
+    bgGfx.fillStyle(0xffffff, 0.05)
+    bgGfx.fillRoundedRect(-btnW / 2 + 3, -btnH / 2 + 3, btnW - 6, 20,
+      { tl: S.borderRadiusLarge - 2, tr: S.borderRadiusLarge - 2, bl: 0, br: 0 })
+    // Double border — outer ember + inner amber (or muted greys when locked)
+    bgGfx.lineStyle(2, palette.borderOuter, 0.9)
+    bgGfx.strokeRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, S.borderRadiusLarge)
+    bgGfx.lineStyle(1, palette.borderInner, 0.45)
+    bgGfx.strokeRoundedRect(-btnW / 2 + 3, -btnH / 2 + 3, btnW - 6, btnH - 6, S.borderRadiusLarge - 2)
     container.add(bgGfx)
 
-    // Sword + castle icon (larger, better drawn)
-    const iconGfx = this.add.graphics()
-    const iX = -btnW / 2 + 30
-    // Sword blade
-    iconGfx.lineStyle(2.5, accentColor, available ? 0.85 : 0.4)
-    iconGfx.lineBetween(iX - 2, -12, iX + 4, 10)
-    // Crossguard
-    iconGfx.lineStyle(2, accentColor, available ? 0.7 : 0.3)
-    iconGfx.lineBetween(iX - 6, 0, iX + 10, -4)
-    // Pommel
-    iconGfx.fillStyle(accentColor, available ? 0.7 : 0.3)
-    iconGfx.fillCircle(iX - 3, -13, 2.5)
-    // Castle
-    const cX = iX + 20
-    iconGfx.fillStyle(accentColor, available ? 0.5 : 0.2)
-    iconGfx.fillRect(cX - 8, -6, 16, 12)
-    // Battlements
-    iconGfx.fillRect(cX - 8, -10, 4, 4)
-    iconGfx.fillRect(cX + 4, -10, 4, 4)
-    // Door
-    iconGfx.fillStyle(0x000000, 0.4)
-    iconGfx.fillRect(cX - 2, 1, 4, 5)
-    container.add(iconGfx)
+    // ── Iron rivets at the four corners (instead of battle pass jewels) ──
+    const rivetGfx = this.add.graphics()
+    const rivets: Array<[number, number]> = [
+      [-btnW / 2 + 8, -btnH / 2 + 8],
+      [ btnW / 2 - 8, -btnH / 2 + 8],
+      [-btnW / 2 + 8,  btnH / 2 - 8],
+      [ btnW / 2 - 8,  btnH / 2 - 8],
+    ]
+    for (const [rx, ry] of rivets) {
+      // Rivet body
+      rivetGfx.fillStyle(palette.jewel, 0.85)
+      rivetGfx.fillCircle(rx, ry, 2.4)
+      // Highlight (top-left)
+      rivetGfx.fillStyle(0xffffff, 0.55)
+      rivetGfx.fillCircle(rx - 0.6, ry - 0.6, 1.0)
+      // Inner shadow (bottom-right)
+      rivetGfx.fillStyle(0x000000, 0.4)
+      rivetGfx.fillCircle(rx + 0.6, ry + 0.6, 0.5)
+    }
+    container.add(rivetGfx)
 
-    // Lock pill geometry (declared first so labels know where to stop).
-    // Sub 9.1: widened from 60 → 72 to match PlayModesOverlay's Lv.100 badge
-    // (same height 18 → 22). Labels are pulled left to clear the pill in
-    // every locale (DE/RU/JA traduzem "Ataques às equipes" para 18+ chars).
-    const pillW = !available ? 72 : 0
-    const pillH = !available ? 22 : 0
-    const pillCx = btnW / 2 - pillW / 2 - 10
-    const pillLeft = !available ? pillCx - pillW / 2 : btnW / 2
+    // ── Header strip: line-1 / line-2 (Cinzel display) ──
+    container.add(this.add.text(0, -btnH / 2 + 16, t('scenes.lobby.offline.line-1'), {
+      fontFamily: fontFamily.display, fontSize: '13px', color: palette.textPrimary, fontStyle: '700',
+      shadow: { offsetX: 0, offsetY: 1, color: palette.shadowDeep, blur: 6, fill: true },
+    }).setOrigin(0.5))
+    container.add(this.add.text(0, -btnH / 2 + 30, t('scenes.lobby.offline.line-2'), {
+      fontFamily: fontFamily.display, fontSize: '10px', color: palette.textSecondary, fontStyle: '700',
+      shadow: { offsetX: 0, offsetY: 1, color: palette.shadowDeep, blur: 4, fill: true },
+    }).setOrigin(0.5))
 
-    // Text block: anchored just past the castle icon, vertically centered
-    // around 0, with wordWrap.width budgeted so even DE/RU translations
-    // never reach the badge.
-    const TEXT_X        = -54
-    const TEXT_RIGHT_PAD = 12
-    const textBudget    = Math.max(80, pillLeft - TEXT_X - TEXT_RIGHT_PAD)
+    // Divider under header
+    const divGfx = this.add.graphics()
+    divGfx.fillStyle(palette.accent, 0.4)
+    divGfx.fillRect(-btnW / 2 + 14, -btnH / 2 + 38, btnW - 28, 1)
+    container.add(divGfx)
 
-    // Label (Cormorant h3)
-    const label = this.add.text(TEXT_X, -7, t('scenes.lobby.offline.title'), {
-      fontFamily: fontFamily.serif, fontSize: '14px',
-      color:      accentHex,
-      fontStyle:  '600',
-      shadow:     SHADOW.text,
-      wordWrap:   { width: textBudget },
-    }).setOrigin(0, 0.5)
-    container.add(label)
+    // ── Crossed swords + shield emblem in the middle ──
+    const emblem = this.add.graphics()
+    const ex = 0
+    const ey = -4
 
-    // Description (Manrope body)
-    const desc = this.add.text(TEXT_X, 9, t('scenes.lobby.offline.subtitle'), {
-      fontFamily: fontFamily.body, fontSize: '11px',
-      color:      available ? fg.tertiaryHex : fg.disabledHex,
-      shadow:     SHADOW.text,
-      wordWrap:   { width: textBudget },
-    }).setOrigin(0, 0.5)
-    container.add(desc)
+    // Shield silhouette (background of emblem)
+    emblem.fillStyle(palette.borderInner, 0.18)
+    emblem.beginPath()
+    emblem.moveTo(ex - 12, ey - 11)
+    emblem.lineTo(ex + 12, ey - 11)
+    emblem.lineTo(ex + 12, ey + 2)
+    emblem.lineTo(ex, ey + 14)
+    emblem.lineTo(ex - 12, ey + 2)
+    emblem.closePath()
+    emblem.fillPath()
+    emblem.lineStyle(1.2, palette.accent, 0.7)
+    emblem.beginPath()
+    emblem.moveTo(ex - 12, ey - 11)
+    emblem.lineTo(ex + 12, ey - 11)
+    emblem.lineTo(ex + 12, ey + 2)
+    emblem.lineTo(ex, ey + 14)
+    emblem.lineTo(ex - 12, ey + 2)
+    emblem.closePath()
+    emblem.strokePath()
 
-    // Lock pill badge — anchored to the card's right edge with 10px
-    // padding so it sits cleanly inside the card (sub 7.3 fix, 9.1 widen).
+    // Crossed swords (X) over the shield — two strokes for blade+hilt
+    // Left-leaning blade (NW → SE)
+    emblem.lineStyle(2.4, palette.accent, 0.95)
+    emblem.lineBetween(ex - 9, ey - 8, ex + 9, ey + 6)
+    // Right-leaning blade (NE → SW)
+    emblem.lineBetween(ex + 9, ey - 8, ex - 9, ey + 6)
+    // Crossguards (small horizontal nubs at hilt ends)
+    emblem.lineStyle(1.8, palette.accent, 0.85)
+    emblem.lineBetween(ex - 11, ey - 7, ex - 7, ey - 9)   // upper-left hilt
+    emblem.lineBetween(ex + 11, ey - 7, ex + 7, ey - 9)   // upper-right hilt
+    // Pommels
+    emblem.fillStyle(palette.accent, 0.95)
+    emblem.fillCircle(ex - 9, ey - 8, 1.2)
+    emblem.fillCircle(ex + 9, ey - 8, 1.2)
+
+    container.add(emblem)
+
+    // Emblem glow (only when unlocked)
+    if (available) {
+      const emblemGlow = this.add.circle(ex, ey, 18, palette.aura, 0.15)
+      container.addAt(emblemGlow, 3)
+      this.tweens.add({
+        targets: emblemGlow,
+        alpha: { from: 0.08, to: 0.28 },
+        scale: { from: 0.9, to: 1.15 },
+        duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.InOut',
+      })
+    }
+
+    // ── Status label / Lv.30 lock pill below the emblem ──
     if (!available) {
-      const pillCy = 0
+      // Lock pill: padlock icon + "Lv.30" text, mirroring PlayModesOverlay
+      const pillW = 72
+      const pillH = 22
+      const pillCy = 18
 
       const pillGfx = this.add.graphics()
-      pillGfx.fillStyle(0x1a1a2a, 0.9)
-      pillGfx.fillRoundedRect(pillCx - pillW / 2, pillCy - pillH / 2, pillW, pillH, pillH / 2)
-      pillGfx.lineStyle(1, 0x777777, 0.45)
-      pillGfx.strokeRoundedRect(pillCx - pillW / 2, pillCy - pillH / 2, pillW, pillH, pillH / 2)
+      pillGfx.fillStyle(0x10141d, 0.95)
+      pillGfx.fillRoundedRect(-pillW / 2, pillCy - pillH / 2, pillW, pillH, pillH / 2)
+      pillGfx.lineStyle(1, palette.borderInner, 0.7)
+      pillGfx.strokeRoundedRect(-pillW / 2, pillCy - pillH / 2, pillW, pillH, pillH / 2)
       container.add(pillGfx)
 
       // Padlock (left side of pill)
       const lockGfx = this.add.graphics()
-      const lkX = pillCx - 17
+      const lkX = -pillW / 2 + 13
       const lkY = pillCy + 1
-      lockGfx.lineStyle(1.5, 0x999999, 0.8)
+      lockGfx.lineStyle(1.5, palette.accent, 0.85)
       lockGfx.beginPath()
       lockGfx.arc(lkX, lkY - 4, 3, Math.PI, 0, false)
       lockGfx.strokePath()
-      lockGfx.fillStyle(0x999999, 0.8)
+      lockGfx.fillStyle(palette.accent, 0.85)
       lockGfx.fillRoundedRect(lkX - 4, lkY - 4, 8, 6, 1)
       lockGfx.fillStyle(0x000000, 0.5)
       lockGfx.fillCircle(lkX, lkY - 2, 1)
       container.add(lockGfx)
 
-      // "Lv.30" text (right side of pill) — Mono tabular for stat feel
-      container.add(this.add.text(pillCx + 1, pillCy, t('common.labels.level-long', { level: 30 }), {
+      container.add(this.add.text(-pillW / 2 + 26, pillCy, t('common.labels.level-long', { level: 30 }), {
         fontFamily: fontFamily.mono, fontSize: '12px',
-        color:      fg.disabledHex, fontStyle: '700',
-        shadow:     SHADOW.text,
+        color: palette.accentHex, fontStyle: '700',
+        shadow: { offsetX: 0, offsetY: 1, color: palette.shadowDeep, blur: 3, fill: true },
       }).setOrigin(0, 0.5))
+    } else {
+      // Unlocked: tier-style label "EM BREVE" centered below emblem
+      container.add(this.add.text(0, 18, t('scenes.lobby.offline.available-status'), {
+        fontFamily: fontFamily.display, fontSize: '12px',
+        color: palette.textPrimary, fontStyle: '700',
+        shadow: { offsetX: 0, offsetY: 1, color: palette.shadowDeep, blur: 5, fill: true },
+      }).setOrigin(0.5).setLetterSpacing(1.4))
     }
 
-    // Arrow indicator if available
-    if (available) {
-      const arrowGfx = this.add.graphics()
-      arrowGfx.lineStyle(2, accentColor, 0.5)
-      arrowGfx.beginPath()
-      arrowGfx.moveTo(btnW / 2 - 24, -6)
-      arrowGfx.lineTo(btnW / 2 - 16, 0)
-      arrowGfx.lineTo(btnW / 2 - 24, 6)
-      arrowGfx.strokePath()
-      container.add(arrowGfx)
+    // ── Bottom strip: status indicator (mirrors XP bar slot in BattlePass) ──
+    const stripText = available
+      ? t('scenes.lobby.offline.available-status')
+      : t('scenes.lobby.offline.locked-status')
+    const stripY = btnH / 2 - 14
+    const stripW = btnW - 30
+    const stripBgY = stripY - 8
+    const stripBgH = 16
 
-      // Subtle glow pulse
-      const glowRect = this.add.rectangle(0, 0, btnW + 8, btnH + 8, accentColor, 0)
-      container.addAt(glowRect, 0)
-      this.tweens.add({
-        targets: glowRect,
-        alpha: { from: 0.02, to: 0.06 },
-        duration: 2000,
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.InOut',
-      })
-    }
+    const stripGfx = this.add.graphics()
+    stripGfx.fillStyle(0x10141d, 0.85)
+    stripGfx.fillRoundedRect(-stripW / 2, stripBgY, stripW, stripBgH, stripBgH / 2)
+    stripGfx.lineStyle(1, palette.borderInner, 0.4)
+    stripGfx.strokeRoundedRect(-stripW / 2, stripBgY, stripW, stripBgH, stripBgH / 2)
+    container.add(stripGfx)
 
-    // Hit area
-    const hitZone = this.add.rectangle(0, 0, btnW, btnH, 0, 0.001)
+    container.add(this.add.text(0, stripY, stripText, {
+      fontFamily: fontFamily.body, fontSize: '9px',
+      color: palette.accentHex, fontStyle: '700',
+      shadow: { offsetX: 0, offsetY: 1, color: palette.shadowDeep, blur: 3, fill: true },
+    }).setOrigin(0.5).setLetterSpacing(1.6))
+
+    // ── Interaction ──
+    const hit = this.add.rectangle(0, 0, btnW, btnH, 0, 0.001)
       .setInteractive({ useHandCursor: true })
-    container.add(hitZone)
+    container.add(hit)
 
-    // Hover glow
     const hoverGlow = this.add.graphics()
-    hoverGlow.fillStyle(accentColor, 0.06)
-    hoverGlow.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, 8)
+    hoverGlow.lineStyle(3, palette.borderInner, 0.85)
+    hoverGlow.strokeRoundedRect(-btnW / 2 - 1, -btnH / 2 - 1, btnW + 2, btnH + 2, S.borderRadiusLarge + 1)
     hoverGlow.setAlpha(0)
     container.add(hoverGlow)
 
-    const hoverBorder = this.add.graphics()
-    hoverBorder.lineStyle(1.5, accentColor, 0.5)
-    hoverBorder.strokeRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, 8)
-    hoverBorder.setAlpha(0)
-    container.add(hoverBorder)
-
-    hitZone.on('pointerover', () => {
+    hit.on('pointerover', () => {
       hoverGlow.setAlpha(1)
-      hoverBorder.setAlpha(1)
-      if (available) label.setColor('#ffe0a0')
-      this.tweens.add({ targets: container, scaleX: 1.03, scaleY: 1.03, duration: 120, ease: 'Sine.Out' })
+      this.tweens.add({ targets: container, scaleX: 1.06, scaleY: 1.06, duration: 140, ease: 'Sine.Out' })
     })
-    hitZone.on('pointerout', () => {
+    hit.on('pointerout', () => {
       hoverGlow.setAlpha(0)
-      hoverBorder.setAlpha(0)
-      label.setColor(accentHex)
-      this.tweens.add({ targets: container, scaleX: 1, scaleY: 1, duration: 120, ease: 'Sine.Out' })
+      this.tweens.add({ targets: container, scaleX: 1, scaleY: 1, duration: 140, ease: 'Sine.Out' })
     })
-    hitZone.on('pointerdown', () => {
+    hit.on('pointerdown', () => {
       this.tweens.add({
-        targets: container, scaleX: 0.97, scaleY: 0.97, duration: 60,
+        targets: container, scaleX: 0.94, scaleY: 0.94, duration: 70,
         yoyo: true, ease: 'Sine.InOut',
         onComplete: () => this.showOfflineAttackPopup(),
       })
     })
 
-    // Entrance animation
-    container.setY(btnY + 20)
+    // Entrance animation — staggered slide-up matching the bottom bar
+    container.y = by + 50
     this.tweens.add({
       targets: container,
-      y: btnY, alpha: 1,
-      duration: 400, delay: 350, ease: 'Quad.Out',
+      y: by, alpha: 1, scaleX: 1, scaleY: 1,
+      duration: 500, delay: 350, ease: 'Back.easeOut',
     })
   }
 

@@ -433,7 +433,11 @@
       "title": "팀 공격",
       "subtitle": "오프라인",
       "popup-eyebrow": "곧 출시",
-      "popup-body": "팀 습격 시스템"
+      "popup-body": "팀 습격 시스템",
+      "line-1": "습격",
+      "line-2": "오프라인",
+      "locked-status": "잠김",
+      "available-status": "곧 출시"
     },
     "sound-toggle": {
       "on": "소리",
