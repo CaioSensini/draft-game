@@ -458,7 +458,7 @@
           "title": "보상으로 교환",
           "desc": "상점에서 숙련도로 전용 아이템, 스킨, 자원을 교환할 수 있습니다"
         },
-        "cta": "확인",
+        "cta": "참여하기",
         "preview-line": "다음 대상 예상 · Lv.{level} · 전력 {power}",
         "cta-enter": "입장"
       }
@@ -708,5 +708,71 @@
   },
   "pack-open": {
     "tap-to-close": "눌러서 닫기"
+  },
+  "raid-hub": {
+    "title": "레이드 허브",
+    "subtitle": "참여 설정과 왕국 방어를 강화하세요",
+    "counters": {
+      "attacks": "오늘의 공격",
+      "defenses": "오늘의 방어"
+    },
+    "mastery": {
+      "title": "숙련도",
+      "attack-label": "공격",
+      "defense-label": "방어",
+      "value": "{available} 사용가능 · {earned} 획득"
+    },
+    "participating": {
+      "title": "오프라인 모드 참여",
+      "body": "켜면 다른 플레이어를 공격하고 공격받을 수 있습니다."
+    },
+    "shop": {
+      "title": "요새화",
+      "subtitle": "받은 방어 횟수만큼 지속되는 버프",
+      "buy": "구매",
+      "active": "활성 · 방어 {remaining}회 남음",
+      "toast": {
+        "no-gold": "골드가 부족합니다",
+        "no-dg": "Draft Gems이 부족합니다"
+      }
+    },
+    "attack-cta": "지금 공격",
+    "attack-disabled-toggle-off": "공격하려면 참여를 켜세요",
+    "attack-disabled-out-of-attacks": "오늘의 공격 10회를 모두 사용했습니다",
+    "attack-no-targets": "레벨 {level}에 사용 가능한 플레이어가 없습니다",
+    "items": {
+      "reforco-real": {
+        "name": "왕실 증원",
+        "desc": "전체 팀 방어 +15%"
+      },
+      "furia-coletiva": {
+        "name": "집단 분노",
+        "desc": "전체 팀 공격 +15%"
+      },
+      "trap-espinhos": {
+        "name": "가시 함정",
+        "desc": "침입자 경로에 함정 3개 설치"
+      },
+      "muralha-reforcada": {
+        "name": "강화된 성벽",
+        "desc": "왕만 방어 +25%"
+      },
+      "olho-vigia": {
+        "name": "경계의 눈",
+        "desc": "침입자 스킬을 1턴 먼저 표시"
+      },
+      "bandeira-sorte": {
+        "name": "행운의 깃발",
+        "desc": "승리 방어 시 골드 +25%"
+      },
+      "esquiva-real": {
+        "name": "왕의 회피",
+        "desc": "왕이 방어마다 무료 회피 1회"
+      },
+      "avancada-rapida": {
+        "name": "빠른 진격",
+        "desc": "방어 첫 턴 이동 +1"
+      }
+    }
   }
 }

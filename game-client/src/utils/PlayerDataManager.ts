@@ -64,8 +64,23 @@ export interface PlayerData {
   wins: number
   losses: number
   rankPoints: number
+  /** Spendable Attack Mastery balance (decreases when spent in shops). */
   attackMastery: number
+  /** Spendable Defense Mastery balance (decreases when spent in shops). */
   defenseMastery: number
+  /**
+   * Lifetime Attack Mastery earned across all raids/PvE — never decreases.
+   * RaidHubScene displays this alongside the spendable balance so the
+   * player sees both "how much I've earned" and "how much is left to spend".
+   */
+  attackMasteryEarned: number
+  defenseMasteryEarned: number
+  /**
+   * Offline Raid system — daily attack/defense quotas, participation
+   * toggle, and the catalogue of fortifications the player has purchased.
+   * See `data/raidFortifications.ts` for the available items.
+   */
+  raid: RaidProfile
   ownedSkills: OwnedSkill[]
   deckConfig: Record<string, { attackCards: string[]; defenseCards: string[] }>
   ranked: RankedProfile
@@ -91,13 +106,39 @@ export interface OwnedSkill {
   progress: number // filled dots (0 to <level> to upgrade; resets on upgrade)
 }
 
+/**
+ * Per-day quota for the Offline Raid feature plus the player's owned
+ * fortifications. The quota numbers reset every calendar day, tracked via
+ * `lastResetDate` in YYYY-MM-DD form.
+ */
+export interface RaidProfile {
+  /** When false, the player cannot launch raids and is excluded from the
+   *  matchmaking pool that other players draw from. */
+  participating: boolean
+  /** Number of raid attacks consumed today (capped at RAID_DAILY_LIMIT). */
+  attacksUsedToday: number
+  /** Number of raids received today (capped at RAID_DAILY_LIMIT). */
+  defensesReceivedToday: number
+  /** YYYY-MM-DD of the last day the counters were reset. */
+  lastResetDate: string
+  /** Fortifications the player has purchased and not yet exhausted. Each
+   *  entry's `remainingDefenses` ticks down when a defense is received. */
+  ownedFortifications: Array<{
+    itemId: string
+    remainingDefenses: number
+  }>
+}
+
+/** Daily cap on both raid attacks and raid defenses received. */
+export const RAID_DAILY_LIMIT = 10
+
 import { getXPForLevel, getStatMultiplier as _getStatMult, getLevelUpGold, getLevelUpDG, MAX_LEVEL } from '../data/progression'
 import { createDefaultRankedProfile } from '../data/tournaments'
 import { CURRENT_SEASON, PASS_XP_PER_TIER, PASS_MAX_TIER, SEASON_MISSION_CHAINS, SEASON_TIERS, findMissionChain } from '../data/battlePass'
 import type { TierReward, MissionTrackKey } from '../data/battlePass'
 
 const STORAGE_KEY = 'draft_player_data'
-const DATA_VERSION = 11 // v11: evolving mission chains (8 chains × 5 stages)
+const DATA_VERSION = 12 // v12: offline raid profile + lifetime mastery counters
 
 class PlayerDataManager {
   private data: PlayerData
@@ -175,6 +216,17 @@ class PlayerDataManager {
           } else {
             parsed.battlePass = this.createDefaultBattlePass()
           }
+          ;(parsed as unknown as Record<string, unknown>)._version = DATA_VERSION
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed))
+        }
+        // v11→v12 migration: add the offline-raid profile + lifetime
+        // mastery counters. Lifetime totals are seeded from the existing
+        // spendable balance so legacy accounts don't show "0 earned" when
+        // they already accumulated mastery from PvE matches.
+        if (ver < 12) {
+          if (!parsed.raid) parsed.raid = this.createDefaultRaidProfile()
+          if (parsed.attackMasteryEarned == null)  parsed.attackMasteryEarned  = parsed.attackMastery ?? 0
+          if (parsed.defenseMasteryEarned == null) parsed.defenseMasteryEarned = parsed.defenseMastery ?? 0
           ;(parsed as unknown as Record<string, unknown>)._version = DATA_VERSION
           localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed))
         }
@@ -281,6 +333,9 @@ class PlayerDataManager {
       rankPoints: 0,
       attackMastery: 0,
       defenseMastery: 0,
+      attackMasteryEarned: 0,
+      defenseMasteryEarned: 0,
+      raid: this.createDefaultRaidProfile(),
       ownedSkills,
       deckConfig: {
         king: {
@@ -472,14 +527,149 @@ class PlayerDataManager {
   }
 
   addMastery(type: 'attack' | 'defense', amount: number): { newTotal: number; earnedPack: boolean } {
-    if (type === 'attack') this.data.attackMastery += amount
-    else this.data.defenseMastery += amount
+    if (type === 'attack') {
+      this.data.attackMastery += amount
+      this.data.attackMasteryEarned = (this.data.attackMasteryEarned ?? 0) + amount
+    } else {
+      this.data.defenseMastery += amount
+      this.data.defenseMasteryEarned = (this.data.defenseMasteryEarned ?? 0) + amount
+    }
 
     const total = type === 'attack' ? this.data.attackMastery : this.data.defenseMastery
     const earnedPack = total > 0 && total % 10 === 0  // every 10 mastery = free pack
 
     this.save()
     return { newTotal: total, earnedPack }
+  }
+
+  /** Spend mastery (returns false if balance is insufficient). */
+  spendMastery(type: 'attack' | 'defense', amount: number): boolean {
+    const balance = type === 'attack' ? this.data.attackMastery : this.data.defenseMastery
+    if (balance < amount) return false
+    if (type === 'attack') this.data.attackMastery -= amount
+    else this.data.defenseMastery -= amount
+    this.save()
+    return true
+  }
+
+  // -- Offline Raid --
+
+  /**
+   * Default raid profile for new accounts and the v11→v12 migration. Daily
+   * counters start at zero with `lastResetDate` pre-stamped to today's
+   * date, so the first call to `getRaid()` doesn't trigger a needless
+   * reset on day 1.
+   */
+  private createDefaultRaidProfile(): RaidProfile {
+    return {
+      participating:         false,
+      attacksUsedToday:      0,
+      defensesReceivedToday: 0,
+      lastResetDate:         this._todayKey(),
+      ownedFortifications:   [],
+    }
+  }
+
+  private _todayKey(): string {
+    const d = new Date()
+    const y  = d.getFullYear()
+    const m  = String(d.getMonth() + 1).padStart(2, '0')
+    const dd = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${dd}`
+  }
+
+  /**
+   * Returns the raid profile after applying any pending day rollover.
+   * Called by every other raid getter so the counters are always in sync
+   * with the calendar without needing a global tick.
+   */
+  getRaid(): RaidProfile {
+    if (!this.data.raid) {
+      this.data.raid = this.createDefaultRaidProfile()
+      this.save()
+    }
+    const today = this._todayKey()
+    if (this.data.raid.lastResetDate !== today) {
+      this.data.raid.attacksUsedToday      = 0
+      this.data.raid.defensesReceivedToday = 0
+      this.data.raid.lastResetDate         = today
+      this.save()
+    }
+    return this.data.raid
+  }
+
+  getRaidAttacksRemaining(): number {
+    return Math.max(0, RAID_DAILY_LIMIT - this.getRaid().attacksUsedToday)
+  }
+
+  getRaidDefensesRemaining(): number {
+    return Math.max(0, RAID_DAILY_LIMIT - this.getRaid().defensesReceivedToday)
+  }
+
+  setRaidParticipating(value: boolean): void {
+    this.getRaid().participating = value
+    this.save()
+  }
+
+  /**
+   * Try to consume one of today's raid attacks. Returns true if the
+   * counter was incremented (caller should proceed with the raid),
+   * false if the daily quota is exhausted.
+   */
+  consumeRaidAttack(): boolean {
+    const raid = this.getRaid()
+    if (raid.attacksUsedToday >= RAID_DAILY_LIMIT) return false
+    raid.attacksUsedToday += 1
+    this.save()
+    return true
+  }
+
+  /**
+   * Record an incoming raid (offline-side, fired when another player
+   * raids the local player). Decrements `remainingDefenses` on every
+   * owned fortification regardless of victory; items at 0 are dropped.
+   * Returns true if the counter was bumped, false if at quota.
+   */
+  recordRaidDefense(): boolean {
+    const raid = this.getRaid()
+    if (raid.defensesReceivedToday >= RAID_DAILY_LIMIT) return false
+    raid.defensesReceivedToday += 1
+    raid.ownedFortifications = raid.ownedFortifications
+      .map((f) => ({ ...f, remainingDefenses: f.remainingDefenses - 1 }))
+      .filter((f) => f.remainingDefenses > 0)
+    this.save()
+    return true
+  }
+
+  /**
+   * Add a freshly-purchased fortification to the player's owned list.
+   * If the item is already owned, its remaining-defenses counter is
+   * topped up (not stacked) so re-buying acts like a refresh.
+   */
+  addRaidFortification(itemId: string, durationDefenses: number): void {
+    const raid = this.getRaid()
+    const existing = raid.ownedFortifications.find((f) => f.itemId === itemId)
+    if (existing) {
+      existing.remainingDefenses = Math.max(existing.remainingDefenses, durationDefenses)
+    } else {
+      raid.ownedFortifications.push({ itemId, remainingDefenses: durationDefenses })
+    }
+    this.save()
+  }
+
+  /**
+   * Earned (lifetime) Mastery for a side. Always >= the spendable balance
+   * once the player has spent any mastery in shops.
+   */
+  getMasteryEarned(type: 'attack' | 'defense'): number {
+    return type === 'attack'
+      ? (this.data.attackMasteryEarned ?? this.data.attackMastery ?? 0)
+      : (this.data.defenseMasteryEarned ?? this.data.defenseMastery ?? 0)
+  }
+
+  /** Spendable Mastery for a side (matches the existing balance field). */
+  getMasteryAvailable(type: 'attack' | 'defense'): number {
+    return type === 'attack' ? this.data.attackMastery : this.data.defenseMastery
   }
 
   // -- Economy --

@@ -458,7 +458,7 @@
           "title": "ÉCHANGE CONTRE DES RÉCOMPENSES",
           "desc": "Dépense la Maîtrise à la Boutique pour des objets, skins et ressources exclusifs"
         },
-        "cta": "COMPRIS",
+        "cta": "PARTICIPER",
         "preview-line": "Prochaine cible prévue · Nv.{level} · Puissance {power}",
         "cta-enter": "ENTRER"
       }
@@ -705,5 +705,71 @@
   },
   "pack-open": {
     "tap-to-close": "Touchez pour fermer"
+  },
+  "raid-hub": {
+    "title": "CENTRE DE RAIDS",
+    "subtitle": "Configurez votre participation et fortifiez votre royaume",
+    "counters": {
+      "attacks": "Attaques du jour",
+      "defenses": "Défenses du jour"
+    },
+    "mastery": {
+      "title": "Maîtrises",
+      "attack-label": "Attaque",
+      "defense-label": "Défense",
+      "value": "{available} disp · {earned} gagnés"
+    },
+    "participating": {
+      "title": "Rejoindre le mode hors-ligne",
+      "body": "Quand activé, vous pouvez attaquer et être attaqué par d'autres joueurs."
+    },
+    "shop": {
+      "title": "Fortifications",
+      "subtitle": "Bonus qui durent par défense reçue",
+      "buy": "ACHETER",
+      "active": "ACTIF · {remaining} DÉFENSES",
+      "toast": {
+        "no-gold": "Or insuffisant",
+        "no-dg": "Draft Gems insuffisantes"
+      }
+    },
+    "attack-cta": "Attaquer maintenant",
+    "attack-disabled-toggle-off": "Activez la participation pour attaquer",
+    "attack-disabled-out-of-attacks": "Vous avez épuisé vos 10 attaques du jour",
+    "attack-no-targets": "Aucun joueur disponible au niveau {level}",
+    "items": {
+      "reforco-real": {
+        "name": "Renfort Royal",
+        "desc": "+15% de défense pour toute l'équipe"
+      },
+      "furia-coletiva": {
+        "name": "Fureur Collective",
+        "desc": "+15% d'attaque pour toute l'équipe"
+      },
+      "trap-espinhos": {
+        "name": "Pièges d'Épines",
+        "desc": "3 pièges posés sur le chemin de l'envahisseur"
+      },
+      "muralha-reforcada": {
+        "name": "Muraille Renforcée",
+        "desc": "+25% de défense pour le Roi uniquement"
+      },
+      "olho-vigia": {
+        "name": "Œil Vigilant",
+        "desc": "Révèle les compétences de l'envahisseur 1 tour avant"
+      },
+      "bandeira-sorte": {
+        "name": "Bannière Chanceuse",
+        "desc": "+25% d'or sur les défenses victorieuses"
+      },
+      "esquiva-real": {
+        "name": "Esquive Royale",
+        "desc": "Le Roi gagne 1 esquive gratuite par défense"
+      },
+      "avancada-rapida": {
+        "name": "Avance Rapide",
+        "desc": "+1 mouvement au premier tour de défense"
+      }
+    }
   }
 }

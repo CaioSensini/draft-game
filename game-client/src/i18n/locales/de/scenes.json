@@ -458,7 +458,7 @@
           "title": "TAUSCHE BELOHNUNGEN EIN",
           "desc": "Gib Meisterschaft im Shop für exklusive Gegenstände, Skins und Ressourcen aus"
         },
-        "cta": "VERSTANDEN",
+        "cta": "TEILNEHMEN",
         "preview-line": "Nächstes Ziel · St.{level} · Stärke {power}",
         "cta-enter": "BETRETEN"
       }
@@ -705,5 +705,71 @@
   },
   "pack-open": {
     "tap-to-close": "Tippen zum Schließen"
+  },
+  "raid-hub": {
+    "title": "RAID-ZENTRALE",
+    "subtitle": "Stelle deine Teilnahme ein und befestige dein Reich",
+    "counters": {
+      "attacks": "Angriffe heute",
+      "defenses": "Verteidigungen heute"
+    },
+    "mastery": {
+      "title": "Meisterschaften",
+      "attack-label": "Angriff",
+      "defense-label": "Verteidigung",
+      "value": "{available} verf · {earned} verd"
+    },
+    "participating": {
+      "title": "Offline-Modus beitreten",
+      "body": "Wenn aktiv, kannst du angreifen und von anderen Spielern angegriffen werden."
+    },
+    "shop": {
+      "title": "Befestigungen",
+      "subtitle": "Buffs, die pro erhaltener Verteidigung anhalten",
+      "buy": "KAUFEN",
+      "active": "AKTIV · {remaining} VERTEIDIGUNGEN",
+      "toast": {
+        "no-gold": "Nicht genug Gold",
+        "no-dg": "Nicht genug Draft Gems"
+      }
+    },
+    "attack-cta": "Jetzt angreifen",
+    "attack-disabled-toggle-off": "Aktiviere die Teilnahme zum Angreifen",
+    "attack-disabled-out-of-attacks": "Du hast deine 10 Angriffe heute verbraucht",
+    "attack-no-targets": "Kein Spieler auf Stufe {level} verfügbar",
+    "items": {
+      "reforco-real": {
+        "name": "Königliche Verstärkung",
+        "desc": "+15% Verteidigung für das gesamte Team"
+      },
+      "furia-coletiva": {
+        "name": "Kollektive Wut",
+        "desc": "+15% Angriff für das gesamte Team"
+      },
+      "trap-espinhos": {
+        "name": "Dornenfallen",
+        "desc": "3 Fallen auf dem Pfad des Angreifers"
+      },
+      "muralha-reforcada": {
+        "name": "Verstärkte Mauer",
+        "desc": "+25% Verteidigung nur für den König"
+      },
+      "olho-vigia": {
+        "name": "Wachsames Auge",
+        "desc": "Enthüllt die Fähigkeiten des Angreifers 1 Zug früher"
+      },
+      "bandeira-sorte": {
+        "name": "Banner des Glücks",
+        "desc": "+25% Gold bei siegreichen Verteidigungen"
+      },
+      "esquiva-real": {
+        "name": "Königliches Ausweichen",
+        "desc": "Der König erhält 1 freies Ausweichen pro Verteidigung"
+      },
+      "avancada-rapida": {
+        "name": "Schneller Vorstoß",
+        "desc": "+1 Bewegung im ersten Verteidigungszug"
+      }
+    }
   }
 }

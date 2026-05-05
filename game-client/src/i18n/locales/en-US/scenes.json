@@ -458,7 +458,7 @@
           "title": "REDEEM REWARDS",
           "desc": "Spend Mastery in the Shop on exclusive items, skins, and resources"
         },
-        "cta": "GOT IT",
+        "cta": "PARTICIPATE",
         "preview-line": "Predicted next target · Lv.{level} · Power {power}",
         "cta-enter": "ENTER"
       }
@@ -705,5 +705,71 @@
   },
   "pack-open": {
     "tap-to-close": "Tap to close"
+  },
+  "raid-hub": {
+    "title": "RAID HUB",
+    "subtitle": "Set your participation and fortify your realm",
+    "counters": {
+      "attacks": "Attacks today",
+      "defenses": "Defenses today"
+    },
+    "mastery": {
+      "title": "Masteries",
+      "attack-label": "Attack",
+      "defense-label": "Defense",
+      "value": "{available} avail · {earned} earned"
+    },
+    "participating": {
+      "title": "Join offline raid mode",
+      "body": "When on, you can attack and be attacked by other players."
+    },
+    "shop": {
+      "title": "Fortifications",
+      "subtitle": "Buffs that last per defense received",
+      "buy": "BUY",
+      "active": "ACTIVE · {remaining} DEFENSES",
+      "toast": {
+        "no-gold": "Not enough gold",
+        "no-dg": "Not enough Draft Gems"
+      }
+    },
+    "attack-cta": "Attack now",
+    "attack-disabled-toggle-off": "Turn on participation to attack",
+    "attack-disabled-out-of-attacks": "You've used today's 10 attacks",
+    "attack-no-targets": "No player available at level {level}",
+    "items": {
+      "reforco-real": {
+        "name": "Royal Reinforcement",
+        "desc": "+15% defense for your entire team"
+      },
+      "furia-coletiva": {
+        "name": "Collective Fury",
+        "desc": "+15% attack for your entire team"
+      },
+      "trap-espinhos": {
+        "name": "Thorn Traps",
+        "desc": "3 traps planted on the invader's path"
+      },
+      "muralha-reforcada": {
+        "name": "Reinforced Wall",
+        "desc": "+25% defense for the King only"
+      },
+      "olho-vigia": {
+        "name": "Watchful Eye",
+        "desc": "Reveals invader's skills 1 turn early"
+      },
+      "bandeira-sorte": {
+        "name": "Lucky Banner",
+        "desc": "+25% gold on victorious defenses"
+      },
+      "esquiva-real": {
+        "name": "Royal Evade",
+        "desc": "King gains 1 free dodge per defense"
+      },
+      "avancada-rapida": {
+        "name": "Quick Advance",
+        "desc": "+1 movement on the first defense turn"
+      }
+    }
   }
 }

@@ -56,27 +56,12 @@ export interface RaidMatchmakingOptions {
 /**
  * Whether the backend matchmaking + raid resolution loop is shipped.
  *
- * Flip to true once the server endpoint is live. The lobby tile reads this
- * to decide whether the click opens the target picker or the explainer
- * popup that introduces the feature.
+ * Flip to true once the server endpoint is live. Today the explainer
+ * popup is always reachable; this flag is reserved for future server-
+ * side gating (e.g. region-specific rollout).
  */
 export function isOfflineRaidLive(): boolean {
   return false
-}
-
-/**
- * Whether the "ENTRAR" CTA on the explainer popup is interactive.
- *
- * The user wanted the button reachable for QA but plans to lock it before
- * launch. Flip to false at release time; the popup will keep showing the
- * button at full opacity but the click handler short-circuits.
- *
- * Kept separate from `isOfflineRaidLive` because that flag governs the
- * lobby tile's primary action (target picker vs. explainer), while this
- * flag governs only the "Enter" CTA inside the explainer.
- */
-export function isOfflineRaidEnterUnlocked(): boolean {
-  return true
 }
 
 /**
@@ -127,45 +112,29 @@ export function buildRaidBattlePayload(
 }
 
 /**
- * Pick offline raid targets for the given local level.
+ * Pick offline raid targets at EXACTLY the local player's level.
  *
- * Mock implementation walks a deterministic synthesized pool (~30 entries)
- * and returns the top N closest-level targets. Real implementation will
- * `await fetch('/api/offline-raids/targets?level=...')` and map the
- * response to OfflineRaidTarget[].
+ * The user's design rule: only fight someone at your own level — nothing
+ * close-but-not-equal. If no one matches, the caller surfaces a "no
+ * available player at your level" message instead of widening the net.
+ *
+ * The `levelTolerance` field on the options is accepted for backwards
+ * compatibility but ignored — the strict-equality filter takes priority.
+ *
+ * Mock implementation walks a deterministic synthesized pool. Real
+ * implementation will `await fetch('/api/offline-raids/targets?level=N')`
+ * and map the response to OfflineRaidTarget[].
  */
 export function findOfflineRaidTargets(opts: RaidMatchmakingOptions): OfflineRaidTarget[] {
   const limit = opts.limit ?? 5
-  const tolerance = opts.levelTolerance ?? 5
-
   const pool = synthesizePool(opts.localLevel)
-
-  // Strict pass: only ±tolerance levels.
-  const strict = pool
-    .filter((t) => Math.abs(t.ownerLevel - opts.localLevel) <= tolerance)
-    .sort(byLevelProximity(opts.localLevel))
-
-  if (strict.length >= limit) return strict.slice(0, limit)
-
-  // Widen the net: ±(tolerance × 2). The mock pool guarantees enough.
-  const wide = pool
-    .filter((t) => Math.abs(t.ownerLevel - opts.localLevel) <= tolerance * 2)
-    .sort(byLevelProximity(opts.localLevel))
-
-  return wide.slice(0, limit)
+  return pool
+    .filter((t) => t.ownerLevel === opts.localLevel)
+    .sort((a, b) => a.defenseStrength - b.defenseStrength)
+    .slice(0, limit)
 }
 
 // ─── Internals ──────────────────────────────────────────────────────────
-
-function byLevelProximity(localLevel: number) {
-  return (a: OfflineRaidTarget, b: OfflineRaidTarget): number => {
-    const da = Math.abs(a.ownerLevel - localLevel)
-    const db = Math.abs(b.ownerLevel - localLevel)
-    if (da !== db) return da - db
-    // Tiebreaker: weaker defense first (gentler intro for newcomers).
-    return a.defenseStrength - b.defenseStrength
-  }
-}
 
 /**
  * Deterministic synthesizer used during development. Keys off the local
@@ -197,8 +166,13 @@ function synthesizePool(localLevel: number): OfflineRaidTarget[] {
 
   const out: OfflineRaidTarget[] = []
   for (let i = 0; i < 30; i++) {
-    // Spread targets across ±15 levels around the local player.
-    const levelOffset = Math.round((rand() - 0.5) * 30)
+    // 60 % of the synthesized pool sits at the exact local level so the
+    // strict-equality matchmaking has plenty of candidates to choose
+    // from. The remaining 40 % spreads ±10 levels for flavor / future
+    // ranged matchmaking; today they're filtered out by the strict pass.
+    const levelOffset = rand() < 0.6
+      ? 0
+      : Math.round((rand() - 0.5) * 20)
     const level = Math.max(1, localLevel + levelOffset)
     const teamPower = 200 + Math.round(level * 4 + rand() * 30)
     const defenseStrength = Math.round(40 + rand() * 50)
