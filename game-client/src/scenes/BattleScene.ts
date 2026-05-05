@@ -3290,10 +3290,16 @@ export default class BattleScene extends Phaser.Scene {
     // dark red border). Anchored to the right of the team label so it clears
     // "AZUL / Voce" without overlapping. In duo/squad modes, a small vote-
     // counter chip sits to the right of the button.
+    //
+    // Sub 9.9: button widened from 92/108 → 140/156 so longer translations
+    // (FR "Abandonner", IT "Arrendersi", EN "Surrender", DE "Aufgeben")
+    // never get clipped by the button border or by the flag icon overlay.
+    // The label string is also trimStart()-ed before rendering so the
+    // centered text is symmetric inside the wider button.
     const isSolo = this._surrenderRequired === 1
-    const btnW = isSolo ? 92 : 108
+    const btnW = isSolo ? 140 : 156
     const btnH = 24
-    const btnX = GRID_X + (isSolo ? 132 : 152)
+    const btnX = GRID_X + (isSolo ? 156 : 176)
     const btnY = TOP_BAR_H2 / 2
 
     const onClick = () => {
@@ -3326,12 +3332,16 @@ export default class BattleScene extends Phaser.Scene {
       }
     }
 
-    const { container } = UI.buttonDestructive(this, btnX, btnY, t('scenes.battle.popup.surrender-button-label'), {
+    // Strip the legacy leading whitespace from the i18n label — the flag
+    // icon is positioned independently below, so the label can sit truly
+    // centered inside the destructive button.
+    const surrenderLabel = t('scenes.battle.popup.surrender-button-label').trimStart()
+    const { container } = UI.buttonDestructive(this, btnX, btnY, surrenderLabel, {
       w: btnW, h: btnH, depth: 9,
       onPress: onClick,
     })
     // Lucide flag icon overlay (left of label, tinted inverse for contrast).
-    const flag = UI.lucideIcon(this, 'flag', -btnW / 2 + 14, 0, 12, fg.primary)
+    const flag = UI.lucideIcon(this, 'flag', -btnW / 2 + 12, 0, 12, fg.primary)
     container.add(flag)
     container.setDepth(9)
 
