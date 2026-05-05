@@ -218,8 +218,12 @@ export default class LobbyScene extends Phaser.Scene {
   // ═══════════════════════════════════════════════════════════════════════════
 
   private drawCentralPlayArea() {
-    const panelW = 720
-    const panelH = 365
+    // Panel grew 720×365 → 760×400 to occupy the vertical room freed when
+    // the offline-attack tile moved out of the central column into the
+    // right-side portrait card. The title and emblem scale with it for a
+    // proportional bump (no longer feels small in the now-wider canvas).
+    const panelW = 760
+    const panelH = 400
     const panelX = W / 2
     const panelY = 85 + panelH / 2
 
@@ -283,25 +287,25 @@ export default class LobbyScene extends Phaser.Scene {
     })
 
     // "JOGAR" title — Cinzel h1 via typeScale, accent.primary + letter-spacing
-    const title = this.add.text(0, -panelH / 2 + 52, t('scenes.lobby.central-play-title'), {
-      fontFamily: fontFamily.display, fontSize: '44px',
+    const title = this.add.text(0, -panelH / 2 + 60, t('scenes.lobby.central-play-title'), {
+      fontFamily: fontFamily.display, fontSize: '52px',
       color:      accent.primaryHex,
       fontStyle:  '900',
       shadow:     SHADOW.goldGlow,
     }).setOrigin(0.5)
     const anyTitle = title as unknown as { setLetterSpacing?: (n: number) => void }
-    if (typeof anyTitle.setLetterSpacing === 'function') anyTitle.setLetterSpacing(3.5)
+    if (typeof anyTitle.setLetterSpacing === 'function') anyTitle.setLetterSpacing(4)
     container.add(title)
 
-    const titleShimmer = UI.shimmer(this, panelX, panelY - panelH / 2 + 52, 220, 50, 4500)
+    const titleShimmer = UI.shimmer(this, panelX, panelY - panelH / 2 + 60, 260, 60, 4500)
     titleShimmer.setDepth(5)
 
     // Crossed swords → Lucide 'swords' icon, gold tint, large
-    const swordsIcon = UI.lucideIcon(this, 'swords', 0, 22, 48, accent.primary)
+    const swordsIcon = UI.lucideIcon(this, 'swords', 0, 28, 56, accent.primary)
     container.add(swordsIcon)
 
     // Swords glow pulse
-    const swordsGlow = this.add.circle(0, 22, 50, accent.primary, 0)
+    const swordsGlow = this.add.circle(0, 28, 58, accent.primary, 0)
     container.addAt(swordsGlow, container.list.indexOf(swordsIcon))
     this.tweens.add({
       targets: swordsGlow,
@@ -312,8 +316,9 @@ export default class LobbyScene extends Phaser.Scene {
       ease: 'Sine.InOut',
     })
 
-    // Subtitle (Manrope body, fg.secondary)
-    const subtitle = this.add.text(0, 92, t('scenes.lobby.central-play-subtitle'), {
+    // Subtitle (Manrope body, fg.secondary) — shifted down to stay below
+    // the larger swords icon while remaining inside the panel.
+    const subtitle = this.add.text(0, 108, t('scenes.lobby.central-play-subtitle'), {
       fontFamily: fontFamily.body, fontSize: typeScale.body,
       color:      fg.secondaryHex,
       fontStyle:  '500',
@@ -827,11 +832,16 @@ export default class LobbyScene extends Phaser.Scene {
     }
 
     // ── Status label / Lv.30 lock pill below the emblem ──
+    // The shield+swords emblem occupies y = -15..+10 (centered at -4 with
+    // span 25 from the moveTo lines above). The bottom strip starts at
+    // btnH/2 - 22 = 36, so the pill must sit fully inside (10, 36) — a
+    // 26 px window. We use a 16 px-tall pill centered at y = 24, which
+    // leaves ~6 px of breathing room above the shield and below the strip.
     if (!available) {
       // Lock pill: padlock icon + "Lv.30" text, mirroring PlayModesOverlay
-      const pillW = 72
-      const pillH = 22
-      const pillCy = 18
+      const pillW = 66
+      const pillH = 16
+      const pillCy = 24
 
       const pillGfx = this.add.graphics()
       pillGfx.fillStyle(0x10141d, 0.95)
@@ -842,31 +852,26 @@ export default class LobbyScene extends Phaser.Scene {
 
       // Padlock (left side of pill)
       const lockGfx = this.add.graphics()
-      const lkX = -pillW / 2 + 13
-      const lkY = pillCy + 1
-      lockGfx.lineStyle(1.5, palette.accent, 0.85)
+      const lkX = -pillW / 2 + 11
+      const lkY = pillCy + 0.5
+      lockGfx.lineStyle(1.2, palette.accent, 0.85)
       lockGfx.beginPath()
-      lockGfx.arc(lkX, lkY - 4, 3, Math.PI, 0, false)
+      lockGfx.arc(lkX, lkY - 3, 2.4, Math.PI, 0, false)
       lockGfx.strokePath()
       lockGfx.fillStyle(palette.accent, 0.85)
-      lockGfx.fillRoundedRect(lkX - 4, lkY - 4, 8, 6, 1)
+      lockGfx.fillRoundedRect(lkX - 3, lkY - 3, 6, 5, 1)
       lockGfx.fillStyle(0x000000, 0.5)
-      lockGfx.fillCircle(lkX, lkY - 2, 1)
+      lockGfx.fillCircle(lkX, lkY - 1.5, 0.8)
       container.add(lockGfx)
 
-      container.add(this.add.text(-pillW / 2 + 26, pillCy, t('common.labels.level-long', { level: 30 }), {
-        fontFamily: fontFamily.mono, fontSize: '12px',
+      container.add(this.add.text(-pillW / 2 + 22, pillCy, t('common.labels.level-long', { level: 30 }), {
+        fontFamily: fontFamily.mono, fontSize: '11px',
         color: palette.accentHex, fontStyle: '700',
         shadow: { offsetX: 0, offsetY: 1, color: palette.shadowDeep, blur: 3, fill: true },
       }).setOrigin(0, 0.5))
-    } else {
-      // Unlocked: tier-style label "EM BREVE" centered below emblem
-      container.add(this.add.text(0, 18, t('scenes.lobby.offline.available-status'), {
-        fontFamily: fontFamily.display, fontSize: '12px',
-        color: palette.textPrimary, fontStyle: '700',
-        shadow: { offsetX: 0, offsetY: 1, color: palette.shadowDeep, blur: 5, fill: true },
-      }).setOrigin(0.5).setLetterSpacing(1.4))
     }
+    // Unlocked: no center label here — the bottom strip already shows
+    // the available status, so we keep the shield emblem visually clean.
 
     // ── Bottom strip: status indicator (mirrors XP bar slot in BattlePass) ──
     const stripText = available
