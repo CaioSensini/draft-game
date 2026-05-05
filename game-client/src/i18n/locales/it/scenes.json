@@ -632,5 +632,8 @@
         "subtitle": "Passo silenzioso del crepuscolo"
       }
     }
+  },
+  "pack-open": {
+    "tap-to-close": "Tocca per chiudere"
   }
 }

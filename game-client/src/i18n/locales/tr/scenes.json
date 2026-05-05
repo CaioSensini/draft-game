@@ -635,5 +635,8 @@
         "subtitle": "Akşamın sessiz adımı"
       }
     }
+  },
+  "pack-open": {
+    "tap-to-close": "Kapatmak için dokun"
   }
 }

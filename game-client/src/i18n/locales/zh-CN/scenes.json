@@ -635,5 +635,8 @@
         "subtitle": "黄昏的无声脚步"
       }
     }
+  },
+  "pack-open": {
+    "tap-to-close": "点击关闭"
   }
 }

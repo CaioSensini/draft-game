@@ -632,5 +632,8 @@
         "subtitle": "Lautloser Schritt der Dämmerung"
       }
     }
+  },
+  "pack-open": {
+    "tap-to-close": "Tippen zum Schließen"
   }
 }

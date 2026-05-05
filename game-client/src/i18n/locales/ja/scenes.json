@@ -635,5 +635,8 @@
         "subtitle": "黄昏の静かな歩み"
       }
     }
+  },
+  "pack-open": {
+    "tap-to-close": "タップして閉じる"
   }
 }

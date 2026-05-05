@@ -632,5 +632,8 @@
         "subtitle": "Silent step at dusk"
       }
     }
+  },
+  "pack-open": {
+    "tap-to-close": "Tap to close"
   }
 }

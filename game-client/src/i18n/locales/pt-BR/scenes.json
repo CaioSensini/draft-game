@@ -632,5 +632,8 @@
         "subtitle": "Passo silencioso do entardecer"
       }
     }
+  },
+  "pack-open": {
+    "tap-to-close": "Toque para fechar"
   }
 }

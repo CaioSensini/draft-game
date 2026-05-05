@@ -632,5 +632,8 @@
         "subtitle": "Pas silencieux du crépuscule"
       }
     }
+  },
+  "pack-open": {
+    "tap-to-close": "Touchez pour fermer"
   }
 }

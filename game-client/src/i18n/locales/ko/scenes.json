@@ -635,5 +635,8 @@
         "subtitle": "황혼의 조용한 걸음"
       }
     }
+  },
+  "pack-open": {
+    "tap-to-close": "눌러서 닫기"
   }
 }
