@@ -729,7 +729,7 @@
     },
     "participating": {
       "title": "Rejoindre le mode hors-ligne",
-      "body": "Quand activé, vous pouvez attaquer et être attaqué par d'autres joueurs."
+      "body": "Débloque les attaques contre les joueurs hors-ligne et vous permet d'être attaqué hors-ligne."
     },
     "attack-cta": "Attaquer maintenant",
     "attack-disabled-toggle-off": "Activez la participation pour attaquer",

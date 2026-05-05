@@ -729,7 +729,7 @@
     },
     "participating": {
       "title": "Offline-Modus beitreten",
-      "body": "Wenn aktiv, kannst du angreifen und von anderen Spielern angegriffen werden."
+      "body": "Schaltet Angriffe auf Offline-Spieler frei und erlaubt, dass du offline angegriffen wirst."
     },
     "attack-cta": "Jetzt angreifen",
     "attack-disabled-toggle-off": "Aktiviere die Teilnahme zum Angreifen",

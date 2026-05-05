@@ -732,7 +732,7 @@
     },
     "participating": {
       "title": "Çevrimdışı moda katıl",
-      "body": "Açıkken, diğer oyunculara saldırabilir ve onlardan saldırı alabilirsin."
+      "body": "Çevrimdışı oyunculara saldırmayı açar ve sen çevrimdışıyken saldırı almanı sağlar."
     },
     "attack-cta": "Şimdi saldır",
     "attack-disabled-toggle-off": "Saldırmak için katılımı aç",
