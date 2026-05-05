@@ -19,6 +19,7 @@ import {
   type SkinDef,
 } from '../data/skinCatalog'
 import { drawCharacterSprite, type SpriteRole } from '../utils/SpriteFactory'
+import { drawSwordIcon, drawShieldIcon } from '../utils/CombatIcons'
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Constants
@@ -326,12 +327,12 @@ export default class ShopScene extends Phaser.Scene {
       extraIconElements.push(dgIcon)
     } else if (isPremium) {
       // Premium skill pack — sword + shield
-      this.drawSwordIcon(iconG, -20, iconY, accentColor, 1.4)
-      this.drawShieldIcon(iconG, 20, iconY, accentColor, 1.4)
+      drawSwordIcon(iconG, -20, iconY, accentColor, 1.4)
+      drawShieldIcon(iconG, 20, iconY, accentColor, 1.4)
     } else if (item.dropType === 'attack') {
-      this.drawSwordIcon(iconG, 0, iconY, accentColor, 1.6)
+      drawSwordIcon(iconG, 0, iconY, accentColor, 1.6)
     } else {
-      this.drawShieldIcon(iconG, 0, iconY, accentColor, 1.6)
+      drawShieldIcon(iconG, 0, iconY, accentColor, 1.6)
     }
 
     // ── Name — Cormorant h3 ──
@@ -892,161 +893,6 @@ export default class ShopScene extends Phaser.Scene {
     this.balanceDgPill = UI.currencyPill(this, W - 90, TOP_BAR_H / 2, {
       kind: 'dg', amount: playerData.getDG(),
     })
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // ICONS — 3D-style drawn
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  /** Attack icon — realistic medieval sword */
-  private drawSwordIcon(g: Phaser.GameObjects.Graphics, x: number, y: number, color: number, scale = 1) {
-    const s = scale
-
-    // ── Blade (double-edged, tapered with beveled center) ──
-    // Right half of blade (lighter — simulates light catching edge)
-    g.fillStyle(color, 0.65)
-    g.beginPath()
-    g.moveTo(x, y - 26 * s)          // tip
-    g.lineTo(x + 4.5 * s, y - 4 * s) // right edge widens
-    g.lineTo(x + 3.5 * s, y + 4 * s) // slight taper at base
-    g.lineTo(x, y + 4 * s)           // center bottom
-    g.closePath()
-    g.fillPath()
-    // Left half (darker — shadow side)
-    g.fillStyle(color, 0.45)
-    g.beginPath()
-    g.moveTo(x, y - 26 * s)
-    g.lineTo(x - 4.5 * s, y - 4 * s)
-    g.lineTo(x - 3.5 * s, y + 4 * s)
-    g.lineTo(x, y + 4 * s)
-    g.closePath()
-    g.fillPath()
-    // Blade outline
-    g.lineStyle(1 * s, color, 0.9)
-    g.beginPath()
-    g.moveTo(x, y - 26 * s)
-    g.lineTo(x + 4.5 * s, y - 4 * s)
-    g.lineTo(x + 3.5 * s, y + 4 * s)
-    g.lineTo(x - 3.5 * s, y + 4 * s)
-    g.lineTo(x - 4.5 * s, y - 4 * s)
-    g.closePath()
-    g.strokePath()
-    // Central fuller (groove in blade)
-    g.lineStyle(1.5 * s, 0x000000, 0.15)
-    g.lineBetween(x, y - 22 * s, x, y + 2 * s)
-    // Edge highlight (specular reflection on right edge)
-    g.lineStyle(0.8, 0xffffff, 0.25)
-    g.lineBetween(x + 3.5 * s, y - 20 * s, x + 4 * s, y - 6 * s)
-
-    // ── Crossguard (curved, substantial) ──
-    g.fillStyle(color, 0.8)
-    g.beginPath()
-    g.moveTo(x - 15 * s, y + 3 * s)
-    g.lineTo(x - 14 * s, y + 7 * s)
-    g.lineTo(x + 14 * s, y + 7 * s)
-    g.lineTo(x + 15 * s, y + 3 * s)
-    g.closePath()
-    g.fillPath()
-    g.lineStyle(1, color, 0.9)
-    g.strokePath()
-    // Guard center accent
-    g.fillStyle(0xffffff, 0.15)
-    g.fillRect(x - 2 * s, y + 4 * s, 4 * s, 2 * s)
-
-    // ── Grip (leather-wrapped) ──
-    g.fillStyle(color, 0.35)
-    g.fillRect(x - 2.5 * s, y + 7 * s, 5 * s, 14 * s)
-    g.lineStyle(0.8, color, 0.6)
-    g.strokeRect(x - 2.5 * s, y + 7 * s, 5 * s, 14 * s)
-    // Leather wraps
-    for (let i = 0; i < 5; i++) {
-      const gy = y + (8 + i * 2.8) * s
-      g.lineStyle(0.7, 0xffffff, 0.06)
-      g.lineBetween(x - 2.5 * s, gy, x + 2.5 * s, gy)
-    }
-
-    // ── Pommel (round, substantial) ──
-    g.fillStyle(color, 0.7)
-    g.fillCircle(x, y + 23 * s, 4 * s)
-    g.lineStyle(1, color, 0.9)
-    g.strokeCircle(x, y + 23 * s, 4 * s)
-    // Pommel gem highlight
-    g.fillStyle(0xffffff, 0.2)
-    g.fillCircle(x - 1.2 * s, y + 22 * s, 1.5 * s)
-  }
-
-  /** Defense icon — realistic heater shield with heraldry */
-  private drawShieldIcon(g: Phaser.GameObjects.Graphics, x: number, y: number, color: number, scale = 1) {
-    const s = scale
-
-    // ── Shield body (heater shape — flat top, pointed bottom) ──
-    // Right half (lighter side)
-    g.fillStyle(color, 0.2)
-    g.beginPath()
-    g.moveTo(x, y - 22 * s)          // top center
-    g.lineTo(x + 18 * s, y - 20 * s) // top right
-    g.lineTo(x + 17 * s, y + 2 * s)  // mid right
-    g.lineTo(x, y + 24 * s)          // bottom point
-    g.closePath()
-    g.fillPath()
-    // Left half (slightly darker for depth)
-    g.fillStyle(color, 0.13)
-    g.beginPath()
-    g.moveTo(x, y - 22 * s)
-    g.lineTo(x - 18 * s, y - 20 * s)
-    g.lineTo(x - 17 * s, y + 2 * s)
-    g.lineTo(x, y + 24 * s)
-    g.closePath()
-    g.fillPath()
-
-    // ── Shield outline (thick, solid) ──
-    g.lineStyle(2.5 * s, color, 0.85)
-    g.beginPath()
-    g.moveTo(x - 18 * s, y - 20 * s)
-    g.lineTo(x + 18 * s, y - 20 * s) // top edge
-    g.lineTo(x + 17 * s, y + 2 * s)  // right edge
-    g.lineTo(x, y + 24 * s)          // bottom point
-    g.lineTo(x - 17 * s, y + 2 * s)  // left edge
-    g.closePath()
-    g.strokePath()
-
-    // ── Shield rim (inner border) ──
-    g.lineStyle(1 * s, color, 0.3)
-    g.beginPath()
-    g.moveTo(x - 14 * s, y - 16 * s)
-    g.lineTo(x + 14 * s, y - 16 * s)
-    g.lineTo(x + 13 * s, y + 0 * s)
-    g.lineTo(x, y + 18 * s)
-    g.lineTo(x - 13 * s, y + 0 * s)
-    g.closePath()
-    g.strokePath()
-
-    // ── Central vertical band (heraldry stripe) ──
-    g.fillStyle(color, 0.25)
-    g.beginPath()
-    g.moveTo(x - 3 * s, y - 20 * s)
-    g.lineTo(x + 3 * s, y - 20 * s)
-    g.lineTo(x + 2 * s, y + 20 * s)
-    g.lineTo(x, y + 24 * s)
-    g.lineTo(x - 2 * s, y + 20 * s)
-    g.closePath()
-    g.fillPath()
-
-    // ── Center boss (round metal piece) ──
-    g.fillStyle(color, 0.55)
-    g.fillCircle(x, y - 2 * s, 5 * s)
-    g.lineStyle(1, color, 0.8)
-    g.strokeCircle(x, y - 2 * s, 5 * s)
-    // Boss inner ring
-    g.lineStyle(0.8, 0xffffff, 0.12)
-    g.strokeCircle(x, y - 2 * s, 3 * s)
-    // Boss highlight
-    g.fillStyle(0xffffff, 0.15)
-    g.fillCircle(x - 1.5 * s, y - 3.5 * s, 2 * s)
-
-    // ── Top edge highlight (light glint) ──
-    g.lineStyle(1, 0xffffff, 0.1)
-    g.lineBetween(x - 14 * s, y - 19 * s, x + 14 * s, y - 19 * s)
   }
 
   shutdown() { this.tweens.killAll() }
