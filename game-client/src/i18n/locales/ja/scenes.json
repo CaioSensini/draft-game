@@ -557,5 +557,79 @@
       "specialist": "スペシャリスト",
       "executor": "執行者"
     }
+  },
+  "skins": {
+    "king": {
+      "idle": {
+        "name": "クラシック王",
+        "subtitle": "原初の血統の永遠の冠"
+      },
+      "king_of_the_kingdom_idle": {
+        "name": "王国の王",
+        "subtitle": "建国の地の守護者"
+      },
+      "crimson_idle": {
+        "name": "嵐の王",
+        "subtitle": "雷と雷鳴を従える冠"
+      },
+      "eternal_idle": {
+        "name": "地平の王",
+        "subtitle": "果てなき大地の覇者"
+      }
+    },
+    "warrior": {
+      "idle": {
+        "name": "クラシック戦士",
+        "subtitle": "道を切り開くベテラン"
+      },
+      "warrior_of_the_kingdom_idle": {
+        "name": "王国の戦士",
+        "subtitle": "城壁の忠実な守護者"
+      },
+      "ashes_idle": {
+        "name": "山の戦士",
+        "subtitle": "古の岩のように堅固"
+      },
+      "radiant_idle": {
+        "name": "輝光の戦士",
+        "subtitle": "夜明けに祝福された刃"
+      }
+    },
+    "specialist": {
+      "idle": {
+        "name": "クラシックスペシャリスト",
+        "subtitle": "古の技の達人"
+      },
+      "specialist_of_the_kingdom_idle": {
+        "name": "王国のスペシャリスト",
+        "subtitle": "古代知識の参謀"
+      },
+      "arcane_idle": {
+        "name": "紅玉スペシャリスト",
+        "subtitle": "紅玉の炎に結晶した知恵"
+      },
+      "cosmic_idle": {
+        "name": "星雲スペシャリスト",
+        "subtitle": "星雲と彗星を編む者"
+      }
+    },
+    "executor": {
+      "idle": {
+        "name": "クラシック執行者",
+        "subtitle": "鋭く静かな影"
+      },
+      "executor_of_the_kingdom_idle": {
+        "name": "王国の執行者",
+        "subtitle": "王道の番人"
+      },
+      "spectral_idle": {
+        "name": "微風の執行者",
+        "subtitle": "朝風より軽い足取り"
+      },
+      "shadow_idle": {
+        "name": "影の執行者",
+        "subtitle": "黄昏の静かな歩み"
+      }
+    }
   }
 }

@@ -12,9 +12,14 @@
  *
  * Shop, lobby picker and BattleScene all resolve skins through this file,
  * so renaming a skin or tweaking its price only needs to happen once.
+ *
+ * Names + subtitles live in the i18n bundles (scenes.skins.<class>.<skin-id>.{name,subtitle}).
+ * Use `getSkinName(skin)` and `getSkinSubtitle(skin)` to render them in any
+ * locale.
  */
 
 import type { CharClass } from '../utils/AssetPaths'
+import { t } from '../i18n'
 
 export type SkinRarity = 'default' | 'common' | 'rare' | 'epic' | 'legendary'
 
@@ -24,16 +29,15 @@ export type SkinRarity = 'default' | 'common' | 'rare' | 'epic' | 'legendary'
  * @field id          The skin key used by AssetPaths (e.g. 'crimson_idle').
  *                    Must exist in CHARACTER_SKINS[classId].
  * @field classId     Which class this skin belongs to.
- * @field displayName Shown on shop cards and lobby picker.
- * @field subtitle    Short descriptive line under the name.
  * @field rarity      Controls the colour/border used when rendering.
  * @field dgPrice     Cost in DG. Zero for 'default' rarity (always owned).
+ *
+ * The display name and subtitle are resolved at render time from the i18n
+ * bundle key `scenes.skins.<classId>.<id>.{name,subtitle}` — see helpers.
  */
 export interface SkinDef {
   id: string
   classId: CharClass
-  displayName: string
-  subtitle: string
   rarity: SkinRarity
   dgPrice: number
 }
@@ -41,141 +45,44 @@ export interface SkinDef {
 /** Every skin the game knows about — keyed by class for fast lookup. */
 export const SKIN_CATALOG: Record<CharClass, SkinDef[]> = {
   king: [
-    {
-      id: 'idle',
-      classId: 'king',
-      displayName: 'Rei Classico',
-      subtitle: 'A coroa eterna da linhagem original',
-      rarity: 'default',
-      dgPrice: 0,
-    },
-    {
-      id: 'king_of_the_kingdom_idle',
-      classId: 'king',
-      displayName: 'Rei do Reino',
-      subtitle: 'Guardiao das terras fundadoras',
-      rarity: 'common',
-      dgPrice: 0,
-    },
-    {
-      id: 'crimson_idle',
-      classId: 'king',
-      displayName: 'Rei da Tempestade',
-      subtitle: 'Coroa que ordena raios e trovoes',
-      rarity: 'epic',
-      dgPrice: 450,
-    },
-    {
-      id: 'eternal_idle',
-      classId: 'king',
-      displayName: 'Rei do Horizonte',
-      subtitle: 'Soberano de terras sem fim',
-      rarity: 'legendary',
-      dgPrice: 900,
-    },
+    { id: 'idle',                       classId: 'king', rarity: 'default',   dgPrice: 0   },
+    { id: 'king_of_the_kingdom_idle',   classId: 'king', rarity: 'common',    dgPrice: 0   },
+    { id: 'crimson_idle',               classId: 'king', rarity: 'epic',      dgPrice: 450 },
+    { id: 'eternal_idle',               classId: 'king', rarity: 'legendary', dgPrice: 900 },
   ],
   warrior: [
-    {
-      id: 'idle',
-      classId: 'warrior',
-      displayName: 'Guerreiro Classico',
-      subtitle: 'O veterano que abre caminho',
-      rarity: 'default',
-      dgPrice: 0,
-    },
-    {
-      id: 'warrior_of_the_kingdom_idle',
-      classId: 'warrior',
-      displayName: 'Guerreiro do Reino',
-      subtitle: 'Defensor leal das muralhas',
-      rarity: 'common',
-      dgPrice: 0,
-    },
-    {
-      id: 'ashes_idle',
-      classId: 'warrior',
-      displayName: 'Guerreiro da Montanha',
-      subtitle: 'Firme como a rocha ancestral',
-      rarity: 'epic',
-      dgPrice: 450,
-    },
-    {
-      id: 'radiant_idle',
-      classId: 'warrior',
-      displayName: 'Guerreiro Radiante',
-      subtitle: 'Lamina abencoada pela aurora',
-      rarity: 'legendary',
-      dgPrice: 900,
-    },
+    { id: 'idle',                          classId: 'warrior', rarity: 'default',   dgPrice: 0   },
+    { id: 'warrior_of_the_kingdom_idle',   classId: 'warrior', rarity: 'common',    dgPrice: 0   },
+    { id: 'ashes_idle',                    classId: 'warrior', rarity: 'epic',      dgPrice: 450 },
+    { id: 'radiant_idle',                  classId: 'warrior', rarity: 'legendary', dgPrice: 900 },
   ],
   specialist: [
-    {
-      id: 'idle',
-      classId: 'specialist',
-      displayName: 'Especialista Classico',
-      subtitle: 'Mestre das tecnicas ancestrais',
-      rarity: 'default',
-      dgPrice: 0,
-    },
-    {
-      id: 'specialist_of_the_kingdom_idle',
-      classId: 'specialist',
-      displayName: 'Especialista do Reino',
-      subtitle: 'Conselheiro dos saberes antigos',
-      rarity: 'common',
-      dgPrice: 0,
-    },
-    {
-      id: 'arcane_idle',
-      classId: 'specialist',
-      displayName: 'Especialista Rubi',
-      subtitle: 'Sabedoria cristalizada em chama rubra',
-      rarity: 'epic',
-      dgPrice: 450,
-    },
-    {
-      id: 'cosmic_idle',
-      classId: 'specialist',
-      displayName: 'Especialista Nebular',
-      subtitle: 'Tecelao de nebulosas e cometas',
-      rarity: 'legendary',
-      dgPrice: 900,
-    },
+    { id: 'idle',                              classId: 'specialist', rarity: 'default',   dgPrice: 0   },
+    { id: 'specialist_of_the_kingdom_idle',    classId: 'specialist', rarity: 'common',    dgPrice: 0   },
+    { id: 'arcane_idle',                       classId: 'specialist', rarity: 'epic',      dgPrice: 450 },
+    { id: 'cosmic_idle',                       classId: 'specialist', rarity: 'legendary', dgPrice: 900 },
   ],
   executor: [
-    {
-      id: 'idle',
-      classId: 'executor',
-      displayName: 'Executor Classico',
-      subtitle: 'Sombra afiada e silenciosa',
-      rarity: 'default',
-      dgPrice: 0,
-    },
-    {
-      id: 'executor_of_the_kingdom_idle',
-      classId: 'executor',
-      displayName: 'Executor do Reino',
-      subtitle: 'Sentinela das estradas reais',
-      rarity: 'common',
-      dgPrice: 0,
-    },
-    {
-      id: 'spectral_idle',
-      classId: 'executor',
-      displayName: 'Executor da Brisa',
-      subtitle: 'Pes mais leves que o vento da manha',
-      rarity: 'epic',
-      dgPrice: 450,
-    },
-    {
-      id: 'shadow_idle',
-      classId: 'executor',
-      displayName: 'Executor da Sombra',
-      subtitle: 'Passo silencioso do entardecer',
-      rarity: 'legendary',
-      dgPrice: 900,
-    },
+    { id: 'idle',                            classId: 'executor', rarity: 'default',   dgPrice: 0   },
+    { id: 'executor_of_the_kingdom_idle',    classId: 'executor', rarity: 'common',    dgPrice: 0   },
+    { id: 'spectral_idle',                   classId: 'executor', rarity: 'epic',      dgPrice: 450 },
+    { id: 'shadow_idle',                     classId: 'executor', rarity: 'legendary', dgPrice: 900 },
   ],
+}
+
+// ─── i18n helpers ──────────────────────────────────────────────────────────
+
+/**
+ * Resolved display name for a skin in the active locale.
+ * Falls back to PT-BR via the standard i18n cascade, then to the raw key.
+ */
+export function getSkinName(skin: SkinDef): string {
+  return t(`scenes.skins.${skin.classId}.${skin.id}.name`)
+}
+
+/** Resolved subtitle (italic flavor line) for a skin in the active locale. */
+export function getSkinSubtitle(skin: SkinDef): string {
+  return t(`scenes.skins.${skin.classId}.${skin.id}.subtitle`)
 }
 
 /** Flat list of every skin, in a stable order (useful for the shop grid). */
@@ -224,10 +131,11 @@ export const SKIN_RARITY_HEX: Record<SkinRarity, string> = {
   legendary: '#f0c850',
 }
 
-export const SKIN_RARITY_LABEL: Record<SkinRarity, string> = {
-  default:   'CLASSICO',
-  common:    'COMUM',
-  rare:      'RARO',
-  epic:      'EPICO',
-  legendary: 'LENDARIO',
+/**
+ * Translated rarity label for badges and modal titles. Keyed by the same
+ * scenes.shop.rarity.<name> path the shop already uses, so a single i18n
+ * source covers shop cards, skin picker badges, and any future surface.
+ */
+export function getSkinRarityLabel(rarity: SkinRarity): string {
+  return t(`scenes.shop.rarity.${rarity}`)
 }

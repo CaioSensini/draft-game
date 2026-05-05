@@ -557,5 +557,79 @@
       "specialist": "전문가",
       "executor": "집행자"
     }
+  },
+  "skins": {
+    "king": {
+      "idle": {
+        "name": "클래식 왕",
+        "subtitle": "본래 혈통의 영원한 왕관"
+      },
+      "king_of_the_kingdom_idle": {
+        "name": "왕국의 왕",
+        "subtitle": "건국의 땅의 수호자"
+      },
+      "crimson_idle": {
+        "name": "폭풍의 왕",
+        "subtitle": "번개와 천둥을 명하는 왕관"
+      },
+      "eternal_idle": {
+        "name": "지평선의 왕",
+        "subtitle": "끝없는 땅의 군주"
+      }
+    },
+    "warrior": {
+      "idle": {
+        "name": "클래식 전사",
+        "subtitle": "길을 여는 노련한 전사"
+      },
+      "warrior_of_the_kingdom_idle": {
+        "name": "왕국의 전사",
+        "subtitle": "성벽을 충직히 지키는 자"
+      },
+      "ashes_idle": {
+        "name": "산의 전사",
+        "subtitle": "고대의 바위처럼 굳건"
+      },
+      "radiant_idle": {
+        "name": "찬란한 전사",
+        "subtitle": "여명의 축복을 받은 검"
+      }
+    },
+    "specialist": {
+      "idle": {
+        "name": "클래식 전문가",
+        "subtitle": "고대 기술의 대가"
+      },
+      "specialist_of_the_kingdom_idle": {
+        "name": "왕국의 전문가",
+        "subtitle": "고대 지식의 자문관"
+      },
+      "arcane_idle": {
+        "name": "루비 전문가",
+        "subtitle": "루비 불꽃에 결정된 지혜"
+      },
+      "cosmic_idle": {
+        "name": "성운 전문가",
+        "subtitle": "성운과 혜성을 짜는 자"
+      }
+    },
+    "executor": {
+      "idle": {
+        "name": "클래식 집행자",
+        "subtitle": "날카롭고 조용한 그림자"
+      },
+      "executor_of_the_kingdom_idle": {
+        "name": "왕국의 집행자",
+        "subtitle": "왕도의 파수꾼"
+      },
+      "spectral_idle": {
+        "name": "산들바람 집행자",
+        "subtitle": "아침 바람보다 가벼운 발걸음"
+      },
+      "shadow_idle": {
+        "name": "그림자 집행자",
+        "subtitle": "황혼의 조용한 걸음"
+      }
+    }
   }
 }

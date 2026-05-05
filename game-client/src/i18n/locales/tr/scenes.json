@@ -557,5 +557,79 @@
       "specialist": "UZMAN",
       "executor": "İNFAZCI"
     }
+  },
+  "skins": {
+    "king": {
+      "idle": {
+        "name": "Klasik Kral",
+        "subtitle": "Asıl soyun ebedi tacı"
+      },
+      "king_of_the_kingdom_idle": {
+        "name": "Krallığın Kralı",
+        "subtitle": "Kuruluş topraklarının koruyucusu"
+      },
+      "crimson_idle": {
+        "name": "Fırtına Kralı",
+        "subtitle": "Şimşeği ve gök gürültüsünü emreden taç"
+      },
+      "eternal_idle": {
+        "name": "Ufuk Kralı",
+        "subtitle": "Sonsuz toprakların hükümdarı"
+      }
+    },
+    "warrior": {
+      "idle": {
+        "name": "Klasik Savaşçı",
+        "subtitle": "Yolu açan deneyimli"
+      },
+      "warrior_of_the_kingdom_idle": {
+        "name": "Krallığın Savaşçısı",
+        "subtitle": "Surların sadık savunucusu"
+      },
+      "ashes_idle": {
+        "name": "Dağ Savaşçısı",
+        "subtitle": "Atalardan kalma kaya kadar sağlam"
+      },
+      "radiant_idle": {
+        "name": "Işıltılı Savaşçı",
+        "subtitle": "Şafakla kutsanmış kılıç"
+      }
+    },
+    "specialist": {
+      "idle": {
+        "name": "Klasik Uzman",
+        "subtitle": "Atalardan kalma tekniklerin ustası"
+      },
+      "specialist_of_the_kingdom_idle": {
+        "name": "Krallığın Uzmanı",
+        "subtitle": "Eski bilgilerin danışmanı"
+      },
+      "arcane_idle": {
+        "name": "Yakut Uzman",
+        "subtitle": "Yakut alevde kristalleşmiş bilgelik"
+      },
+      "cosmic_idle": {
+        "name": "Bulutsu Uzman",
+        "subtitle": "Bulutsu ve kuyrukluyıldız dokuyucusu"
+      }
+    },
+    "executor": {
+      "idle": {
+        "name": "Klasik İnfazcı",
+        "subtitle": "Keskin ve sessiz bir gölge"
+      },
+      "executor_of_the_kingdom_idle": {
+        "name": "Krallığın İnfazcısı",
+        "subtitle": "Kraliyet yollarının nöbetçisi"
+      },
+      "spectral_idle": {
+        "name": "Esinti İnfazcı",
+        "subtitle": "Sabah rüzgârından hafif"
+      },
+      "shadow_idle": {
+        "name": "Gölge İnfazcı",
+        "subtitle": "Akşamın sessiz adımı"
+      }
+    }
   }
 }

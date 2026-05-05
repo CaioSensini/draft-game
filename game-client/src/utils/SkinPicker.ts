@@ -29,6 +29,9 @@ import {
   SKIN_CATALOG,
   SKIN_RARITY_COLOR,
   SKIN_RARITY_HEX,
+  getSkinName,
+  getSkinSubtitle,
+  getSkinRarityLabel,
   type SkinDef,
 } from '../data/skinCatalog'
 import type { CharClass } from './AssetPaths'
@@ -39,11 +42,9 @@ const H = SCREEN.H
 
 // ── Picker config ──────────────────────────────────────────────────────────
 
-const ROLE_LABEL: Record<CharClass, string> = {
-  king:       'REI',
-  warrior:    'GUERREIRO',
-  specialist: 'ESPECIALISTA',
-  executor:   'EXECUTOR',
+/** Translated header label for each class (REI / KING / WARRIOR / etc.). */
+function roleLabel(classId: CharClass): string {
+  return t(`scenes.skin-picker.role.${classId}`)
 }
 
 export interface SkinPickerOptions {
@@ -138,7 +139,7 @@ export function openSkinPicker(
 
   root.add(
     scene.add
-      .text(0, -PANEL_H / 2 + 44, ROLE_LABEL[classId], {
+      .text(0, -PANEL_H / 2 + 44, roleLabel(classId), {
         fontFamily: fontFamily.display,
         fontSize:   typeScale.h2,
         color:      fg.primaryHex,
@@ -296,7 +297,7 @@ function createCard(
 
   const rarityColor = SKIN_RARITY_COLOR[skin.rarity]
   const rarityHex = SKIN_RARITY_HEX[skin.rarity]
-  const rarityLabel = t(`scenes.shop.rarity.${skin.rarity}`)
+  const rarityLabel = getSkinRarityLabel(skin.rarity)
 
   // ── Background — token-driven card with rarity tint ──
   const bg = scene.add.graphics()
@@ -412,7 +413,7 @@ function createCard(
   const nameY = -hh + 248
   container.add(
     scene.add
-      .text(0, nameY, skin.displayName, {
+      .text(0, nameY, getSkinName(skin), {
         fontFamily: fontFamily.serif,
         fontSize:   typeScale.h3,
         color:      isOwned ? fg.primaryHex : fg.tertiaryHex,
@@ -425,7 +426,7 @@ function createCard(
 
   container.add(
     scene.add
-      .text(0, nameY + 22, skin.subtitle, {
+      .text(0, nameY + 22, getSkinSubtitle(skin), {
         fontFamily: fontFamily.serif,
         fontSize:   typeScale.small,
         color:      isOwned ? fg.tertiaryHex : fg.disabledHex,

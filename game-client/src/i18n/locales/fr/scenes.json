@@ -554,5 +554,79 @@
       "specialist": "SPÉCIALISTE",
       "executor": "EXÉCUTEUR"
     }
+  },
+  "skins": {
+    "king": {
+      "idle": {
+        "name": "Roi Classique",
+        "subtitle": "La couronne éternelle du lignage originel"
+      },
+      "king_of_the_kingdom_idle": {
+        "name": "Roi du Royaume",
+        "subtitle": "Gardien des terres fondatrices"
+      },
+      "crimson_idle": {
+        "name": "Roi de l’Orage",
+        "subtitle": "Couronne qui commande foudres et tonnerres"
+      },
+      "eternal_idle": {
+        "name": "Roi de l’Horizon",
+        "subtitle": "Souverain de terres sans fin"
+      }
+    },
+    "warrior": {
+      "idle": {
+        "name": "Guerrier Classique",
+        "subtitle": "Le vétéran qui ouvre la voie"
+      },
+      "warrior_of_the_kingdom_idle": {
+        "name": "Guerrier du Royaume",
+        "subtitle": "Défenseur loyal des murailles"
+      },
+      "ashes_idle": {
+        "name": "Guerrier de la Montagne",
+        "subtitle": "Ferme comme la roche ancestrale"
+      },
+      "radiant_idle": {
+        "name": "Guerrier Radiant",
+        "subtitle": "Lame bénie par l’aurore"
+      }
+    },
+    "specialist": {
+      "idle": {
+        "name": "Spécialiste Classique",
+        "subtitle": "Maître des techniques ancestrales"
+      },
+      "specialist_of_the_kingdom_idle": {
+        "name": "Spécialiste du Royaume",
+        "subtitle": "Conseiller des savoirs anciens"
+      },
+      "arcane_idle": {
+        "name": "Spécialiste Rubis",
+        "subtitle": "Sagesse cristallisée en flamme rubis"
+      },
+      "cosmic_idle": {
+        "name": "Spécialiste Nébulaire",
+        "subtitle": "Tisseur de nébuleuses et de comètes"
+      }
+    },
+    "executor": {
+      "idle": {
+        "name": "Exécuteur Classique",
+        "subtitle": "Une ombre acérée et silencieuse"
+      },
+      "executor_of_the_kingdom_idle": {
+        "name": "Exécuteur du Royaume",
+        "subtitle": "Sentinelle des routes royales"
+      },
+      "spectral_idle": {
+        "name": "Exécuteur de la Brise",
+        "subtitle": "Plus léger que le vent du matin"
+      },
+      "shadow_idle": {
+        "name": "Exécuteur de l’Ombre",
+        "subtitle": "Pas silencieux du crépuscule"
+      }
+    }
   }
 }

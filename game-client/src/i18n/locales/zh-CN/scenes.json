@@ -557,5 +557,79 @@
       "specialist": "专家",
       "executor": "执行者"
     }
+  },
+  "skins": {
+    "king": {
+      "idle": {
+        "name": "经典王者",
+        "subtitle": "原初血脉的永恒之冠"
+      },
+      "king_of_the_kingdom_idle": {
+        "name": "王国之王",
+        "subtitle": "建国之地的守护者"
+      },
+      "crimson_idle": {
+        "name": "风暴之王",
+        "subtitle": "号令雷霆的王冠"
+      },
+      "eternal_idle": {
+        "name": "地平线之王",
+        "subtitle": "无边疆土的主宰"
+      }
+    },
+    "warrior": {
+      "idle": {
+        "name": "经典战士",
+        "subtitle": "开路的老兵"
+      },
+      "warrior_of_the_kingdom_idle": {
+        "name": "王国战士",
+        "subtitle": "城墙的忠诚守护者"
+      },
+      "ashes_idle": {
+        "name": "山岳战士",
+        "subtitle": "坚如远古磐石"
+      },
+      "radiant_idle": {
+        "name": "辉光战士",
+        "subtitle": "受晨曦祝福的利刃"
+      }
+    },
+    "specialist": {
+      "idle": {
+        "name": "经典专家",
+        "subtitle": "古老技艺的大师"
+      },
+      "specialist_of_the_kingdom_idle": {
+        "name": "王国专家",
+        "subtitle": "古老知识的顾问"
+      },
+      "arcane_idle": {
+        "name": "红宝石专家",
+        "subtitle": "凝于宝石之焰中的智慧"
+      },
+      "cosmic_idle": {
+        "name": "星云专家",
+        "subtitle": "星云与彗星的编织者"
+      }
+    },
+    "executor": {
+      "idle": {
+        "name": "经典执行者",
+        "subtitle": "锋锐而沉默的影子"
+      },
+      "executor_of_the_kingdom_idle": {
+        "name": "王国执行者",
+        "subtitle": "王道的哨兵"
+      },
+      "spectral_idle": {
+        "name": "清风执行者",
+        "subtitle": "比晨风更轻盈"
+      },
+      "shadow_idle": {
+        "name": "暗影执行者",
+        "subtitle": "黄昏的无声脚步"
+      }
+    }
   }
 }

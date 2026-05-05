@@ -554,5 +554,79 @@
       "specialist": "SPEZIALIST",
       "executor": "VOLLSTRECKER"
     }
+  },
+  "skins": {
+    "king": {
+      "idle": {
+        "name": "Klassischer König",
+        "subtitle": "Die ewige Krone der ursprünglichen Linie"
+      },
+      "king_of_the_kingdom_idle": {
+        "name": "König des Reiches",
+        "subtitle": "Hüter der Gründerlande"
+      },
+      "crimson_idle": {
+        "name": "Sturmkönig",
+        "subtitle": "Krone, die Blitz und Donner befiehlt"
+      },
+      "eternal_idle": {
+        "name": "Horizontkönig",
+        "subtitle": "Souverän endloser Lande"
+      }
+    },
+    "warrior": {
+      "idle": {
+        "name": "Klassischer Krieger",
+        "subtitle": "Der Veteran, der den Weg ebnet"
+      },
+      "warrior_of_the_kingdom_idle": {
+        "name": "Krieger des Reiches",
+        "subtitle": "Treuer Verteidiger der Mauern"
+      },
+      "ashes_idle": {
+        "name": "Bergkrieger",
+        "subtitle": "Fest wie der uralte Fels"
+      },
+      "radiant_idle": {
+        "name": "Strahlender Krieger",
+        "subtitle": "Klinge, gesegnet vom Morgenrot"
+      }
+    },
+    "specialist": {
+      "idle": {
+        "name": "Klassischer Spezialist",
+        "subtitle": "Meister uralter Techniken"
+      },
+      "specialist_of_the_kingdom_idle": {
+        "name": "Spezialist des Reiches",
+        "subtitle": "Berater alter Weisheit"
+      },
+      "arcane_idle": {
+        "name": "Rubinspezialist",
+        "subtitle": "Weisheit, kristallisiert in Rubinflamme"
+      },
+      "cosmic_idle": {
+        "name": "Nebularspezialist",
+        "subtitle": "Weber von Nebeln und Kometen"
+      }
+    },
+    "executor": {
+      "idle": {
+        "name": "Klassischer Vollstrecker",
+        "subtitle": "Ein scharfer und stiller Schatten"
+      },
+      "executor_of_the_kingdom_idle": {
+        "name": "Vollstrecker des Reiches",
+        "subtitle": "Wächter der königlichen Straßen"
+      },
+      "spectral_idle": {
+        "name": "Brisenvollstrecker",
+        "subtitle": "Leichter als der Morgenwind"
+      },
+      "shadow_idle": {
+        "name": "Schattenvollstrecker",
+        "subtitle": "Lautloser Schritt der Dämmerung"
+      }
+    }
   }
 }

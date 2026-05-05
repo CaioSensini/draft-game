@@ -554,5 +554,79 @@
       "specialist": "ESPECIALISTA",
       "executor": "EJECUTOR"
     }
+  },
+  "skins": {
+    "king": {
+      "idle": {
+        "name": "Rey Clásico",
+        "subtitle": "La corona eterna del linaje original"
+      },
+      "king_of_the_kingdom_idle": {
+        "name": "Rey del Reino",
+        "subtitle": "Guardián de las tierras fundadoras"
+      },
+      "crimson_idle": {
+        "name": "Rey de la Tormenta",
+        "subtitle": "Corona que ordena rayos y truenos"
+      },
+      "eternal_idle": {
+        "name": "Rey del Horizonte",
+        "subtitle": "Soberano de tierras sin fin"
+      }
+    },
+    "warrior": {
+      "idle": {
+        "name": "Guerrero Clásico",
+        "subtitle": "El veterano que abre camino"
+      },
+      "warrior_of_the_kingdom_idle": {
+        "name": "Guerrero del Reino",
+        "subtitle": "Defensor leal de las murallas"
+      },
+      "ashes_idle": {
+        "name": "Guerrero de la Montaña",
+        "subtitle": "Firme como la roca ancestral"
+      },
+      "radiant_idle": {
+        "name": "Guerrero Radiante",
+        "subtitle": "Hoja bendecida por el alba"
+      }
+    },
+    "specialist": {
+      "idle": {
+        "name": "Especialista Clásico",
+        "subtitle": "Maestro de técnicas ancestrales"
+      },
+      "specialist_of_the_kingdom_idle": {
+        "name": "Especialista del Reino",
+        "subtitle": "Consejero de saberes antiguos"
+      },
+      "arcane_idle": {
+        "name": "Especialista Rubí",
+        "subtitle": "Sabiduría cristalizada en llama rubí"
+      },
+      "cosmic_idle": {
+        "name": "Especialista Nebular",
+        "subtitle": "Tejedor de nebulosas y cometas"
+      }
+    },
+    "executor": {
+      "idle": {
+        "name": "Ejecutor Clásico",
+        "subtitle": "Sombra afilada y silenciosa"
+      },
+      "executor_of_the_kingdom_idle": {
+        "name": "Ejecutor del Reino",
+        "subtitle": "Centinela de las rutas reales"
+      },
+      "spectral_idle": {
+        "name": "Ejecutor de la Brisa",
+        "subtitle": "Pies más ligeros que el viento"
+      },
+      "shadow_idle": {
+        "name": "Ejecutor de la Sombra",
+        "subtitle": "Paso silencioso del crepúsculo"
+      }
+    }
   }
 }

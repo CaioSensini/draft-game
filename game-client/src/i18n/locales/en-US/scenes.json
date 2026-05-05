@@ -554,5 +554,79 @@
       "specialist": "SPECIALIST",
       "executor": "EXECUTOR"
     }
+  },
+  "skins": {
+    "king": {
+      "idle": {
+        "name": "Classic King",
+        "subtitle": "The eternal crown of the original lineage"
+      },
+      "king_of_the_kingdom_idle": {
+        "name": "King of the Realm",
+        "subtitle": "Guardian of the founding lands"
+      },
+      "crimson_idle": {
+        "name": "Storm King",
+        "subtitle": "Crown that commands lightning and thunder"
+      },
+      "eternal_idle": {
+        "name": "Horizon King",
+        "subtitle": "Sovereign of endless lands"
+      }
+    },
+    "warrior": {
+      "idle": {
+        "name": "Classic Warrior",
+        "subtitle": "The veteran who clears the way"
+      },
+      "warrior_of_the_kingdom_idle": {
+        "name": "Warrior of the Realm",
+        "subtitle": "Loyal defender of the walls"
+      },
+      "ashes_idle": {
+        "name": "Mountain Warrior",
+        "subtitle": "Firm as ancestral stone"
+      },
+      "radiant_idle": {
+        "name": "Radiant Warrior",
+        "subtitle": "Blade blessed by the dawn"
+      }
+    },
+    "specialist": {
+      "idle": {
+        "name": "Classic Specialist",
+        "subtitle": "Master of ancestral techniques"
+      },
+      "specialist_of_the_kingdom_idle": {
+        "name": "Specialist of the Realm",
+        "subtitle": "Counsel of ancient lore"
+      },
+      "arcane_idle": {
+        "name": "Ruby Specialist",
+        "subtitle": "Wisdom crystallized in ruby flame"
+      },
+      "cosmic_idle": {
+        "name": "Nebular Specialist",
+        "subtitle": "Weaver of nebulae and comets"
+      }
+    },
+    "executor": {
+      "idle": {
+        "name": "Classic Executor",
+        "subtitle": "A sharp and silent shadow"
+      },
+      "executor_of_the_kingdom_idle": {
+        "name": "Executor of the Realm",
+        "subtitle": "Sentinel of the royal roads"
+      },
+      "spectral_idle": {
+        "name": "Breeze Executor",
+        "subtitle": "Lighter than the morning wind"
+      },
+      "shadow_idle": {
+        "name": "Shadow Executor",
+        "subtitle": "Silent step at dusk"
+      }
+    }
   }
 }

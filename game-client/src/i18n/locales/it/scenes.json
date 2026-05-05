@@ -554,5 +554,79 @@
       "specialist": "SPECIALISTA",
       "executor": "ESECUTORE"
     }
+  },
+  "skins": {
+    "king": {
+      "idle": {
+        "name": "Re Classico",
+        "subtitle": "La corona eterna del lignaggio originale"
+      },
+      "king_of_the_kingdom_idle": {
+        "name": "Re del Regno",
+        "subtitle": "Custode delle terre fondatrici"
+      },
+      "crimson_idle": {
+        "name": "Re della Tempesta",
+        "subtitle": "Corona che comanda fulmini e tuoni"
+      },
+      "eternal_idle": {
+        "name": "Re dell’Orizzonte",
+        "subtitle": "Sovrano di terre senza fine"
+      }
+    },
+    "warrior": {
+      "idle": {
+        "name": "Guerriero Classico",
+        "subtitle": "Il veterano che apre la via"
+      },
+      "warrior_of_the_kingdom_idle": {
+        "name": "Guerriero del Regno",
+        "subtitle": "Leale difensore delle mura"
+      },
+      "ashes_idle": {
+        "name": "Guerriero della Montagna",
+        "subtitle": "Saldo come la roccia ancestrale"
+      },
+      "radiant_idle": {
+        "name": "Guerriero Radiante",
+        "subtitle": "Lama benedetta dall’aurora"
+      }
+    },
+    "specialist": {
+      "idle": {
+        "name": "Specialista Classico",
+        "subtitle": "Maestro delle tecniche ancestrali"
+      },
+      "specialist_of_the_kingdom_idle": {
+        "name": "Specialista del Regno",
+        "subtitle": "Consigliere dei saperi antichi"
+      },
+      "arcane_idle": {
+        "name": "Specialista Rubino",
+        "subtitle": "Sapienza cristallizzata in fiamma rubino"
+      },
+      "cosmic_idle": {
+        "name": "Specialista Nebulare",
+        "subtitle": "Tessitore di nebulose e comete"
+      }
+    },
+    "executor": {
+      "idle": {
+        "name": "Esecutore Classico",
+        "subtitle": "Un’ombra affilata e silenziosa"
+      },
+      "executor_of_the_kingdom_idle": {
+        "name": "Esecutore del Regno",
+        "subtitle": "Sentinella delle strade reali"
+      },
+      "spectral_idle": {
+        "name": "Esecutore della Brezza",
+        "subtitle": "Più leggero del vento del mattino"
+      },
+      "shadow_idle": {
+        "name": "Esecutore dell’Ombra",
+        "subtitle": "Passo silenzioso del crepuscolo"
+      }
+    }
   }
 }
