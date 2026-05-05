@@ -642,8 +642,13 @@ export default class LobbyScene extends Phaser.Scene {
   //   - When unlocked: ember pulse + "EM BREVE" status (feature still WIP)
 
   private drawOfflineAttackLink() {
-    const p = playerData.get()
-    const available = p.level >= 30
+    // Offline raids no longer have a level gate — when the matchmaking
+    // backend lands, the click handler will look for the available player
+    // closest to the local player's level. Until that ships, the tile keeps
+    // its "coming soon" skin (greyed palette + padlock + 'DISPONÍVEL EM
+    // BREVE' strip). Flip this flag to false once the feature is live.
+    const wipFeature = true
+    const available = !wipFeature
 
     // ── Geometry — mirror drawBattlePassButton() so we hug the LAST icon ──
     const stdIconW = 156
@@ -829,48 +834,31 @@ export default class LobbyScene extends Phaser.Scene {
       })
     }
 
-    // ── Status label / Lv.30 lock pill below the emblem ──
-    // Shield+swords emblem now occupies y ≈ -16..+19 (centered at -2 with
-    // span 35 from the moveTo lines above). Bottom strip starts at
-    // btnH/2 - 22 = 53. Pill goes in the gap (19..53 → 34 px).
+    // ── Padlock-only "WIP" indicator below the emblem ──
+    // Sits between the shield emblem (ends at y ≈ +19) and the bottom
+    // status strip (starts at y ≈ +44). No text, no pill background — the
+    // "DISPONÍVEL EM BREVE" message lives in the strip below; the padlock
+    // here is a quiet visual cue that the feature isn't yet interactive.
+    // Glyph is drawn ~2× the pill-version size for legibility on its own.
     if (!available) {
-      // Lock pill: padlock icon + "Lv.30" text, mirroring PlayModesOverlay
-      const pillW = 76
-      const pillH = 18
-      const pillCy = 32
-
-      const pillGfx = this.add.graphics()
-      pillGfx.fillStyle(0x10141d, 0.95)
-      pillGfx.fillRoundedRect(-pillW / 2, pillCy - pillH / 2, pillW, pillH, pillH / 2)
-      pillGfx.lineStyle(1, palette.borderInner, 0.7)
-      pillGfx.strokeRoundedRect(-pillW / 2, pillCy - pillH / 2, pillW, pillH, pillH / 2)
-      container.add(pillGfx)
-
-      // Padlock (left side of pill).
-      // Glyph spans lkY-6.3 (shackle peak) to lkY+2.5 (body bottom), so its
-      // visual midpoint is lkY-1.9. Setting lkY = pillCy + 2 puts the glyph
-      // centered between the top and bottom edges of the pill.
       const lockGfx = this.add.graphics()
-      const lkX = -pillW / 2 + 13
-      const lkY = pillCy + 2
-      lockGfx.lineStyle(1.4, palette.accent, 0.85)
-      lockGfx.beginPath()
-      lockGfx.arc(lkX, lkY - 3.5, 2.8, Math.PI, 0, false)
-      lockGfx.strokePath()
-      lockGfx.fillStyle(palette.accent, 0.85)
-      lockGfx.fillRoundedRect(lkX - 3.5, lkY - 3.5, 7, 6, 1)
-      lockGfx.fillStyle(0x000000, 0.5)
-      lockGfx.fillCircle(lkX, lkY - 1.5, 0.9)
-      container.add(lockGfx)
+      const lkX = 0
+      const lkY = 32
+      const SHACKLE_R = 5
+      const BODY_W    = 12
+      const BODY_H    = 10
 
-      container.add(this.add.text(-pillW / 2 + 26, pillCy, t('common.labels.level-long', { level: 30 }), {
-        fontFamily: fontFamily.mono, fontSize: '13px',
-        color: palette.accentHex, fontStyle: '700',
-        shadow: { offsetX: 0, offsetY: 1, color: palette.shadowDeep, blur: 3, fill: true },
-      }).setOrigin(0, 0.5))
+      lockGfx.lineStyle(2, palette.accent, 0.9)
+      lockGfx.beginPath()
+      lockGfx.arc(lkX, lkY - BODY_H / 2, SHACKLE_R, Math.PI, 0, false)
+      lockGfx.strokePath()
+      lockGfx.fillStyle(palette.accent, 0.9)
+      lockGfx.fillRoundedRect(lkX - BODY_W / 2, lkY - BODY_H / 2, BODY_W, BODY_H, 1.5)
+      lockGfx.fillStyle(0x000000, 0.55)
+      lockGfx.fillCircle(lkX, lkY, 1.3)
+      container.add(lockGfx)
     }
-    // Unlocked: no center label here — the bottom strip already shows
-    // the available status, so we keep the shield emblem visually clean.
+    // Unlocked: no center indicator — the bottom strip carries the cue.
 
     // ── Bottom strip: status indicator (mirrors XP bar slot in BattlePass) ──
     const stripText = available
