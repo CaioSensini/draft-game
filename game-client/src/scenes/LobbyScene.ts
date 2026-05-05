@@ -677,7 +677,6 @@ export default class LobbyScene extends Phaser.Scene {
     const ATTACK_C  = 0xef4444
     const DEFENSE_C = 0x3b82f6
     const ACCENT_C  = 0xfbbf24
-    const ACCENT_HEX = '#fbbf24'
     const NEUTRAL_BASE   = 0x101729
     const NEUTRAL_DEEP   = 0x0a0f1d
     const NEUTRAL_BORDER = 0x1e293b
@@ -763,7 +762,7 @@ export default class LobbyScene extends Phaser.Scene {
       shadow: { offsetX: 0, offsetY: 1, color: SHADOW_DEEP, blur: 6, fill: true },
     }).setOrigin(0.5))
     container.add(this.add.text(0, -btnH / 2 + 38, t('scenes.lobby.offline.line-2'), {
-      fontFamily: fontFamily.display, fontSize: '12px', color: ACCENT_HEX, fontStyle: '700',
+      fontFamily: fontFamily.display, fontSize: '12px', color: '#ffffff', fontStyle: '700',
       shadow: { offsetX: 0, offsetY: 1, color: SHADOW_DEEP, blur: 4, fill: true },
     }).setOrigin(0.5))
 
@@ -850,7 +849,7 @@ export default class LobbyScene extends Phaser.Scene {
 
     container.add(this.add.text(0, stripY, stripText, {
       fontFamily: fontFamily.body, fontSize: '11px',
-      color: ACCENT_HEX, fontStyle: '700',
+      color: '#ffffff', fontStyle: '700',
       shadow: { offsetX: 0, offsetY: 1, color: SHADOW_DEEP, blur: 3, fill: true },
     }).setOrigin(0.5).setLetterSpacing(1.6))
 
