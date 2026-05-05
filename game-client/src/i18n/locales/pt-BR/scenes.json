@@ -493,7 +493,9 @@
       "sound-off": "Efeitos sonoros desligados"
     },
     "language": {
-      "field-label": "ESCOLHA SEU IDIOMA"
+      "field-label": "ESCOLHA SEU IDIOMA",
+      "busy-title": "Termine a partida atual",
+      "busy-body": "Você está em uma partida ou na fila. Termine ou saia antes de trocar de idioma."
     },
     "account": {
       "session-label": "SESSÃO",

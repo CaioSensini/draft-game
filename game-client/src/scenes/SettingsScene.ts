@@ -11,6 +11,7 @@ import {
   t, setLang, getCurrentLang, getSupportedLangs, LANG_LABELS,
   type Lang,
 } from '../i18n'
+import { blockingScenes } from '../i18n/bindText'
 
 const W = SCREEN.W
 const H = SCREEN.H
@@ -190,6 +191,28 @@ export default class SettingsScene extends Phaser.Scene {
       height: 36,
       onChange: (lang) => {
         soundManager.playClick()
+
+        // Block language changes while gameplay-critical scenes are active.
+        // Restarting BattleScene mid-fight nukes HP/turn/queue; MatchmakingScene
+        // restart resets the queue timer. Surface a friendly modal so the
+        // player finishes the match first.
+        const blocking = blockingScenes(this.game)
+        if (blocking.length > 0) {
+          UI.modal(this, {
+            eyebrow: t('scenes.settings.sections.language'),
+            title:   t('scenes.settings.language.busy-title'),
+            body:    t('scenes.settings.language.busy-body'),
+            actions: [{
+              label: t('common.actions.ok'), kind: 'primary',
+              onClick: () => {
+                soundManager.playClick()
+                this.scene.restart()  // re-render the segmented control to keep current lang highlighted
+              },
+            }],
+          })
+          return
+        }
+
         // setLang persists, mutates SKILL_CATALOG via the registered listener,
         // then we restart the scene so every label re-renders in the new lang
         // (avoids wiring reactive bindings on every text object).

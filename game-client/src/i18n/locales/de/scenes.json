@@ -493,7 +493,9 @@
       "sound-off": "Soundeffekte aus"
     },
     "language": {
-      "field-label": "WÄHLE DEINE SPRACHE"
+      "field-label": "WÄHLE DEINE SPRACHE",
+      "busy-title": "Beende die laufende Partie",
+      "busy-body": "Du bist in einem Match oder in der Warteschlange. Beende oder verlasse, bevor du die Sprache wechselst."
     },
     "account": {
       "session-label": "SITZUNG",

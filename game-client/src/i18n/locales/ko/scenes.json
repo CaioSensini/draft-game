@@ -493,7 +493,9 @@
       "sound-off": "효과음 꺼짐"
     },
     "language": {
-      "field-label": "언어 선택"
+      "field-label": "언어 선택",
+      "busy-title": "현재 매치를 먼저 마치세요",
+      "busy-body": "매치 또는 대기열에 있습니다. 언어를 변경하기 전에 종료하거나 나가세요."
     },
     "gameplay": {
       "bot-difficulty-label": "봇 난이도"

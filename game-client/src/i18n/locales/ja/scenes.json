@@ -493,7 +493,9 @@
       "sound-off": "効果音オフ"
     },
     "language": {
-      "field-label": "言語を選択"
+      "field-label": "言語を選択",
+      "busy-title": "現在のマッチを終えてください",
+      "busy-body": "マッチ中またはキュー中です。言語変更前に終了するか退出してください。"
     },
     "gameplay": {
       "bot-difficulty-label": "ボット難易度"

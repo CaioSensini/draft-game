@@ -493,7 +493,9 @@
       "sound-off": "音效关闭"
     },
     "language": {
-      "field-label": "选择语言"
+      "field-label": "选择语言",
+      "busy-title": "请先结束当前对局",
+      "busy-body": "你正在比赛或排队中。请先结束或退出再切换语言。"
     },
     "gameplay": {
       "bot-difficulty-label": "机器人难度"

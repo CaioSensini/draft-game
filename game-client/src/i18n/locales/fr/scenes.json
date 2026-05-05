@@ -493,7 +493,9 @@
       "sound-off": "Effets sonores désactivés"
     },
     "language": {
-      "field-label": "CHOISISSEZ VOTRE LANGUE"
+      "field-label": "CHOISISSEZ VOTRE LANGUE",
+      "busy-title": "Terminez la partie en cours",
+      "busy-body": "Vous êtes en partie ou en file d’attente. Terminez ou quittez avant de changer de langue."
     },
     "account": {
       "session-label": "SESSION",

@@ -493,7 +493,9 @@
       "sound-off": "Sound effects off"
     },
     "language": {
-      "field-label": "CHOOSE YOUR LANGUAGE"
+      "field-label": "CHOOSE YOUR LANGUAGE",
+      "busy-title": "Finish the current match",
+      "busy-body": "You are in a match or in queue. Finish or leave before changing language."
     },
     "account": {
       "session-label": "SESSION",

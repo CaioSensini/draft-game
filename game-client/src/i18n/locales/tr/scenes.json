@@ -493,7 +493,9 @@
       "sound-off": "Ses efektleri kapalı"
     },
     "language": {
-      "field-label": "DİLİNİZİ SEÇİN"
+      "field-label": "DİLİNİZİ SEÇİN",
+      "busy-title": "Mevcut maçı bitir",
+      "busy-body": "Bir maçtasın veya sıradasın. Dili değiştirmeden önce bitir veya çık."
     },
     "gameplay": {
       "bot-difficulty-label": "BOT ZORLUĞU"
