@@ -47,7 +47,8 @@
     "unlocked": "KİLİT AÇIK",
     "tabs": {
       "packs": "PAKETLER",
-      "skins": "KAPLAMALAR"
+      "skins": "KAPLAMALAR",
+      "fortifications": "TAHKİMATLAR"
     },
     "items": {
       "defense": "Savunma",
@@ -85,6 +86,13 @@
       "buy-dg": "SATIN AL · {price} DG",
       "insufficient-balance": "YETERSİZ BAKİYE",
       "pack-body": "{desc} · {count} rastgele skill."
+    },
+    "fortifications": {
+      "eyebrow": "BASKIN",
+      "duration-badge": "{count} SAVUNMA",
+      "owned-badge": "ENVANTERDE · {remaining}",
+      "modal-body": "{desc}\n\nSüre: {count} savunma alındığında biter.",
+      "toast-success": "{name} envantere eklendi"
     }
   },
   "battle-pass": {
@@ -726,16 +734,6 @@
       "title": "Çevrimdışı moda katıl",
       "body": "Açıkken, diğer oyunculara saldırabilir ve onlardan saldırı alabilirsin."
     },
-    "shop": {
-      "title": "Tahkimatlar",
-      "subtitle": "Alınan savunma başına süren güçlendirmeler",
-      "buy": "SATIN AL",
-      "active": "AKTİF · {remaining} SAVUNMA",
-      "toast": {
-        "no-gold": "Yeterli altın yok",
-        "no-dg": "Yeterli Draft Gems yok"
-      }
-    },
     "attack-cta": "Şimdi saldır",
     "attack-disabled-toggle-off": "Saldırmak için katılımı aç",
     "attack-disabled-out-of-attacks": "Bugünkü 10 saldırını kullandın",
@@ -773,6 +771,17 @@
         "name": "Hızlı İlerleme",
         "desc": "Savunmanın ilk turunda +1 hareket"
       }
+    },
+    "equip": {
+      "title": "Donatılmış savunmalar",
+      "slot-count": "{used}/{max}",
+      "shop-cta": "Mağazayı aç",
+      "empty-hint": "Donat",
+      "remaining": "{remaining} kaldı",
+      "picker-title": "Bir tahkimat seç",
+      "picker-subtitle": "Bu slotu doldurmak için envanterden bir öğe seçin",
+      "empty-inventory": "Henüz tahkimatın yok.",
+      "equip-btn": "Donat"
     }
   }
 }

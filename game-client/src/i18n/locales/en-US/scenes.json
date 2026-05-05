@@ -47,7 +47,8 @@
     "unlocked": "UNLOCKED",
     "tabs": {
       "packs": "PACKS",
-      "skins": "SKINS"
+      "skins": "SKINS",
+      "fortifications": "FORTIFICATIONS"
     },
     "items": {
       "defense": "Defense",
@@ -85,6 +86,13 @@
       "buy-dg": "BUY · {price} DG",
       "insufficient-balance": "INSUFFICIENT BALANCE",
       "pack-body": "{desc} · {count} random skill(s)."
+    },
+    "fortifications": {
+      "eyebrow": "RAID",
+      "duration-badge": "{count} DEFENSES",
+      "owned-badge": "IN INVENTORY · {remaining}",
+      "modal-body": "{desc}\n\nDuration: {count} defenses received.",
+      "toast-success": "{name} added to inventory"
     }
   },
   "battle-pass": {
@@ -723,16 +731,6 @@
       "title": "Join offline raid mode",
       "body": "When on, you can attack and be attacked by other players."
     },
-    "shop": {
-      "title": "Fortifications",
-      "subtitle": "Buffs that last per defense received",
-      "buy": "BUY",
-      "active": "ACTIVE · {remaining} DEFENSES",
-      "toast": {
-        "no-gold": "Not enough gold",
-        "no-dg": "Not enough Draft Gems"
-      }
-    },
     "attack-cta": "Attack now",
     "attack-disabled-toggle-off": "Turn on participation to attack",
     "attack-disabled-out-of-attacks": "You've used today's 10 attacks",
@@ -770,6 +768,17 @@
         "name": "Quick Advance",
         "desc": "+1 movement on the first defense turn"
       }
+    },
+    "equip": {
+      "title": "Equipped defenses",
+      "slot-count": "{used}/{max}",
+      "shop-cta": "Open shop",
+      "empty-hint": "Equip",
+      "remaining": "{remaining} left",
+      "picker-title": "Pick a fortification",
+      "picker-subtitle": "Select an inventory item to fill this slot",
+      "empty-inventory": "You don't own any fortifications yet.",
+      "equip-btn": "Equip"
     }
   }
 }

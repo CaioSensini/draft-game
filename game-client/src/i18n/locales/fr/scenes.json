@@ -47,7 +47,8 @@
     "unlocked": "DÉBLOQUÉ",
     "tabs": {
       "packs": "PACKS",
-      "skins": "SKINS"
+      "skins": "SKINS",
+      "fortifications": "FORTIFICATIONS"
     },
     "items": {
       "defense": "Défense",
@@ -85,6 +86,13 @@
       "buy-dg": "ACHETER · {price} DG",
       "insufficient-balance": "SOLDE INSUFFISANT",
       "pack-body": "{desc} · {count} skill(s) aléatoire(s)."
+    },
+    "fortifications": {
+      "eyebrow": "RAID",
+      "duration-badge": "{count} DÉFENSES",
+      "owned-badge": "DANS L'INVENTAIRE · {remaining}",
+      "modal-body": "{desc}\n\nDurée : {count} défenses reçues.",
+      "toast-success": "{name} ajouté à l'inventaire"
     }
   },
   "battle-pass": {
@@ -723,16 +731,6 @@
       "title": "Rejoindre le mode hors-ligne",
       "body": "Quand activé, vous pouvez attaquer et être attaqué par d'autres joueurs."
     },
-    "shop": {
-      "title": "Fortifications",
-      "subtitle": "Bonus qui durent par défense reçue",
-      "buy": "ACHETER",
-      "active": "ACTIF · {remaining} DÉFENSES",
-      "toast": {
-        "no-gold": "Or insuffisant",
-        "no-dg": "Draft Gems insuffisantes"
-      }
-    },
     "attack-cta": "Attaquer maintenant",
     "attack-disabled-toggle-off": "Activez la participation pour attaquer",
     "attack-disabled-out-of-attacks": "Vous avez épuisé vos 10 attaques du jour",
@@ -770,6 +768,17 @@
         "name": "Avance Rapide",
         "desc": "+1 mouvement au premier tour de défense"
       }
+    },
+    "equip": {
+      "title": "Défenses équipées",
+      "slot-count": "{used}/{max}",
+      "shop-cta": "Voir boutique",
+      "empty-hint": "Équiper",
+      "remaining": "{remaining} restantes",
+      "picker-title": "Choisir une fortification",
+      "picker-subtitle": "Sélectionnez un objet de l'inventaire pour cet emplacement",
+      "empty-inventory": "Vous n'avez aucune fortification disponible.",
+      "equip-btn": "Équiper"
     }
   }
 }

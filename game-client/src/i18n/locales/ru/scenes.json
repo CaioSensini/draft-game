@@ -47,7 +47,8 @@
     "unlocked": "РАЗБЛОКИРОВАНО",
     "tabs": {
       "packs": "НАБОРЫ",
-      "skins": "СКИНЫ"
+      "skins": "СКИНЫ",
+      "fortifications": "УКРЕПЛЕНИЯ"
     },
     "items": {
       "defense": "Защита",
@@ -85,6 +86,13 @@
       "buy-dg": "КУПИТЬ · {price} DG",
       "insufficient-balance": "НЕДОСТАТОЧНО СРЕДСТВ",
       "pack-body": "{desc} · {count} случайный(х) скилл(ов)."
+    },
+    "fortifications": {
+      "eyebrow": "РЕЙД",
+      "duration-badge": "{count} ЗАЩИТ",
+      "owned-badge": "В ИНВЕНТАРЕ · {remaining}",
+      "modal-body": "{desc}\n\nДлительность: {count} полученных защит.",
+      "toast-success": "{name} добавлен в инвентарь"
     }
   },
   "battle-pass": {
@@ -726,16 +734,6 @@
       "title": "Участвовать в офлайн-режиме",
       "body": "Когда включено, вы можете атаковать и быть атакованы другими игроками."
     },
-    "shop": {
-      "title": "Укрепления",
-      "subtitle": "Бафы, длящиеся за полученную защиту",
-      "buy": "КУПИТЬ",
-      "active": "АКТИВЕН · {remaining} ЗАЩИТ",
-      "toast": {
-        "no-gold": "Недостаточно золота",
-        "no-dg": "Недостаточно Draft Gems"
-      }
-    },
     "attack-cta": "Атаковать сейчас",
     "attack-disabled-toggle-off": "Включите участие, чтобы атаковать",
     "attack-disabled-out-of-attacks": "Вы использовали свои 10 атак сегодня",
@@ -773,6 +771,17 @@
         "name": "Быстрое наступление",
         "desc": "+1 ход на первом ходу защиты"
       }
+    },
+    "equip": {
+      "title": "Снаряжённые защиты",
+      "slot-count": "{used}/{max}",
+      "shop-cta": "В магазин",
+      "empty-hint": "Снарядить",
+      "remaining": "Осталось {remaining}",
+      "picker-title": "Выберите укрепление",
+      "picker-subtitle": "Выберите предмет из инвентаря для этого слота",
+      "empty-inventory": "У вас нет доступных укреплений.",
+      "equip-btn": "Снарядить"
     }
   }
 }

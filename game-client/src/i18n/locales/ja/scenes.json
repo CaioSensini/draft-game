@@ -47,7 +47,8 @@
     "unlocked": "アンロック",
     "tabs": {
       "packs": "パック",
-      "skins": "スキン"
+      "skins": "スキン",
+      "fortifications": "要塞化"
     },
     "items": {
       "defense": "防御",
@@ -85,6 +86,13 @@
       "buy-dg": "購入 · {price} DG",
       "insufficient-balance": "残高不足",
       "pack-body": "{desc} · {count}個のランダムスキル。"
+    },
+    "fortifications": {
+      "eyebrow": "レイド",
+      "duration-badge": "{count}回 防衛",
+      "owned-badge": "インベントリ · 残り{remaining}",
+      "modal-body": "{desc}\n\n持続: {count}回の防衛を受けるまで。",
+      "toast-success": "{name}をインベントリに追加"
     }
   },
   "battle-pass": {
@@ -726,16 +734,6 @@
       "title": "オフラインモードに参加",
       "body": "オンの時、他のプレイヤーを攻撃でき、攻撃を受けることもできます。"
     },
-    "shop": {
-      "title": "要塞化",
-      "subtitle": "受けた防衛ごとに持続するバフ",
-      "buy": "購入",
-      "active": "有効 · 残り{remaining}回防衛",
-      "toast": {
-        "no-gold": "ゴールドが足りません",
-        "no-dg": "Draft Gemsが足りません"
-      }
-    },
     "attack-cta": "今すぐ攻撃",
     "attack-disabled-toggle-off": "攻撃するには参加をオンにしてください",
     "attack-disabled-out-of-attacks": "本日の10回の攻撃を使い切りました",
@@ -773,6 +771,17 @@
         "name": "迅速な前進",
         "desc": "防衛の最初のターンに移動+1"
       }
+    },
+    "equip": {
+      "title": "装備中の防衛",
+      "slot-count": "{used}/{max}",
+      "shop-cta": "ショップを見る",
+      "empty-hint": "装備",
+      "remaining": "残り{remaining}",
+      "picker-title": "要塞化を選択",
+      "picker-subtitle": "このスロットに装備するアイテムを選んでください",
+      "empty-inventory": "使用可能な要塞化がありません。",
+      "equip-btn": "装備"
     }
   }
 }
