@@ -458,7 +458,7 @@
           "title": "兑换奖励",
           "desc": "在商店用熟练度换取专属道具、皮肤与资源"
         },
-        "cta": "了解",
+        "cta": "参与",
         "preview-line": "预测下一个目标 · 等级{level} · 战力 {power}",
         "cta-enter": "进入"
       }
@@ -708,5 +708,71 @@
   },
   "pack-open": {
     "tap-to-close": "点击关闭"
+  },
+  "raid-hub": {
+    "title": "袭击中心",
+    "subtitle": "设置参与并加固你的王国",
+    "counters": {
+      "attacks": "今日攻击",
+      "defenses": "今日防御"
+    },
+    "mastery": {
+      "title": "精通",
+      "attack-label": "攻击",
+      "defense-label": "防御",
+      "value": "{available} 可用 · {earned} 获得"
+    },
+    "participating": {
+      "title": "加入离线模式",
+      "body": "开启后，你可以攻击其他玩家，也可被其他玩家攻击。"
+    },
+    "shop": {
+      "title": "防御工事",
+      "subtitle": "按受到的防御次数持续的增益",
+      "buy": "购买",
+      "active": "生效中 · 剩余{remaining}次防御",
+      "toast": {
+        "no-gold": "金币不足",
+        "no-dg": "Draft Gems 不足"
+      }
+    },
+    "attack-cta": "立即攻击",
+    "attack-disabled-toggle-off": "开启参与才能攻击",
+    "attack-disabled-out-of-attacks": "你已用完今日的10次攻击",
+    "attack-no-targets": "等级{level}没有可用玩家",
+    "items": {
+      "reforco-real": {
+        "name": "王室增援",
+        "desc": "全队防御+15%"
+      },
+      "furia-coletiva": {
+        "name": "集体狂怒",
+        "desc": "全队攻击+15%"
+      },
+      "trap-espinhos": {
+        "name": "荆棘陷阱",
+        "desc": "在入侵者路径上布置3个陷阱"
+      },
+      "muralha-reforcada": {
+        "name": "加固城墙",
+        "desc": "仅国王防御+25%"
+      },
+      "olho-vigia": {
+        "name": "警戒之眼",
+        "desc": "提前1回合显示入侵者技能"
+      },
+      "bandeira-sorte": {
+        "name": "幸运旗帜",
+        "desc": "胜利防御金币+25%"
+      },
+      "esquiva-real": {
+        "name": "王者闪避",
+        "desc": "国王每次防御获得1次免费闪避"
+      },
+      "avancada-rapida": {
+        "name": "快速推进",
+        "desc": "防御首回合移动+1"
+      }
+    }
   }
 }

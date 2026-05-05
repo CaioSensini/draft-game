@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { GameState, GameStateManager } from '../core/GameState'
-import { playerData } from '../utils/PlayerDataManager'
+import { playerData, RAID_DAILY_LIMIT } from '../utils/PlayerDataManager'
 import { transitionTo } from '../utils/SceneTransition'
 import { soundManager } from '../utils/SoundManager'
 import { UI } from '../utils/UIComponents'
@@ -11,11 +11,6 @@ import {
 import { PASS_XP_PER_TIER, PASS_MAX_TIER } from '../data/battlePass'
 import { showPlayModesOverlay, type PlayModesOverlayHandle } from '../utils/PlayModesOverlay'
 import { drawSwordIcon, drawShieldIcon } from '../utils/CombatIcons'
-import {
-  buildRaidBattlePayload,
-  findOfflineRaidTargets,
-  isOfflineRaidEnterUnlocked,
-} from '../utils/OfflineRaidMatchmaking'
 import { t } from '../i18n'
 
 // ---- Layout constants (1280 x 720) -----------------------------------------
@@ -648,13 +643,14 @@ export default class LobbyScene extends Phaser.Scene {
   //   - When unlocked: ember pulse + "EM BREVE" status (feature still WIP)
 
   private drawOfflineAttackLink() {
-    // Offline raids no longer have a level gate — when the matchmaking
-    // backend lands, the click handler will look for the available player
-    // closest to the local player's level. Until that ships, the tile keeps
-    // its "coming soon" skin (greyed palette + padlock + 'DISPONÍVEL EM
-    // BREVE' strip). Flip this flag to false once the feature is live.
-    const wipFeature = true
-    const available = !wipFeature
+    // The tile is always actionable now: a tap opens the explainer popup,
+    // which in turn routes to the RaidHubScene where the player buys
+    // fortifications and launches the raid. The bottom of the tile shows
+    // two compact daily counters (attacks remaining / defenses received)
+    // capped at RAID_DAILY_LIMIT — replacing the older "DISPONÍVEL EM
+    // BREVE" strip + padlock pair.
+    const attacksLeft  = playerData.getRaidAttacksRemaining()
+    const defensesLeft = playerData.getRaidDefensesRemaining()
 
     // ── Geometry — mirror drawBattlePassButton() so we hug the LAST icon ──
     const stdIconW = 156
@@ -691,21 +687,19 @@ export default class LobbyScene extends Phaser.Scene {
     this.offlineContainer = container
 
     // ── Subtle backdrop aura — twin glows (red ◀ blue ▶) ──
-    if (available) {
-      const auraRed = this.add.graphics()
-      auraRed.fillStyle(ATTACK_C, 0.16)
-      auraRed.fillRoundedRect(-btnW / 2 - 6, -btnH / 2 - 6, btnW / 2 + 6, btnH + 12, S.borderRadiusLarge + 3)
-      container.add(auraRed)
-      const auraBlue = this.add.graphics()
-      auraBlue.fillStyle(DEFENSE_C, 0.16)
-      auraBlue.fillRoundedRect(0, -btnH / 2 - 6, btnW / 2 + 6, btnH + 12, S.borderRadiusLarge + 3)
-      container.add(auraBlue)
-      this.tweens.add({
-        targets: [auraRed, auraBlue],
-        alpha: { from: 0.30, to: 0.65 },
-        duration: 1400, yoyo: true, repeat: -1, ease: 'Sine.InOut',
-      })
-    }
+    const auraRed = this.add.graphics()
+    auraRed.fillStyle(ATTACK_C, 0.16)
+    auraRed.fillRoundedRect(-btnW / 2 - 6, -btnH / 2 - 6, btnW / 2 + 6, btnH + 12, S.borderRadiusLarge + 3)
+    container.add(auraRed)
+    const auraBlue = this.add.graphics()
+    auraBlue.fillStyle(DEFENSE_C, 0.16)
+    auraBlue.fillRoundedRect(0, -btnH / 2 - 6, btnW / 2 + 6, btnH + 12, S.borderRadiusLarge + 3)
+    container.add(auraBlue)
+    this.tweens.add({
+      targets: [auraRed, auraBlue],
+      alpha: { from: 0.30, to: 0.65 },
+      duration: 1400, yoyo: true, repeat: -1, ease: 'Sine.InOut',
+    })
 
     // ── Main background: solid neutral body with red/blue stripes ──
     const bgGfx = this.add.graphics()
@@ -790,16 +784,14 @@ export default class LobbyScene extends Phaser.Scene {
     const ex = 0
     const ey = -2
 
-    if (available) {
-      const emblemGlow = this.add.circle(ex, ey, 22, ACCENT_C, 0)
-      container.add(emblemGlow)
-      this.tweens.add({
-        targets: emblemGlow,
-        alpha: { from: 0.08, to: 0.28 },
-        scale: { from: 0.9, to: 1.15 },
-        duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.InOut',
-      })
-    }
+    const emblemGlow = this.add.circle(ex, ey, 22, ACCENT_C, 0)
+    container.add(emblemGlow)
+    this.tweens.add({
+      targets: emblemGlow,
+      alpha: { from: 0.08, to: 0.28 },
+      scale: { from: 0.9, to: 1.15 },
+      duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.InOut',
+    })
 
     // Blue shield (defense) — backdrop layer
     const shieldGfx = this.add.graphics()
@@ -811,53 +803,51 @@ export default class LobbyScene extends Phaser.Scene {
     drawSwordIcon(swordGfx, ex, ey - 1, ATTACK_C, 0.55)
     container.add(swordGfx)
 
-    // ── Padlock-only "WIP" indicator below the emblem ──
-    // Glyph drawn at the same vertical level as before; coloured amber so it
-    // matches the dual-theme accent (and not the red/blue identities — those
-    // belong to the action stripes/halos).
-    if (!available) {
-      const lockGfx = this.add.graphics()
-      const lkX = 0
-      const lkY = 32
-      const SHACKLE_R = 5
-      const BODY_W    = 12
-      const BODY_H    = 10
-
-      lockGfx.lineStyle(2, ACCENT_C, 0.9)
-      lockGfx.beginPath()
-      lockGfx.arc(lkX, lkY - BODY_H / 2, SHACKLE_R, Math.PI, 0, false)
-      lockGfx.strokePath()
-      lockGfx.fillStyle(ACCENT_C, 0.9)
-      lockGfx.fillRoundedRect(lkX - BODY_W / 2, lkY - BODY_H / 2, BODY_W, BODY_H, 1.5)
-      lockGfx.fillStyle(0x000000, 0.55)
-      lockGfx.fillCircle(lkX, lkY, 1.3)
-      container.add(lockGfx)
-    }
-    // Unlocked: no center indicator — the bottom strip carries the cue.
-
-    // ── Bottom strip: status indicator ──
-    const stripText = available
-      ? t('scenes.lobby.offline.available-status')
-      : t('scenes.lobby.offline.locked-status')
+    // ── Bottom strip: dual daily counters ──
+    // The strip area is split in two: a red attack pill on the left
+    // (sword icon + remaining/limit) and a blue defense pill on the
+    // right (shield icon + received/limit). Each pill keeps the same
+    // vertical envelope as the old "DISPONÍVEL EM BREVE" strip so the
+    // tile silhouette is unchanged.
     const stripY = btnH / 2 - 22
-    const stripW = btnW - 32
-    const stripBgY = stripY - 9
-    const stripBgH = 18
+    const pillBgY = stripY - 9
+    const pillBgH = 18
+    const pillW = (btnW - 36) / 2          // small gap between pills
+    const pillGap = 4
+    const leftPillCx  = -pillW / 2 - pillGap / 2
+    const rightPillCx =  pillW / 2 + pillGap / 2
 
-    const stripGfx = this.add.graphics()
-    stripGfx.fillStyle(NEUTRAL_DEEP, 0.85)
-    stripGfx.fillRoundedRect(-stripW / 2, stripBgY, stripW, stripBgH, stripBgH / 2)
-    stripGfx.lineStyle(1, ACCENT_C, 0.4)
-    stripGfx.strokeRoundedRect(-stripW / 2, stripBgY, stripW, stripBgH, stripBgH / 2)
-    container.add(stripGfx)
+    const drawCounterPill = (
+      cx: number,
+      color: number,
+      glyph: 'sword' | 'shield',
+      value: number,
+      limit: number,
+    ) => {
+      const pill = this.add.graphics()
+      pill.fillStyle(NEUTRAL_DEEP, 0.9)
+      pill.fillRoundedRect(cx - pillW / 2, pillBgY, pillW, pillBgH, pillBgH / 2)
+      pill.lineStyle(1, color, 0.65)
+      pill.strokeRoundedRect(cx - pillW / 2, pillBgY, pillW, pillBgH, pillBgH / 2)
+      container.add(pill)
 
-    container.add(this.add.text(0, stripY, stripText, {
-      fontFamily: fontFamily.body, fontSize: '11px',
-      color: '#ffffff', fontStyle: '700',
-      shadow: { offsetX: 0, offsetY: 1, color: SHADOW_DEEP, blur: 3, fill: true },
-    }).setOrigin(0.5).setLetterSpacing(1.6))
+      const iconGfx = this.add.graphics()
+      const iconX = cx - pillW / 2 + 11
+      if (glyph === 'sword') drawSwordIcon(iconGfx, iconX, stripY, color, 0.36)
+      else                   drawShieldIcon(iconGfx, iconX, stripY, color, 0.40)
+      container.add(iconGfx)
 
-    // Suppress "unused" warning when no body text is rendered
+      container.add(this.add.text(cx + 6, stripY, `${value}/${limit}`, {
+        fontFamily: fontFamily.display, fontSize: '12px',
+        color: '#ffffff', fontStyle: '900',
+        shadow: { offsetX: 0, offsetY: 1, color: SHADOW_DEEP, blur: 3, fill: true },
+      }).setOrigin(0.5).setLetterSpacing(0.6))
+    }
+
+    drawCounterPill(leftPillCx,  ATTACK_C,  'sword',  attacksLeft,  RAID_DAILY_LIMIT)
+    drawCounterPill(rightPillCx, DEFENSE_C, 'shield', defensesLeft, RAID_DAILY_LIMIT)
+
+    // Suppress "unused" warning — body text isn't rendered on the tile.
     void TEXT_BODY_HEX
 
     // ── Interaction ──
@@ -1075,31 +1065,6 @@ export default class LobbyScene extends Phaser.Scene {
     drawSwordIcon(swordGfx, ex, ey - 4, ATTACK.border, 1.4)
     popupContainer.add(swordGfx)
 
-    // ── COMING SOON badge (top-right corner) ──
-    const badgeText = t('scenes.lobby.offline.popup.coming-soon').toUpperCase()
-    const badgeLabel = this.add.text(0, 0, badgeText, {
-      fontFamily: fontFamily.body, fontSize: '14px',
-      color: TREASURE.borderHex, fontStyle: '700',
-      shadow: { offsetX: 0, offsetY: 1, color: SHADOW_DEEP, blur: 2, fill: true },
-    }).setOrigin(0.5).setLetterSpacing(2)
-    const badgeW = Math.max(118, Math.ceil(badgeLabel.width) + 30)
-    const badgeH = 28
-    const badgeCx = HW - badgeW / 2 - 22
-    const badgeCy = -HH + 42
-    const badgeBg = this.add.graphics()
-    badgeBg.fillStyle(NEUTRAL_DEEP, 0.95)
-    badgeBg.fillRoundedRect(badgeCx - badgeW / 2, badgeCy - badgeH / 2, badgeW, badgeH, badgeH / 2)
-    badgeBg.lineStyle(1, TREASURE.border, 0.85)
-    badgeBg.strokeRoundedRect(badgeCx - badgeW / 2, badgeCy - badgeH / 2, badgeW, badgeH, badgeH / 2)
-    popupContainer.add(badgeBg)
-    badgeLabel.setPosition(badgeCx, badgeCy)
-    popupContainer.add(badgeLabel)
-    this.tweens.add({
-      targets: badgeLabel,
-      alpha: { from: 0.55, to: 1 },
-      duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.InOut',
-    })
-
     // ── Title (under hero) — white with deep drop shadow ──
     const titleY = heroTop + heroH + 18
     const titleText = this.add.text(0, titleY,
@@ -1261,33 +1226,18 @@ export default class LobbyScene extends Phaser.Scene {
     // four feature rows alone, which keeps the modal less crowded and
     // pushes the CTA to a more comfortable thumb-reach position.)
 
-    // ── CTA buttons — drawn manually so the label can use a 20 px font
-    // (UI.buttonPrimary clamps every variant to typeScale.meta = 11 px,
-    // which read too small on mobile). The popup ships TWO CTAs:
-    //   - ENTRAR (left, red attack-themed) — launches the raid right
-    //     away. Disabled when isOfflineRaidEnterUnlocked() returns false
-    //     so the launch-time lock can flip without changing the layout.
-    //   - ENTENDI (right, gold) — dismisses the popup.
+    // ── CTA — single PARTICIPAR button ─────────────────────────────────
+    // Tapping it closes the explainer popup and opens RaidHubScene, which
+    // is the dedicated page where the player sets participation, sees
+    // counters/mastery and buys fortifications. Drawn manually so the
+    // 20 px label reads cleanly on mobile (UI.buttonPrimary clamps to
+    // typeScale.meta = 11 px which is too small here).
     const ctaY = HH - 56
-    const ctaW = 230
-    const ctaH = 62
-    const ctaGap = 24
+    const ctaW = 280
+    const ctaH = 64
 
-    /**
-     * Local helper: draws a 230 × 62 themed CTA button (shadow + body +
-     * inset highlight + border + label + hit area + hover/press states).
-     * Returns the hit rect so the caller can override pointerdown.
-     */
-    const buildCta = (
-      cx: number,
-      label: string,
-      fill: number,
-      fillHover: number,
-      labelHex: string,
-      onPress: () => void,
-      enabled = true,
-    ) => {
-      const left = cx - ctaW / 2
+    const drawCta = () => {
+      const left = -ctaW / 2
       const top  = ctaY - ctaH / 2
 
       const shadow = this.add.graphics()
@@ -1296,66 +1246,57 @@ export default class LobbyScene extends Phaser.Scene {
       popupContainer.add(shadow)
 
       const bg = this.add.graphics()
-      const drawBg = (hover: boolean, pressed = false) => {
+      const renderBg = (hover: boolean, pressed = false) => {
         bg.clear()
-        const baseAlpha = enabled ? 1 : 0.5
-        bg.fillStyle(hover ? fillHover : fill, baseAlpha)
-        bg.fillRoundedRect(left, top + (pressed ? 1 : 0), ctaW, ctaH, 10)
-        bg.fillStyle(0xffffff, hover ? 0.12 : 0.10)
-        bg.fillRoundedRect(left + 2, top + 2 + (pressed ? 1 : 0), ctaW - 4, 10,
+        // Body — split fill: red half (attack identity) on the left,
+        // blue half (defense identity) on the right, mirroring the
+        // dual-theme of the whole popup.
+        const dy = pressed ? 1 : 0
+        bg.fillStyle(hover ? 0xf87171 : ATTACK.border, 1)
+        bg.fillRoundedRect(left, top + dy, ctaW / 2, ctaH,
+          { tl: 10, tr: 0, bl: 10, br: 0 })
+        bg.fillStyle(hover ? 0x60a5fa : DEFENSE.border, 1)
+        bg.fillRoundedRect(left + ctaW / 2, top + dy, ctaW / 2, ctaH,
+          { tl: 0, tr: 10, bl: 0, br: 10 })
+        // Top inset highlight
+        bg.fillStyle(0xffffff, hover ? 0.14 : 0.10)
+        bg.fillRoundedRect(left + 2, top + 2 + dy, ctaW - 4, 10,
           { tl: 8, tr: 8, bl: 0, br: 0 })
+        // Outer rim
         bg.lineStyle(1, 0x000000, 0.4)
-        bg.strokeRoundedRect(left, top + (pressed ? 1 : 0), ctaW, ctaH, 10)
+        bg.strokeRoundedRect(left, top + dy, ctaW, ctaH, 10)
       }
-      drawBg(false)
+      renderBg(false)
       popupContainer.add(bg)
 
-      const labelObj = this.add.text(cx, ctaY, label.toUpperCase(), {
-        fontFamily: fontFamily.body, fontSize: '20px',
-        color: enabled ? labelHex : '#6a7080', fontStyle: '900',
-      }).setOrigin(0.5).setLetterSpacing(2.4)
+      const labelObj = this.add.text(0, ctaY, t('scenes.lobby.offline.popup.cta').toUpperCase(), {
+        fontFamily: fontFamily.body, fontSize: '22px',
+        color: '#ffffff', fontStyle: '900',
+        shadow: { offsetX: 0, offsetY: 1, color: SHADOW_DEEP, blur: 4, fill: true },
+      }).setOrigin(0.5).setLetterSpacing(3)
       popupContainer.add(labelObj)
 
-      const hit = this.add.rectangle(cx, ctaY, ctaW, ctaH, 0x000000, 0.001)
-        .setInteractive({ useHandCursor: enabled })
+      const hit = this.add.rectangle(0, ctaY, ctaW, ctaH, 0x000000, 0.001)
+        .setInteractive({ useHandCursor: true })
       popupContainer.add(hit)
 
-      if (enabled) {
-        hit.on('pointerover', () => drawBg(true))
-        hit.on('pointerout',  () => drawBg(false))
-        hit.on('pointerdown', () => {
-          drawBg(true, true)
-          this.tweens.add({
-            targets: labelObj, scaleX: 0.95, scaleY: 0.95,
-            duration: 80, yoyo: true, ease: 'Sine.InOut',
-            onComplete: () => onPress(),
-          })
+      hit.on('pointerover', () => renderBg(true))
+      hit.on('pointerout',  () => renderBg(false))
+      hit.on('pointerdown', () => {
+        renderBg(true, true)
+        this.tweens.add({
+          targets: labelObj, scaleX: 0.95, scaleY: 0.95,
+          duration: 80, yoyo: true, ease: 'Sine.InOut',
+          onComplete: () => {
+            this.closePlayModes()
+            transitionTo(this, 'RaidHubScene', {})
+          },
         })
-      }
-
-      return { bg, labelObj, hit }
+      })
     }
-
-    // ENTRAR (primary action — red attack theme).
-    // The matchmaking lookup runs on press so the player sees the latest
-    // closest target every time they enter the raid.
-    buildCta(
-      -ctaW / 2 - ctaGap / 2,
-      t('scenes.lobby.offline.popup.cta-enter'),
-      ATTACK.border, 0xf87171,            // bright red on hover
-      '#ffffff',
-      () => this._launchOfflineRaid(),
-      isOfflineRaidEnterUnlocked(),
-    )
-
-    // ENTENDI (dismiss — gold theme, same as the previous CTA).
-    buildCta(
-      ctaW / 2 + ctaGap / 2,
-      t('scenes.lobby.offline.popup.cta'),
-      TREASURE.border, 0xfcd34d,         // brighter gold on hover
-      '#1a1408',
-      () => this.closePlayModes(),
-    )
+    drawCta()
+    void TREASURE
+    void NEUTRAL_DEEP
 
     // ── Modal entrance animation ──
     this.tweens.add({
@@ -1363,38 +1304,6 @@ export default class LobbyScene extends Phaser.Scene {
       alpha: 1, scaleX: 1, scaleY: 1,
       duration: 280, ease: 'Back.Out',
     })
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // OFFLINE RAID LAUNCH — fired by the popup's "ENTRAR" CTA
-  // ═══════════════════════════════════════════════════════════════════════════
-  //
-  // Looks up the closest-level raid target via the matchmaking utility,
-  // builds the BattleScene payload (PvE-mode + npcTeam + raidTarget tag),
-  // closes the explainer popup and launches the battle. The post-battle
-  // BattleResultScene awards the standard PvE loot plus the raid-specific
-  // Mastery bonus baked into the target's rewardEstimate.
-  //
-  // No-op when matchmaking returns no candidates (shouldn't happen with
-  // the synthesized pool, but guarded for the future server path) or when
-  // the launch button is locked at release time via `isOfflineRaidEnterUnlocked`.
-
-  private _launchOfflineRaid(): void {
-    if (!isOfflineRaidEnterUnlocked()) return
-
-    const targets = findOfflineRaidTargets({
-      localLevel: playerData.getLevel(),
-      limit:      1,
-    })
-    if (targets.length === 0) return
-
-    const payload = buildRaidBattlePayload(targets[0], {
-      deckConfig: playerData.getDeckConfig(),
-      skinConfig: playerData.getSkinConfig(),
-    })
-
-    this.closePlayModes()
-    transitionTo(this, 'BattleScene', payload)
   }
 
   // ═══════════════════════════════════════════════════════════════════════════

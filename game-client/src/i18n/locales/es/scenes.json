@@ -458,7 +458,7 @@
           "title": "CANJEA RECOMPENSAS",
           "desc": "Usa Maestría en la Tienda para objetos, skins y recursos exclusivos"
         },
-        "cta": "ENTENDIDO",
+        "cta": "PARTICIPAR",
         "preview-line": "Próximo objetivo previsto · Nv.{level} · Poder {power}",
         "cta-enter": "ENTRAR"
       }
@@ -705,5 +705,71 @@
   },
   "pack-open": {
     "tap-to-close": "Toca para cerrar"
+  },
+  "raid-hub": {
+    "title": "CENTRO DE INCURSIONES",
+    "subtitle": "Configura tu participación y fortifica tu reino",
+    "counters": {
+      "attacks": "Ataques hoy",
+      "defenses": "Defensas hoy"
+    },
+    "mastery": {
+      "title": "Maestrías",
+      "attack-label": "Ataque",
+      "defense-label": "Defensa",
+      "value": "{available} disp · {earned} obten"
+    },
+    "participating": {
+      "title": "Participar en modo offline",
+      "body": "Cuando esté activado, puedes atacar y ser atacado por otros jugadores."
+    },
+    "shop": {
+      "title": "Fortificaciones",
+      "subtitle": "Bonificaciones que duran por defensa recibida",
+      "buy": "COMPRAR",
+      "active": "ACTIVO · {remaining} DEFENSAS",
+      "toast": {
+        "no-gold": "Oro insuficiente",
+        "no-dg": "Draft Gems insuficientes"
+      }
+    },
+    "attack-cta": "Atacar ahora",
+    "attack-disabled-toggle-off": "Activa la participación para atacar",
+    "attack-disabled-out-of-attacks": "Has usado tus 10 ataques de hoy",
+    "attack-no-targets": "Ningún jugador disponible en el nivel {level}",
+    "items": {
+      "reforco-real": {
+        "name": "Refuerzo Real",
+        "desc": "+15% de defensa para todo el equipo"
+      },
+      "furia-coletiva": {
+        "name": "Furia Colectiva",
+        "desc": "+15% de ataque para todo el equipo"
+      },
+      "trap-espinhos": {
+        "name": "Trampas de Espinos",
+        "desc": "3 trampas plantadas en el camino del invasor"
+      },
+      "muralha-reforcada": {
+        "name": "Muralla Reforzada",
+        "desc": "+25% de defensa solo para el Rey"
+      },
+      "olho-vigia": {
+        "name": "Ojo Vigilante",
+        "desc": "Revela las habilidades del invasor 1 turno antes"
+      },
+      "bandeira-sorte": {
+        "name": "Estandarte de Suerte",
+        "desc": "+25% de oro en defensas victoriosas"
+      },
+      "esquiva-real": {
+        "name": "Esquive Real",
+        "desc": "El Rey gana 1 esquive gratis por defensa"
+      },
+      "avancada-rapida": {
+        "name": "Avance Rápido",
+        "desc": "+1 de movimiento en el primer turno de defensa"
+      }
+    }
   }
 }

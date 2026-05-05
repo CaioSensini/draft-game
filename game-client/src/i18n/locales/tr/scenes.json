@@ -458,7 +458,7 @@
           "title": "ÖDÜLLER İÇİN TAKAS ET",
           "desc": "Mağazada Ustalık ile özel eşyalar, kostümler ve kaynaklar al"
         },
-        "cta": "ANLADIM",
+        "cta": "KATIL",
         "preview-line": "Sonraki hedef · Sv.{level} · Güç {power}",
         "cta-enter": "GİR"
       }
@@ -708,5 +708,71 @@
   },
   "pack-open": {
     "tap-to-close": "Kapatmak için dokun"
+  },
+  "raid-hub": {
+    "title": "BASKIN MERKEZİ",
+    "subtitle": "Katılımını ayarla ve krallığını güçlendir",
+    "counters": {
+      "attacks": "Bugünkü saldırılar",
+      "defenses": "Bugünkü savunmalar"
+    },
+    "mastery": {
+      "title": "Ustalıklar",
+      "attack-label": "Saldırı",
+      "defense-label": "Savunma",
+      "value": "{available} müsait · {earned} kazanılan"
+    },
+    "participating": {
+      "title": "Çevrimdışı moda katıl",
+      "body": "Açıkken, diğer oyunculara saldırabilir ve onlardan saldırı alabilirsin."
+    },
+    "shop": {
+      "title": "Tahkimatlar",
+      "subtitle": "Alınan savunma başına süren güçlendirmeler",
+      "buy": "SATIN AL",
+      "active": "AKTİF · {remaining} SAVUNMA",
+      "toast": {
+        "no-gold": "Yeterli altın yok",
+        "no-dg": "Yeterli Draft Gems yok"
+      }
+    },
+    "attack-cta": "Şimdi saldır",
+    "attack-disabled-toggle-off": "Saldırmak için katılımı aç",
+    "attack-disabled-out-of-attacks": "Bugünkü 10 saldırını kullandın",
+    "attack-no-targets": "{level} seviyesinde uygun oyuncu yok",
+    "items": {
+      "reforco-real": {
+        "name": "Kraliyet Takviyesi",
+        "desc": "Tüm takım için +%15 savunma"
+      },
+      "furia-coletiva": {
+        "name": "Toplu Öfke",
+        "desc": "Tüm takım için +%15 saldırı"
+      },
+      "trap-espinhos": {
+        "name": "Diken Tuzakları",
+        "desc": "İstilacının yoluna 3 tuzak kurulur"
+      },
+      "muralha-reforcada": {
+        "name": "Güçlendirilmiş Sur",
+        "desc": "Sadece Kral için +%25 savunma"
+      },
+      "olho-vigia": {
+        "name": "Tetikte Göz",
+        "desc": "İstilacının yeteneklerini 1 tur önce gösterir"
+      },
+      "bandeira-sorte": {
+        "name": "Şans Sancağı",
+        "desc": "Zaferli savunmalarda +%25 altın"
+      },
+      "esquiva-real": {
+        "name": "Kraliyet Kaçışı",
+        "desc": "Kral her savunmada 1 ücretsiz kaçış kazanır"
+      },
+      "avancada-rapida": {
+        "name": "Hızlı İlerleme",
+        "desc": "Savunmanın ilk turunda +1 hareket"
+      }
+    }
   }
 }

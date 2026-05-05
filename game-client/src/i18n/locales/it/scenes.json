@@ -458,7 +458,7 @@
           "title": "RISCATTA RICOMPENSE",
           "desc": "Spendi la Maestria al Negozio per oggetti, skin e risorse esclusive"
         },
-        "cta": "CAPITO",
+        "cta": "PARTECIPARE",
         "preview-line": "Prossimo bersaglio · Lv.{level} · Potenza {power}",
         "cta-enter": "ENTRA"
       }
@@ -705,5 +705,71 @@
   },
   "pack-open": {
     "tap-to-close": "Tocca per chiudere"
+  },
+  "raid-hub": {
+    "title": "HUB INCURSIONI",
+    "subtitle": "Imposta la tua partecipazione e fortifica il tuo regno",
+    "counters": {
+      "attacks": "Attacchi oggi",
+      "defenses": "Difese oggi"
+    },
+    "mastery": {
+      "title": "Maestrie",
+      "attack-label": "Attacco",
+      "defense-label": "Difesa",
+      "value": "{available} disp · {earned} ott"
+    },
+    "participating": {
+      "title": "Partecipa al modo offline",
+      "body": "Quando attivo, puoi attaccare ed essere attaccato da altri giocatori."
+    },
+    "shop": {
+      "title": "Fortificazioni",
+      "subtitle": "Bonus che durano per difesa ricevuta",
+      "buy": "COMPRA",
+      "active": "ATTIVO · {remaining} DIFESE",
+      "toast": {
+        "no-gold": "Oro insufficiente",
+        "no-dg": "Draft Gems insufficienti"
+      }
+    },
+    "attack-cta": "Attacca ora",
+    "attack-disabled-toggle-off": "Attiva la partecipazione per attaccare",
+    "attack-disabled-out-of-attacks": "Hai usato i tuoi 10 attacchi di oggi",
+    "attack-no-targets": "Nessun giocatore disponibile al livello {level}",
+    "items": {
+      "reforco-real": {
+        "name": "Rinforzo Reale",
+        "desc": "+15% difesa per tutta la squadra"
+      },
+      "furia-coletiva": {
+        "name": "Furia Collettiva",
+        "desc": "+15% attacco per tutta la squadra"
+      },
+      "trap-espinhos": {
+        "name": "Trappole di Spine",
+        "desc": "3 trappole piazzate sul percorso dell'invasore"
+      },
+      "muralha-reforcada": {
+        "name": "Muraglia Rinforzata",
+        "desc": "+25% difesa solo per il Re"
+      },
+      "olho-vigia": {
+        "name": "Occhio Vigile",
+        "desc": "Rivela le abilità dell'invasore 1 turno prima"
+      },
+      "bandeira-sorte": {
+        "name": "Stendardo Fortunato",
+        "desc": "+25% oro nelle difese vittoriose"
+      },
+      "esquiva-real": {
+        "name": "Schivata Reale",
+        "desc": "Il Re ottiene 1 schivata gratis per difesa"
+      },
+      "avancada-rapida": {
+        "name": "Avanzata Rapida",
+        "desc": "+1 movimento nel primo turno di difesa"
+      }
+    }
   }
 }
