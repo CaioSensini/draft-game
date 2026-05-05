@@ -11,6 +11,7 @@ import {
 import { PASS_XP_PER_TIER, PASS_MAX_TIER } from '../data/battlePass'
 import { showPlayModesOverlay, type PlayModesOverlayHandle } from '../utils/PlayModesOverlay'
 import { findOfflineRaidTargets } from '../utils/OfflineRaidMatchmaking'
+import { drawSwordIcon, drawShieldIcon } from '../utils/CombatIcons'
 import { t } from '../i18n'
 
 // ---- Layout constants (1280 x 720) -----------------------------------------
@@ -1058,14 +1059,18 @@ export default class LobbyScene extends Phaser.Scene {
       })
     }
 
-    // Hero shield + crossed swords
+    // Hero emblem: shop's sword-in-shield combo. The blue heater shield
+    // (defense) is drawn first as a backdrop, then the red medieval sword
+    // (attack) sits in front, centred over the boss. Same shapes the shop
+    // already uses for its attack/defense items, so the visual language
+    // is consistent across the game.
     const ex = 0
     const ey = heroCenterY
 
     // Twin halos — red glows on the LEFT half, blue on the RIGHT, evoking
     // the dual identity at a glance.
-    const haloRed = this.add.circle(ex - 22, ey, 50, ATTACK.border, 0)
-    const haloBlue = this.add.circle(ex + 22, ey, 50, DEFENSE.border, 0)
+    const haloRed = this.add.circle(ex - 22, ey, 52, ATTACK.border, 0)
+    const haloBlue = this.add.circle(ex + 22, ey, 52, DEFENSE.border, 0)
     popupContainer.add(haloRed)
     popupContainer.add(haloBlue)
     this.tweens.add({
@@ -1080,54 +1085,18 @@ export default class LobbyScene extends Phaser.Scene {
       delay: 800,
     })
 
-    // Shield silhouette — BLUE (defense)
-    const shield = this.add.graphics()
-    shield.fillStyle(DEFENSE.border, 0.18)
-    shield.beginPath()
-    shield.moveTo(ex - 38, ey - 36)
-    shield.lineTo(ex + 38, ey - 36)
-    shield.lineTo(ex + 38, ey + 6)
-    shield.lineTo(ex, ey + 44)
-    shield.lineTo(ex - 38, ey + 6)
-    shield.closePath()
-    shield.fillPath()
-    shield.lineStyle(2.5, DEFENSE.border, 0.95)
-    shield.beginPath()
-    shield.moveTo(ex - 38, ey - 36)
-    shield.lineTo(ex + 38, ey - 36)
-    shield.lineTo(ex + 38, ey + 6)
-    shield.lineTo(ex, ey + 44)
-    shield.lineTo(ex - 38, ey + 6)
-    shield.closePath()
-    shield.strokePath()
-    // Inner shield highlight ridge
-    shield.lineStyle(1, '#93c5fd' as unknown as number, 0)  // placeholder; switch to numeric
-    shield.lineStyle(1, 0x93c5fd, 0.55)
-    shield.beginPath()
-    shield.moveTo(ex - 33, ey - 31)
-    shield.lineTo(ex + 33, ey - 31)
-    shield.strokePath()
-    popupContainer.add(shield)
+    // Blue shield (defense) — backdrop layer
+    const shieldGfx = this.add.graphics()
+    drawShieldIcon(shieldGfx, ex, ey, DEFENSE.border, 2.0)
+    popupContainer.add(shieldGfx)
 
-    // Crossed swords — RED (attack), drawn ON TOP of the shield
-    const swords = this.add.graphics()
-    swords.lineStyle(5, ATTACK.border, 0.95)
-    swords.lineBetween(ex - 26, ey - 24, ex + 26, ey + 22)
-    swords.lineBetween(ex + 26, ey - 24, ex - 26, ey + 22)
-    // Hilts
-    swords.lineStyle(3.5, ATTACK.border, 0.85)
-    swords.lineBetween(ex - 31, ey - 21, ex - 21, ey - 27)
-    swords.lineBetween(ex + 31, ey - 21, ex + 21, ey - 27)
-    // Pommels (slightly lighter red for highlight)
-    swords.fillStyle(0xfca5a5, 0.95)
-    swords.fillCircle(ex - 26, ey - 24, 2.6)
-    swords.fillCircle(ex + 26, ey - 24, 2.6)
-    // Centre rivet (joint of the X) — gold for warmth
-    swords.fillStyle(TREASURE.border, 0.95)
-    swords.fillCircle(ex, ey - 1, 2.4)
-    swords.lineStyle(1, 0xffffff, 0.6)
-    swords.strokeCircle(ex, ey - 1, 2.4)
-    popupContainer.add(swords)
+    // Red sword (attack) — drawn on top of the shield, slightly smaller
+    // so the shield rim is fully visible on either side. The y-offset
+    // pushes the sword's crossguard down to sit roughly over the shield
+    // boss instead of floating above it.
+    const swordGfx = this.add.graphics()
+    drawSwordIcon(swordGfx, ex, ey - 4, ATTACK.border, 1.4)
+    popupContainer.add(swordGfx)
 
     // ── COMING SOON badge (top-right corner) ──
     const badgeText = t('scenes.lobby.offline.popup.coming-soon').toUpperCase()
