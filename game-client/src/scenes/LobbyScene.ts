@@ -846,10 +846,13 @@ export default class LobbyScene extends Phaser.Scene {
       pillGfx.strokeRoundedRect(-pillW / 2, pillCy - pillH / 2, pillW, pillH, pillH / 2)
       container.add(pillGfx)
 
-      // Padlock (left side of pill)
+      // Padlock (left side of pill).
+      // Glyph spans lkY-6.3 (shackle peak) to lkY+2.5 (body bottom), so its
+      // visual midpoint is lkY-1.9. Setting lkY = pillCy + 2 puts the glyph
+      // centered between the top and bottom edges of the pill.
       const lockGfx = this.add.graphics()
       const lkX = -pillW / 2 + 13
-      const lkY = pillCy + 0.5
+      const lkY = pillCy + 2
       lockGfx.lineStyle(1.4, palette.accent, 0.85)
       lockGfx.beginPath()
       lockGfx.arc(lkX, lkY - 3.5, 2.8, Math.PI, 0, false)

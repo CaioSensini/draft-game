@@ -326,10 +326,13 @@ export function showPlayModesOverlay(
         pillGfx.strokeRoundedRect(pillCx - pillW / 2, cy - pillH / 2, pillW, pillH, pillH / 2)
         overlayContainer.add(pillGfx)
 
-        // Padlock icon (anchored to the left side of the pill)
+        // Padlock icon (anchored to the left side of the pill).
+        // Visual center of the glyph (shackle peak at lkOffY-7, body bottom
+        // at lkOffY+2) lands at lkOffY-2.5, so we anchor at cy+3 to make the
+        // glyph itself sit centered between the top and bottom of the pill.
         const lockGfx = scene.add.graphics()
         const lkX = pillCx - pillW / 2 + 12
-        const lkOffY = cy + 1
+        const lkOffY = cy + 3
         lockGfx.lineStyle(1.5, fg.tertiary, 0.85)
         lockGfx.beginPath()
         lockGfx.arc(lkX, lkOffY - 4, 3, Math.PI, 0, false)
