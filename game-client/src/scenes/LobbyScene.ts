@@ -917,8 +917,10 @@ export default class LobbyScene extends Phaser.Scene {
     this.overlayElements.push(popupContainer)
 
     // ── Modal geometry ──
-    const popW = 560
-    const popH = 600
+    // Wider + taller so each font size can grow for mobile-screen
+    // legibility while every band still gets clean breathing room.
+    const popW = 620
+    const popH = 700
     const HW = popW / 2
     const HH = popH / 2
 
@@ -1073,14 +1075,14 @@ export default class LobbyScene extends Phaser.Scene {
     // ── COMING SOON badge (top-right corner) ──
     const badgeText = t('scenes.lobby.offline.popup.coming-soon').toUpperCase()
     const badgeLabel = this.add.text(0, 0, badgeText, {
-      fontFamily: fontFamily.body, fontSize: '11px',
+      fontFamily: fontFamily.body, fontSize: '13px',
       color: TREASURE.borderHex, fontStyle: '700',
       shadow: { offsetX: 0, offsetY: 1, color: SHADOW_DEEP, blur: 2, fill: true },
     }).setOrigin(0.5).setLetterSpacing(2)
-    const badgeW = Math.max(96, Math.ceil(badgeLabel.width) + 24)
-    const badgeH = 22
-    const badgeCx = HW - badgeW / 2 - 18
-    const badgeCy = -HH + 38
+    const badgeW = Math.max(110, Math.ceil(badgeLabel.width) + 28)
+    const badgeH = 26
+    const badgeCx = HW - badgeW / 2 - 20
+    const badgeCy = -HH + 40
     const badgeBg = this.add.graphics()
     badgeBg.fillStyle(NEUTRAL_DEEP, 0.95)
     badgeBg.fillRoundedRect(badgeCx - badgeW / 2, badgeCy - badgeH / 2, badgeW, badgeH, badgeH / 2)
@@ -1095,28 +1097,28 @@ export default class LobbyScene extends Phaser.Scene {
       duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.InOut',
     })
 
-    // ── Title (under hero) — white with red+blue dual drop shadow ──
-    const titleY = heroTop + heroH + 10
+    // ── Title (under hero) — white with deep drop shadow ──
+    const titleY = heroTop + heroH + 14
     const titleText = this.add.text(0, titleY,
       t('scenes.lobby.offline.popup.title'), {
-        fontFamily: fontFamily.display, fontSize: '30px',
+        fontFamily: fontFamily.display, fontSize: '36px',
         color: '#ffffff', fontStyle: '900',
-        shadow: { offsetX: 0, offsetY: 2, color: SHADOW_DEEP, blur: 8, fill: true },
+        shadow: { offsetX: 0, offsetY: 2, color: SHADOW_DEEP, blur: 10, fill: true },
       }).setOrigin(0.5)
     const anyTitle = titleText as unknown as { setLetterSpacing?: (n: number) => void }
-    if (typeof anyTitle.setLetterSpacing === 'function') anyTitle.setLetterSpacing(3)
+    if (typeof anyTitle.setLetterSpacing === 'function') anyTitle.setLetterSpacing(3.5)
     popupContainer.add(titleText)
 
     // Subtitle (italic flavour line)
-    popupContainer.add(this.add.text(0, titleY + 30,
+    popupContainer.add(this.add.text(0, titleY + 36,
       t('scenes.lobby.offline.popup.subtitle'), {
-        fontFamily: fontFamily.serif, fontSize: '14px',
+        fontFamily: fontFamily.serif, fontSize: '17px',
         color: TEXT_BODY_HEX, fontStyle: 'italic',
       }).setOrigin(0.5))
 
     // Decorative split divider — red half on the left, blue half on the right.
-    const dividerY = titleY + 56
-    const dividerHalfW = (popW - 140) / 2
+    const dividerY = titleY + 66
+    const dividerHalfW = (popW - 160) / 2
     const divGfx = this.add.graphics()
     divGfx.fillStyle(ATTACK.border, 0.55)
     divGfx.fillRect(-dividerHalfW, dividerY, dividerHalfW, 1)
@@ -1124,7 +1126,7 @@ export default class LobbyScene extends Phaser.Scene {
     divGfx.fillRect(0, dividerY, dividerHalfW, 1)
     // Tiny gold dot at the centre — the "joining" symbol.
     divGfx.fillStyle(TREASURE.border, 0.9)
-    divGfx.fillCircle(0, dividerY, 2)
+    divGfx.fillCircle(0, dividerY, 2.5)
     popupContainer.add(divGfx)
 
     // ── Feature rows ───────────────────────────────────────────────────────
@@ -1142,11 +1144,12 @@ export default class LobbyScene extends Phaser.Scene {
       { icon: 'gem',    titleKey: 'scenes.lobby.offline.popup.feature-4.title', descKey: 'scenes.lobby.offline.popup.feature-4.desc' },
     ]
 
-    const featuresTopY = dividerY + 26   // 25 px below the divider — clean gap
-    const featureRowH  = 56              // a bit taller so the desc never crowds the next row
-    const iconX        = -HW + 38
-    const textX        = iconX + 30
-    const textBudget   = popW - (textX + HW) - 24    // = HW + textX - 24 — wraps before reaching the right edge
+    const featuresTopY = dividerY + 30   // 30 px below the divider — clean gap
+    const featureRowH  = 66              // taller rows so the desc has room at 14 px font
+    const iconDiscR    = 19              // slightly larger disc to balance the bigger fonts
+    const iconX        = -HW + 42
+    const textX        = iconX + 32
+    const textBudget   = popW - (textX + HW) - 28    // wraps before reaching the right edge
 
     featureKeys.forEach((f, i) => {
       const rowY = featuresTopY + i * featureRowH
@@ -1159,31 +1162,31 @@ export default class LobbyScene extends Phaser.Scene {
         // Red half (left)
         iconBg.fillStyle(ATTACK.iconBg, 0.55)
         iconBg.beginPath()
-        iconBg.arc(iconX, rowY, 16, Math.PI / 2, -Math.PI / 2, false)
+        iconBg.arc(iconX, rowY, iconDiscR, Math.PI / 2, -Math.PI / 2, false)
         iconBg.lineTo(iconX, rowY)
         iconBg.closePath()
         iconBg.fillPath()
         // Blue half (right)
         iconBg.fillStyle(DEFENSE.iconBg, 0.55)
         iconBg.beginPath()
-        iconBg.arc(iconX, rowY, 16, -Math.PI / 2, Math.PI / 2, false)
+        iconBg.arc(iconX, rowY, iconDiscR, -Math.PI / 2, Math.PI / 2, false)
         iconBg.lineTo(iconX, rowY)
         iconBg.closePath()
         iconBg.fillPath()
         // Border arcs — red on left, blue on right
         iconBg.lineStyle(1.5, ATTACK.border, 0.85)
         iconBg.beginPath()
-        iconBg.arc(iconX, rowY, 16, Math.PI / 2, -Math.PI / 2, false)
+        iconBg.arc(iconX, rowY, iconDiscR, Math.PI / 2, -Math.PI / 2, false)
         iconBg.strokePath()
         iconBg.lineStyle(1.5, DEFENSE.border, 0.85)
         iconBg.beginPath()
-        iconBg.arc(iconX, rowY, 16, -Math.PI / 2, Math.PI / 2, false)
+        iconBg.arc(iconX, rowY, iconDiscR, -Math.PI / 2, Math.PI / 2, false)
         iconBg.strokePath()
       } else if (palette) {
         iconBg.fillStyle(palette.iconBg, 0.55)
-        iconBg.fillCircle(iconX, rowY, 16)
+        iconBg.fillCircle(iconX, rowY, iconDiscR)
         iconBg.lineStyle(1.5, palette.border, 0.85)
-        iconBg.strokeCircle(iconX, rowY, 16)
+        iconBg.strokeCircle(iconX, rowY, iconDiscR)
       }
       popupContainer.add(iconBg)
 
@@ -1197,35 +1200,35 @@ export default class LobbyScene extends Phaser.Scene {
       // Trophy and gem stay inline since they have no shop equivalent.
       switch (f.icon) {
         case 'sword':
-          drawSwordIcon(iconGfx, iconX, rowY, glyphColor, 0.5)
+          drawSwordIcon(iconGfx, iconX, rowY, glyphColor, 0.6)
           break
         case 'shield':
-          drawShieldIcon(iconGfx, iconX, rowY, glyphColor, 0.55)
+          drawShieldIcon(iconGfx, iconX, rowY, glyphColor, 0.65)
           break
         case 'trophy':
-          iconGfx.lineStyle(2.2, glyphColor, glyphAlpha)
+          iconGfx.lineStyle(2.4, glyphColor, glyphAlpha)
           iconGfx.fillStyle(glyphColor, glyphAlpha)
-          iconGfx.lineBetween(iconX - 5, rowY - 7, iconX + 5, rowY - 7)
-          iconGfx.lineBetween(iconX - 5, rowY - 7, iconX - 4, rowY + 2)
-          iconGfx.lineBetween(iconX + 5, rowY - 7, iconX + 4, rowY + 2)
-          iconGfx.lineBetween(iconX - 4, rowY + 2, iconX + 4, rowY + 2)
-          iconGfx.lineBetween(iconX, rowY + 2, iconX, rowY + 6)
-          iconGfx.lineBetween(iconX - 4, rowY + 7, iconX + 4, rowY + 7)
-          iconGfx.lineBetween(iconX - 5, rowY - 5, iconX - 8, rowY - 2)
-          iconGfx.lineBetween(iconX + 5, rowY - 5, iconX + 8, rowY - 2)
+          iconGfx.lineBetween(iconX - 6, rowY - 8, iconX + 6, rowY - 8)
+          iconGfx.lineBetween(iconX - 6, rowY - 8, iconX - 5, rowY + 2)
+          iconGfx.lineBetween(iconX + 6, rowY - 8, iconX + 5, rowY + 2)
+          iconGfx.lineBetween(iconX - 5, rowY + 2, iconX + 5, rowY + 2)
+          iconGfx.lineBetween(iconX, rowY + 2, iconX, rowY + 7)
+          iconGfx.lineBetween(iconX - 5, rowY + 8, iconX + 5, rowY + 8)
+          iconGfx.lineBetween(iconX - 6, rowY - 6, iconX - 9, rowY - 3)
+          iconGfx.lineBetween(iconX + 6, rowY - 6, iconX + 9, rowY - 3)
           break
         case 'gem':
-          iconGfx.lineStyle(2.2, glyphColor, glyphAlpha)
+          iconGfx.lineStyle(2.4, glyphColor, glyphAlpha)
           iconGfx.fillStyle(glyphColor, glyphAlpha)
           iconGfx.beginPath()
-          iconGfx.moveTo(iconX, rowY - 8)
-          iconGfx.lineTo(iconX + 7, rowY - 1)
-          iconGfx.lineTo(iconX, rowY + 8)
-          iconGfx.lineTo(iconX - 7, rowY - 1)
+          iconGfx.moveTo(iconX, rowY - 9)
+          iconGfx.lineTo(iconX + 8, rowY - 1)
+          iconGfx.lineTo(iconX, rowY + 9)
+          iconGfx.lineTo(iconX - 8, rowY - 1)
           iconGfx.closePath()
           iconGfx.strokePath()
-          iconGfx.lineBetween(iconX - 7, rowY - 1, iconX + 7, rowY - 1)
-          iconGfx.lineBetween(iconX - 3, rowY - 5, iconX + 3, rowY - 5)
+          iconGfx.lineBetween(iconX - 8, rowY - 1, iconX + 8, rowY - 1)
+          iconGfx.lineBetween(iconX - 4, rowY - 5, iconX + 4, rowY - 5)
           break
       }
       popupContainer.add(iconGfx)
@@ -1233,21 +1236,21 @@ export default class LobbyScene extends Phaser.Scene {
       // Title colour: row palette (mastery uses gold to suggest the union).
       const titleHex = isMastery ? TREASURE.borderHex : (palette?.titleHex ?? TREASURE.borderHex)
 
-      popupContainer.add(this.add.text(textX, rowY - 11, t(f.titleKey), {
-        fontFamily: fontFamily.body, fontSize: '13px',
+      popupContainer.add(this.add.text(textX, rowY - 14, t(f.titleKey), {
+        fontFamily: fontFamily.body, fontSize: '16px',
         color: titleHex, fontStyle: '700',
         shadow: { offsetX: 0, offsetY: 1, color: SHADOW_DEEP, blur: 2, fill: true },
       }).setOrigin(0, 0.5).setLetterSpacing(1.6))
 
-      popupContainer.add(this.add.text(textX, rowY + 9, t(f.descKey), {
-        fontFamily: fontFamily.body, fontSize: '12px',
+      popupContainer.add(this.add.text(textX, rowY + 10, t(f.descKey), {
+        fontFamily: fontFamily.body, fontSize: '14px',
         color: TEXT_BODY_HEX, fontStyle: '500',
         wordWrap: { width: textBudget },
       }).setOrigin(0, 0.5))
     })
 
     // ── Preview line — closest matchmaking pick (concrete, not abstract) ──
-    const previewY = featuresTopY + featureKeys.length * featureRowH + 8
+    const previewY = featuresTopY + featureKeys.length * featureRowH + 14
     const previewTargets = findOfflineRaidTargets({ localLevel: playerData.getLevel(), limit: 1 })
     if (previewTargets.length > 0) {
       const target = previewTargets[0]
@@ -1256,31 +1259,86 @@ export default class LobbyScene extends Phaser.Scene {
         level: target.ownerLevel,
         power: target.teamPower,
       })
-      // Two tiny coloured dots flanking the line — red on the left (you
-      // attack), blue on the right (you defend). Underscores the duality
-      // without adding extra UI weight.
-      const decoGfx = this.add.graphics()
-      const previewWidth = 280
-      decoGfx.fillStyle(ATTACK.border, 0.85)
-      decoGfx.fillCircle(-previewWidth / 2 - 6, previewY, 2.5)
-      decoGfx.fillStyle(DEFENSE.border, 0.85)
-      decoGfx.fillCircle( previewWidth / 2 + 6, previewY, 2.5)
-      popupContainer.add(decoGfx)
 
-      popupContainer.add(this.add.text(0, previewY, previewText, {
-        fontFamily: fontFamily.serif, fontSize: '13px',
+      // Render the text first so we can measure its width and place the
+      // flanking dots flush against it (no more guessing the layout
+      // budget — they always sit 12 px from the leading/trailing glyph).
+      const previewLabel = this.add.text(0, previewY, previewText, {
+        fontFamily: fontFamily.serif, fontSize: '15px',
         color: TEXT_DIM_HEX, fontStyle: 'italic',
-      }).setOrigin(0.5))
+      }).setOrigin(0.5)
+      popupContainer.add(previewLabel)
+
+      const decoGfx = this.add.graphics()
+      const halfW = previewLabel.width / 2
+      decoGfx.fillStyle(ATTACK.border, 0.85)
+      decoGfx.fillCircle(-halfW - 12, previewY, 3)
+      decoGfx.fillStyle(DEFENSE.border, 0.85)
+      decoGfx.fillCircle( halfW + 12, previewY, 3)
+      popupContainer.add(decoGfx)
     }
 
-    // ── CTA button ──
-    const ctaY = HH - 42
-    const cta = UI.buttonPrimary(this, 0, ctaY,
-      t('scenes.lobby.offline.popup.cta'), {
-        size: 'md', w: 220, h: 44, depth: 102,
-        onPress: () => this.closePlayModes(),
+    // ── CTA button — drawn manually so the label can use a 16 px font
+    // (UI.buttonPrimary clamps every variant to typeScale.meta = 11 px,
+    // which read too small on mobile in the playtest). Same surface
+    // language as the design-system button (rounded rect, gold fill,
+    // dark border, tiny shadow) just bigger type. ──
+    const ctaY = HH - 50
+    const ctaW = 240
+    const ctaH = 56
+
+    const ctaShadow = this.add.graphics()
+    ctaShadow.fillStyle(0x000000, 0.45)
+    ctaShadow.fillRoundedRect(-ctaW / 2 + 1, ctaY - ctaH / 2 + 4, ctaW, ctaH, 10)
+    popupContainer.add(ctaShadow)
+
+    const ctaBg = this.add.graphics()
+    ctaBg.fillStyle(TREASURE.border, 1)
+    ctaBg.fillRoundedRect(-ctaW / 2, ctaY - ctaH / 2, ctaW, ctaH, 10)
+    ctaBg.fillStyle(0xffffff, 0.10)
+    ctaBg.fillRoundedRect(-ctaW / 2 + 2, ctaY - ctaH / 2 + 2, ctaW - 4, 10,
+      { tl: 8, tr: 8, bl: 0, br: 0 })
+    ctaBg.lineStyle(1, 0x000000, 0.4)
+    ctaBg.strokeRoundedRect(-ctaW / 2, ctaY - ctaH / 2, ctaW, ctaH, 10)
+    popupContainer.add(ctaBg)
+
+    const ctaLabel = this.add.text(0, ctaY,
+      t('scenes.lobby.offline.popup.cta').toUpperCase(), {
+        fontFamily: fontFamily.body, fontSize: '18px',
+        color: '#1a1408', fontStyle: '900',
+      }).setOrigin(0.5).setLetterSpacing(2)
+    popupContainer.add(ctaLabel)
+
+    const ctaHit = this.add.rectangle(0, ctaY, ctaW, ctaH, 0x000000, 0.001)
+      .setInteractive({ useHandCursor: true })
+    popupContainer.add(ctaHit)
+    ctaHit.on('pointerover', () => {
+      ctaBg.clear()
+      ctaBg.fillStyle(0xfcd34d, 1)  // brighter on hover
+      ctaBg.fillRoundedRect(-ctaW / 2, ctaY - ctaH / 2, ctaW, ctaH, 10)
+      ctaBg.fillStyle(0xffffff, 0.12)
+      ctaBg.fillRoundedRect(-ctaW / 2 + 2, ctaY - ctaH / 2 + 2, ctaW - 4, 10,
+        { tl: 8, tr: 8, bl: 0, br: 0 })
+      ctaBg.lineStyle(1, 0x000000, 0.4)
+      ctaBg.strokeRoundedRect(-ctaW / 2, ctaY - ctaH / 2, ctaW, ctaH, 10)
+    })
+    ctaHit.on('pointerout', () => {
+      ctaBg.clear()
+      ctaBg.fillStyle(TREASURE.border, 1)
+      ctaBg.fillRoundedRect(-ctaW / 2, ctaY - ctaH / 2, ctaW, ctaH, 10)
+      ctaBg.fillStyle(0xffffff, 0.10)
+      ctaBg.fillRoundedRect(-ctaW / 2 + 2, ctaY - ctaH / 2 + 2, ctaW - 4, 10,
+        { tl: 8, tr: 8, bl: 0, br: 0 })
+      ctaBg.lineStyle(1, 0x000000, 0.4)
+      ctaBg.strokeRoundedRect(-ctaW / 2, ctaY - ctaH / 2, ctaW, ctaH, 10)
+    })
+    ctaHit.on('pointerdown', () => {
+      this.tweens.add({
+        targets: ctaLabel, scaleX: 0.95, scaleY: 0.95,
+        duration: 80, yoyo: true, ease: 'Sine.InOut',
+        onComplete: () => this.closePlayModes(),
       })
-    popupContainer.add(cta.container)
+    })
 
     // ── Modal entrance animation ──
     this.tweens.add({
