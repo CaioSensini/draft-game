@@ -77,16 +77,20 @@ const NEUTRAL_BASE = 0x101729
 // Vertical layout — every band's centerY in absolute screen pixels.
 // Centralising these keeps the hub readable and prevents the historical
 // "elements piled on top of each other" bug.
+// Vertical layout — every band's centerY in absolute screen pixels.
+// Spacing leaves at least 10 px between the bottom edge of one band and
+// the top edge of the next so nothing overlaps. The "Como funciona?"
+// pill replaces the old hero subtitle (saves a row) and lives at
+// HERO_CY + 38, with the rest of the hub then ladders down cleanly to
+// the action button.
 const HERO_CY     = 110
-const COUNTERS_CY = 188
-const MASTERY_CY  = 262
-const TOGGLE_CY   = 332
-// Equip-panel band centred between the participation toggle (bottom y≈360)
-// and the attack button (top y≈571) so the section visually anchors the
-// middle column of the hub.
-const EQUIP_HEAD_Y = 412
-const EQUIP_SLOTS_CY = 488
-const ATTACK_BTN_CY = 600
+const HOWTO_PILL_Y = HERO_CY + 38       // 148  (was hero subtitle)
+const COUNTERS_CY = 200                  // 170-230
+const MASTERY_CY  = 274                  // 244-304
+const TOGGLE_CY   = 344                  // 316-372
+const EQUIP_HEAD_Y = 408
+const EQUIP_SLOTS_CY = 484               // 434-534
+const ATTACK_BTN_CY = 604                // 575-633
 
 export default class RaidHubScene extends Phaser.Scene {
   private _equipLayer: Phaser.GameObjects.Container | null = null
@@ -163,13 +167,11 @@ export default class RaidHubScene extends Phaser.Scene {
     const swordGfx = this.add.graphics()
     drawSwordIcon(swordGfx, W / 2, heroY - 3, ATTACK_C, 0.7)
 
-    this.add.text(W / 2, heroY + 38, t('scenes.raid-hub.subtitle'), {
-      fontFamily: fontFamily.serif, fontSize: '14px',
-      color: fg.secondaryHex, fontStyle: 'italic',
-    }).setOrigin(0.5)
-
-    // "Como funciona?" pill — opens a modal listing every raid rule.
-    this._drawHowItWorksCta(W / 2, heroY + 60)
+    // The decorative subtitle was retired in favour of the actionable
+    // "Como funciona?" pill — both lived in the same row and were
+    // overlapping the counters card below. The pill now occupies that
+    // line on its own, giving each band of the hub one role per row.
+    this._drawHowItWorksCta(W / 2, HOWTO_PILL_Y)
   }
 
   private _drawHowItWorksCta(cx: number, cy: number) {
