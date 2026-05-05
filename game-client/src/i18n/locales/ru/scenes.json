@@ -331,7 +331,7 @@
       "mov": "MOV"
     },
     "round-heading": "РАУНД {round}",
-    "dummy-name": "Манекен {role}"
+    "dummy-name": "Манекен"
   },
   "battle-result": {
     "title": {

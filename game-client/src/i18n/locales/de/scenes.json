@@ -331,7 +331,7 @@
       "mov": "MOV"
     },
     "round-heading": "RUNDE {round}",
-    "dummy-name": "Puppe {role}"
+    "dummy-name": "Puppe"
   },
   "battle-result": {
     "title": {

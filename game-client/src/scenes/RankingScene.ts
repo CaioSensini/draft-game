@@ -121,24 +121,42 @@ export default class RankingScene extends Phaser.Scene {
   // ── Filters ───────────────────────────────────────────────────────────────
 
   private drawFilters() {
+    // Sub 9.4 / 9.5: standardized geometry so both segmented controls share
+    // the same width and each segment is the same size (no more ELO segment
+    // looking oversized vs ATAQUE/DEFESA), and labels above them align
+    // with the control's leading/trailing edge.
+    //
+    // Sort control:   left edge at x = SIDE_PAD; label "ORDENAR" anchors
+    //                 to the same left edge.
+    // Region control: right edge at x = W - SIDE_PAD; label "REGIÃO"
+    //                 anchors to the same right edge.
+
+    const SIDE_PAD = 40
+    const SORT_W   = 320
+    const REGION_W = 320
+    const HEIGHT   = 32
+
     const sortOptions: Array<{ key: SortKey; label: string }> = [
       { key: 'elo', label: t('scenes.ranking.filters.elo') },
       { key: 'atk_mastery', label: t('scenes.ranking.filters.attack') },
       { key: 'def_mastery', label: t('scenes.ranking.filters.defense') },
     ]
 
-    this.add.text(40, FILTER_Y - 16, t('scenes.ranking.sort-label'), {
+    const sortCenterX = SIDE_PAD + SORT_W / 2
+    const sortLeftX   = SIDE_PAD
+
+    this.add.text(sortLeftX, FILTER_Y - 16, t('scenes.ranking.sort-label'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      fg.tertiaryHex,
       fontStyle:  '700',
     }).setOrigin(0, 0.5).setLetterSpacing(1.6)
 
-    UI.segmentedControl<SortKey>(this, 40 + 216, FILTER_Y + 4, {
+    UI.segmentedControl<SortKey>(this, sortCenterX, FILTER_Y + 4, {
       options: sortOptions,
       value:   this.sortKey,
-      width:   360,
-      height:  32,
+      width:   SORT_W,
+      height:  HEIGHT,
       onChange: (k) => this.scene.restart({ sortKey: k, regionFilter: this.regionFilter }),
     })
 
@@ -149,18 +167,21 @@ export default class RankingScene extends Phaser.Scene {
       { key: 'EU',  label: 'EU' },
     ]
 
-    this.add.text(W - 40, FILTER_Y - 16, t('scenes.ranking.region-label'), {
+    const regionCenterX = W - SIDE_PAD - REGION_W / 2
+    const regionRightX  = W - SIDE_PAD
+
+    this.add.text(regionRightX, FILTER_Y - 16, t('scenes.ranking.region-label'), {
       fontFamily: fontFamily.body,
       fontSize:   typeScale.meta,
       color:      fg.tertiaryHex,
       fontStyle:  '700',
     }).setOrigin(1, 0.5).setLetterSpacing(1.6)
 
-    UI.segmentedControl<RegionKey>(this, W - 40 - 172, FILTER_Y + 4, {
+    UI.segmentedControl<RegionKey>(this, regionCenterX, FILTER_Y + 4, {
       options: regionOptions,
       value:   this.regionFilter,
-      width:   344,
-      height:  32,
+      width:   REGION_W,
+      height:  HEIGHT,
       onChange: (k) => this.scene.restart({ sortKey: this.sortKey, regionFilter: k }),
     })
   }

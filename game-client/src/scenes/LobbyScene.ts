@@ -683,29 +683,44 @@ export default class LobbyScene extends Phaser.Scene {
     iconGfx.fillRect(cX - 2, 1, 4, 5)
     container.add(iconGfx)
 
+    // Lock pill geometry (declared first so labels know where to stop).
+    // Sub 9.1: widened from 60 → 72 to match PlayModesOverlay's Lv.100 badge
+    // (same height 18 → 22). Labels are pulled left to clear the pill in
+    // every locale (DE/RU/JA traduzem "Ataques às equipes" para 18+ chars).
+    const pillW = !available ? 72 : 0
+    const pillH = !available ? 22 : 0
+    const pillCx = btnW / 2 - pillW / 2 - 10
+    const pillLeft = !available ? pillCx - pillW / 2 : btnW / 2
+
+    // Text block: anchored just past the castle icon, vertically centered
+    // around 0, with wordWrap.width budgeted so even DE/RU translations
+    // never reach the badge.
+    const TEXT_X        = -54
+    const TEXT_RIGHT_PAD = 12
+    const textBudget    = Math.max(80, pillLeft - TEXT_X - TEXT_RIGHT_PAD)
+
     // Label (Cormorant h3)
-    const label = this.add.text(10, available ? -5 : -5, t('scenes.lobby.offline.title'), {
+    const label = this.add.text(TEXT_X, -7, t('scenes.lobby.offline.title'), {
       fontFamily: fontFamily.serif, fontSize: '14px',
       color:      accentHex,
       fontStyle:  '600',
       shadow:     SHADOW.text,
+      wordWrap:   { width: textBudget },
     }).setOrigin(0, 0.5)
     container.add(label)
 
     // Description (Manrope body)
-    const desc = this.add.text(10, 10, t('scenes.lobby.offline.subtitle'), {
+    const desc = this.add.text(TEXT_X, 9, t('scenes.lobby.offline.subtitle'), {
       fontFamily: fontFamily.body, fontSize: '11px',
       color:      available ? fg.tertiaryHex : fg.disabledHex,
       shadow:     SHADOW.text,
+      wordWrap:   { width: textBudget },
     }).setOrigin(0, 0.5)
     container.add(desc)
 
     // Lock pill badge — anchored to the card's right edge with 10px
-    // padding so it sits cleanly inside the card (sub 7.3 fix).
+    // padding so it sits cleanly inside the card (sub 7.3 fix, 9.1 widen).
     if (!available) {
-      const pillW = 60
-      const pillH = 18
-      const pillCx = btnW / 2 - pillW / 2 - 10   // right edge minus padding
       const pillCy = 0
 
       const pillGfx = this.add.graphics()
@@ -717,7 +732,7 @@ export default class LobbyScene extends Phaser.Scene {
 
       // Padlock (left side of pill)
       const lockGfx = this.add.graphics()
-      const lkX = pillCx - 13
+      const lkX = pillCx - 17
       const lkY = pillCy + 1
       lockGfx.lineStyle(1.5, 0x999999, 0.8)
       lockGfx.beginPath()
@@ -730,7 +745,7 @@ export default class LobbyScene extends Phaser.Scene {
       container.add(lockGfx)
 
       // "Lv.30" text (right side of pill) — Mono tabular for stat feel
-      container.add(this.add.text(pillCx + 3, pillCy, t('common.labels.level-long', { level: 30 }), {
+      container.add(this.add.text(pillCx + 1, pillCy, t('common.labels.level-long', { level: 30 }), {
         fontFamily: fontFamily.mono, fontSize: '12px',
         color:      fg.disabledHex, fontStyle: '700',
         shadow:     SHADOW.text,

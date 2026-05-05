@@ -339,9 +339,25 @@ function createCard(
   container.add(bg)
 
   // ── Rarity badge (top center) ──
-  const badgeW = 96
+  // Sub 9.2: badge width is now derived from the rendered label so the
+  // longer translations (LEGENDARY / LENDÁRIO / LÉGENDAIRE / 传说 / 전설)
+  // never overflow the pill background.
   const badgeH = 22
   const badgeY = -hh + 16
+  const labelObj = scene.add
+    .text(0, badgeY, rarityLabel, {
+      fontFamily: fontFamily.body,
+      fontSize:   typeScale.meta,
+      color:      rarityHex,
+      fontStyle:  '700',
+    })
+    .setOrigin(0.5)
+    .setLetterSpacing(1.6)
+
+  const BADGE_PAD_X = 14
+  const BADGE_MIN_W = 96
+  const badgeW = Math.max(BADGE_MIN_W, Math.ceil(labelObj.width) + BADGE_PAD_X * 2)
+
   const bbg = scene.add.graphics()
   bbg.fillStyle(surface.deepest, 0.9)
   bbg.fillRoundedRect(-badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH, radii.md)
@@ -351,17 +367,7 @@ function createCard(
   bbg.strokeRoundedRect(-badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH, radii.md)
   container.add(bbg)
 
-  container.add(
-    scene.add
-      .text(0, badgeY, rarityLabel, {
-        fontFamily: fontFamily.body,
-        fontSize:   typeScale.meta,
-        color:      rarityHex,
-        fontStyle:  '700',
-      })
-      .setOrigin(0.5)
-      .setLetterSpacing(1.6),
-  )
+  container.add(labelObj)
 
   // ── Pedestal glow under the preview ──
   const pedestalY = -hh + 168

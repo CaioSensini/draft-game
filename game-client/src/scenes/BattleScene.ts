@@ -1468,10 +1468,17 @@ export default class BattleScene extends Phaser.Scene {
       // Show "TURNO DE MOVIMENTO" in the skill column. Tint follows the
       // local player's side so the label matches their team color rather
       // than the legacy turquoise accent.
+      //
+      // Sub 9.6: title block moved to the TOP of the skill column (was at
+      // H/2-60 = 300, which overlapped both the end-movement button and
+      // the mini-log/round badge below). The 2-line "Mova seus
+      // personagens" sub and the decorative arrow icon were dropped — the
+      // 2-line title plus the FIM MOVIMENTO button right below already
+      // communicate the affordance without crowding ORDEM DE AÇÃO further
+      // down.
       const labelCx = SKILL_COL_W / 2
-      const titleY = H / 2 - 60
+      const titleY = TOP_BAR_H2 + 56
       const playerTeamHex = this._playerSide === 'left' ? dsColors.team.allyHex : dsColors.team.enemyHex
-      const playerTeam = this._playerSide === 'left' ? dsColors.team.ally : dsColors.team.enemy
 
       const movTitle = this.add.text(labelCx, titleY, t('scenes.battle.phase.movement-title-line-1'), {
         fontFamily: fontFamily.display, fontSize: typeScale.h3,
@@ -1483,22 +1490,7 @@ export default class BattleScene extends Phaser.Scene {
         color: playerTeamHex, fontStyle: 'bold', align: 'center',
       }).setOrigin(0.5)
 
-      const movSub = this.add.text(labelCx, titleY + 62, t('scenes.battle.phase.movement-sub'), {
-        fontFamily: fontFamily.body, fontSize: typeScale.small,
-        color: fg.tertiaryHex, align: 'center',
-      }).setOrigin(0.5)
-
-      // Subtle arrow icon below subtitle
-      const movIcon = this.add.graphics()
-      movIcon.lineStyle(2, playerTeam, 0.3)
-      const arrowY2 = titleY + 95
-      movIcon.beginPath()
-      movIcon.moveTo(labelCx - 10, arrowY2 - 5)
-      movIcon.lineTo(labelCx, arrowY2 + 5)
-      movIcon.lineTo(labelCx + 10, arrowY2 - 5)
-      movIcon.strokePath()
-
-      this._movePhaseLabel = this.add.container(0, 0, [movTitle, movTitle2, movSub, movIcon]).setDepth(6)
+      this._movePhaseLabel = this.add.container(0, 0, [movTitle, movTitle2]).setDepth(6)
 
       // Pulse animation
       this.tweens.add({
@@ -3298,10 +3290,16 @@ export default class BattleScene extends Phaser.Scene {
     // dark red border). Anchored to the right of the team label so it clears
     // "AZUL / Voce" without overlapping. In duo/squad modes, a small vote-
     // counter chip sits to the right of the button.
+    //
+    // Sub 9.9: button widened from 92/108 → 140/156 so longer translations
+    // (FR "Abandonner", IT "Arrendersi", EN "Surrender", DE "Aufgeben")
+    // never get clipped by the button border or by the flag icon overlay.
+    // The label string is also trimStart()-ed before rendering so the
+    // centered text is symmetric inside the wider button.
     const isSolo = this._surrenderRequired === 1
-    const btnW = isSolo ? 92 : 108
+    const btnW = isSolo ? 140 : 156
     const btnH = 24
-    const btnX = GRID_X + (isSolo ? 132 : 152)
+    const btnX = GRID_X + (isSolo ? 156 : 176)
     const btnY = TOP_BAR_H2 / 2
 
     const onClick = () => {
@@ -3334,12 +3332,16 @@ export default class BattleScene extends Phaser.Scene {
       }
     }
 
-    const { container } = UI.buttonDestructive(this, btnX, btnY, t('scenes.battle.popup.surrender-button-label'), {
+    // Strip the legacy leading whitespace from the i18n label — the flag
+    // icon is positioned independently below, so the label can sit truly
+    // centered inside the destructive button.
+    const surrenderLabel = t('scenes.battle.popup.surrender-button-label').trimStart()
+    const { container } = UI.buttonDestructive(this, btnX, btnY, surrenderLabel, {
       w: btnW, h: btnH, depth: 9,
       onPress: onClick,
     })
     // Lucide flag icon overlay (left of label, tinted inverse for contrast).
-    const flag = UI.lucideIcon(this, 'flag', -btnW / 2 + 14, 0, 12, fg.primary)
+    const flag = UI.lucideIcon(this, 'flag', -btnW / 2 + 12, 0, 12, fg.primary)
     container.add(flag)
     container.setDepth(9)
 
@@ -3905,12 +3907,18 @@ function _buildController(
     new Character(u.id, u.name, u.role, 'left', u.col, u.row, ROLE_STATS[u.role]))
 
   // Training mode: dummies use same stats as left side (matched by role)
+  // Sub 9.7: dummy names no longer interpolate the role abbreviation —
+  // the colored class icon (crown / shield / sword / leaf) to the left of
+  // the name in the unit-status panel already conveys the role, and the
+  // longer "Boneco REI" / "Boneco GUE" labels were getting clipped on
+  // narrow status cards in DE/RU translations.
   const rightStats = trainingMode ? ROLE_STATS : undefined
+  const dummyName = t('scenes.battle.dummy-name')
   const DUMMY_NAMES: Record<string, string> = {
-    king: t('scenes.battle.dummy-name', { role: roleAbbr('king') }),
-    warrior: t('scenes.battle.dummy-name', { role: roleAbbr('warrior') }),
-    executor: t('scenes.battle.dummy-name', { role: roleAbbr('executor') }),
-    specialist: t('scenes.battle.dummy-name', { role: roleAbbr('specialist') }),
+    king: dummyName,
+    warrior: dummyName,
+    executor: dummyName,
+    specialist: dummyName,
   }
   const rightChars = RIGHT_UNITS.map((u) => {
     const stats = rightStats ? rightStats[u.role] : _scaleStats(ROLE_STATS[u.role], difficulty)
