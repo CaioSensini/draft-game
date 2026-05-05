@@ -10,7 +10,6 @@ import {
 } from '../utils/DesignTokens'
 import { PASS_XP_PER_TIER, PASS_MAX_TIER } from '../data/battlePass'
 import { showPlayModesOverlay, type PlayModesOverlayHandle } from '../utils/PlayModesOverlay'
-import { findOfflineRaidTargets } from '../utils/OfflineRaidMatchmaking'
 import { drawSwordIcon, drawShieldIcon } from '../utils/CombatIcons'
 import { t } from '../i18n'
 
@@ -920,7 +919,7 @@ export default class LobbyScene extends Phaser.Scene {
     // Wider + taller so each font size can grow for mobile-screen
     // legibility while every band still gets clean breathing room.
     const popW = 620
-    const popH = 700
+    const popH = 740
     const HW = popW / 2
     const HH = popH / 2
 
@@ -954,7 +953,6 @@ export default class LobbyScene extends Phaser.Scene {
     const NEUTRAL_BASE   = 0x101729
     const NEUTRAL_BORDER = 0x1e293b
     const TEXT_BODY_HEX  = '#cbd5e1'
-    const TEXT_DIM_HEX   = '#94a3b8'
     const SHADOW_DEEP    = '#000000'
 
     // ── Modal background — solid base + dual-edge accent stripes ──
@@ -1075,14 +1073,14 @@ export default class LobbyScene extends Phaser.Scene {
     // ── COMING SOON badge (top-right corner) ──
     const badgeText = t('scenes.lobby.offline.popup.coming-soon').toUpperCase()
     const badgeLabel = this.add.text(0, 0, badgeText, {
-      fontFamily: fontFamily.body, fontSize: '13px',
+      fontFamily: fontFamily.body, fontSize: '14px',
       color: TREASURE.borderHex, fontStyle: '700',
       shadow: { offsetX: 0, offsetY: 1, color: SHADOW_DEEP, blur: 2, fill: true },
     }).setOrigin(0.5).setLetterSpacing(2)
-    const badgeW = Math.max(110, Math.ceil(badgeLabel.width) + 28)
-    const badgeH = 26
-    const badgeCx = HW - badgeW / 2 - 20
-    const badgeCy = -HH + 40
+    const badgeW = Math.max(118, Math.ceil(badgeLabel.width) + 30)
+    const badgeH = 28
+    const badgeCx = HW - badgeW / 2 - 22
+    const badgeCy = -HH + 42
     const badgeBg = this.add.graphics()
     badgeBg.fillStyle(NEUTRAL_DEEP, 0.95)
     badgeBg.fillRoundedRect(badgeCx - badgeW / 2, badgeCy - badgeH / 2, badgeW, badgeH, badgeH / 2)
@@ -1098,26 +1096,26 @@ export default class LobbyScene extends Phaser.Scene {
     })
 
     // ── Title (under hero) — white with deep drop shadow ──
-    const titleY = heroTop + heroH + 14
+    const titleY = heroTop + heroH + 18
     const titleText = this.add.text(0, titleY,
       t('scenes.lobby.offline.popup.title'), {
-        fontFamily: fontFamily.display, fontSize: '36px',
+        fontFamily: fontFamily.display, fontSize: '42px',
         color: '#ffffff', fontStyle: '900',
-        shadow: { offsetX: 0, offsetY: 2, color: SHADOW_DEEP, blur: 10, fill: true },
+        shadow: { offsetX: 0, offsetY: 2, color: SHADOW_DEEP, blur: 12, fill: true },
       }).setOrigin(0.5)
     const anyTitle = titleText as unknown as { setLetterSpacing?: (n: number) => void }
-    if (typeof anyTitle.setLetterSpacing === 'function') anyTitle.setLetterSpacing(3.5)
+    if (typeof anyTitle.setLetterSpacing === 'function') anyTitle.setLetterSpacing(4)
     popupContainer.add(titleText)
 
     // Subtitle (italic flavour line)
-    popupContainer.add(this.add.text(0, titleY + 36,
+    popupContainer.add(this.add.text(0, titleY + 40,
       t('scenes.lobby.offline.popup.subtitle'), {
-        fontFamily: fontFamily.serif, fontSize: '17px',
+        fontFamily: fontFamily.serif, fontSize: '19px',
         color: TEXT_BODY_HEX, fontStyle: 'italic',
       }).setOrigin(0.5))
 
     // Decorative split divider — red half on the left, blue half on the right.
-    const dividerY = titleY + 66
+    const dividerY = titleY + 72
     const dividerHalfW = (popW - 160) / 2
     const divGfx = this.add.graphics()
     divGfx.fillStyle(ATTACK.border, 0.55)
@@ -1126,7 +1124,7 @@ export default class LobbyScene extends Phaser.Scene {
     divGfx.fillRect(0, dividerY, dividerHalfW, 1)
     // Tiny gold dot at the centre — the "joining" symbol.
     divGfx.fillStyle(TREASURE.border, 0.9)
-    divGfx.fillCircle(0, dividerY, 2.5)
+    divGfx.fillCircle(0, dividerY, 3)
     popupContainer.add(divGfx)
 
     // ── Feature rows ───────────────────────────────────────────────────────
@@ -1144,12 +1142,12 @@ export default class LobbyScene extends Phaser.Scene {
       { icon: 'gem',    titleKey: 'scenes.lobby.offline.popup.feature-4.title', descKey: 'scenes.lobby.offline.popup.feature-4.desc' },
     ]
 
-    const featuresTopY = dividerY + 30   // 30 px below the divider — clean gap
-    const featureRowH  = 66              // taller rows so the desc has room at 14 px font
-    const iconDiscR    = 19              // slightly larger disc to balance the bigger fonts
-    const iconX        = -HW + 42
-    const textX        = iconX + 32
-    const textBudget   = popW - (textX + HW) - 28    // wraps before reaching the right edge
+    const featuresTopY = dividerY + 36   // clean gap below the divider
+    const featureRowH  = 80              // taller rows so 16 px wraps never crowd the next icon
+    const iconDiscR    = 22              // larger disc to balance bigger fonts
+    const iconX        = -HW + 46
+    const textX        = iconX + 34
+    const textBudget   = popW - (textX + HW) - 32    // wraps before reaching the right edge
 
     featureKeys.forEach((f, i) => {
       const rowY = featuresTopY + i * featureRowH
@@ -1200,35 +1198,35 @@ export default class LobbyScene extends Phaser.Scene {
       // Trophy and gem stay inline since they have no shop equivalent.
       switch (f.icon) {
         case 'sword':
-          drawSwordIcon(iconGfx, iconX, rowY, glyphColor, 0.6)
+          drawSwordIcon(iconGfx, iconX, rowY, glyphColor, 0.7)
           break
         case 'shield':
-          drawShieldIcon(iconGfx, iconX, rowY, glyphColor, 0.65)
+          drawShieldIcon(iconGfx, iconX, rowY, glyphColor, 0.75)
           break
         case 'trophy':
-          iconGfx.lineStyle(2.4, glyphColor, glyphAlpha)
+          iconGfx.lineStyle(2.6, glyphColor, glyphAlpha)
           iconGfx.fillStyle(glyphColor, glyphAlpha)
-          iconGfx.lineBetween(iconX - 6, rowY - 8, iconX + 6, rowY - 8)
-          iconGfx.lineBetween(iconX - 6, rowY - 8, iconX - 5, rowY + 2)
-          iconGfx.lineBetween(iconX + 6, rowY - 8, iconX + 5, rowY + 2)
-          iconGfx.lineBetween(iconX - 5, rowY + 2, iconX + 5, rowY + 2)
-          iconGfx.lineBetween(iconX, rowY + 2, iconX, rowY + 7)
-          iconGfx.lineBetween(iconX - 5, rowY + 8, iconX + 5, rowY + 8)
-          iconGfx.lineBetween(iconX - 6, rowY - 6, iconX - 9, rowY - 3)
-          iconGfx.lineBetween(iconX + 6, rowY - 6, iconX + 9, rowY - 3)
+          iconGfx.lineBetween(iconX - 7, rowY - 10, iconX + 7, rowY - 10)
+          iconGfx.lineBetween(iconX - 7, rowY - 10, iconX - 6, rowY + 2)
+          iconGfx.lineBetween(iconX + 7, rowY - 10, iconX + 6, rowY + 2)
+          iconGfx.lineBetween(iconX - 6, rowY + 2, iconX + 6, rowY + 2)
+          iconGfx.lineBetween(iconX, rowY + 2, iconX, rowY + 8)
+          iconGfx.lineBetween(iconX - 6, rowY + 9, iconX + 6, rowY + 9)
+          iconGfx.lineBetween(iconX - 7, rowY - 8, iconX - 11, rowY - 4)
+          iconGfx.lineBetween(iconX + 7, rowY - 8, iconX + 11, rowY - 4)
           break
         case 'gem':
-          iconGfx.lineStyle(2.4, glyphColor, glyphAlpha)
+          iconGfx.lineStyle(2.6, glyphColor, glyphAlpha)
           iconGfx.fillStyle(glyphColor, glyphAlpha)
           iconGfx.beginPath()
-          iconGfx.moveTo(iconX, rowY - 9)
-          iconGfx.lineTo(iconX + 8, rowY - 1)
-          iconGfx.lineTo(iconX, rowY + 9)
-          iconGfx.lineTo(iconX - 8, rowY - 1)
+          iconGfx.moveTo(iconX, rowY - 11)
+          iconGfx.lineTo(iconX + 10, rowY - 1)
+          iconGfx.lineTo(iconX, rowY + 11)
+          iconGfx.lineTo(iconX - 10, rowY - 1)
           iconGfx.closePath()
           iconGfx.strokePath()
-          iconGfx.lineBetween(iconX - 8, rowY - 1, iconX + 8, rowY - 1)
-          iconGfx.lineBetween(iconX - 4, rowY - 5, iconX + 4, rowY - 5)
+          iconGfx.lineBetween(iconX - 10, rowY - 1, iconX + 10, rowY - 1)
+          iconGfx.lineBetween(iconX - 5, rowY - 6, iconX + 5, rowY - 6)
           break
       }
       popupContainer.add(iconGfx)
@@ -1236,56 +1234,32 @@ export default class LobbyScene extends Phaser.Scene {
       // Title colour: row palette (mastery uses gold to suggest the union).
       const titleHex = isMastery ? TREASURE.borderHex : (palette?.titleHex ?? TREASURE.borderHex)
 
-      popupContainer.add(this.add.text(textX, rowY - 14, t(f.titleKey), {
-        fontFamily: fontFamily.body, fontSize: '16px',
+      popupContainer.add(this.add.text(textX, rowY - 16, t(f.titleKey), {
+        fontFamily: fontFamily.body, fontSize: '18px',
         color: titleHex, fontStyle: '700',
         shadow: { offsetX: 0, offsetY: 1, color: SHADOW_DEEP, blur: 2, fill: true },
       }).setOrigin(0, 0.5).setLetterSpacing(1.6))
 
-      popupContainer.add(this.add.text(textX, rowY + 10, t(f.descKey), {
-        fontFamily: fontFamily.body, fontSize: '14px',
+      popupContainer.add(this.add.text(textX, rowY + 12, t(f.descKey), {
+        fontFamily: fontFamily.body, fontSize: '16px',
         color: TEXT_BODY_HEX, fontStyle: '500',
         wordWrap: { width: textBudget },
       }).setOrigin(0, 0.5))
     })
 
-    // ── Preview line — closest matchmaking pick (concrete, not abstract) ──
-    const previewY = featuresTopY + featureKeys.length * featureRowH + 14
-    const previewTargets = findOfflineRaidTargets({ localLevel: playerData.getLevel(), limit: 1 })
-    if (previewTargets.length > 0) {
-      const target = previewTargets[0]
-      const previewText = t('scenes.lobby.offline.popup.preview-line', {
-        name:  target.ownerName,
-        level: target.ownerLevel,
-        power: target.teamPower,
-      })
+    // (Preview-line block removed — the matchmaking utility still ships
+    // for the future feature, but the explainer popup now relies on the
+    // four feature rows alone, which keeps the modal less crowded and
+    // pushes the CTA to a more comfortable thumb-reach position.)
 
-      // Render the text first so we can measure its width and place the
-      // flanking dots flush against it (no more guessing the layout
-      // budget — they always sit 12 px from the leading/trailing glyph).
-      const previewLabel = this.add.text(0, previewY, previewText, {
-        fontFamily: fontFamily.serif, fontSize: '15px',
-        color: TEXT_DIM_HEX, fontStyle: 'italic',
-      }).setOrigin(0.5)
-      popupContainer.add(previewLabel)
-
-      const decoGfx = this.add.graphics()
-      const halfW = previewLabel.width / 2
-      decoGfx.fillStyle(ATTACK.border, 0.85)
-      decoGfx.fillCircle(-halfW - 12, previewY, 3)
-      decoGfx.fillStyle(DEFENSE.border, 0.85)
-      decoGfx.fillCircle( halfW + 12, previewY, 3)
-      popupContainer.add(decoGfx)
-    }
-
-    // ── CTA button — drawn manually so the label can use a 16 px font
+    // ── CTA button — drawn manually so the label can use a 20 px font
     // (UI.buttonPrimary clamps every variant to typeScale.meta = 11 px,
     // which read too small on mobile in the playtest). Same surface
     // language as the design-system button (rounded rect, gold fill,
     // dark border, tiny shadow) just bigger type. ──
-    const ctaY = HH - 50
-    const ctaW = 240
-    const ctaH = 56
+    const ctaY = HH - 56
+    const ctaW = 270
+    const ctaH = 62
 
     const ctaShadow = this.add.graphics()
     ctaShadow.fillStyle(0x000000, 0.45)
@@ -1304,9 +1278,9 @@ export default class LobbyScene extends Phaser.Scene {
 
     const ctaLabel = this.add.text(0, ctaY,
       t('scenes.lobby.offline.popup.cta').toUpperCase(), {
-        fontFamily: fontFamily.body, fontSize: '18px',
+        fontFamily: fontFamily.body, fontSize: '20px',
         color: '#1a1408', fontStyle: '900',
-      }).setOrigin(0.5).setLetterSpacing(2)
+      }).setOrigin(0.5).setLetterSpacing(2.4)
     popupContainer.add(ctaLabel)
 
     const ctaHit = this.add.rectangle(0, ctaY, ctaW, ctaH, 0x000000, 0.001)
