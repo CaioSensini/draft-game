@@ -907,8 +907,12 @@ export default class LobbyScene extends Phaser.Scene {
     this.tweens.add({ targets: glowR, alpha: 0.10, duration: 320, ease: 'Quad.Out' })
     this.overlayElements.push(glowL, glowR)
 
+    // Final scale 0.85 — keeps the modal below the lobby top bar while
+    // leaving every internal layout pixel unchanged (matches the play-modes
+    // overlay's compact feel without rebuilding all the row spacing).
+    const FINAL_SCALE = 0.85
     const popupContainer = this.add.container(W / 2, H / 2)
-      .setDepth(101).setAlpha(0).setScale(0.9)
+      .setDepth(101).setAlpha(0).setScale(FINAL_SCALE * 0.9)
     this.overlayElements.push(popupContainer)
 
     // ── Modal geometry ──
@@ -1249,18 +1253,14 @@ export default class LobbyScene extends Phaser.Scene {
       const bg = this.add.graphics()
       const renderBg = (hover: boolean, pressed = false) => {
         bg.clear()
-        // Body — split fill: red half (attack identity) on the left,
-        // blue half (defense identity) on the right, mirroring the
-        // dual-theme of the whole popup.
+        // Solid gold fill — matches the treasury accent used by the rest
+        // of the lobby (mastery row icon, badge labels, "ENTENDI"-style
+        // CTAs). Hover lifts to the brighter gold tone.
         const dy = pressed ? 1 : 0
-        bg.fillStyle(hover ? 0xf87171 : ATTACK.border, 1)
-        bg.fillRoundedRect(left, top + dy, ctaW / 2, ctaH,
-          { tl: 10, tr: 0, bl: 10, br: 0 })
-        bg.fillStyle(hover ? 0x60a5fa : DEFENSE.border, 1)
-        bg.fillRoundedRect(left + ctaW / 2, top + dy, ctaW / 2, ctaH,
-          { tl: 0, tr: 10, bl: 0, br: 10 })
+        bg.fillStyle(hover ? 0xfcd34d : TREASURE.border, 1)
+        bg.fillRoundedRect(left, top + dy, ctaW, ctaH, 10)
         // Top inset highlight
-        bg.fillStyle(0xffffff, hover ? 0.14 : 0.10)
+        bg.fillStyle(0xffffff, hover ? 0.18 : 0.13)
         bg.fillRoundedRect(left + 2, top + 2 + dy, ctaW - 4, 10,
           { tl: 8, tr: 8, bl: 0, br: 0 })
         // Outer rim
@@ -1272,8 +1272,7 @@ export default class LobbyScene extends Phaser.Scene {
 
       const labelObj = this.add.text(0, ctaY, t('scenes.lobby.offline.popup.cta').toUpperCase(), {
         fontFamily: fontFamily.body, fontSize: '22px',
-        color: '#ffffff', fontStyle: '900',
-        shadow: { offsetX: 0, offsetY: 1, color: SHADOW_DEEP, blur: 4, fill: true },
+        color: '#1a1408', fontStyle: '900',
       }).setOrigin(0.5).setLetterSpacing(3)
       popupContainer.add(labelObj)
 
@@ -1296,13 +1295,12 @@ export default class LobbyScene extends Phaser.Scene {
       })
     }
     drawCta()
-    void TREASURE
     void NEUTRAL_DEEP
 
     // ── Modal entrance animation ──
     this.tweens.add({
       targets: popupContainer,
-      alpha: 1, scaleX: 1, scaleY: 1,
+      alpha: 1, scaleX: FINAL_SCALE, scaleY: FINAL_SCALE,
       duration: 280, ease: 'Back.Out',
     })
   }
