@@ -646,11 +646,12 @@ export default class LobbyScene extends Phaser.Scene {
     // The tile is always actionable now: a tap opens the explainer popup,
     // which in turn routes to the RaidHubScene where the player buys
     // fortifications and launches the raid. The bottom of the tile shows
-    // two compact daily counters (attacks remaining / defenses received)
-    // capped at RAID_DAILY_LIMIT — replacing the older "DISPONÍVEL EM
-    // BREVE" strip + padlock pair.
-    const attacksLeft  = playerData.getRaidAttacksRemaining()
-    const defensesLeft = playerData.getRaidDefensesRemaining()
+    // two compact daily counters that climb from 0/10 to RAID_DAILY_LIMIT
+    // (attacks fired today / defenses received today) — replacing the
+    // older "DISPONÍVEL EM BREVE" strip + padlock pair.
+    const raid = playerData.getRaid()
+    const attacksUsed = raid.attacksUsedToday
+    const defensesReceived = raid.defensesReceivedToday
 
     // ── Geometry — mirror drawBattlePassButton() so we hug the LAST icon ──
     const stdIconW = 156
@@ -779,10 +780,11 @@ export default class LobbyScene extends Phaser.Scene {
 
     // ── Hero emblem: shop's sword-in-shield combo (same as the popup) ──
     // Blue heater shield as backdrop, red medieval sword on top centred over
-    // the boss. Scales chosen so the emblem fits between the divider above
-    // (y ≈ -25) and the WIP padlock / status strip below (y ≈ +24).
+    // the boss. y-offset nudges the emblem ~6 px below the geometric centre
+    // so it visually centres between the header strip above and the daily
+    // counter pills below (which sit lower than the previous status strip).
     const ex = 0
-    const ey = -2
+    const ey = 5
 
     const emblemGlow = this.add.circle(ex, ey, 22, ACCENT_C, 0)
     container.add(emblemGlow)
@@ -805,11 +807,10 @@ export default class LobbyScene extends Phaser.Scene {
 
     // ── Bottom strip: dual daily counters ──
     // The strip area is split in two: a red attack pill on the left
-    // (sword icon + remaining/limit) and a blue defense pill on the
-    // right (shield icon + received/limit). Each pill keeps the same
-    // vertical envelope as the old "DISPONÍVEL EM BREVE" strip so the
-    // tile silhouette is unchanged.
-    const stripY = btnH / 2 - 22
+    // (sword icon + used/limit) and a blue defense pill on the right
+    // (shield icon + received/limit). Lifted ~4 px from the very bottom
+    // so the pills don't read as glued to the tile edge.
+    const stripY = btnH / 2 - 26
     const pillBgY = stripY - 9
     const pillBgH = 18
     const pillW = (btnW - 36) / 2          // small gap between pills
@@ -844,8 +845,8 @@ export default class LobbyScene extends Phaser.Scene {
       }).setOrigin(0.5).setLetterSpacing(0.6))
     }
 
-    drawCounterPill(leftPillCx,  ATTACK_C,  'sword',  attacksLeft,  RAID_DAILY_LIMIT)
-    drawCounterPill(rightPillCx, DEFENSE_C, 'shield', defensesLeft, RAID_DAILY_LIMIT)
+    drawCounterPill(leftPillCx,  ATTACK_C,  'sword',  attacksUsed,      RAID_DAILY_LIMIT)
+    drawCounterPill(rightPillCx, DEFENSE_C, 'shield', defensesReceived, RAID_DAILY_LIMIT)
 
     // Suppress "unused" warning — body text isn't rendered on the tile.
     void TEXT_BODY_HEX
