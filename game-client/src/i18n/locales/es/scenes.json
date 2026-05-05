@@ -779,6 +779,31 @@
       "picker-subtitle": "Selecciona un objeto del inventario para esta ranura",
       "empty-inventory": "No tienes fortificaciones disponibles.",
       "equip-btn": "Equipar"
+    },
+    "rules": {
+      "cta": "¿Cómo funciona?",
+      "title": "Reglas de incursiones",
+      "subtitle": "Cómo funciona el modo de ataques offline",
+      "match": {
+        "title": "Mismo nivel",
+        "body": "El emparejamiento solo encuentra jugadores reales de tu nivel con participación activada — sin bots."
+      },
+      "quota": {
+        "title": "Límites diarios",
+        "body": "Hasta 10 ataques y 10 defensas por día. Los contadores se reinician a medianoche."
+      },
+      "reciprocity": {
+        "title": "Reciprocidad",
+        "body": "Participación ENCENDIDA: hasta 10 defensas/día. APAGADA: solo puedes recibir tantas defensas como ataques hayas hecho hoy."
+      },
+      "attack-win": {
+        "title": "Victoria atacando",
+        "body": "Al ganar un ataque: +1 Maestría de Ataque y 100 de oro robados al enemigo."
+      },
+      "defense-win": {
+        "title": "Victoria defendiendo",
+        "body": "Al ganar una defensa: +1 Maestría de Defensa y 100 de oro recibidos del invasor."
+      }
     }
   }
 }
