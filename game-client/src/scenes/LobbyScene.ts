@@ -1142,8 +1142,8 @@ export default class LobbyScene extends Phaser.Scene {
       { icon: 'gem',    titleKey: 'scenes.lobby.offline.popup.feature-4.title', descKey: 'scenes.lobby.offline.popup.feature-4.desc' },
     ]
 
-    const featuresTopY = dividerY + 36   // clean gap below the divider
-    const featureRowH  = 80              // taller rows so 16 px wraps never crowd the next icon
+    const featuresTopY = dividerY + 40   // clean gap below the divider
+    const featureRowH  = 92              // extra room between rows so 2-line wraps don't crowd
     const iconDiscR    = 22              // larger disc to balance bigger fonts
     const iconX        = -HW + 46
     const textX        = iconX + 34
@@ -1234,13 +1234,17 @@ export default class LobbyScene extends Phaser.Scene {
       // Title colour: row palette (mastery uses gold to suggest the union).
       const titleHex = isMastery ? TREASURE.borderHex : (palette?.titleHex ?? TREASURE.borderHex)
 
-      popupContainer.add(this.add.text(textX, rowY - 16, t(f.titleKey), {
+      // Text block is shifted ~3 px below the icon centre (title at rowY-13,
+      // desc at rowY+15) so the row reads with a touch more breathing room
+      // from the row above and the title-desc pair sits visually grounded
+      // rather than aligned with the icon's exact midline.
+      popupContainer.add(this.add.text(textX, rowY - 13, t(f.titleKey), {
         fontFamily: fontFamily.body, fontSize: '18px',
         color: titleHex, fontStyle: '700',
         shadow: { offsetX: 0, offsetY: 1, color: SHADOW_DEEP, blur: 2, fill: true },
       }).setOrigin(0, 0.5).setLetterSpacing(1.6))
 
-      popupContainer.add(this.add.text(textX, rowY + 12, t(f.descKey), {
+      popupContainer.add(this.add.text(textX, rowY + 15, t(f.descKey), {
         fontFamily: fontFamily.body, fontSize: '16px',
         color: TEXT_BODY_HEX, fontStyle: '500',
         wordWrap: { width: textBudget },
