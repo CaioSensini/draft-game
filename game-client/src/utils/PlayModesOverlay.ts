@@ -94,11 +94,15 @@ export interface PlayModesOverlayHandle {
 // ── Constants ───────────────────────────────────────────────────────────────
 
 // Card layout (must stay in sync with what the lobby originally used).
+// Compacted slightly so the 5-card stack (PVP × 2 + PVE × 2 + Custom × 1)
+// plus the 3 section headers fits cleanly between the parent scene's top
+// bar and the bottom edge of the screen — without pushing the first PVP
+// section header up into the top-bar's footprint.
 const CARD_W       = 640
-const CARD_H       = 90
-const CARD_GAP     = 14
-const CATEGORY_GAP = 24
-const HEADER_H     = 34
+const CARD_H       = 80
+const CARD_GAP     = 10
+const CATEGORY_GAP = 18
+const HEADER_H     = 28
 
 // ── Implementation ──────────────────────────────────────────────────────────
 
@@ -292,11 +296,28 @@ export function showPlayModesOverlay(
           fontStyle:  '700',
         }).setOrigin(0.5).setLetterSpacing(1.6))
       } else if (!available) {
-        // Lock pill (Lv.100)
+        // Lock pill (Lv.100 / Lv.30)
+        // Width is now measured from the rendered label so "LV.100" doesn't
+        // get clipped by the rounded rect (the previous fixed 72 px was tuned
+        // for "LV.30" only and the trailing "0" of LV.100 hung outside).
         const reqLevel = mode.target === 'RankedScene' ? 'LV.100' : 'LV.30'
-        const pillCx = CARD_W / 2 - 50
-        const pillW  = 72
-        const pillH  = 22
+
+        const labelObj = scene.add.text(0, cy, reqLevel, {
+          fontFamily: fontFamily.body,
+          fontSize:   typeScale.meta,
+          color:      fg.tertiaryHex,
+          fontStyle:  '700',
+        }).setOrigin(0, 0.5).setLetterSpacing(1.4)
+
+        const labelW       = Math.ceil(labelObj.width)
+        const LOCK_AREA_W  = 24    // padlock icon + 6 px right padding
+        const PILL_PAD_X   = 14    // total horizontal padding inside pill
+        const pillW        = Math.max(72, LOCK_AREA_W + labelW + PILL_PAD_X)
+        const pillH        = 22
+        // Right-anchor: keep the right edge at the original (CARD_W/2 - 14)
+        // so the pill never visually drifts left when the label grows.
+        const pillRightX   = CARD_W / 2 - 14
+        const pillCx       = pillRightX - pillW / 2
 
         const pillGfx = scene.add.graphics()
         pillGfx.fillStyle(surface.deepest, 1)
@@ -305,9 +326,9 @@ export function showPlayModesOverlay(
         pillGfx.strokeRoundedRect(pillCx - pillW / 2, cy - pillH / 2, pillW, pillH, pillH / 2)
         overlayContainer.add(pillGfx)
 
-        // Padlock icon
+        // Padlock icon (anchored to the left side of the pill)
         const lockGfx = scene.add.graphics()
-        const lkX = pillCx - 17
+        const lkX = pillCx - pillW / 2 + 12
         const lkOffY = cy + 1
         lockGfx.lineStyle(1.5, fg.tertiary, 0.85)
         lockGfx.beginPath()
@@ -319,12 +340,10 @@ export function showPlayModesOverlay(
         lockGfx.fillCircle(lkX, lkOffY - 2, 1)
         overlayContainer.add(lockGfx)
 
-        overlayContainer.add(scene.add.text(pillCx + 1, cy, reqLevel, {
-          fontFamily: fontFamily.body,
-          fontSize:   typeScale.meta,
-          color:      fg.tertiaryHex,
-          fontStyle:  '700',
-        }).setOrigin(0, 0.5).setLetterSpacing(1.4))
+        // Position the (already created) label so it sits right after the
+        // padlock with consistent spacing.
+        labelObj.setX(lkX + 8)
+        overlayContainer.add(labelObj)
       } else {
         // Arrow chevron
         const arrowGfx = scene.add.graphics()
