@@ -385,8 +385,8 @@ export default class LobbyScene extends Phaser.Scene {
     const hasUnclaimed = playerData.hasUnclaimedRewards()
 
     // ── Geometry — mirror drawBottomIconBar() so we hug the first icon ──
-    const stdIconW = 138
-    const stdIconH = 116
+    const stdIconW = 156
+    const stdIconH = 130
     const stdGap = 24
     const stdCount = BOTTOM_ICONS.length
     const stdTotalW = stdCount * stdIconW + (stdCount - 1) * stdGap
@@ -395,8 +395,8 @@ export default class LobbyScene extends Phaser.Scene {
     const centerY = 525 + stdIconH / 2                           // same Y as other icons
 
     // Battle pass button is slightly taller + wider for emphasis
-    const btnW = 170
-    const btnH = 132
+    const btnW = 192
+    const btnH = 150
     const btnLeftGap = 26                                        // gap between this and first icon
     const bx = stdFirstLeftX - btnLeftGap - btnW / 2
     const by = centerY
@@ -461,56 +461,56 @@ export default class LobbyScene extends Phaser.Scene {
     container.add(jewelGfx)
 
     // ── Header strip: "PASSE DE BATALHA" — Cinzel display ──
-    container.add(this.add.text(0, -btnH / 2 + 16, t('scenes.lobby.battlepass.line-1'), {
-      fontFamily: fontFamily.display, fontSize: '13px', color: '#ffffff', fontStyle: '700',
+    container.add(this.add.text(0, -btnH / 2 + 18, t('scenes.lobby.battlepass.line-1'), {
+      fontFamily: fontFamily.display, fontSize: '15px', color: '#ffffff', fontStyle: '700',
       shadow: { offsetX: 0, offsetY: 1, color: '#2a0a4a', blur: 6, fill: true },
     }).setOrigin(0.5))
-    container.add(this.add.text(0, -btnH / 2 + 30, t('scenes.lobby.battlepass.line-2'), {
-      fontFamily: fontFamily.display, fontSize: '10px', color: '#cc88ff', fontStyle: '700',
+    container.add(this.add.text(0, -btnH / 2 + 34, t('scenes.lobby.battlepass.line-2'), {
+      fontFamily: fontFamily.display, fontSize: '12px', color: '#cc88ff', fontStyle: '700',
       shadow: { offsetX: 0, offsetY: 1, color: '#2a0a4a', blur: 4, fill: true },
     }).setOrigin(0.5))
 
     // Divider under header
     const divGfx = this.add.graphics()
     divGfx.fillStyle(0xcc88ff, 0.4)
-    divGfx.fillRect(-btnW / 2 + 14, -btnH / 2 + 38, btnW - 28, 1)
+    divGfx.fillRect(-btnW / 2 + 14, -btnH / 2 + 44, btnW - 28, 1)
     container.add(divGfx)
 
     // ── Diamond/gem emblem in the middle ──
     const emblem = this.add.graphics()
     const ex = 0
-    const ey = -4
-    // Outer diamond
+    const ey = -2
+    // Outer diamond (proportionally larger to match the bigger card)
     emblem.fillStyle(0xcc88ff, 0.9)
     emblem.beginPath()
-    emblem.moveTo(ex, ey - 12)
-    emblem.lineTo(ex + 9, ey)
-    emblem.lineTo(ex, ey + 12)
-    emblem.lineTo(ex - 9, ey)
+    emblem.moveTo(ex, ey - 14)
+    emblem.lineTo(ex + 11, ey)
+    emblem.lineTo(ex, ey + 14)
+    emblem.lineTo(ex - 11, ey)
     emblem.closePath()
     emblem.fillPath()
     // Inner highlight
     emblem.fillStyle(0xffffff, 0.55)
     emblem.beginPath()
-    emblem.moveTo(ex, ey - 9)
-    emblem.lineTo(ex + 5, ey - 2)
+    emblem.moveTo(ex, ey - 11)
+    emblem.lineTo(ex + 6, ey - 2)
     emblem.lineTo(ex, ey)
-    emblem.lineTo(ex - 5, ey - 2)
+    emblem.lineTo(ex - 6, ey - 2)
     emblem.closePath()
     emblem.fillPath()
     // Outer stroke
     emblem.lineStyle(1.5, 0xffffff, 0.8)
     emblem.beginPath()
-    emblem.moveTo(ex, ey - 12)
-    emblem.lineTo(ex + 9, ey)
-    emblem.lineTo(ex, ey + 12)
-    emblem.lineTo(ex - 9, ey)
+    emblem.moveTo(ex, ey - 14)
+    emblem.lineTo(ex + 11, ey)
+    emblem.lineTo(ex, ey + 14)
+    emblem.lineTo(ex - 11, ey)
     emblem.closePath()
     emblem.strokePath()
     container.add(emblem)
 
     // Gem glow
-    const gemGlow = this.add.circle(ex, ey, 18, 0xcc88ff, 0.15)
+    const gemGlow = this.add.circle(ex, ey, 22, 0xcc88ff, 0.15)
     container.addAt(gemGlow, 3)  // behind the emblem but above background
     this.tweens.add({
       targets: gemGlow,
@@ -523,18 +523,18 @@ export default class LobbyScene extends Phaser.Scene {
     const tierLabel = bp.tier >= PASS_MAX_TIER
       ? t('common.labels.level-cap-max')
       : t('common.labels.level-short', { level: bp.tier })
-    container.add(this.add.text(0, 18, tierLabel, {
+    container.add(this.add.text(0, 24, tierLabel, {
       fontFamily: bp.tier >= PASS_MAX_TIER ? fontFamily.display : fontFamily.mono,
-      fontSize: '13px', color: '#ffffff', fontStyle: '700',
+      fontSize: '15px', color: '#ffffff', fontStyle: '700',
       shadow: { offsetX: 0, offsetY: 1, color: '#2a0a4a', blur: 5, fill: true },
     }).setOrigin(0.5))
 
     // ── XP progress bar (bottom interior) ──
     if (bp.tier < PASS_MAX_TIER) {
-      const barW = btnW - 30
-      const barH = 6
+      const barW = btnW - 32
+      const barH = 7
       const barX = -barW / 2
-      const barY = btnH / 2 - 16
+      const barY = btnH / 2 - 18
       const barGfx = this.add.graphics()
       // Track
       barGfx.fillStyle(0x0a0818, 1)
@@ -553,18 +553,18 @@ export default class LobbyScene extends Phaser.Scene {
       container.add(barGfx)
     } else {
       // MAX label replaces bar
-      container.add(this.add.text(0, btnH / 2 - 13, t('scenes.lobby.battlepass.rewards-max'), {
-        fontFamily: fontFamily.body, fontSize: '9px', color: accent.primaryHex,
+      container.add(this.add.text(0, btnH / 2 - 14, t('scenes.lobby.battlepass.rewards-max'), {
+        fontFamily: fontFamily.body, fontSize: '11px', color: accent.primaryHex,
         fontStyle: '700', shadow: SHADOW.text,
       }).setOrigin(0.5))
     }
 
     // ── Unclaimed rewards gift badge (top-right corner) ──
     if (hasUnclaimed) {
-      const badgeX = btnW / 2 - 10
-      const badgeY = -btnH / 2 + 10
+      const badgeX = btnW / 2 - 12
+      const badgeY = -btnH / 2 + 12
 
-      const badgePulse = this.add.circle(badgeX, badgeY, 12, 0xff5252, 0)
+      const badgePulse = this.add.circle(badgeX, badgeY, 14, 0xff5252, 0)
       container.add(badgePulse)
       this.tweens.add({
         targets: badgePulse,
@@ -575,13 +575,13 @@ export default class LobbyScene extends Phaser.Scene {
 
       const badgeGfx = this.add.graphics()
       badgeGfx.fillStyle(0xff5252, 1)
-      badgeGfx.fillCircle(badgeX, badgeY, 7)
+      badgeGfx.fillCircle(badgeX, badgeY, 8)
       badgeGfx.lineStyle(1.5, 0xffffff, 0.9)
-      badgeGfx.strokeCircle(badgeX, badgeY, 7)
+      badgeGfx.strokeCircle(badgeX, badgeY, 8)
       container.add(badgeGfx)
 
       container.add(this.add.text(badgeX, badgeY, '!', {
-        fontFamily: fontFamily.display, fontSize: '10px', color: '#ffffff', fontStyle: '900',
+        fontFamily: fontFamily.display, fontSize: '12px', color: '#ffffff', fontStyle: '900',
       }).setOrigin(0.5))
     }
 
@@ -645,8 +645,8 @@ export default class LobbyScene extends Phaser.Scene {
     const available = p.level >= 30
 
     // ── Geometry — mirror drawBattlePassButton() so we hug the LAST icon ──
-    const stdIconW = 138
-    const stdIconH = 116
+    const stdIconW = 156
+    const stdIconH = 130
     const stdGap = 24
     const stdCount = BOTTOM_ICONS.length
     const stdTotalW = stdCount * stdIconW + (stdCount - 1) * stdGap
@@ -655,8 +655,8 @@ export default class LobbyScene extends Phaser.Scene {
     const centerY = 525 + stdIconH / 2                              // same Y as other icons
 
     // Same dimensions as the BattlePass button for visual symmetry
-    const btnW = 170
-    const btnH = 132
+    const btnW = 192
+    const btnH = 150
     const btnGap = 26
     const bx = stdLastRightX + btnGap + btnW / 2
     const by = centerY
@@ -757,66 +757,68 @@ export default class LobbyScene extends Phaser.Scene {
     container.add(rivetGfx)
 
     // ── Header strip: line-1 / line-2 (Cinzel display) ──
-    container.add(this.add.text(0, -btnH / 2 + 16, t('scenes.lobby.offline.line-1'), {
-      fontFamily: fontFamily.display, fontSize: '13px', color: palette.textPrimary, fontStyle: '700',
+    container.add(this.add.text(0, -btnH / 2 + 18, t('scenes.lobby.offline.line-1'), {
+      fontFamily: fontFamily.display, fontSize: '15px', color: palette.textPrimary, fontStyle: '700',
       shadow: { offsetX: 0, offsetY: 1, color: palette.shadowDeep, blur: 6, fill: true },
     }).setOrigin(0.5))
-    container.add(this.add.text(0, -btnH / 2 + 30, t('scenes.lobby.offline.line-2'), {
-      fontFamily: fontFamily.display, fontSize: '10px', color: palette.textSecondary, fontStyle: '700',
+    container.add(this.add.text(0, -btnH / 2 + 34, t('scenes.lobby.offline.line-2'), {
+      fontFamily: fontFamily.display, fontSize: '12px', color: palette.textSecondary, fontStyle: '700',
       shadow: { offsetX: 0, offsetY: 1, color: palette.shadowDeep, blur: 4, fill: true },
     }).setOrigin(0.5))
 
     // Divider under header
     const divGfx = this.add.graphics()
     divGfx.fillStyle(palette.accent, 0.4)
-    divGfx.fillRect(-btnW / 2 + 14, -btnH / 2 + 38, btnW - 28, 1)
+    divGfx.fillRect(-btnW / 2 + 14, -btnH / 2 + 44, btnW - 28, 1)
     container.add(divGfx)
 
     // ── Crossed swords + shield emblem in the middle ──
+    // Scaled +25% from the previous portrait (12→15 half-width, 11→14 half-
+    // height) so the centerpiece grows with the bigger card.
     const emblem = this.add.graphics()
     const ex = 0
-    const ey = -4
+    const ey = -2
 
     // Shield silhouette (background of emblem)
     emblem.fillStyle(palette.borderInner, 0.18)
     emblem.beginPath()
-    emblem.moveTo(ex - 12, ey - 11)
-    emblem.lineTo(ex + 12, ey - 11)
-    emblem.lineTo(ex + 12, ey + 2)
-    emblem.lineTo(ex, ey + 14)
-    emblem.lineTo(ex - 12, ey + 2)
+    emblem.moveTo(ex - 15, ey - 14)
+    emblem.lineTo(ex + 15, ey - 14)
+    emblem.lineTo(ex + 15, ey + 2)
+    emblem.lineTo(ex, ey + 17)
+    emblem.lineTo(ex - 15, ey + 2)
     emblem.closePath()
     emblem.fillPath()
-    emblem.lineStyle(1.2, palette.accent, 0.7)
+    emblem.lineStyle(1.4, palette.accent, 0.7)
     emblem.beginPath()
-    emblem.moveTo(ex - 12, ey - 11)
-    emblem.lineTo(ex + 12, ey - 11)
-    emblem.lineTo(ex + 12, ey + 2)
-    emblem.lineTo(ex, ey + 14)
-    emblem.lineTo(ex - 12, ey + 2)
+    emblem.moveTo(ex - 15, ey - 14)
+    emblem.lineTo(ex + 15, ey - 14)
+    emblem.lineTo(ex + 15, ey + 2)
+    emblem.lineTo(ex, ey + 17)
+    emblem.lineTo(ex - 15, ey + 2)
     emblem.closePath()
     emblem.strokePath()
 
     // Crossed swords (X) over the shield — two strokes for blade+hilt
     // Left-leaning blade (NW → SE)
-    emblem.lineStyle(2.4, palette.accent, 0.95)
-    emblem.lineBetween(ex - 9, ey - 8, ex + 9, ey + 6)
+    emblem.lineStyle(2.8, palette.accent, 0.95)
+    emblem.lineBetween(ex - 11, ey - 10, ex + 11, ey + 8)
     // Right-leaning blade (NE → SW)
-    emblem.lineBetween(ex + 9, ey - 8, ex - 9, ey + 6)
+    emblem.lineBetween(ex + 11, ey - 10, ex - 11, ey + 8)
     // Crossguards (small horizontal nubs at hilt ends)
-    emblem.lineStyle(1.8, palette.accent, 0.85)
-    emblem.lineBetween(ex - 11, ey - 7, ex - 7, ey - 9)   // upper-left hilt
-    emblem.lineBetween(ex + 11, ey - 7, ex + 7, ey - 9)   // upper-right hilt
+    emblem.lineStyle(2.0, palette.accent, 0.85)
+    emblem.lineBetween(ex - 13, ey - 9, ex - 8, ey - 11)   // upper-left hilt
+    emblem.lineBetween(ex + 13, ey - 9, ex + 8, ey - 11)   // upper-right hilt
     // Pommels
     emblem.fillStyle(palette.accent, 0.95)
-    emblem.fillCircle(ex - 9, ey - 8, 1.2)
-    emblem.fillCircle(ex + 9, ey - 8, 1.2)
+    emblem.fillCircle(ex - 11, ey - 10, 1.4)
+    emblem.fillCircle(ex + 11, ey - 10, 1.4)
 
     container.add(emblem)
 
     // Emblem glow (only when unlocked)
     if (available) {
-      const emblemGlow = this.add.circle(ex, ey, 18, palette.aura, 0.15)
+      const emblemGlow = this.add.circle(ex, ey, 22, palette.aura, 0.15)
       container.addAt(emblemGlow, 3)
       this.tweens.add({
         targets: emblemGlow,
@@ -827,16 +829,14 @@ export default class LobbyScene extends Phaser.Scene {
     }
 
     // ── Status label / Lv.30 lock pill below the emblem ──
-    // The shield+swords emblem occupies y = -15..+10 (centered at -4 with
-    // span 25 from the moveTo lines above). The bottom strip starts at
-    // btnH/2 - 22 = 36, so the pill must sit fully inside (10, 36) — a
-    // 26 px window. We use a 16 px-tall pill centered at y = 24, which
-    // leaves ~6 px of breathing room above the shield and below the strip.
+    // Shield+swords emblem now occupies y ≈ -16..+19 (centered at -2 with
+    // span 35 from the moveTo lines above). Bottom strip starts at
+    // btnH/2 - 22 = 53. Pill goes in the gap (19..53 → 34 px).
     if (!available) {
       // Lock pill: padlock icon + "Lv.30" text, mirroring PlayModesOverlay
-      const pillW = 66
-      const pillH = 16
-      const pillCy = 24
+      const pillW = 76
+      const pillH = 18
+      const pillCy = 32
 
       const pillGfx = this.add.graphics()
       pillGfx.fillStyle(0x10141d, 0.95)
@@ -847,20 +847,20 @@ export default class LobbyScene extends Phaser.Scene {
 
       // Padlock (left side of pill)
       const lockGfx = this.add.graphics()
-      const lkX = -pillW / 2 + 11
+      const lkX = -pillW / 2 + 13
       const lkY = pillCy + 0.5
-      lockGfx.lineStyle(1.2, palette.accent, 0.85)
+      lockGfx.lineStyle(1.4, palette.accent, 0.85)
       lockGfx.beginPath()
-      lockGfx.arc(lkX, lkY - 3, 2.4, Math.PI, 0, false)
+      lockGfx.arc(lkX, lkY - 3.5, 2.8, Math.PI, 0, false)
       lockGfx.strokePath()
       lockGfx.fillStyle(palette.accent, 0.85)
-      lockGfx.fillRoundedRect(lkX - 3, lkY - 3, 6, 5, 1)
+      lockGfx.fillRoundedRect(lkX - 3.5, lkY - 3.5, 7, 6, 1)
       lockGfx.fillStyle(0x000000, 0.5)
-      lockGfx.fillCircle(lkX, lkY - 1.5, 0.8)
+      lockGfx.fillCircle(lkX, lkY - 1.5, 0.9)
       container.add(lockGfx)
 
-      container.add(this.add.text(-pillW / 2 + 22, pillCy, t('common.labels.level-long', { level: 30 }), {
-        fontFamily: fontFamily.mono, fontSize: '11px',
+      container.add(this.add.text(-pillW / 2 + 26, pillCy, t('common.labels.level-long', { level: 30 }), {
+        fontFamily: fontFamily.mono, fontSize: '13px',
         color: palette.accentHex, fontStyle: '700',
         shadow: { offsetX: 0, offsetY: 1, color: palette.shadowDeep, blur: 3, fill: true },
       }).setOrigin(0, 0.5))
@@ -872,10 +872,10 @@ export default class LobbyScene extends Phaser.Scene {
     const stripText = available
       ? t('scenes.lobby.offline.available-status')
       : t('scenes.lobby.offline.locked-status')
-    const stripY = btnH / 2 - 14
-    const stripW = btnW - 30
-    const stripBgY = stripY - 8
-    const stripBgH = 16
+    const stripY = btnH / 2 - 16
+    const stripW = btnW - 32
+    const stripBgY = stripY - 9
+    const stripBgH = 18
 
     const stripGfx = this.add.graphics()
     stripGfx.fillStyle(0x10141d, 0.85)
@@ -885,7 +885,7 @@ export default class LobbyScene extends Phaser.Scene {
     container.add(stripGfx)
 
     container.add(this.add.text(0, stripY, stripText, {
-      fontFamily: fontFamily.body, fontSize: '9px',
+      fontFamily: fontFamily.body, fontSize: '11px',
       color: palette.accentHex, fontStyle: '700',
       shadow: { offsetX: 0, offsetY: 1, color: palette.shadowDeep, blur: 3, fill: true },
     }).setOrigin(0.5).setLetterSpacing(1.6))
@@ -1029,8 +1029,8 @@ export default class LobbyScene extends Phaser.Scene {
   // ═══════════════════════════════════════════════════════════════════════════
 
   private drawBottomIconBar() {
-    const iconW = 138
-    const iconH = 116
+    const iconW = 156
+    const iconH = 130
     const gap = 24
     const totalW = BOTTOM_ICONS.length * iconW + (BOTTOM_ICONS.length - 1) * gap
     const startX = (W - totalW) / 2 + iconW / 2
@@ -1068,16 +1068,18 @@ export default class LobbyScene extends Phaser.Scene {
       container.add(accentGfx)
 
       // Subtle glow behind icon
-      const iconGlow = this.add.circle(0, -10, 26, cfg.color, 0.04)
+      const iconGlow = this.add.circle(0, -12, 32, cfg.color, 0.04)
       container.add(iconGlow)
 
       // Draw icon
-      const iconGfx = this.drawBottomNavIcon(cfg.id, 0, -10, 20, cfg.color)
+      const iconGfx = this.drawBottomNavIcon(cfg.id, 0, -12, 24, cfg.color)
       container.add(iconGfx)
 
-      // Label — Manrope meta (11/700 uppercase)
-      const label = this.add.text(0, iconH / 2 - 20, t(cfg.labelKey), {
-        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      // Label — Manrope small (13/700 uppercase) — bumped from meta(11)
+      // because the larger card has more vertical room and the meta size
+      // looks lost in the bigger surface.
+      const label = this.add.text(0, iconH / 2 - 22, t(cfg.labelKey), {
+        fontFamily: fontFamily.body, fontSize: typeScale.small,
         color:      fg.tertiaryHex, fontStyle: '700',
         shadow:     SHADOW.text,
       }).setOrigin(0.5)
