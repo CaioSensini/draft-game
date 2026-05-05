@@ -25,6 +25,7 @@ import {
 import { getLucideIconKey, getSkillIconKey, hasSkillIcon } from './AssetPaths'
 import type { LucideIconName } from './AssetPaths'
 import { t } from '../i18n'
+import { applyTextOverflow } from './TextOverflow'
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DESIGN SYSTEM PHASE 1 HELPERS
@@ -3254,6 +3255,16 @@ function _buildVariantButton(
   if (typeof anyLabel.setLetterSpacing === 'function') {
     anyLabel.setLetterSpacing(1.5) // ≈ 0.14em of 11px
   }
+
+  // Auto-shrink label so longer translations (DE/RU/JA) fit inside the
+  // button without overflowing the rounded surface. Reserve 16 px of inner
+  // padding (8 px each side) so the text never visually touches the border.
+  // Letter-spacing is already applied above; setFontSize triggers a re-measure
+  // that includes spacing.
+  applyTextOverflow(labelObj, 'shrink', {
+    maxWidth: Math.max(40, w - 16),
+    minFontSize: 11,
+  })
 
   const { hitW, hitH } = touchHitSize(w, h, args.minTouchSize)
   const hitArea = scene.add.rectangle(0, 0, hitW, hitH, 0x000000, 0.001)
