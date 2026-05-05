@@ -81,8 +81,11 @@ const HERO_CY     = 110
 const COUNTERS_CY = 188
 const MASTERY_CY  = 262
 const TOGGLE_CY   = 332
-const EQUIP_HEAD_Y = 380
-const EQUIP_SLOTS_CY = 460
+// Equip-panel band centred between the participation toggle (bottom y≈360)
+// and the attack button (top y≈571) so the section visually anchors the
+// middle column of the hub.
+const EQUIP_HEAD_Y = 412
+const EQUIP_SLOTS_CY = 488
 const ATTACK_BTN_CY = 600
 
 export default class RaidHubScene extends Phaser.Scene {
@@ -294,9 +297,30 @@ export default class RaidHubScene extends Phaser.Scene {
 
   private _drawParticipationToggle() {
     const cy = TOGGLE_CY
-    const cardW = 720
     const cardH = 56
     const cx = W / 2
+
+    // Render the texts off-screen first so the card can auto-fit to the
+    // wider of the two — keeps the panel compact across translations.
+    const titleObj = this.add.text(-9999, cy - 10,
+      t('scenes.raid-hub.participating.title').toUpperCase(), {
+        fontFamily: fontFamily.body, fontSize: '13px',
+        color: fg.primaryHex, fontStyle: '700',
+      }).setOrigin(0, 0.5).setLetterSpacing(1.6)
+
+    const bodyObj = this.add.text(-9999, cy + 10,
+      t('scenes.raid-hub.participating.body'), {
+        fontFamily: fontFamily.body, fontSize: '12px',
+        color: fg.tertiaryHex, fontStyle: '500',
+      }).setOrigin(0, 0.5)
+
+    const togW = 64
+    const togH = 28
+    const padL = 22
+    const padR = 22
+    const gap  = 20
+    const textBlockW = Math.max(titleObj.width, bodyObj.width)
+    const cardW = padL + textBlockW + gap + togW + padR
 
     const g = this.add.graphics()
     g.fillStyle(0x000000, 0.45)
@@ -306,22 +330,10 @@ export default class RaidHubScene extends Phaser.Scene {
     g.lineStyle(1, border.default, 1)
     g.strokeRoundedRect(cx - cardW / 2, cy - cardH / 2, cardW, cardH, radii.md)
 
-    this.add.text(cx - cardW / 2 + 22, cy - 10,
-      t('scenes.raid-hub.participating.title').toUpperCase(), {
-        fontFamily: fontFamily.body, fontSize: '13px',
-        color: fg.primaryHex, fontStyle: '700',
-      }).setOrigin(0, 0.5).setLetterSpacing(1.6)
+    titleObj.setX(cx - cardW / 2 + padL)
+    bodyObj.setX(cx - cardW / 2 + padL)
 
-    this.add.text(cx - cardW / 2 + 22, cy + 10,
-      t('scenes.raid-hub.participating.body'), {
-        fontFamily: fontFamily.body, fontSize: '12px',
-        color: fg.tertiaryHex, fontStyle: '500',
-      }).setOrigin(0, 0.5)
-
-    // Custom binary toggle on the right
-    const togW = 64
-    const togH = 28
-    const togCx = cx + cardW / 2 - togW / 2 - 22
+    const togCx = cx + cardW / 2 - togW / 2 - padR
     const togCy = cy
 
     const togBg = this.add.graphics()
