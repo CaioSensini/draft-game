@@ -331,7 +331,7 @@
       "mov": "MOV"
     },
     "round-heading": "第 {round} 回合",
-    "dummy-name": "{role}木桩"
+    "dummy-name": "木桩"
   },
   "battle-result": {
     "title": {

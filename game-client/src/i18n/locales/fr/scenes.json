@@ -331,7 +331,7 @@
       "mov": "MOV"
     },
     "round-heading": "MANCHE {round}",
-    "dummy-name": "Mannequin {role}"
+    "dummy-name": "Mannequin"
   },
   "battle-result": {
     "title": {

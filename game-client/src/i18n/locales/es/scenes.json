@@ -331,7 +331,7 @@
       "mov": "MOV"
     },
     "round-heading": "RONDA {round}",
-    "dummy-name": "Muñeco {role}"
+    "dummy-name": "Muñeco"
   },
   "battle-result": {
     "title": {

@@ -331,7 +331,7 @@
       "mov": "MOV"
     },
     "round-heading": "ラウンド {round}",
-    "dummy-name": "{role}の人形"
+    "dummy-name": "人形"
   },
   "battle-result": {
     "title": {

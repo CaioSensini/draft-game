@@ -362,7 +362,7 @@
       "mov": "MOV"
     },
     "round-heading": "ROUND {round}",
-    "dummy-name": "Boneco {role}"
+    "dummy-name": "Boneco"
   },
   "battle-result": {
     "title": {

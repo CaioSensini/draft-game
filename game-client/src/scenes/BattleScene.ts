@@ -3897,12 +3897,18 @@ function _buildController(
     new Character(u.id, u.name, u.role, 'left', u.col, u.row, ROLE_STATS[u.role]))
 
   // Training mode: dummies use same stats as left side (matched by role)
+  // Sub 9.7: dummy names no longer interpolate the role abbreviation —
+  // the colored class icon (crown / shield / sword / leaf) to the left of
+  // the name in the unit-status panel already conveys the role, and the
+  // longer "Boneco REI" / "Boneco GUE" labels were getting clipped on
+  // narrow status cards in DE/RU translations.
   const rightStats = trainingMode ? ROLE_STATS : undefined
+  const dummyName = t('scenes.battle.dummy-name')
   const DUMMY_NAMES: Record<string, string> = {
-    king: t('scenes.battle.dummy-name', { role: roleAbbr('king') }),
-    warrior: t('scenes.battle.dummy-name', { role: roleAbbr('warrior') }),
-    executor: t('scenes.battle.dummy-name', { role: roleAbbr('executor') }),
-    specialist: t('scenes.battle.dummy-name', { role: roleAbbr('specialist') }),
+    king: dummyName,
+    warrior: dummyName,
+    executor: dummyName,
+    specialist: dummyName,
   }
   const rightChars = RIGHT_UNITS.map((u) => {
     const stats = rightStats ? rightStats[u.role] : _scaleStats(ROLE_STATS[u.role], difficulty)

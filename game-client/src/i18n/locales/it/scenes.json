@@ -331,7 +331,7 @@
       "mov": "MOV"
     },
     "round-heading": "ROUND {round}",
-    "dummy-name": "Manichino {role}"
+    "dummy-name": "Manichino"
   },
   "battle-result": {
     "title": {
