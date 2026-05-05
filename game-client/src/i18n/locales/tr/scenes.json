@@ -95,7 +95,11 @@
     "premium-active": "PREMIUM AKTİF",
     "premium-thanks": "Desteğin için teşekkürler!",
     "complete-chain": "ZİNCİR TAMAMLANDI",
-    "rewards": "ÖDÜLLER"
+    "rewards": "ÖDÜLLER",
+    "tier-max": "MAKS SEVİYE",
+    "tier-current": "SEVİYE {tier}",
+    "track-premium": "PREMIUM",
+    "track-free": "ÜCRETSİZ"
   },
   "ranking": {
     "title": "GLOBAL SIRALAMA",

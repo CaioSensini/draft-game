@@ -95,7 +95,11 @@
     "premium-active": "PREMIUM ACTIF",
     "premium-thanks": "Merci pour votre soutien !",
     "complete-chain": "CHAÎNE COMPLÈTE",
-    "rewards": "RÉCOMPENSES"
+    "rewards": "RÉCOMPENSES",
+    "tier-max": "NIVEAU MAX",
+    "tier-current": "NIVEAU {tier}",
+    "track-premium": "PREMIUM",
+    "track-free": "GRATUIT"
   },
   "ranking": {
     "title": "CLASSEMENT MONDIAL",

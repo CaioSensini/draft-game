@@ -95,7 +95,11 @@
     "premium-active": "PREMIUM ACTIVO",
     "premium-thanks": "¡Gracias por apoyar!",
     "complete-chain": "CADENA COMPLETA",
-    "rewards": "RECOMPENSAS"
+    "rewards": "RECOMPENSAS",
+    "tier-max": "NIVEL MÁX",
+    "tier-current": "NIVEL {tier}",
+    "track-premium": "PREMIUM",
+    "track-free": "GRATIS"
   },
   "ranking": {
     "title": "RANKING GLOBAL",

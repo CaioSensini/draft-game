@@ -95,7 +95,11 @@
     "premium-active": "ПРЕМИУМ АКТИВЕН",
     "premium-thanks": "Спасибо за поддержку!",
     "complete-chain": "ЦЕПЬ ЗАВЕРШЕНА",
-    "rewards": "НАГРАДЫ"
+    "rewards": "НАГРАДЫ",
+    "tier-max": "МАКС УРОВЕНЬ",
+    "tier-current": "УРОВЕНЬ {tier}",
+    "track-premium": "ПРЕМИУМ",
+    "track-free": "БЕСПЛАТНО"
   },
   "ranking": {
     "title": "ГЛОБАЛЬНЫЙ РЕЙТИНГ",

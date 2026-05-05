@@ -95,7 +95,11 @@
     "premium-active": "프리미엄 활성",
     "premium-thanks": "응원해 주셔서 감사합니다!",
     "complete-chain": "체인 완료",
-    "rewards": "보상"
+    "rewards": "보상",
+    "tier-max": "최대 레벨",
+    "tier-current": "레벨 {tier}",
+    "track-premium": "프리미엄",
+    "track-free": "무료"
   },
   "ranking": {
     "title": "글로벌 랭킹",

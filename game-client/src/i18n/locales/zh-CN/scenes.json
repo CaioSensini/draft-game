@@ -95,7 +95,11 @@
     "premium-active": "高级版生效",
     "premium-thanks": "感谢支持！",
     "complete-chain": "链路完成",
-    "rewards": "奖励"
+    "rewards": "奖励",
+    "tier-max": "满级",
+    "tier-current": "等级 {tier}",
+    "track-premium": "高级",
+    "track-free": "免费"
   },
   "ranking": {
     "title": "全球排行",

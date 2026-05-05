@@ -95,7 +95,11 @@
     "premium-active": "PREMIUM ACTIVE",
     "premium-thanks": "Thanks for supporting!",
     "complete-chain": "CHAIN COMPLETE",
-    "rewards": "REWARDS"
+    "rewards": "REWARDS",
+    "tier-max": "MAX TIER",
+    "tier-current": "TIER {tier}",
+    "track-premium": "PREMIUM",
+    "track-free": "FREE"
   },
   "ranking": {
     "title": "GLOBAL RANKING",

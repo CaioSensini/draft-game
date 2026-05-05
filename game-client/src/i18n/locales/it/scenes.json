@@ -95,7 +95,11 @@
     "premium-active": "PREMIUM ATTIVO",
     "premium-thanks": "Grazie per il supporto!",
     "complete-chain": "CATENA COMPLETA",
-    "rewards": "RICOMPENSE"
+    "rewards": "RICOMPENSE",
+    "tier-max": "LIVELLO MAX",
+    "tier-current": "LIVELLO {tier}",
+    "track-premium": "PREMIUM",
+    "track-free": "GRATIS"
   },
   "ranking": {
     "title": "CLASSIFICA GLOBALE",

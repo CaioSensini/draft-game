@@ -103,7 +103,9 @@ export default class BattlePassScene extends Phaser.Scene {
     }).setOrigin(0, 0.5)
 
     // Right: tier badge + XP bar
-    const tierText = bp.tier >= PASS_MAX_TIER ? 'NÍVEL MÁX' : `NÍVEL ${bp.tier}`
+    const tierText = bp.tier >= PASS_MAX_TIER
+      ? t('scenes.battle-pass.tier-max')
+      : t('scenes.battle-pass.tier-current', { tier: bp.tier })
     this.add.text(W - 20, TOP_H / 2 - 8, tierText, {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: BP.lightHex, fontStyle: '700',
@@ -458,8 +460,8 @@ export default class BattlePassScene extends Phaser.Scene {
     const tierCircleY = premCardY + PREMIUM_CARD_H + trackGap / 2          // dead center of the gap
 
     // ── Track labels (left-rail "PREMIUM" / "GRATIS" pill stamps) ──
-    this.drawTrackLabel(trackX + 10, premCardY + PREMIUM_CARD_H / 2, 'PREMIUM', BP.primary)
-    this.drawTrackLabel(trackX + 10, freeCardY + FREE_CARD_H / 2, 'GRÁTIS', state.success)
+    this.drawTrackLabel(trackX + 10, premCardY + PREMIUM_CARD_H / 2, t('scenes.battle-pass.track-premium'), BP.primary)
+    this.drawTrackLabel(trackX + 10, freeCardY + FREE_CARD_H / 2, t('scenes.battle-pass.track-free'), state.success)
 
     // Scrollable container for tiers
     const contentX = trackX + 72

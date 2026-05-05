@@ -95,7 +95,11 @@
     "premium-active": "プレミアム有効",
     "premium-thanks": "ご支援ありがとうございます！",
     "complete-chain": "チェーン完了",
-    "rewards": "報酬"
+    "rewards": "報酬",
+    "tier-max": "最大レベル",
+    "tier-current": "レベル {tier}",
+    "track-premium": "プレミアム",
+    "track-free": "無料"
   },
   "ranking": {
     "title": "グローバルランキング",

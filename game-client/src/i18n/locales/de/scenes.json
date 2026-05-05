@@ -95,7 +95,11 @@
     "premium-active": "PREMIUM AKTIV",
     "premium-thanks": "Danke für deine Unterstützung!",
     "complete-chain": "KETTE KOMPLETT",
-    "rewards": "BELOHNUNGEN"
+    "rewards": "BELOHNUNGEN",
+    "tier-max": "MAX-STUFE",
+    "tier-current": "STUFE {tier}",
+    "track-premium": "PREMIUM",
+    "track-free": "GRATIS"
   },
   "ranking": {
     "title": "GLOBALE RANGLISTE",
