@@ -308,20 +308,34 @@ export default class BattlePassScene extends Phaser.Scene {
     g.strokeRoundedRect(x, y, w, h, radii.md)
 
     // ── Category pill (top-left) ──
+    // Sub 9.3: pill width is measured from the rendered label (the old
+    // length*6+12 heuristic underestimated letter-spacing 1.4 and longer
+    // categories like PARTIDAS / SEQUENCIA / IMPECAVEL / OFENSIVA all
+    // overflowed the pill background). Capped so the pill never reaches
+    // the stage indicator on the right edge.
     if (mission.category) {
       const pillX = x + 8; const pillY = y + 12
-      const pillTextW = mission.category.length * 6 + 12
       const pillH = 14
+      const stageIndicatorReserve = 36
+      const maxPillW = Math.max(48, w - 16 - stageIndicatorReserve)
+
+      const pillLabel = this.add.text(0, pillY, mission.category.toUpperCase(), {
+        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+        color: fullyDone ? state.successHex : done ? BP.lightHex : fg.tertiaryHex,
+        fontStyle: '700',
+      }).setOrigin(0.5).setLetterSpacing(1.4)
+
+      const pillTextW = Math.min(maxPillW, Math.max(40, Math.ceil(pillLabel.width) + 14))
+      pillLabel.setX(pillX + pillTextW / 2)
+
       const pillGfx = this.add.graphics()
       pillGfx.fillStyle(surface.deepest, 0.85)
       pillGfx.fillRoundedRect(pillX, pillY - pillH / 2, pillTextW, pillH, pillH / 2)
       pillGfx.lineStyle(1, borderColor, 0.7)
       pillGfx.strokeRoundedRect(pillX, pillY - pillH / 2, pillTextW, pillH, pillH / 2)
-      this.add.text(pillX + pillTextW / 2, pillY, mission.category.toUpperCase(), {
-        fontFamily: fontFamily.body, fontSize: typeScale.meta,
-        color: fullyDone ? state.successHex : done ? BP.lightHex : fg.tertiaryHex,
-        fontStyle: '700',
-      }).setOrigin(0.5).setLetterSpacing(1.4)
+      // Lift label depth above the pill so the rounded rect doesn't cover
+      // the text (Phaser draws by depth, then by creation order).
+      pillLabel.setDepth(1)
     }
 
     // ── Stage indicator (top-right) ──
@@ -341,12 +355,25 @@ export default class BattlePassScene extends Phaser.Scene {
     // ── Description ──
     // Sits below the category/stage header so 2-line wraps never crowd
     // the stage indicator in the top-right corner (ETAPA 6.2 fix).
-    this.add.text(x + 8, y + 38, mission.description, {
+    // Sub 9.3: longer translations (DE/RU/JA) could push 3 wrapped lines
+    // into the progress bar area. We compute a max height (between desc
+    // baseline and progress bar at y+h-16) and shrink the font when needed.
+    const descText = this.add.text(x + 8, y + 38, mission.description, {
       fontFamily: fontFamily.body, fontSize: typeScale.small,
       color: fullyDone ? state.successHex : done ? fg.primaryHex : fg.secondaryHex,
       fontStyle: '500',
       wordWrap: { width: w - 16 },
     }).setOrigin(0, 0.5)
+
+    // Description center is at y+38 with origin 0, 0.5 — its bottom can extend
+    // to y+38+(height/2). The progress bar starts at y+h-16. We need
+    // bottom < y+h-22 (extra 6 px breathing). Equivalent: height < 2*(h-60).
+    const maxDescHeight = Math.max(16, 2 * (h - 60))
+    let fontPx = 13  // typeScale.small
+    while (descText.height > maxDescHeight && fontPx > 10) {
+      fontPx -= 1
+      descText.setFontSize(`${fontPx}px`)
+    }
 
     // ── Bottom row: progress/claim ──
     if (fullyDone) {
