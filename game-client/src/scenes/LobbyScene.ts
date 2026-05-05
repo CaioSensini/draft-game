@@ -669,165 +669,127 @@ export default class LobbyScene extends Phaser.Scene {
     const bx = stdLastRightX + btnGap + btnW / 2
     const by = centerY
 
-    // ── Crimson raid palette ──
-    // Locked variant uses muted greys; unlocked uses ember crimson + amber.
-    const palette = available
-      ? {
-          base:        0x2a0808,   // deep crimson body
-          gradTop:     0xc23a1f,   // ember red (top wash)
-          gradBottom:  0x5a1212,   // dark blood (bottom wash)
-          borderOuter: 0xc23a1f,   // ember
-          borderInner: 0xffa726,   // amber highlight
-          aura:        0xc23a1f,
-          accent:      0xffa726,   // amber accent (jewel rivets, divider, emblem highlights)
-          accentHex:   '#ffa726',
-          textPrimary: '#ffffff',
-          textSecondary: '#ffa726',
-          shadowDeep:  '#3a0808',
-          jewel:       0xffa726,
-        }
-      : {
-          base:        0x10141d,
-          gradTop:     0x202733,
-          gradBottom:  0x14181f,
-          borderOuter: 0x4a4f5a,
-          borderInner: 0x6a7080,
-          aura:        0x4a4f5a,
-          accent:      0x808595,
-          accentHex:   '#808595',
-          textPrimary: '#cbd5e1',
-          textSecondary: '#808595',
-          shadowDeep:  '#000000',
-          jewel:       0x808595,
-        }
+    // ── Dual red/blue palette (matches the raid popup) ──
+    // Red drives the ATTACK identity (top stripe, top rivets, sword glyph,
+    // left halo). Blue drives DEFENSE (bottom stripe, bottom rivets, shield
+    // glyph, right halo). Gold/amber is the neutral accent for headers and
+    // status text — same vocabulary as the explainer modal.
+    const ATTACK_C  = 0xef4444
+    const DEFENSE_C = 0x3b82f6
+    const ACCENT_C  = 0xfbbf24
+    const ACCENT_HEX = '#fbbf24'
+    const NEUTRAL_BASE   = 0x101729
+    const NEUTRAL_DEEP   = 0x0a0f1d
+    const NEUTRAL_BORDER = 0x1e293b
+    const TEXT_BODY_HEX  = '#cbd5e1'
+    const SHADOW_DEEP    = '#000000'
 
     const container = this.add.container(bx, by).setAlpha(0).setScale(0.9)
     this.offlineContainer = container
 
-    // ── Pulsing aura (behind everything, only when unlocked) ──
+    // ── Subtle backdrop aura — twin glows (red ◀ blue ▶) ──
     if (available) {
-      const aura = this.add.graphics()
-      aura.fillStyle(palette.aura, 0.18)
-      aura.fillRoundedRect(-btnW / 2 - 6, -btnH / 2 - 6, btnW + 12, btnH + 12, S.borderRadiusLarge + 3)
-      container.add(aura)
+      const auraRed = this.add.graphics()
+      auraRed.fillStyle(ATTACK_C, 0.16)
+      auraRed.fillRoundedRect(-btnW / 2 - 6, -btnH / 2 - 6, btnW / 2 + 6, btnH + 12, S.borderRadiusLarge + 3)
+      container.add(auraRed)
+      const auraBlue = this.add.graphics()
+      auraBlue.fillStyle(DEFENSE_C, 0.16)
+      auraBlue.fillRoundedRect(0, -btnH / 2 - 6, btnW / 2 + 6, btnH + 12, S.borderRadiusLarge + 3)
+      container.add(auraBlue)
       this.tweens.add({
-        targets: aura,
-        alpha: { from: 0.30, to: 0.70 },
+        targets: [auraRed, auraBlue],
+        alpha: { from: 0.30, to: 0.65 },
         duration: 1400, yoyo: true, repeat: -1, ease: 'Sine.InOut',
       })
     }
 
-    // ── Main background: crimson gradient w/ double border ──
+    // ── Main background: solid neutral body with red/blue stripes ──
     const bgGfx = this.add.graphics()
-    // Outer soft shadow
-    bgGfx.fillStyle(0x000000, 0.3)
+    // Drop shadow
+    bgGfx.fillStyle(0x000000, 0.35)
     bgGfx.fillRoundedRect(-btnW / 2 + 2, -btnH / 2 + 4, btnW, btnH, S.borderRadiusLarge)
-    // Dark crimson base
-    bgGfx.fillStyle(palette.base, 0.98)
+    // Solid body (matches popup body so the two surfaces feel related)
+    bgGfx.fillStyle(NEUTRAL_BASE, 0.98)
     bgGfx.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, S.borderRadiusLarge)
-    // Crimson gradient (top wash)
-    bgGfx.fillStyle(palette.gradTop, 0.22)
-    bgGfx.fillRoundedRect(-btnW / 2 + 1, -btnH / 2 + 1, btnW - 2, btnH / 2,
-      { tl: S.borderRadiusLarge - 1, tr: S.borderRadiusLarge - 1, bl: 0, br: 0 })
-    bgGfx.fillStyle(palette.gradBottom, 0.25)
-    bgGfx.fillRoundedRect(-btnW / 2 + 1, 0, btnW - 2, btnH / 2 - 1,
-      { tl: 0, tr: 0, bl: S.borderRadiusLarge - 1, br: S.borderRadiusLarge - 1 })
-    // Top gloss
+    // Top inset highlight (1 px line that catches the light)
     bgGfx.fillStyle(0xffffff, 0.05)
-    bgGfx.fillRoundedRect(-btnW / 2 + 3, -btnH / 2 + 3, btnW - 6, 20,
+    bgGfx.fillRoundedRect(-btnW / 2 + 3, -btnH / 2 + 3, btnW - 6, 18,
       { tl: S.borderRadiusLarge - 2, tr: S.borderRadiusLarge - 2, bl: 0, br: 0 })
-    // Double border — outer ember + inner amber (or muted greys when locked)
-    bgGfx.lineStyle(2, palette.borderOuter, 0.9)
+    // Outer neutral border
+    bgGfx.lineStyle(2, NEUTRAL_BORDER, 1)
     bgGfx.strokeRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, S.borderRadiusLarge)
-    bgGfx.lineStyle(1, palette.borderInner, 0.45)
-    bgGfx.strokeRoundedRect(-btnW / 2 + 3, -btnH / 2 + 3, btnW - 6, btnH - 6, S.borderRadiusLarge - 2)
     container.add(bgGfx)
 
-    // ── Iron rivets at the four corners (instead of battle pass jewels) ──
+    // Top RED stripe (attack identity)
+    const stripeRed = this.add.graphics()
+    stripeRed.fillStyle(ATTACK_C, 0.85)
+    stripeRed.fillRoundedRect(-btnW / 2 + 8, -btnH / 2 + 6, btnW - 16, 3,
+      { tl: 1.5, tr: 1.5, bl: 0, br: 0 })
+    stripeRed.fillStyle(ATTACK_C, 0.18)
+    stripeRed.fillRect(-btnW / 2 + 8, -btnH / 2 + 9, btnW - 16, 4)
+    container.add(stripeRed)
+
+    // Bottom BLUE stripe (defense identity)
+    const stripeBlue = this.add.graphics()
+    stripeBlue.fillStyle(DEFENSE_C, 0.85)
+    stripeBlue.fillRoundedRect(-btnW / 2 + 8, btnH / 2 - 9, btnW - 16, 3,
+      { tl: 0, tr: 0, bl: 1.5, br: 1.5 })
+    stripeBlue.fillStyle(DEFENSE_C, 0.18)
+    stripeBlue.fillRect(-btnW / 2 + 8, btnH / 2 - 13, btnW - 16, 4)
+    container.add(stripeBlue)
+
+    // Iron rivets at the four corners — top red, bottom blue (matches popup)
     const rivetGfx = this.add.graphics()
-    const rivets: Array<[number, number]> = [
-      [-btnW / 2 + 8, -btnH / 2 + 8],
-      [ btnW / 2 - 8, -btnH / 2 + 8],
-      [-btnW / 2 + 8,  btnH / 2 - 8],
-      [ btnW / 2 - 8,  btnH / 2 - 8],
+    const rivets: Array<[number, number, number]> = [
+      [-btnW / 2 + 9, -btnH / 2 + 9, ATTACK_C],
+      [ btnW / 2 - 9, -btnH / 2 + 9, ATTACK_C],
+      [-btnW / 2 + 9,  btnH / 2 - 9, DEFENSE_C],
+      [ btnW / 2 - 9,  btnH / 2 - 9, DEFENSE_C],
     ]
-    for (const [rx, ry] of rivets) {
-      // Rivet body
-      rivetGfx.fillStyle(palette.jewel, 0.85)
+    for (const [rx, ry, color] of rivets) {
+      rivetGfx.fillStyle(color, 0.85)
       rivetGfx.fillCircle(rx, ry, 2.4)
-      // Highlight (top-left)
       rivetGfx.fillStyle(0xffffff, 0.55)
       rivetGfx.fillCircle(rx - 0.6, ry - 0.6, 1.0)
-      // Inner shadow (bottom-right)
       rivetGfx.fillStyle(0x000000, 0.4)
       rivetGfx.fillCircle(rx + 0.6, ry + 0.6, 0.5)
     }
     container.add(rivetGfx)
 
     // ── Header strip: line-1 / line-2 (Cinzel display) ──
-    container.add(this.add.text(0, -btnH / 2 + 18, t('scenes.lobby.offline.line-1'), {
-      fontFamily: fontFamily.display, fontSize: '15px', color: palette.textPrimary, fontStyle: '700',
-      shadow: { offsetX: 0, offsetY: 1, color: palette.shadowDeep, blur: 6, fill: true },
+    container.add(this.add.text(0, -btnH / 2 + 22, t('scenes.lobby.offline.line-1'), {
+      fontFamily: fontFamily.display, fontSize: '15px', color: '#ffffff', fontStyle: '700',
+      shadow: { offsetX: 0, offsetY: 1, color: SHADOW_DEEP, blur: 6, fill: true },
     }).setOrigin(0.5))
-    container.add(this.add.text(0, -btnH / 2 + 34, t('scenes.lobby.offline.line-2'), {
-      fontFamily: fontFamily.display, fontSize: '12px', color: palette.textSecondary, fontStyle: '700',
-      shadow: { offsetX: 0, offsetY: 1, color: palette.shadowDeep, blur: 4, fill: true },
+    container.add(this.add.text(0, -btnH / 2 + 38, t('scenes.lobby.offline.line-2'), {
+      fontFamily: fontFamily.display, fontSize: '12px', color: ACCENT_HEX, fontStyle: '700',
+      shadow: { offsetX: 0, offsetY: 1, color: SHADOW_DEEP, blur: 4, fill: true },
     }).setOrigin(0.5))
 
-    // Divider under header
+    // Split divider — red half on the left, blue half on the right, gold dot
+    // in the middle (same idiom as the popup's section divider).
+    const divY = -btnH / 2 + 50
+    const divHalfW = (btnW - 36) / 2
     const divGfx = this.add.graphics()
-    divGfx.fillStyle(palette.accent, 0.4)
-    divGfx.fillRect(-btnW / 2 + 14, -btnH / 2 + 44, btnW - 28, 1)
+    divGfx.fillStyle(ATTACK_C, 0.55)
+    divGfx.fillRect(-divHalfW, divY, divHalfW, 1)
+    divGfx.fillStyle(DEFENSE_C, 0.55)
+    divGfx.fillRect(0, divY, divHalfW, 1)
+    divGfx.fillStyle(ACCENT_C, 0.9)
+    divGfx.fillCircle(0, divY, 1.8)
     container.add(divGfx)
 
-    // ── Crossed swords + shield emblem in the middle ──
-    // Scaled +25% from the previous portrait (12→15 half-width, 11→14 half-
-    // height) so the centerpiece grows with the bigger card.
-    const emblem = this.add.graphics()
+    // ── Hero emblem: shop's sword-in-shield combo (same as the popup) ──
+    // Blue heater shield as backdrop, red medieval sword on top centred over
+    // the boss. Scales chosen so the emblem fits between the divider above
+    // (y ≈ -25) and the WIP padlock / status strip below (y ≈ +24).
     const ex = 0
     const ey = -2
 
-    // Shield silhouette (background of emblem)
-    emblem.fillStyle(palette.borderInner, 0.18)
-    emblem.beginPath()
-    emblem.moveTo(ex - 15, ey - 14)
-    emblem.lineTo(ex + 15, ey - 14)
-    emblem.lineTo(ex + 15, ey + 2)
-    emblem.lineTo(ex, ey + 17)
-    emblem.lineTo(ex - 15, ey + 2)
-    emblem.closePath()
-    emblem.fillPath()
-    emblem.lineStyle(1.4, palette.accent, 0.7)
-    emblem.beginPath()
-    emblem.moveTo(ex - 15, ey - 14)
-    emblem.lineTo(ex + 15, ey - 14)
-    emblem.lineTo(ex + 15, ey + 2)
-    emblem.lineTo(ex, ey + 17)
-    emblem.lineTo(ex - 15, ey + 2)
-    emblem.closePath()
-    emblem.strokePath()
-
-    // Crossed swords (X) over the shield — two strokes for blade+hilt
-    // Left-leaning blade (NW → SE)
-    emblem.lineStyle(2.8, palette.accent, 0.95)
-    emblem.lineBetween(ex - 11, ey - 10, ex + 11, ey + 8)
-    // Right-leaning blade (NE → SW)
-    emblem.lineBetween(ex + 11, ey - 10, ex - 11, ey + 8)
-    // Crossguards (small horizontal nubs at hilt ends)
-    emblem.lineStyle(2.0, palette.accent, 0.85)
-    emblem.lineBetween(ex - 13, ey - 9, ex - 8, ey - 11)   // upper-left hilt
-    emblem.lineBetween(ex + 13, ey - 9, ex + 8, ey - 11)   // upper-right hilt
-    // Pommels
-    emblem.fillStyle(palette.accent, 0.95)
-    emblem.fillCircle(ex - 11, ey - 10, 1.4)
-    emblem.fillCircle(ex + 11, ey - 10, 1.4)
-
-    container.add(emblem)
-
-    // Emblem glow (only when unlocked)
     if (available) {
-      const emblemGlow = this.add.circle(ex, ey, 22, palette.aura, 0.15)
-      container.addAt(emblemGlow, 3)
+      const emblemGlow = this.add.circle(ex, ey, 22, ACCENT_C, 0)
+      container.add(emblemGlow)
       this.tweens.add({
         targets: emblemGlow,
         alpha: { from: 0.08, to: 0.28 },
@@ -836,12 +798,20 @@ export default class LobbyScene extends Phaser.Scene {
       })
     }
 
+    // Blue shield (defense) — backdrop layer
+    const shieldGfx = this.add.graphics()
+    drawShieldIcon(shieldGfx, ex, ey, DEFENSE_C, 0.85)
+    container.add(shieldGfx)
+    // Red sword (attack) — sits on top, slightly smaller, anchored 2 px
+    // below the shield boss so the crossguard reads as a "joining" point.
+    const swordGfx = this.add.graphics()
+    drawSwordIcon(swordGfx, ex, ey - 1, ATTACK_C, 0.55)
+    container.add(swordGfx)
+
     // ── Padlock-only "WIP" indicator below the emblem ──
-    // Sits between the shield emblem (ends at y ≈ +19) and the bottom
-    // status strip (starts at y ≈ +44). No text, no pill background — the
-    // "DISPONÍVEL EM BREVE" message lives in the strip below; the padlock
-    // here is a quiet visual cue that the feature isn't yet interactive.
-    // Glyph is drawn ~2× the pill-version size for legibility on its own.
+    // Glyph drawn at the same vertical level as before; coloured amber so it
+    // matches the dual-theme accent (and not the red/blue identities — those
+    // belong to the action stripes/halos).
     if (!available) {
       const lockGfx = this.add.graphics()
       const lkX = 0
@@ -850,11 +820,11 @@ export default class LobbyScene extends Phaser.Scene {
       const BODY_W    = 12
       const BODY_H    = 10
 
-      lockGfx.lineStyle(2, palette.accent, 0.9)
+      lockGfx.lineStyle(2, ACCENT_C, 0.9)
       lockGfx.beginPath()
       lockGfx.arc(lkX, lkY - BODY_H / 2, SHACKLE_R, Math.PI, 0, false)
       lockGfx.strokePath()
-      lockGfx.fillStyle(palette.accent, 0.9)
+      lockGfx.fillStyle(ACCENT_C, 0.9)
       lockGfx.fillRoundedRect(lkX - BODY_W / 2, lkY - BODY_H / 2, BODY_W, BODY_H, 1.5)
       lockGfx.fillStyle(0x000000, 0.55)
       lockGfx.fillCircle(lkX, lkY, 1.3)
@@ -862,27 +832,30 @@ export default class LobbyScene extends Phaser.Scene {
     }
     // Unlocked: no center indicator — the bottom strip carries the cue.
 
-    // ── Bottom strip: status indicator (mirrors XP bar slot in BattlePass) ──
+    // ── Bottom strip: status indicator ──
     const stripText = available
       ? t('scenes.lobby.offline.available-status')
       : t('scenes.lobby.offline.locked-status')
-    const stripY = btnH / 2 - 16
+    const stripY = btnH / 2 - 22
     const stripW = btnW - 32
     const stripBgY = stripY - 9
     const stripBgH = 18
 
     const stripGfx = this.add.graphics()
-    stripGfx.fillStyle(0x10141d, 0.85)
+    stripGfx.fillStyle(NEUTRAL_DEEP, 0.85)
     stripGfx.fillRoundedRect(-stripW / 2, stripBgY, stripW, stripBgH, stripBgH / 2)
-    stripGfx.lineStyle(1, palette.borderInner, 0.4)
+    stripGfx.lineStyle(1, ACCENT_C, 0.4)
     stripGfx.strokeRoundedRect(-stripW / 2, stripBgY, stripW, stripBgH, stripBgH / 2)
     container.add(stripGfx)
 
     container.add(this.add.text(0, stripY, stripText, {
       fontFamily: fontFamily.body, fontSize: '11px',
-      color: palette.accentHex, fontStyle: '700',
-      shadow: { offsetX: 0, offsetY: 1, color: palette.shadowDeep, blur: 3, fill: true },
+      color: ACCENT_HEX, fontStyle: '700',
+      shadow: { offsetX: 0, offsetY: 1, color: SHADOW_DEEP, blur: 3, fill: true },
     }).setOrigin(0.5).setLetterSpacing(1.6))
+
+    // Suppress "unused" warning when no body text is rendered
+    void TEXT_BODY_HEX
 
     // ── Interaction ──
     const hit = this.add.rectangle(0, 0, btnW, btnH, 0, 0.001)
@@ -890,7 +863,7 @@ export default class LobbyScene extends Phaser.Scene {
     container.add(hit)
 
     const hoverGlow = this.add.graphics()
-    hoverGlow.lineStyle(3, palette.borderInner, 0.85)
+    hoverGlow.lineStyle(3, ACCENT_C, 0.85)
     hoverGlow.strokeRoundedRect(-btnW / 2 - 1, -btnH / 2 - 1, btnW + 2, btnH + 2, S.borderRadiusLarge + 1)
     hoverGlow.setAlpha(0)
     container.add(hoverGlow)
