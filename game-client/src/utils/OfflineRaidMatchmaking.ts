@@ -30,13 +30,18 @@ export interface OfflineRaidTarget {
   ownerName: string
   /** Owner's player level — drives matchmaking proximity. */
   ownerLevel: number
+  /** Whether the owner has the offline-raid mode toggled on. Only
+   *  participating players are returned by `findOfflineRaidTargets`. */
+  participating: boolean
   /** Aggregate team power (sum of unit stats) — secondary sort hint. */
   teamPower: number
   /** Defense rating of the offline team (0–100). Higher = harder raid. */
   defenseStrength: number
   /** When the owner was last online (ms epoch). Older targets give bonus loot. */
   lastSeenAt: number
-  /** Estimated rewards if the raid succeeds. */
+  /** Estimated rewards if the raid succeeds. Note: actual rewards on
+   *  victory are standardised by PlayerData (+1 mastery + 100 gold);
+   *  this estimate is a UI hint only and may differ. */
   rewardEstimate: {
     masteryAttack: number
     masteryDefense: number
@@ -112,24 +117,26 @@ export function buildRaidBattlePayload(
 }
 
 /**
- * Pick offline raid targets at EXACTLY the local player's level.
+ * Pick offline raid targets that match BOTH:
+ *   - same level as the local player (strict equality)
+ *   - have offline-raid participation toggled ON
  *
- * The user's design rule: only fight someone at your own level — nothing
- * close-but-not-equal. If no one matches, the caller surfaces a "no
- * available player at your level" message instead of widening the net.
+ * If no one matches, the caller surfaces a "no available player at your
+ * level" message instead of widening the net.
  *
  * The `levelTolerance` field on the options is accepted for backwards
  * compatibility but ignored — the strict-equality filter takes priority.
  *
- * Mock implementation walks a deterministic synthesized pool. Real
- * implementation will `await fetch('/api/offline-raids/targets?level=N')`
+ * Mock implementation walks a deterministic synthesized pool where ~70%
+ * of entries are flagged participating. Real implementation will
+ * `await fetch('/api/offline-raids/targets?level=N&participating=true')`
  * and map the response to OfflineRaidTarget[].
  */
 export function findOfflineRaidTargets(opts: RaidMatchmakingOptions): OfflineRaidTarget[] {
   const limit = opts.limit ?? 5
   const pool = synthesizePool(opts.localLevel)
   return pool
-    .filter((t) => t.ownerLevel === opts.localLevel)
+    .filter((t) => t.participating && t.ownerLevel === opts.localLevel)
     .sort((a, b) => a.defenseStrength - b.defenseStrength)
     .slice(0, limit)
 }
@@ -179,10 +186,17 @@ function synthesizePool(localLevel: number): OfflineRaidTarget[] {
     const hoursOffline = 1 + Math.round(rand() * 47) // 1..48h offline
     const lastSeenAt = Date.now() - hoursOffline * 3600 * 1000
 
+    // ~70% of the synthesized pool has participation toggled ON.
+    // Off-pool entries simulate players who opted out and should not
+    // appear in matchmaking, mirroring how the real backend will only
+    // return participating accounts.
+    const participating = rand() < 0.7
+
     out.push({
       id: `raid-mock-${i}-${level}`,
       ownerName: `${pick(FANTASY_NAMES)} ${pick(SUFFIXES)}`,
       ownerLevel: level,
+      participating,
       teamPower,
       defenseStrength,
       lastSeenAt,

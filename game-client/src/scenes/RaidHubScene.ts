@@ -167,6 +167,205 @@ export default class RaidHubScene extends Phaser.Scene {
       fontFamily: fontFamily.serif, fontSize: '14px',
       color: fg.secondaryHex, fontStyle: 'italic',
     }).setOrigin(0.5)
+
+    // "Como funciona?" pill — opens a modal listing every raid rule.
+    this._drawHowItWorksCta(W / 2, heroY + 60)
+  }
+
+  private _drawHowItWorksCta(cx: number, cy: number) {
+    const labelStr = t('scenes.raid-hub.rules.cta').toUpperCase()
+    const labelStyle: Phaser.Types.GameObjects.Text.TextStyle = {
+      fontFamily: fontFamily.body, fontSize: '11px',
+      color: '#1a1408', fontStyle: '900',
+    }
+    const tempLabel = this.add.text(-9999, 0, labelStr, labelStyle).setLetterSpacing(1.6)
+    const labelW = tempLabel.width
+    const labelH = tempLabel.height
+    tempLabel.destroy()
+
+    const padX = 14
+    const padY = 6
+    const btnW = labelW + padX * 2
+    const btnH = labelH + padY * 2
+
+    const bg = this.add.graphics()
+    const drawBg = (hover: boolean) => {
+      bg.clear()
+      bg.fillStyle(hover ? 0xfcd34d : accent.primary, 1)
+      bg.fillRoundedRect(cx - btnW / 2, cy - btnH / 2, btnW, btnH, btnH / 2)
+      bg.lineStyle(1, 0x000000, 0.4)
+      bg.strokeRoundedRect(cx - btnW / 2, cy - btnH / 2, btnW, btnH, btnH / 2)
+    }
+    drawBg(false)
+    this.add.text(cx, cy, labelStr, labelStyle).setOrigin(0.5).setLetterSpacing(1.6)
+
+    const hit = this.add.rectangle(cx, cy, btnW, btnH, 0, 0.001)
+      .setInteractive({ useHandCursor: true })
+    hit.on('pointerover', () => drawBg(true))
+    hit.on('pointerout',  () => drawBg(false))
+    hit.on('pointerdown', () => {
+      soundManager.playClick()
+      this._openRulesModal()
+    })
+  }
+
+  private _openRulesModal() {
+    if (this._modalContainer) return
+
+    // Backdrop
+    const dim = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0)
+      .setDepth(200).setInteractive()
+    this.tweens.add({ targets: dim, fillAlpha: 0.78, duration: 180 })
+
+    const modalW = 620
+    const headerH = 68
+    const ruleCount = 5
+    const ruleH = 70
+    const footerH = 18
+    const modalH = headerH + ruleCount * ruleH + footerH
+
+    const container = this.add.container(W / 2, H / 2).setDepth(201).setAlpha(0).setScale(0.92)
+    this._modalContainer = container
+
+    const close = () => {
+      if (!this._modalContainer) return
+      this.tweens.add({ targets: dim, fillAlpha: 0, duration: 140, onComplete: () => dim.destroy() })
+      this.tweens.add({
+        targets: container, alpha: 0, scaleX: 0.92, scaleY: 0.92, duration: 140,
+        onComplete: () => { container.destroy(); this._modalContainer = null },
+      })
+    }
+    dim.on('pointerdown', close)
+
+    // Body bg
+    const bg = this.add.graphics()
+    bg.fillStyle(0x000000, 0.55)
+    bg.fillRoundedRect(-modalW / 2 + 4, -modalH / 2 + 8, modalW, modalH, radii.lg)
+    bg.fillStyle(NEUTRAL_BASE, 0.985)
+    bg.fillRoundedRect(-modalW / 2, -modalH / 2, modalW, modalH, radii.lg)
+    bg.lineStyle(1.5, accent.primary, 0.6)
+    bg.strokeRoundedRect(-modalW / 2, -modalH / 2, modalW, modalH, radii.lg)
+    // Top accent stripe
+    bg.fillStyle(accent.primary, 0.7)
+    bg.fillRoundedRect(-modalW / 2 + 8, -modalH / 2 + 6, modalW - 16, 3,
+      { tl: 1.5, tr: 1.5, bl: 0, br: 0 })
+    container.add(bg)
+
+    // Header
+    container.add(this.add.text(0, -modalH / 2 + 28,
+      t('scenes.raid-hub.rules.title').toUpperCase(), {
+        fontFamily: fontFamily.display, fontSize: typeScale.h2,
+        color: accent.primaryHex, fontStyle: '700',
+      }).setOrigin(0.5).setLetterSpacing(3))
+    container.add(this.add.text(0, -modalH / 2 + 50,
+      t('scenes.raid-hub.rules.subtitle'), {
+        fontFamily: fontFamily.serif, fontSize: '13px',
+        color: fg.tertiaryHex, fontStyle: 'italic',
+      }).setOrigin(0.5))
+
+    // Close X
+    const xCx = modalW / 2 - 22
+    const xCy = -modalH / 2 + 22
+    const xBg = this.add.graphics()
+    xBg.fillStyle(0x000000, 0.55)
+    xBg.fillCircle(xCx, xCy, 12)
+    xBg.lineStyle(1, fg.tertiary, 0.55)
+    xBg.strokeCircle(xCx, xCy, 12)
+    container.add(xBg)
+    const xGlyph = this.add.graphics()
+    xGlyph.lineStyle(1.5, fg.secondary, 0.95)
+    xGlyph.lineBetween(xCx - 5, xCy - 5, xCx + 5, xCy + 5)
+    xGlyph.lineBetween(xCx + 5, xCy - 5, xCx - 5, xCy + 5)
+    container.add(xGlyph)
+    const xHit = this.add.rectangle(xCx, xCy, 28, 28, 0, 0.001)
+      .setInteractive({ useHandCursor: true })
+    xHit.on('pointerdown', close)
+    container.add(xHit)
+
+    // Rules — 5 rows. Each: round icon disc on the left + title + body.
+    type Rule = { icon: 'sword' | 'shield' | 'target' | 'scale' | 'gold'; tone: 'attack' | 'defense' | 'gold'; titleKey: string; bodyKey: string }
+    const rules: Rule[] = [
+      { icon: 'target', tone: 'gold',    titleKey: 'scenes.raid-hub.rules.match.title',     bodyKey: 'scenes.raid-hub.rules.match.body' },
+      { icon: 'scale',  tone: 'gold',    titleKey: 'scenes.raid-hub.rules.quota.title',     bodyKey: 'scenes.raid-hub.rules.quota.body' },
+      { icon: 'scale',  tone: 'gold',    titleKey: 'scenes.raid-hub.rules.reciprocity.title', bodyKey: 'scenes.raid-hub.rules.reciprocity.body' },
+      { icon: 'sword',  tone: 'attack',  titleKey: 'scenes.raid-hub.rules.attack-win.title',  bodyKey: 'scenes.raid-hub.rules.attack-win.body' },
+      { icon: 'shield', tone: 'defense', titleKey: 'scenes.raid-hub.rules.defense-win.title', bodyKey: 'scenes.raid-hub.rules.defense-win.body' },
+    ]
+    const listTopY = -modalH / 2 + headerH
+
+    rules.forEach((rule, i) => {
+      const rowY = listTopY + i * ruleH + ruleH / 2
+      const tone = rule.tone === 'attack' ? ATTACK_C
+                : rule.tone === 'defense' ? DEFENSE_C
+                : accent.primary
+      const toneHex = rule.tone === 'attack' ? ATTACK_HEX
+                   : rule.tone === 'defense' ? DEFENSE_HEX
+                   : accent.primaryHex
+
+      // Icon disc
+      const iconCx = -modalW / 2 + 44
+      const iconG = this.add.graphics()
+      iconG.fillStyle(tone, 0.18)
+      iconG.fillCircle(iconCx, rowY, 18)
+      iconG.lineStyle(1.5, tone, 0.7)
+      iconG.strokeCircle(iconCx, rowY, 18)
+      container.add(iconG)
+
+      // Glyph
+      const gly = this.add.graphics()
+      switch (rule.icon) {
+        case 'sword':  drawSwordIcon(gly, iconCx, rowY, tone, 0.5); break
+        case 'shield': drawShieldIcon(gly, iconCx, rowY, tone, 0.55); break
+        case 'target':
+          gly.lineStyle(1.5, tone, 0.95)
+          gly.strokeCircle(iconCx, rowY, 9)
+          gly.strokeCircle(iconCx, rowY, 5)
+          gly.fillStyle(tone, 0.95)
+          gly.fillCircle(iconCx, rowY, 1.8)
+          break
+        case 'scale':
+          gly.lineStyle(1.5, tone, 0.95)
+          gly.lineBetween(iconCx - 8, rowY + 5, iconCx + 8, rowY + 5)
+          gly.lineBetween(iconCx, rowY + 5, iconCx, rowY - 6)
+          gly.lineBetween(iconCx - 6, rowY - 4, iconCx + 6, rowY - 4)
+          gly.lineBetween(iconCx - 6, rowY - 4, iconCx - 6, rowY - 1)
+          gly.lineBetween(iconCx + 6, rowY - 4, iconCx + 6, rowY - 1)
+          break
+        case 'gold':
+          gly.fillStyle(tone, 0.85)
+          gly.fillCircle(iconCx, rowY, 6)
+          gly.lineStyle(1, tone, 0.9)
+          gly.strokeCircle(iconCx, rowY, 6)
+          break
+      }
+      container.add(gly)
+
+      // Title
+      container.add(this.add.text(iconCx + 28, rowY - 12, t(rule.titleKey).toUpperCase(), {
+        fontFamily: fontFamily.body, fontSize: '12px',
+        color: toneHex, fontStyle: '700',
+      }).setOrigin(0, 0.5).setLetterSpacing(1.4))
+
+      // Body — wraps within the remaining width
+      container.add(this.add.text(iconCx + 28, rowY + 10, t(rule.bodyKey), {
+        fontFamily: fontFamily.body, fontSize: '12px',
+        color: '#cbd5e1', fontStyle: '500',
+        wordWrap: { width: modalW - (iconCx + 28 + modalW / 2) - 22 },
+      }).setOrigin(0, 0.5))
+
+      // Subtle row separator (skip the last)
+      if (i < rules.length - 1) {
+        const sep = this.add.graphics()
+        sep.fillStyle(border.subtle, 0.5)
+        sep.fillRect(-modalW / 2 + 32, rowY + ruleH / 2 - 1, modalW - 64, 1)
+        container.add(sep)
+      }
+    })
+
+    this.tweens.add({
+      targets: container, alpha: 1, scaleX: 1, scaleY: 1,
+      duration: 220, ease: 'Back.Out',
+    })
   }
 
   // ── Daily counters ────────────────────────────────────────────────────────

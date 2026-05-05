@@ -779,6 +779,31 @@
       "picker-subtitle": "Selecione um item do seu inventário para ocupar este slot",
       "empty-inventory": "Você não possui fortificações disponíveis.",
       "equip-btn": "Equipar"
+    },
+    "rules": {
+      "cta": "Como funciona?",
+      "title": "Regras das Raids",
+      "subtitle": "Como funciona o modo de ataques offline",
+      "match": {
+        "title": "Mesmo nível",
+        "body": "O matchmaking só encontra jogadores reais do seu nível com a participação ativada — sem bots."
+      },
+      "quota": {
+        "title": "Limites diários",
+        "body": "Até 10 ataques e 10 defesas por dia. Os contadores zeram à meia-noite."
+      },
+      "reciprocity": {
+        "title": "Reciprocidade",
+        "body": "Com participação LIGADA: até 10 defesas/dia. DESLIGADA: você só pode receber tantas defesas quantos ataques fez hoje."
+      },
+      "attack-win": {
+        "title": "Vitória ao atacar",
+        "body": "Ao vencer uma raid: +1 Maestria de Ataque e 100 de ouro roubados do inimigo."
+      },
+      "defense-win": {
+        "title": "Vitória ao defender",
+        "body": "Ao vencer uma defesa: +1 Maestria de Defesa e 100 de ouro recebidos do invasor."
+      }
     }
   }
 }

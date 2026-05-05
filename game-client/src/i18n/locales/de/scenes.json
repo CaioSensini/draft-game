@@ -779,6 +779,31 @@
       "picker-subtitle": "Wähle einen Gegenstand aus dem Inventar für diesen Slot",
       "empty-inventory": "Du besitzt noch keine Befestigungen.",
       "equip-btn": "Ausrüsten"
+    },
+    "rules": {
+      "cta": "Wie es funktioniert",
+      "title": "Raid-Regeln",
+      "subtitle": "Wie der Offline-Raid-Modus funktioniert",
+      "match": {
+        "title": "Gleiche Stufe",
+        "body": "Das Matchmaking findet nur echte Spieler deiner Stufe mit aktivierter Teilnahme — keine Bots."
+      },
+      "quota": {
+        "title": "Tägliche Limits",
+        "body": "Bis zu 10 Angriffe und 10 Verteidigungen pro Tag. Zähler setzen sich um Mitternacht zurück."
+      },
+      "reciprocity": {
+        "title": "Gegenseitigkeit",
+        "body": "Teilnahme AN: bis zu 10 Verteidigungen/Tag. AUS: du erhältst nur so viele Verteidigungen, wie du heute Angriffe gestartet hast."
+      },
+      "attack-win": {
+        "title": "Angriffssieg",
+        "body": "Sieg im Angriff: +1 Angriffsmeisterschaft und 100 Gold vom Gegner gestohlen."
+      },
+      "defense-win": {
+        "title": "Verteidigungssieg",
+        "body": "Sieg in der Verteidigung: +1 Verteidigungsmeisterschaft und 100 Gold vom Angreifer erhalten."
+      }
     }
   }
 }

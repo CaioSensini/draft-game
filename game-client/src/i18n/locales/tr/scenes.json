@@ -782,6 +782,31 @@
       "picker-subtitle": "Bu slotu doldurmak için envanterden bir öğe seçin",
       "empty-inventory": "Henüz tahkimatın yok.",
       "equip-btn": "Donat"
+    },
+    "rules": {
+      "cta": "Nasıl çalışır",
+      "title": "Baskın kuralları",
+      "subtitle": "Çevrimdışı baskın modu nasıl çalışır",
+      "match": {
+        "title": "Aynı seviye",
+        "body": "Eşleşme yalnızca katılımı açık olan, kendi seviyendeki gerçek oyuncuları bulur — bot yok."
+      },
+      "quota": {
+        "title": "Günlük sınırlar",
+        "body": "Günde 10 saldırı ve 10 savunmaya kadar. Sayaçlar gece yarısı sıfırlanır."
+      },
+      "reciprocity": {
+        "title": "Karşılıklılık",
+        "body": "Katılım AÇIK: günde 10 savunmaya kadar. KAPALI: yalnızca bugün yaptığın saldırı kadar savunma alırsın."
+      },
+      "attack-win": {
+        "title": "Saldırı zaferi",
+        "body": "Saldırıda kazan: +1 Saldırı Ustalığı ve düşmandan çalınan 100 altın."
+      },
+      "defense-win": {
+        "title": "Savunma zaferi",
+        "body": "Savunmada kazan: +1 Savunma Ustalığı ve istilacıdan alınan 100 altın."
+      }
     }
   }
 }

@@ -138,6 +138,13 @@ export const RAID_DAILY_LIMIT = 10
 /** Maximum number of fortifications the player can equip at once. */
 export const RAID_EQUIP_SLOTS = 4
 
+/** Standardised gold amount the winner takes from the loser on every
+ *  offline raid resolution (both attack and defense outcomes). */
+export const RAID_VICTORY_GOLD = 100
+
+/** Standardised mastery awarded per raid victory (attack or defense). */
+export const RAID_VICTORY_MASTERY = 1
+
 import { getXPForLevel, getStatMultiplier as _getStatMult, getLevelUpGold, getLevelUpDG, MAX_LEVEL } from '../data/progression'
 import { createDefaultRankedProfile } from '../data/tournaments'
 import { CURRENT_SEASON, PASS_XP_PER_TIER, PASS_MAX_TIER, SEASON_MISSION_CHAINS, SEASON_TIERS, findMissionChain } from '../data/battlePass'
@@ -632,8 +639,20 @@ class PlayerDataManager {
     return Math.max(0, RAID_DAILY_LIMIT - this.getRaid().attacksUsedToday)
   }
 
+  /**
+   * Daily defense cap with reciprocity rule baked in:
+   *   - participation ON  → up to RAID_DAILY_LIMIT defenses/day
+   *   - participation OFF → cap drops to attacksUsedToday so the player
+   *     can only receive as many raids as they've launched (proportional
+   *     fairness when they opt out mid-day).
+   */
+  getRaidDefenseCap(): number {
+    const raid = this.getRaid()
+    return raid.participating ? RAID_DAILY_LIMIT : raid.attacksUsedToday
+  }
+
   getRaidDefensesRemaining(): number {
-    return Math.max(0, RAID_DAILY_LIMIT - this.getRaid().defensesReceivedToday)
+    return Math.max(0, this.getRaidDefenseCap() - this.getRaid().defensesReceivedToday)
   }
 
   setRaidParticipating(value: boolean): void {
@@ -656,14 +675,17 @@ class PlayerDataManager {
 
   /**
    * Record an incoming raid (offline-side, fired when another player
-   * raids the local player). Decrements `remainingDefenses` on every
-   * EQUIPPED fortification regardless of victory; equipped items at 0
-   * are dropped. Inventory items (not equipped) are untouched.
-   * Returns true if the counter was bumped, false if at quota.
+   * raids the local player). Respects the dynamic defense cap from
+   * `getRaidDefenseCap` — when participation is OFF the cap drops to
+   * `attacksUsedToday`, so the local player can only be raided as many
+   * times as they've raided others. Returns false when the cap is
+   * already met. Decrements `remainingDefenses` on every EQUIPPED
+   * fortification regardless of victory; equipped items at 0 are
+   * dropped. Inventory items (not equipped) are untouched.
    */
   recordRaidDefense(): boolean {
     const raid = this.getRaid()
-    if (raid.defensesReceivedToday >= RAID_DAILY_LIMIT) return false
+    if (raid.defensesReceivedToday >= this.getRaidDefenseCap()) return false
     raid.defensesReceivedToday += 1
     raid.ownedFortifications = raid.ownedFortifications
       .map((f) => f.equipped
@@ -734,6 +756,30 @@ class PlayerDataManager {
     target.equipped = false
     this.save()
     return true
+  }
+
+  /**
+   * Standardised offline-raid attack-victory rewards: +1 Attack Mastery
+   * and +100 gold "stolen" from the defending player. Consolidated here
+   * so BattleResultScene + future raid-resolution code share a single
+   * source of truth.
+   */
+  applyRaidAttackVictory(): { masteryGained: number; goldGained: number } {
+    this.addMastery('attack', 1)
+    this.addGold(RAID_VICTORY_GOLD)
+    return { masteryGained: 1, goldGained: RAID_VICTORY_GOLD }
+  }
+
+  /**
+   * Standardised offline-raid defense-victory rewards: +1 Defense
+   * Mastery and +100 gold "received" from the would-be raider. Used
+   * when the offline-defense feature simulates a raid the local player
+   * survived.
+   */
+  applyRaidDefenseVictory(): { masteryGained: number; goldGained: number } {
+    this.addMastery('defense', 1)
+    this.addGold(RAID_VICTORY_GOLD)
+    return { masteryGained: 1, goldGained: RAID_VICTORY_GOLD }
   }
 
   /**
