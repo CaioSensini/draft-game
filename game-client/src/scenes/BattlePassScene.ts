@@ -568,20 +568,34 @@ export default class BattlePassScene extends Phaser.Scene {
 
   /**
    * Small "rail" label drawn on the left side of each track row (GRATIS /
-   * PREMIUM). Rendered as a vertical pill with colored border.
+   * PREMIUM). Rendered as a horizontal pill with colored border.
+   *
+   * Width is now measured from the rendered text instead of being a fixed
+   * 56 px so that locales whose translation overflows (e.g. "PREMIUM" in
+   * pt-BR, "PREMIUM" in en, "BESPLATNO" in ru, "プレミアム" in ja) still
+   * sit cleanly inside the pill with consistent padding.
    */
   private drawTrackLabel(x: number, y: number, text: string, color: number) {
-    const w = 56; const h = 24
+    const PAD_X = 12
+    const MIN_W = 56
+    const h = 24
+
+    const label = this.add.text(0, y, text, {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: `#${color.toString(16).padStart(6, '0')}`,
+      fontStyle: '700',
+    }).setOrigin(0.5).setLetterSpacing(1.6)
+
+    const w = Math.max(MIN_W, Math.ceil(label.width) + PAD_X * 2)
+    label.setX(x + w / 2)
+
     const g = this.add.graphics()
     g.fillStyle(surface.deepest, 0.9)
     g.fillRoundedRect(x, y - h / 2, w, h, radii.sm)
     g.lineStyle(1.5, color, 0.85)
     g.strokeRoundedRect(x, y - h / 2, w, h, radii.sm)
-    this.add.text(x + w / 2, y, text, {
-      fontFamily: fontFamily.body, fontSize: typeScale.meta,
-      color: `#${color.toString(16).padStart(6, '0')}`,
-      fontStyle: '700',
-    }).setOrigin(0.5).setLetterSpacing(1.6)
+    // Re-add the label on top of the pill background.
+    label.setDepth(label.depth + 1)
   }
 
   /**
