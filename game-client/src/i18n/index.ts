@@ -156,16 +156,36 @@ function lookupPath(obj: Bundle | undefined, path: string): string | undefined {
 }
 
 /**
+ * Tracks keys we've already warned about so a single missing key doesn't
+ * spam the console hundreds of times when the same `t(...)` call lives
+ * inside a render loop. Cleared on `setLang` so we re-detect after a swap.
+ */
+const warnedMissingKeys = new Set<string>()
+
+function reportMissingKey(key: string, lang: Lang) {
+  if (warnedMissingKeys.has(key)) return
+  warnedMissingKeys.add(key)
+  // eslint-disable-next-line no-console
+  console.warn(`[i18n] Missing key "${key}" (lang=${lang}). Falling back to raw key in UI.`)
+}
+
+/**
  * Lookup convention: `<namespace>.<dot.path>` where namespace ∈ NAMESPACES.
  * Falls back to PT-BR, then to the raw key (so missing translations are
- * visually obvious during development).
+ * visually obvious during development). When the raw-key fallback fires,
+ * the key is logged once so we can catch new orphans during scene work.
  */
 export function t(key: string, params?: Record<string, string | number>): string {
   const dot = key.indexOf('.')
   if (dot === -1) return key
   const ns = key.slice(0, dot)
   const rest = key.slice(dot + 1)
-  const value = lookupPath(bundle[ns], rest) ?? lookupPath(fallback[ns], rest) ?? key
+  const direct = lookupPath(bundle[ns], rest)
+  const fb = direct == null ? lookupPath(fallback[ns], rest) : undefined
+  const value = direct ?? fb ?? key
+  if (direct == null && fb == null) {
+    reportMissingKey(key, currentLang)
+  }
 
   if (!params) return value
   return value.replace(/\{(\w+)\}/g, (_match, name: string) => {
@@ -185,6 +205,7 @@ export async function setLang(lang: Lang): Promise<void> {
 
   bundle = (lang === DEFAULT_LANG) ? fallback : await loadBundle(lang)
   currentLang = lang
+  warnedMissingKeys.clear()
 
   try {
     if (typeof localStorage !== 'undefined') localStorage.setItem(STORAGE_KEY, lang)
@@ -220,4 +241,5 @@ export function __resetI18nForTests(): void {
   fallback = {}
   listeners.clear()
   initPromise = null
+  warnedMissingKeys.clear()
 }
