@@ -437,7 +437,30 @@
       "line-1": "袭击",
       "line-2": "离线",
       "locked-status": "即将上线",
-      "available-status": "即将推出"
+      "available-status": "即将推出",
+      "popup": {
+        "title": "离线袭击",
+        "subtitle": "在对手沉睡时洗劫他们的王国",
+        "coming-soon": "即将上线",
+        "feature-1": {
+          "title": "猎杀离线队伍",
+          "desc": "自动匹配会为你寻找等级相近的玩家，确保战斗均衡"
+        },
+        "feature-2": {
+          "title": "守卫你的王国",
+          "desc": "当你离线时，你的队伍也可能被其他袭击者攻击"
+        },
+        "feature-3": {
+          "title": "获取熟练度",
+          "desc": "袭击与防御成功将获得攻击熟练度与防御熟练度"
+        },
+        "feature-4": {
+          "title": "兑换奖励",
+          "desc": "在商店用熟练度换取专属道具、皮肤与资源"
+        },
+        "cta": "了解",
+        "preview-line": "预测下一个目标 · 等级{level} · 战力 {power}"
+      }
     },
     "sound-toggle": {
       "on": "声音",

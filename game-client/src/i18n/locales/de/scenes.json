@@ -437,7 +437,30 @@
       "line-1": "RAIDS",
       "line-2": "OFFLINE",
       "locked-status": "BALD VERFÜGBAR",
-      "available-status": "DEMNÄCHST"
+      "available-status": "DEMNÄCHST",
+      "popup": {
+        "title": "OFFLINE-RAIDS",
+        "subtitle": "Plündere Königreiche, während deine Rivalen schlafen",
+        "coming-soon": "DEMNÄCHST",
+        "feature-1": {
+          "title": "JAGE OFFLINE-TEAMS",
+          "desc": "Automatisches Matchmaking findet Spieler in deinem Stufenbereich für faire Kämpfe"
+        },
+        "feature-2": {
+          "title": "VERTEIDIGE DEIN REICH",
+          "desc": "Dein Team kann von anderen Plünderern angegriffen werden, wenn du offline bist"
+        },
+        "feature-3": {
+          "title": "VERDIENE MEISTERSCHAFT",
+          "desc": "Erfolgreiche Raids und Verteidigungen bringen Angriffs- und Verteidigungs-Meisterschaft"
+        },
+        "feature-4": {
+          "title": "TAUSCHE BELOHNUNGEN EIN",
+          "desc": "Gib Meisterschaft im Shop für exklusive Gegenstände, Skins und Ressourcen aus"
+        },
+        "cta": "VERSTANDEN",
+        "preview-line": "Nächstes Ziel · St.{level} · Stärke {power}"
+      }
     },
     "sound-toggle": {
       "on": "Ton",

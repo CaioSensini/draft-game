@@ -10,6 +10,7 @@ import {
 } from '../utils/DesignTokens'
 import { PASS_XP_PER_TIER, PASS_MAX_TIER } from '../data/battlePass'
 import { showPlayModesOverlay, type PlayModesOverlayHandle } from '../utils/PlayModesOverlay'
+import { findOfflineRaidTargets } from '../utils/OfflineRaidMatchmaking'
 import { t } from '../i18n'
 
 // ---- Layout constants (1280 x 720) -----------------------------------------
@@ -923,48 +924,323 @@ export default class LobbyScene extends Phaser.Scene {
     this.overlayOpen = true
     this.overlayElements = []
 
-    const dimBg = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.7)
+    // ── Backdrop ──
+    const dimBg = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0)
       .setDepth(100).setInteractive()
     dimBg.on('pointerdown', () => this.closePlayModes())
     this.overlayElements.push(dimBg)
+    this.tweens.add({ targets: dimBg, fillAlpha: 0.78, duration: 220, ease: 'Quad.Out' })
 
-    const popupContainer = this.add.container(W / 2, H / 2).setDepth(101).setAlpha(0).setScale(0.9)
+    // Soft crimson radial glow behind the modal — sets the raid mood.
+    const radialGlow = this.add.circle(W / 2, H / 2, 360, 0xc23a1f, 0).setDepth(100)
+    this.tweens.add({ targets: radialGlow, alpha: 0.10, duration: 320, ease: 'Quad.Out' })
+    this.overlayElements.push(radialGlow)
+
+    const popupContainer = this.add.container(W / 2, H / 2)
+      .setDepth(101).setAlpha(0).setScale(0.9)
     this.overlayElements.push(popupContainer)
 
-    const popW = 380
-    const popH = 140
+    // ── Modal geometry ──
+    const popW = 540
+    const popH = 540
+    const HW = popW / 2
+    const HH = popH / 2
+
+    // ── Crimson + amber raid palette (matches the lobby tile) ──
+    const RAID = {
+      base:        0x1a0606,
+      gradTop:     0xc23a1f,
+      gradBottom:  0x4a0e0e,
+      borderOuter: 0xc23a1f,
+      borderInner: 0xffa726,
+      accent:      0xffa726,
+      accentHex:   '#ffa726',
+      shadowDeep:  '#3a0808',
+    }
+
+    // ── Modal background — drop shadow + crimson body + double border ──
     const bg = this.add.graphics()
-    bg.fillStyle(surface.panel, 0.98)
-    bg.fillRoundedRect(-popW / 2, -popH / 2, popW, popH, radii.xl)
-    bg.fillStyle(0xffffff, 0.04)
-    bg.fillRoundedRect(-popW / 2 + 2, -popH / 2 + 2, popW - 4, 1,
+    // Drop shadow
+    bg.fillStyle(0x000000, 0.55)
+    bg.fillRoundedRect(-HW + 4, -HH + 8, popW, popH, radii.xl)
+    // Body
+    bg.fillStyle(RAID.base, 0.98)
+    bg.fillRoundedRect(-HW, -HH, popW, popH, radii.xl)
+    // Top crimson wash
+    bg.fillStyle(RAID.gradTop, 0.20)
+    bg.fillRoundedRect(-HW + 2, -HH + 2, popW - 4, popH * 0.45,
       { tl: radii.xl - 2, tr: radii.xl - 2, bl: 0, br: 0 })
-    bg.lineStyle(1, border.default, 1)
-    bg.strokeRoundedRect(-popW / 2, -popH / 2, popW, popH, radii.xl)
+    // Bottom dark wash
+    bg.fillStyle(RAID.gradBottom, 0.30)
+    bg.fillRoundedRect(-HW + 2, 0, popW - 4, HH - 2,
+      { tl: 0, tr: 0, bl: radii.xl - 2, br: radii.xl - 2 })
+    // Top inset highlight
+    bg.fillStyle(0xffffff, 0.05)
+    bg.fillRoundedRect(-HW + 3, -HH + 3, popW - 6, 24,
+      { tl: radii.xl - 3, tr: radii.xl - 3, bl: 0, br: 0 })
+    // Outer ember border
+    bg.lineStyle(2, RAID.borderOuter, 0.95)
+    bg.strokeRoundedRect(-HW, -HH, popW, popH, radii.xl)
+    // Inner amber border
+    bg.lineStyle(1, RAID.borderInner, 0.5)
+    bg.strokeRoundedRect(-HW + 4, -HH + 4, popW - 8, popH - 8, radii.xl - 2)
     popupContainer.add(bg)
 
-    popupContainer.add(this.add.text(0, -26, t('scenes.lobby.offline.popup-eyebrow'), {
-      fontFamily: fontFamily.display, fontSize: typeScale.h2,
-      color:      accent.primaryHex, fontStyle: '700',
-      shadow:     SHADOW.goldGlow,
-    }).setOrigin(0.5))
+    // ── Iron rivets at the four corners (matching the lobby tile) ──
+    const rivetGfx = this.add.graphics()
+    const rivets: Array<[number, number]> = [
+      [-HW + 14, -HH + 14],
+      [ HW - 14, -HH + 14],
+      [-HW + 14,  HH - 14],
+      [ HW - 14,  HH - 14],
+    ]
+    for (const [rx, ry] of rivets) {
+      rivetGfx.fillStyle(RAID.accent, 0.85)
+      rivetGfx.fillCircle(rx, ry, 3)
+      rivetGfx.fillStyle(0xffffff, 0.55)
+      rivetGfx.fillCircle(rx - 0.7, ry - 0.7, 1.2)
+      rivetGfx.fillStyle(0x000000, 0.4)
+      rivetGfx.fillCircle(rx + 0.8, ry + 0.8, 0.6)
+    }
+    popupContainer.add(rivetGfx)
 
-    popupContainer.add(this.add.text(0, 4, t('scenes.lobby.offline.popup-body'), {
-      fontFamily: fontFamily.body, fontSize: typeScale.small,
-      color:      fg.secondaryHex,
-    }).setOrigin(0.5))
+    // ── HERO STRIP (top): crossed-swords on shield emblem + atmosphere ──
+    const heroH = 140
+    const heroTop = -HH + 18
+    const heroCenterY = heroTop + heroH / 2
 
-    // Confirm via UI.buttonPrimary (size sm)
-    const okBtn = UI.buttonPrimary(this, 0, popH / 2 - 28, t('common.actions.ok'), {
-      size: 'sm', w: 100, h: 32, depth: 102,
-      onPress: () => this.closePlayModes(),
+    // Embers floating above the emblem
+    for (let i = 0; i < 8; i++) {
+      const ex = (i - 3.5) * 32 + (Math.random() - 0.5) * 12
+      const ey = heroCenterY - 30 + Math.random() * 12
+      const ember = this.add.circle(ex, ey, 1.6 + Math.random() * 0.6, RAID.accent, 0.35 + Math.random() * 0.3)
+      popupContainer.add(ember)
+      this.tweens.add({
+        targets: ember,
+        y: ey - 30 - Math.random() * 30,
+        alpha: { from: 0.5, to: 0 },
+        duration: 1800 + Math.random() * 1200,
+        repeat: -1, ease: 'Sine.InOut',
+        delay: Math.random() * 1200,
+      })
+    }
+
+    // Hero shield + crossed swords (scaled-up version of the lobby tile emblem)
+    const emblem = this.add.graphics()
+    const ex = 0
+    const ey = heroCenterY
+    // Halo
+    const halo = this.add.circle(ex, ey, 56, RAID.borderOuter, 0)
+    popupContainer.add(halo)
+    this.tweens.add({
+      targets: halo,
+      alpha: { from: 0.05, to: 0.20 },
+      scale: { from: 0.92, to: 1.10 },
+      duration: 1600, yoyo: true, repeat: -1, ease: 'Sine.InOut',
     })
-    popupContainer.add(okBtn.container)
+    // Shield silhouette
+    emblem.fillStyle(RAID.borderInner, 0.16)
+    emblem.beginPath()
+    emblem.moveTo(ex - 38, ey - 36)
+    emblem.lineTo(ex + 38, ey - 36)
+    emblem.lineTo(ex + 38, ey + 6)
+    emblem.lineTo(ex, ey + 44)
+    emblem.lineTo(ex - 38, ey + 6)
+    emblem.closePath()
+    emblem.fillPath()
+    emblem.lineStyle(2, RAID.accent, 0.85)
+    emblem.beginPath()
+    emblem.moveTo(ex - 38, ey - 36)
+    emblem.lineTo(ex + 38, ey - 36)
+    emblem.lineTo(ex + 38, ey + 6)
+    emblem.lineTo(ex, ey + 44)
+    emblem.lineTo(ex - 38, ey + 6)
+    emblem.closePath()
+    emblem.strokePath()
+    // Crossed swords
+    emblem.lineStyle(5, RAID.accent, 0.95)
+    emblem.lineBetween(ex - 26, ey - 24, ex + 26, ey + 22)
+    emblem.lineBetween(ex + 26, ey - 24, ex - 26, ey + 22)
+    // Hilts
+    emblem.lineStyle(3.5, RAID.accent, 0.85)
+    emblem.lineBetween(ex - 31, ey - 21, ex - 21, ey - 27)
+    emblem.lineBetween(ex + 31, ey - 21, ex + 21, ey - 27)
+    // Pommels
+    emblem.fillStyle(RAID.accent, 0.95)
+    emblem.fillCircle(ex - 26, ey - 24, 2.6)
+    emblem.fillCircle(ex + 26, ey - 24, 2.6)
+    popupContainer.add(emblem)
 
+    // ── COMING SOON badge (top-right corner) ──
+    const badgeText = t('scenes.lobby.offline.popup.coming-soon').toUpperCase()
+    const badgeLabel = this.add.text(0, 0, badgeText, {
+      fontFamily: fontFamily.body, fontSize: '11px',
+      color: RAID.accentHex, fontStyle: '700',
+      shadow: { offsetX: 0, offsetY: 1, color: RAID.shadowDeep, blur: 2, fill: true },
+    }).setOrigin(0.5).setLetterSpacing(2)
+    const badgeW = Math.max(96, Math.ceil(badgeLabel.width) + 24)
+    const badgeH = 22
+    const badgeCx = HW - badgeW / 2 - 18
+    const badgeCy = -HH + 36
+    const badgeBg = this.add.graphics()
+    badgeBg.fillStyle(0x10141d, 0.95)
+    badgeBg.fillRoundedRect(badgeCx - badgeW / 2, badgeCy - badgeH / 2, badgeW, badgeH, badgeH / 2)
+    badgeBg.lineStyle(1, RAID.accent, 0.85)
+    badgeBg.strokeRoundedRect(badgeCx - badgeW / 2, badgeCy - badgeH / 2, badgeW, badgeH, badgeH / 2)
+    popupContainer.add(badgeBg)
+    badgeLabel.setPosition(badgeCx, badgeCy)
+    popupContainer.add(badgeLabel)
+    // Pulse the badge so it reads as "live status"
+    this.tweens.add({
+      targets: badgeLabel,
+      alpha: { from: 0.55, to: 1 },
+      duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.InOut',
+    })
+
+    // ── Title (under hero) ──
+    const titleY = heroTop + heroH + 4
+    const titleText = this.add.text(0, titleY,
+      t('scenes.lobby.offline.popup.title'), {
+        fontFamily: fontFamily.display, fontSize: '28px',
+        color: '#ffffff', fontStyle: '900',
+        shadow: { offsetX: 0, offsetY: 2, color: RAID.shadowDeep, blur: 8, fill: true },
+      }).setOrigin(0.5)
+    const anyTitle = titleText as unknown as { setLetterSpacing?: (n: number) => void }
+    if (typeof anyTitle.setLetterSpacing === 'function') anyTitle.setLetterSpacing(3)
+    popupContainer.add(titleText)
+
+    // Subtitle (italic flavour line)
+    popupContainer.add(this.add.text(0, titleY + 28,
+      t('scenes.lobby.offline.popup.subtitle'), {
+        fontFamily: fontFamily.serif, fontSize: '14px',
+        color: '#cbd5e1', fontStyle: 'italic',
+      }).setOrigin(0.5))
+
+    // Decorative divider
+    const divGfx = this.add.graphics()
+    divGfx.fillStyle(RAID.accent, 0.45)
+    divGfx.fillRect(-HW + 60, titleY + 50, popW - 120, 1)
+    popupContainer.add(divGfx)
+
+    // ── Feature rows (icon + title + description) ──
+    const featureKeys: Array<{ icon: 'sword' | 'shield' | 'trophy' | 'gem'; titleKey: string; descKey: string }> = [
+      { icon: 'sword',  titleKey: 'scenes.lobby.offline.popup.feature-1.title', descKey: 'scenes.lobby.offline.popup.feature-1.desc' },
+      { icon: 'shield', titleKey: 'scenes.lobby.offline.popup.feature-2.title', descKey: 'scenes.lobby.offline.popup.feature-2.desc' },
+      { icon: 'trophy', titleKey: 'scenes.lobby.offline.popup.feature-3.title', descKey: 'scenes.lobby.offline.popup.feature-3.desc' },
+      { icon: 'gem',    titleKey: 'scenes.lobby.offline.popup.feature-4.title', descKey: 'scenes.lobby.offline.popup.feature-4.desc' },
+    ]
+    const featuresTopY = titleY + 60
+    const featureRowH = 50
+    featureKeys.forEach((f, i) => {
+      const rowY = featuresTopY + i * featureRowH
+      const iconX = -HW + 36
+
+      // Icon disc background
+      const iconBg = this.add.graphics()
+      iconBg.fillStyle(RAID.borderOuter, 0.18)
+      iconBg.fillCircle(iconX, rowY, 16)
+      iconBg.lineStyle(1, RAID.accent, 0.55)
+      iconBg.strokeCircle(iconX, rowY, 16)
+      popupContainer.add(iconBg)
+
+      // Icon glyph (simple vector — kept inline so we don't need new assets)
+      const iconGfx = this.add.graphics()
+      iconGfx.lineStyle(2, RAID.accent, 0.95)
+      iconGfx.fillStyle(RAID.accent, 0.95)
+      switch (f.icon) {
+        case 'sword':
+          // Diagonal blade with crossguard
+          iconGfx.lineBetween(iconX - 7, rowY + 7, iconX + 7, rowY - 7)
+          iconGfx.lineBetween(iconX - 9, rowY - 1, iconX - 1, rowY - 9)  // hilt
+          iconGfx.fillCircle(iconX - 8, rowY + 8, 1.6)
+          break
+        case 'shield':
+          iconGfx.beginPath()
+          iconGfx.moveTo(iconX - 7, rowY - 7)
+          iconGfx.lineTo(iconX + 7, rowY - 7)
+          iconGfx.lineTo(iconX + 7, rowY + 1)
+          iconGfx.lineTo(iconX, rowY + 8)
+          iconGfx.lineTo(iconX - 7, rowY + 1)
+          iconGfx.closePath()
+          iconGfx.strokePath()
+          iconGfx.lineBetween(iconX, rowY - 4, iconX, rowY + 4)
+          iconGfx.lineBetween(iconX - 4, rowY - 1, iconX + 4, rowY - 1)
+          break
+        case 'trophy':
+          // Cup body
+          iconGfx.lineBetween(iconX - 5, rowY - 7, iconX + 5, rowY - 7)
+          iconGfx.lineBetween(iconX - 5, rowY - 7, iconX - 4, rowY + 2)
+          iconGfx.lineBetween(iconX + 5, rowY - 7, iconX + 4, rowY + 2)
+          iconGfx.lineBetween(iconX - 4, rowY + 2, iconX + 4, rowY + 2)
+          // Stem + base
+          iconGfx.lineBetween(iconX, rowY + 2, iconX, rowY + 6)
+          iconGfx.lineBetween(iconX - 4, rowY + 7, iconX + 4, rowY + 7)
+          // Handles
+          iconGfx.lineBetween(iconX - 5, rowY - 5, iconX - 8, rowY - 2)
+          iconGfx.lineBetween(iconX + 5, rowY - 5, iconX + 8, rowY - 2)
+          break
+        case 'gem':
+          // Diamond facet
+          iconGfx.beginPath()
+          iconGfx.moveTo(iconX, rowY - 8)
+          iconGfx.lineTo(iconX + 7, rowY - 1)
+          iconGfx.lineTo(iconX, rowY + 8)
+          iconGfx.lineTo(iconX - 7, rowY - 1)
+          iconGfx.closePath()
+          iconGfx.strokePath()
+          iconGfx.lineBetween(iconX - 7, rowY - 1, iconX + 7, rowY - 1)
+          iconGfx.lineBetween(iconX - 3, rowY - 5, iconX + 3, rowY - 5)
+          break
+      }
+      popupContainer.add(iconGfx)
+
+      // Row title
+      popupContainer.add(this.add.text(iconX + 28, rowY - 10, t(f.titleKey), {
+        fontFamily: fontFamily.body, fontSize: '13px',
+        color: RAID.accentHex, fontStyle: '700',
+        shadow: { offsetX: 0, offsetY: 1, color: RAID.shadowDeep, blur: 2, fill: true },
+      }).setOrigin(0, 0.5).setLetterSpacing(1.6))
+
+      // Row description
+      popupContainer.add(this.add.text(iconX + 28, rowY + 8, t(f.descKey), {
+        fontFamily: fontFamily.body, fontSize: '12px',
+        color: '#cbd5e1', fontStyle: '500',
+        wordWrap: { width: popW - (iconX + 28 + 32) - (-iconX + 28) },
+      }).setOrigin(0, 0.5))
+    })
+
+    // ── Preview line — the actual matchmaking pick the player would face ──
+    // Pulls the closest-level mock target so the popup feels concrete instead
+    // of abstract. Hidden if the matchmaking returns no candidates.
+    const previewY = featuresTopY + featureKeys.length * featureRowH + 6
+    const previewTargets = findOfflineRaidTargets({ localLevel: playerData.getLevel(), limit: 1 })
+    if (previewTargets.length > 0) {
+      const target = previewTargets[0]
+      const previewText = t('scenes.lobby.offline.popup.preview-line', {
+        name:  target.ownerName,
+        level: target.ownerLevel,
+        power: target.teamPower,
+      })
+      popupContainer.add(this.add.text(0, previewY, previewText, {
+        fontFamily: fontFamily.mono, fontSize: '11px',
+        color: '#94a3b8', fontStyle: '500',
+      }).setOrigin(0.5).setLetterSpacing(0.8))
+    }
+
+    // ── CTA button (Primary destructive-ish via custom palette) ──
+    const ctaY = HH - 36
+    const cta = UI.buttonPrimary(this, 0, ctaY,
+      t('scenes.lobby.offline.popup.cta'), {
+        size: 'md', w: 200, h: 42, depth: 102,
+        onPress: () => this.closePlayModes(),
+      })
+    popupContainer.add(cta.container)
+
+    // ── Modal entrance animation ──
     this.tweens.add({
       targets: popupContainer,
       alpha: 1, scaleX: 1, scaleY: 1,
-      duration: 200, ease: 'Back.easeOut',
+      duration: 280, ease: 'Back.Out',
     })
   }
 

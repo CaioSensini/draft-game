@@ -437,7 +437,30 @@
       "line-1": "습격",
       "line-2": "오프라인",
       "locked-status": "곧 이용 가능",
-      "available-status": "곧 출시"
+      "available-status": "곧 출시",
+      "popup": {
+        "title": "오프라인 습격",
+        "subtitle": "경쟁자들이 잠든 사이 왕국을 약탈하세요",
+        "coming-soon": "곧 출시",
+        "feature-1": {
+          "title": "오프라인 팀 사냥",
+          "desc": "자동 매치메이킹이 비슷한 레벨의 플레이어를 찾아 균형 잡힌 전투를 제공합니다"
+        },
+        "feature-2": {
+          "title": "왕국을 방어하세요",
+          "desc": "오프라인일 때 다른 습격자가 당신의 팀을 공격할 수 있습니다"
+        },
+        "feature-3": {
+          "title": "숙련도 획득",
+          "desc": "습격과 방어 성공 시 공격·방어 숙련도를 얻습니다"
+        },
+        "feature-4": {
+          "title": "보상으로 교환",
+          "desc": "상점에서 숙련도로 전용 아이템, 스킨, 자원을 교환할 수 있습니다"
+        },
+        "cta": "확인",
+        "preview-line": "다음 대상 예상 · Lv.{level} · 전력 {power}"
+      }
     },
     "sound-toggle": {
       "on": "소리",

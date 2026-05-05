@@ -437,7 +437,30 @@
       "line-1": "レイド",
       "line-2": "オフライン",
       "locked-status": "近日利用可能",
-      "available-status": "近日公開"
+      "available-status": "近日公開",
+      "popup": {
+        "title": "オフラインレイド",
+        "subtitle": "ライバルが眠るうちに王国を略奪せよ",
+        "coming-soon": "近日公開",
+        "feature-1": {
+          "title": "オフラインチームを狩る",
+          "desc": "自動マッチングがあなたに近いレベルのプレイヤーを探し出します"
+        },
+        "feature-2": {
+          "title": "王国を守る",
+          "desc": "あなたが不在の間、チームが他のレイダーに襲われる可能性があります"
+        },
+        "feature-3": {
+          "title": "熟練度を獲得",
+          "desc": "勝利と防衛成功で攻撃熟練度と防御熟練度を入手"
+        },
+        "feature-4": {
+          "title": "報酬と交換",
+          "desc": "熟練度をショップで限定アイテム・スキン・リソースと交換"
+        },
+        "cta": "了解",
+        "preview-line": "次の標的予測 · Lv.{level} · 戦力 {power}"
+      }
     },
     "sound-toggle": {
       "on": "音",
