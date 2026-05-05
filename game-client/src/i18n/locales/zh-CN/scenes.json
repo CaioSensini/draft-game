@@ -732,7 +732,7 @@
     },
     "participating": {
       "title": "加入离线模式",
-      "body": "开启后，你可以攻击其他玩家，也可被其他玩家攻击。"
+      "body": "解锁对离线玩家的攻击，并允许你离线时被攻击。"
     },
     "attack-cta": "立即攻击",
     "attack-disabled-toggle-off": "开启参与才能攻击",

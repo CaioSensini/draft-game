@@ -729,7 +729,7 @@
     },
     "participating": {
       "title": "Participar do modo offline",
-      "body": "Quando ligado, você pode atacar e ser atacado por outros jogadores."
+      "body": "Libera ataques a players offline, e permite ser atacado enquanto estiver offline."
     },
     "attack-cta": "Atacar agora",
     "attack-disabled-toggle-off": "Ative a participação para atacar",

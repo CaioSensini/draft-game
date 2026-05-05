@@ -729,7 +729,7 @@
     },
     "participating": {
       "title": "Join offline raid mode",
-      "body": "When on, you can attack and be attacked by other players."
+      "body": "Unlocks attacks on offline players, and lets you be attacked while you are offline."
     },
     "attack-cta": "Attack now",
     "attack-disabled-toggle-off": "Turn on participation to attack",
