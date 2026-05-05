@@ -362,7 +362,14 @@ export default class BattleResultScene extends Phaser.Scene {
     }
 
     // ── Buttons — already migrated ──
-    const btnY = panelY + panelH / 2 - 46
+    // Sub 9.8: keep at least 64 px between the bottom-most reward element
+    // (xp fraction "X / max XP" line, gold pill, or "Nova skill" chip)
+    // and the action buttons. The previous panelY + panelH/2 - 46 anchor
+    // could put the button row inches below the gold/chip when a skill
+    // drop appeared — the 64 px floor restores breathing room.
+    const minBtnY = currentY + 64
+    const anchoredBtnY = panelY + panelH / 2 - 38
+    const btnY = Math.max(minBtnY, anchoredBtnY)
     const btnDelay = rewardDelay + 200
 
     const playAgainLabel = playerWon
