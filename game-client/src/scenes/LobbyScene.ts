@@ -218,12 +218,8 @@ export default class LobbyScene extends Phaser.Scene {
   // ═══════════════════════════════════════════════════════════════════════════
 
   private drawCentralPlayArea() {
-    // Panel grew 720×365 → 760×400 to occupy the vertical room freed when
-    // the offline-attack tile moved out of the central column into the
-    // right-side portrait card. The title and emblem scale with it for a
-    // proportional bump (no longer feels small in the now-wider canvas).
-    const panelW = 760
-    const panelH = 400
+    const panelW = 720
+    const panelH = 365
     const panelX = W / 2
     const panelY = 85 + panelH / 2
 
@@ -287,25 +283,25 @@ export default class LobbyScene extends Phaser.Scene {
     })
 
     // "JOGAR" title — Cinzel h1 via typeScale, accent.primary + letter-spacing
-    const title = this.add.text(0, -panelH / 2 + 60, t('scenes.lobby.central-play-title'), {
-      fontFamily: fontFamily.display, fontSize: '52px',
+    const title = this.add.text(0, -panelH / 2 + 52, t('scenes.lobby.central-play-title'), {
+      fontFamily: fontFamily.display, fontSize: '44px',
       color:      accent.primaryHex,
       fontStyle:  '900',
       shadow:     SHADOW.goldGlow,
     }).setOrigin(0.5)
     const anyTitle = title as unknown as { setLetterSpacing?: (n: number) => void }
-    if (typeof anyTitle.setLetterSpacing === 'function') anyTitle.setLetterSpacing(4)
+    if (typeof anyTitle.setLetterSpacing === 'function') anyTitle.setLetterSpacing(3.5)
     container.add(title)
 
-    const titleShimmer = UI.shimmer(this, panelX, panelY - panelH / 2 + 60, 260, 60, 4500)
+    const titleShimmer = UI.shimmer(this, panelX, panelY - panelH / 2 + 52, 220, 50, 4500)
     titleShimmer.setDepth(5)
 
     // Crossed swords → Lucide 'swords' icon, gold tint, large
-    const swordsIcon = UI.lucideIcon(this, 'swords', 0, 28, 56, accent.primary)
+    const swordsIcon = UI.lucideIcon(this, 'swords', 0, 22, 48, accent.primary)
     container.add(swordsIcon)
 
     // Swords glow pulse
-    const swordsGlow = this.add.circle(0, 28, 58, accent.primary, 0)
+    const swordsGlow = this.add.circle(0, 22, 50, accent.primary, 0)
     container.addAt(swordsGlow, container.list.indexOf(swordsIcon))
     this.tweens.add({
       targets: swordsGlow,
@@ -316,9 +312,8 @@ export default class LobbyScene extends Phaser.Scene {
       ease: 'Sine.InOut',
     })
 
-    // Subtitle (Manrope body, fg.secondary) — shifted down to stay below
-    // the larger swords icon while remaining inside the panel.
-    const subtitle = this.add.text(0, 108, t('scenes.lobby.central-play-subtitle'), {
+    // Subtitle (Manrope body, fg.secondary)
+    const subtitle = this.add.text(0, 92, t('scenes.lobby.central-play-subtitle'), {
       fontFamily: fontFamily.body, fontSize: typeScale.body,
       color:      fg.secondaryHex,
       fontStyle:  '500',
@@ -390,8 +385,8 @@ export default class LobbyScene extends Phaser.Scene {
     const hasUnclaimed = playerData.hasUnclaimedRewards()
 
     // ── Geometry — mirror drawBottomIconBar() so we hug the first icon ──
-    const stdIconW = 120
-    const stdIconH = 100
+    const stdIconW = 138
+    const stdIconH = 116
     const stdGap = 24
     const stdCount = BOTTOM_ICONS.length
     const stdTotalW = stdCount * stdIconW + (stdCount - 1) * stdGap
@@ -400,8 +395,8 @@ export default class LobbyScene extends Phaser.Scene {
     const centerY = 525 + stdIconH / 2                           // same Y as other icons
 
     // Battle pass button is slightly taller + wider for emphasis
-    const btnW = 150
-    const btnH = 116
+    const btnW = 170
+    const btnH = 132
     const btnLeftGap = 26                                        // gap between this and first icon
     const bx = stdFirstLeftX - btnLeftGap - btnW / 2
     const by = centerY
@@ -650,8 +645,8 @@ export default class LobbyScene extends Phaser.Scene {
     const available = p.level >= 30
 
     // ── Geometry — mirror drawBattlePassButton() so we hug the LAST icon ──
-    const stdIconW = 120
-    const stdIconH = 100
+    const stdIconW = 138
+    const stdIconH = 116
     const stdGap = 24
     const stdCount = BOTTOM_ICONS.length
     const stdTotalW = stdCount * stdIconW + (stdCount - 1) * stdGap
@@ -660,8 +655,8 @@ export default class LobbyScene extends Phaser.Scene {
     const centerY = 525 + stdIconH / 2                              // same Y as other icons
 
     // Same dimensions as the BattlePass button for visual symmetry
-    const btnW = 150
-    const btnH = 116
+    const btnW = 170
+    const btnH = 132
     const btnGap = 26
     const bx = stdLastRightX + btnGap + btnW / 2
     const by = centerY
@@ -1034,8 +1029,8 @@ export default class LobbyScene extends Phaser.Scene {
   // ═══════════════════════════════════════════════════════════════════════════
 
   private drawBottomIconBar() {
-    const iconW = 120
-    const iconH = 100
+    const iconW = 138
+    const iconH = 116
     const gap = 24
     const totalW = BOTTOM_ICONS.length * iconW + (BOTTOM_ICONS.length - 1) * gap
     const startX = (W - totalW) / 2 + iconW / 2
@@ -1073,15 +1068,15 @@ export default class LobbyScene extends Phaser.Scene {
       container.add(accentGfx)
 
       // Subtle glow behind icon
-      const iconGlow = this.add.circle(0, -8, 22, cfg.color, 0.04)
+      const iconGlow = this.add.circle(0, -10, 26, cfg.color, 0.04)
       container.add(iconGlow)
 
       // Draw icon
-      const iconGfx = this.drawBottomNavIcon(cfg.id, 0, -8, 16, cfg.color)
+      const iconGfx = this.drawBottomNavIcon(cfg.id, 0, -10, 20, cfg.color)
       container.add(iconGfx)
 
       // Label — Manrope meta (11/700 uppercase)
-      const label = this.add.text(0, iconH / 2 - 18, t(cfg.labelKey), {
+      const label = this.add.text(0, iconH / 2 - 20, t(cfg.labelKey), {
         fontFamily: fontFamily.body, fontSize: typeScale.meta,
         color:      fg.tertiaryHex, fontStyle: '700',
         shadow:     SHADOW.text,
