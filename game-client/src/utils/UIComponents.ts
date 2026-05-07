@@ -949,8 +949,20 @@ export const UI = {
     }).setOrigin(0, 0.5)
 
     // Footer row 2: NV X + dots (default), or UPAR overlay (when canUpgrade)
+    // ── Progress-dot model ──
+    // Dots represent progress toward the NEXT upgrade. The number of
+    // dots equals the current level; they're empty by default and fill
+    // up as duplicates are acquired. When all `level` dots are filled
+    // (progress >= level), the UPAR overlay appears and replaces this
+    // footer until the player upgrades.
+    //  • Level 1 → 1 dot (fills with 1 duplicate)
+    //  • Level 2 → 2 dots, both empty after upgrade
+    //  • Level 3 → 3 dots, …
+    //  • At max level: render "MAX" badge instead of dots.
     const maxLvl = skill.maxLevel ?? 5
     const row2Y = footerTop + 30
+    const skillProgress = Math.max(0, Math.min(skill.level, skill.progress ?? 0))
+    const isMaxLvl = skill.level >= maxLvl
 
     // Always lay down the level + dots first; the UPAR overlay covers
     // them when present so a single pixel position drives both states.
@@ -961,14 +973,27 @@ export const UI = {
 
     const dotEls: Phaser.GameObjects.GameObject[] = []
     const dotStartX = -hw + 8 + nvText.width + 8
-    const dotGap = 8
-    for (let i = 0; i < maxLvl; i++) {
-      const filled = i < skill.level
-      const dotX = dotStartX + i * dotGap
-      const dot = scene.add.circle(dotX, row2Y, 2.5,
-        filled ? accent.primary : surface.raised, 1)
-      if (!filled) dot.setStrokeStyle(1, border.default, 0.8)
-      dotEls.push(dot)
+    if (isMaxLvl) {
+      // Max-level badge replaces the dot row.
+      const maxBadge = scene.add.text(dotStartX, row2Y, t('common.labels.level-cap-max'), {
+        fontFamily: fontFamily.mono, fontSize: typeScale.meta,
+        color: accent.primaryHex, fontStyle: 'bold',
+      }).setOrigin(0, 0.5)
+      dotEls.push(maxBadge)
+    } else {
+      // dotsToShow = current level. Tighter spacing as level grows so 5
+      // dots still fit inside the footer width budget.
+      const dotsToShow = Math.max(1, skill.level)
+      const dotGap = dotsToShow >= 4 ? 7 : 8
+      const dotR = dotsToShow >= 4 ? 2.2 : 2.5
+      for (let i = 0; i < dotsToShow; i++) {
+        const filled = i < skillProgress
+        const dotX = dotStartX + i * dotGap
+        const dot = scene.add.circle(dotX, row2Y, dotR,
+          filled ? accent.primary : surface.raised, 1)
+        if (!filled) dot.setStrokeStyle(1, border.default, 0.8)
+        dotEls.push(dot)
+      }
     }
 
     // UPAR overlay — appears ON TOP of NV+dots when the skill is ready
