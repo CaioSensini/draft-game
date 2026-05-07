@@ -825,6 +825,27 @@ export default class BattleScene extends Phaser.Scene {
         }
       })
 
+      // ── Push animation ─────────────────────────────────────────────────────
+      // The engine emits UNIT_PUSHED for displacements caused by skill push
+      // effects (Empurrão Real, Colisão Titânica secondary, etc.). The sprite
+      // tweens to the new tile and a quick recoil bob plays on top so the
+      // hit reads. CHARACTER_MOVED handles voluntary moves; pushes use this
+      // listener so the two animations stay distinct.
+      .onAnimation(EventType.UNIT_PUSHED, (e) => {
+        const sprite = this._sprite(e.unitId)
+        if (!sprite) return
+        const { x, y } = _tileCenter(e.toCol, e.toRow)
+        const pushMs = 220 + (e.distanceMoved - 1) * 60   // longer push = longer slide
+        this.tweens.add({
+          targets: sprite.container, x, y,
+          duration: pushMs, ease: 'Quad.Out',
+        })
+        // Visual recoil — slight squash on the inner sprite the moment it lands
+        sprite.animator?.playHop(pushMs)
+        sprite.posText.setText(`(${e.toCol},${e.toRow})`)
+        this._refreshStatusPanels()
+      })
+
       // ── Skill pulse animation ──────────────────────────────────────────────
       .onAnimation(EventType.SKILL_USED, (e) => {
         const casterSprite = this._sprite(e.unitId)

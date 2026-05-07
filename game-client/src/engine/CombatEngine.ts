@@ -62,6 +62,10 @@ export interface ActionSelection {
   attackSkill:  Skill | null
   defenseSkill: Skill | null
   target:       TargetSpec | null
+  /** Optional target spec for defense skills that need explicit target
+   *  (e.g. Cura Suprema, single-target heal). Stored at selection time
+   *  and consumed by _resolveDefenseTargets. */
+  defenseTarget?: TargetSpec | null
   /** Second attack skill — only used when character has doubleAttackNextTurn active. */
   secondAttackSkill?: Skill | null
   /** Target for the second attack skill. */
@@ -294,7 +298,7 @@ export class CombatEngine {
    *   - Character is alive
    *   - Skill is a defense skill and is in the character's hand
    */
-  selectDefense(characterId: string, skill: Skill): Result<void> {
+  selectDefense(characterId: string, skill: Skill, target?: TargetSpec): Result<void> {
     const char = this.battle.getCharacter(characterId)
     if (!char)       return Err(`Character '${characterId}' not found`)
     if (!char.alive) return Err(`${char.name} is dead`)
@@ -312,8 +316,16 @@ export class CombatEngine {
     if (char.isSkillOnCooldown(skill.id, this.battle.round))
       return Err(`'${skill.name}' is on cooldown (${char.skillCooldownRemaining(skill.id, this.battle.round)} turn(s) remaining)`)
 
+    // Single-target defense skills (e.g. Cura Suprema) require an explicit
+    // ally pick — the caller must supply `target` of kind 'character'. All
+    // other targetTypes resolve at execution time.
+    if (skill.targetType === 'single' && (!target || target.kind !== 'character')) {
+      return Err(`'${skill.name}' requires an ally target`)
+    }
+
     const sel = this._getOrCreateSelection(characterId)
     sel.defenseSkill = skill
+    sel.defenseTarget = target ?? null
 
     this.emit({ type: EventType.CARD_SELECTED, unitId: characterId, cardId: skill.id, category: 'defense' })
     return Ok(undefined)
@@ -728,6 +740,17 @@ export class CombatEngine {
 
     switch (skill.targetType) {
       case 'single':
+        // Defense single-target hits ALLIES (e.g. Cura Suprema). Attack
+        // single-target hits ENEMIES. Heal skills additionally exclude
+        // the King — they're heal-immune (Proteção Real passive).
+        if (skill.category === 'defense') {
+          const allies = [char, ...this.battle.alliesOf(char)]
+            .filter((c) => c.alive) as Character[]
+          if (skill.effectType === 'heal' || skill.effectType === 'regen') {
+            return allies.filter((c) => c.role !== 'king')
+          }
+          return allies
+        }
         return this._targeting.getValidUnitTargets(skill, char, this.battle)
       case 'lowest_ally':
         return [char, ...this.battle.alliesOf(char)] as Character[]
@@ -813,7 +836,7 @@ export class CombatEngine {
         if (char.isDefenseSilenced) {
           this.emit({ type: EventType.DEFENSE_SILENCED, unitId: char.id, sourceId: '' })
         } else {
-          this._applyDefenseSkill(char, sel.defenseSkill)
+          this._applyDefenseSkill(char, sel.defenseSkill, sel.defenseTarget ?? null)
         }
         if (this.battle.isOver) break
 
@@ -866,7 +889,7 @@ export class CombatEngine {
         if (char.isDefenseSilenced) {
           this.emit({ type: EventType.DEFENSE_SILENCED, unitId: char.id, sourceId: '' })
         } else {
-          this._applyDefenseSkill(char, sel.defenseSkill)
+          this._applyDefenseSkill(char, sel.defenseSkill, sel.defenseTarget ?? null)
         }
       }
       if (!this.battle.isOver) {
@@ -1232,7 +1255,7 @@ export class CombatEngine {
    *
    * Delegates entirely to the EffectResolver — no switch needed here.
    */
-  private _applyDefenseSkill(char: Character, skill: Skill | null): void {
+  private _applyDefenseSkill(char: Character, skill: Skill | null, target: TargetSpec | null = null): void {
     if (!skill) return
 
     if (skill.cooldownTurns > 0) {
@@ -1300,6 +1323,44 @@ export class CombatEngine {
       // Queue the post-expire HP cost: 15% of base max HP, rounded.
       const hpCost = Math.round(char.baseStats.maxHp * 0.15)
       char.setAdrenalinePenalty(hpCost, buffTicks)
+      return
+    }
+
+    // v3 §6.5 Recuperação Real (lk_d2 / rk_d2). Self-regen 10% max HP
+    // for 2 ticks, exception to Rei's heal-immunity passive. Doc spec:
+    // "Recupera 20% HP max em 2 turnos (10% agora, 10% próximo turno
+    // se não tomar dano)". The "if not taking damage" clause is the
+    // standard regen behaviour (regen cancels on incoming damage in
+    // Character.takeDamage). Catalog stores power=0 because the
+    // magnitude is %-based, not flat.
+    if (skill.id === 'lk_d2' || skill.id === 'rk_d2') {
+      this.emit({
+        type: EventType.SKILL_USED, unitId: char.id, skillId: skill.id,
+        skillName: skill.name, category: 'defense', targetId: char.id,
+      })
+      const tickAmount = Math.round(char.baseStats.maxHp * 0.10)
+      // First tick — heal NOW (bypass king immunity since this is a
+      // self-skill, mirroring Sequência de Socos lifesteal).
+      const healRes = char.heal(tickAmount, { ignoreKingImmunity: true })
+      if (healRes.actual > 0) {
+        this.emit({
+          type:    EventType.HEAL_APPLIED,
+          unitId:  char.id,
+          amount:  healRes.actual,
+          newHp:   char.hp,
+          sourceId: char.id,
+        })
+      }
+      // Second tick comes via the regen effect on the next turn end.
+      // `cancellable=true` so any HP damage between turns kills the
+      // second tick — matches "se não tomar dano" rule from the doc.
+      char.addEffect(new RegenEffect(tickAmount, 1, /* cancellable= */ true))
+      this.emit({
+        type:   EventType.STATUS_APPLIED,
+        unitId: char.id,
+        status: 'regen' as const,
+        value:  tickAmount,
+      })
       return
     }
 
@@ -1441,7 +1502,7 @@ export class CombatEngine {
         type: EventType.SKILL_USED, unitId: char.id, skillId: skill.id,
         skillName: skill.name, category: 'defense', targetId: char.id,
       })
-      const targets = this._resolveDefenseTargets(char, skill)
+      const targets = this._resolveDefenseTargets(char, skill, target)
       for (const t of targets) {
         const ctx: EffectContext = {
           caster: char, target: t, power: 0, rawDamage: 0, round: this.battle.round,
@@ -1467,7 +1528,7 @@ export class CombatEngine {
         type: EventType.SKILL_USED, unitId: char.id, skillId: skill.id,
         skillName: skill.name, category: 'defense', targetId: char.id,
       })
-      const targets = this._resolveDefenseTargets(char, skill)
+      const targets = this._resolveDefenseTargets(char, skill, target)
       for (const t of targets) {
         // v3 says Rei does not receive regen. Skip king targets.
         if (t.role === 'king') continue
@@ -1483,7 +1544,7 @@ export class CombatEngine {
     }
 
     // Collect the list of targets based on targetType
-    const targets = this._resolveDefenseTargets(char, skill)
+    const targets = this._resolveDefenseTargets(char, skill, target)
 
     // Signal to Phaser: this defense skill is now executing (start cast animation)
     this.emit({
@@ -1504,11 +1565,14 @@ export class CombatEngine {
 
       // Follow-up effects applied in array order (e.g. shield + regen, heal + shield).
       // Each entry is dispatched independently. Stops if the target dies mid-sequence.
+      // Secondaries marked with `target: 'caster'` reroute to the caster
+      // — used by self-shield-on-attack skills (Soco Real, Chute Real).
       for (const sec of skill.secondaryEffects) {
-        if (!target.alive) break
-        const secCtx: EffectContext = { ...ctx, power: sec.power, ticks: sec.ticks }
+        if (!target.alive && sec.target !== 'caster') break
+        const secTarget = sec.target === 'caster' ? char : target
+        const secCtx: EffectContext = { ...ctx, target: secTarget, power: sec.power, ticks: sec.ticks }
         const secResult = this.resolver.resolve(sec.effectType, secCtx)
-        this._processResult(char, target, secResult)
+        this._processResult(char, secTarget, secResult)
       }
     }
   }
@@ -1699,10 +1763,26 @@ export class CombatEngine {
    * Resolve the targets for a defensive skill based on its targetType.
    * Defensive area skills are centred on the caster's position and hit allies only.
    */
-  private _resolveDefenseTargets(char: Character, skill: Skill): Character[] {
+  private _resolveDefenseTargets(
+    char: Character,
+    skill: Skill,
+    target: TargetSpec | null = null,
+  ): Character[] {
     switch (skill.targetType) {
       case 'self':
         return [char]
+
+      case 'single': {
+        // Defense single-target (e.g. Cura Suprema). The caller picked
+        // an ally at selection time; honour it. If the chosen ally is
+        // dead by the time the action resolves, fall back to caster
+        // so the skill doesn't go to waste.
+        if (target?.kind === 'character') {
+          const picked = this.battle.getCharacter(target.characterId)
+          if (picked?.alive) return [picked]
+        }
+        return [char]
+      }
 
       case 'lowest_ally': {
         const ally = this.battle.teamOf(char.side).lowestHpCharacter()
@@ -2199,14 +2279,18 @@ export class CombatEngine {
 
     // Follow-up effects (skipped when hit was evaded). Each applies in
     // array order; stops if target dies before all resolve.
+    // Secondaries flagged `target: 'caster'` reroute to the caster
+    // (e.g. self-shield-on-attack patterns).
     if (!result.evaded) {
       for (const sec of skill.secondaryEffects) {
-        if (!target.alive) break
+        const onCaster = sec.target === 'caster'
+        if (!target.alive && !onCaster) break
+        const secTarget = onCaster ? caster : target
         const secCtx: EffectContext = {
-          caster, target, power: sec.power, rawDamage: 0, ticks: sec.ticks, round: this.battle.round,
+          caster, target: secTarget, power: sec.power, rawDamage: 0, ticks: sec.ticks, round: this.battle.round,
         }
         const secResult = this.resolver.resolve(sec.effectType, secCtx)
-        this._processResult(caster, target, secResult)
+        this._processResult(caster, secTarget, secResult)
       }
     }
 

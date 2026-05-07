@@ -247,13 +247,18 @@ describe('King — Attack 1 (sustain)', () => {
 describe('King — Attack 2 (control)', () => {
   const resolver = createDefaultResolver()
 
-  // ── lk_a5 Empurrão Real ────────────────────────────────────────────────────
-  describe('lk_a5 — Empurrão Real (12 dmg line + push 3)', () => {
-    it('catalog entry with line shape', () => {
+  // ── lk_a5 Empurrão Real (refactor: area + secondary push 3) ───────────────
+  describe('lk_a5 — Empurrão Real (12 dmg area + push 3)', () => {
+    it('catalog entry with line shape + push secondary', () => {
       const s = kingSkill('lk_a5')
       expect(s.name).toBe('Empurrão Real')
       expect(s.power).toBe(12)
-      expect(s.effectType).toBe('push')
+      // Refactored from primary `push` to `area` + secondary `push`
+      // so the push distance reads from the secondary's power (3)
+      // instead of being conflated with damage power.
+      expect(s.effectType).toBe('area')
+      expect(s.secondaryEffects?.[0]?.effectType).toBe('push')
+      expect(s.secondaryEffects?.[0]?.power).toBe(3)
       expect(s.areaShape?.type).toBe('line')
     })
 
