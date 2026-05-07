@@ -454,6 +454,13 @@ export interface SecondaryEffectDef {
   readonly power:      number
   /** Duration in rounds. Uses the engine's default when omitted. */
   readonly ticks?:     number
+  /**
+   * Who the secondary lands on. Defaults to 'target' (the same character
+   * the primary hit). Set to 'caster' for self-buffs that ride attack
+   * skills — e.g. Soco Real / Chute Real grant the King a self-shield
+   * after damaging enemies; the secondary must NOT shield the enemies.
+   */
+  readonly target?:    'target' | 'caster'
 }
 
 // ── Definition shape used to construct Skills ─────────────────────────────────

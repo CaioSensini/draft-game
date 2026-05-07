@@ -655,6 +655,15 @@ export class GameController {
     if (!skill) return Err(`Unknown skill '${skillId}'`)
 
     if (skill.category === 'defense') {
+      // Defense single-target (e.g. Cura Suprema) needs an explicit ally
+      // pick — flow mirrors attack-single targeting. Other targetTypes
+      // (self / lowest_ally / all_allies / area centred on caster)
+      // resolve immediately at selection time.
+      if (skill.targetType === 'single') {
+        this._awaitingTarget = { skill, characterId }
+        this._bus.emit({ type: EventType.AWAITING_TARGET, unitId: characterId, skillId, targetMode: 'unit' })
+        return Ok(undefined)
+      }
       const result = this._engine.selectDefense(characterId, skill)
       if (!result.ok) return result
     } else {
@@ -695,7 +704,12 @@ export class GameController {
 
     const { skill, characterId } = this._awaitingTarget
 
-    const result = this._engine.selectAttack(characterId, skill, spec)
+    // Route to the right engine entry depending on category. Defense
+    // single-target skills flow through selectDefense(target); attacks
+    // through selectAttack as before.
+    const result = skill.category === 'defense'
+      ? this._engine.selectDefense(characterId, skill, spec)
+      : this._engine.selectAttack(characterId, skill, spec)
     if (!result.ok) return result
 
     this._awaitingTarget = null
