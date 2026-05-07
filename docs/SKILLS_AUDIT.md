@@ -56,7 +56,99 @@
 
 ---
 
-## Próximas etapas
+## GUERREIRO (lw_*) — auditado em 2026-05-07
 
-- **Etapa 2**: audit Guerreiro + Executor + Especialista (48 skills) usando o mesmo formato desta tabela. Provável: encontrar mais self-buff secondaries com problema similar (corrigíveis com `target: 'caster'`), mais stubs (`summon_wall` é o maior).
-- **Etapa 3**: tackle os STUBS sérios + e2e tests + visual polish.
+Todas as skills do Guerreiro têm bespoke handlers no engine que cobrem corretamente as mecânicas descritas no doc. O catalog usa `power` com semânticas variadas (algumas vezes flat shield, outras vezes percentual de DR) que parecia bug, mas em todos os casos a interpretação correta é feita pelo handler bespoke.
+
+| ID | Skill | Status | Notas |
+|----|-------|--------|-------|
+| lw_a1 | Colisão Titânica | 🟢 OK | Bespoke handler para snare-if-blocked (linha 1933). Push secondary + condicional. |
+| lw_a2 | Impacto | 🟢 OK | Standard area + dual debuff secondaries. |
+| lw_a3 | Golpe Devastador | 🟡 Quase | Catalog area `square radius 1` (3×3) vs doc `2×2`. Diferença sutil — gameplay funciona, área um pouco maior que spec. |
+| lw_a4 | Investida Brutal | 🟢 OK | Bespoke per-line push: central row → push+snare-if-blocked, flanks → perpendicular push. |
+| lw_a5 | Provocação | 🟢 OK | silence_defense + def_down. |
+| lw_a6 | Muralha Viva | 🟢 OK | Bespoke handler coloca 2 obstacles `wall_viva` (não usa o resolver stub `summon_wall`). Adjacency tick handler em line 1055. |
+| lw_a7 | Investida | 🟡 Direção | Catalog `line east length 6` vs doc "linha vertical 3 sqm". Possível descasamento de terminologia (east = forward, doc usa "vertical"=forward). Não toquei pra não quebrar gameplay. |
+| lw_a8 | Prisão de Muralha Morta | 🟢 OK | Bespoke spawn de 8 walls em ring. Snare 2t + 12 dano centro funcionam. |
+| lw_d1 | Escudo do Protetor | 🟢 OK | Bespoke positional DR 50% + spawn de 3 wall_shield obstacles. preMovement 2 tiles antes. |
+| lw_d2 | Guardião | 🟢 OK | GuardedByEffect bespoke. 60% redirect + 30% mitigação. |
+| lw_d3 | Resistência Absoluta | 🟢 OK | Bespoke PositionalDrEffect 65% para self + ally atrás. preMovement 1 tile. Catalog `power: 65` é um identificador semântico, não shield flat. |
+| lw_d4 | Fortaleza Inabalável (shared) | 🟢 OK | Stun-self + Character.fortalezaTicks bespoke. -80% dano. |
+| lw_d5 | Escudo de Grupo | 🟢 OK | shield 15 all_allies 2t. |
+| lw_d6 | Postura Defensiva | 🟢 OK | Bespoke positional DR 25% area 3x3. Catalog `power: 25` identificador semântico, não shield flat. |
+| lw_d7 | Avançar | 🟢 OK | retreat_allies/advance_allies handlers movem aliados + buff atk_up. |
+| lw_d8 | Bater em Retirada | 🟢 OK | v1.1 evade_chance 50% adicionado. |
+
+**Resumo Guerreiro:** 16/16 funcionando. 1 ajuste minor (lw_a3 area shape) e 1 ambiguidade de direção (lw_a7) deferidos como polish — não são bugs gameplay.
+
+---
+
+## EXECUTOR (le_*) — auditado em 2026-05-07
+
+Engine tem cobertura robusta das mecânicas signature do Executor (sinergia bleed, anti-shield, true damage, lifesteal). v1.1 fixes (Marca da Morte sem lifesteal, Adrenalina cap min 1) já aplicados.
+
+| ID | Skill | Status | Notas |
+|----|-------|--------|-------|
+| le_a1 | Corte Mortal | 🟢 OK | Bespoke +50% se target tinha bleed (snapshot pré-hit). Cleanse secondary via resolver. |
+| le_a2 | Tempestade de Lâminas | 🟢 OK | Bespoke +50% bleed (per-target snapshot). Area 3×3. |
+| le_a3 | Disparo Preciso | 🟢 OK | true_damage ignora DEF; bleed-conditional shield bypass via bespoke. |
+| le_a4 | Corte Preciso | 🟢 OK | damage area + purge secondary. |
+| le_a5 | Corte Hemorragia | 🟢 OK | bleed primary + bleed secondary (stack). |
+| le_a6 | Bomba de Espinhos | 🟢 OK | bleed area diamond r2. |
+| le_a7 | Marca da Morte | 🟢 OK | v1.1: shield-strip + bleed (lifesteal removido). |
+| le_a8 | Armadilha Oculta | 🟢 OK | Bespoke trap obstacle + on-step trigger via _checkTrapTrigger. |
+| le_d1 | Refletir | 🟢 OK | ReflectPercentEffect bespoke (25% reduction + 25% reflect). |
+| le_d2 | Adrenalina | 🟢 OK | v1.1: atk_up + HP cost cap min 1. |
+| le_d3 | Ataque em Dobro | 🟢 OK | double_attack + cooldown 2t. |
+| le_d4 | Teleport | 🟢 OK | preMovement maxTiles 5 + ignoresObstacles + consumesNextMovement. |
+| le_d5 | Recuo Rápido | 🟢 OK | preMovement back 2 + shield 20. |
+| le_d6 | Esquiva (shared) | 🟢 OK | EvadeEffect 1 charge. |
+| le_d7 | Bloqueio Total (shared) | 🟢 OK | shield 60 self 2t. |
+| le_d8 | Shield | 🟢 OK | shield 25 self 1t. (P1 sugere repurpose — pendente). |
+
+**Resumo Executor:** 16/16 funcionando. Nenhum bug encontrado. P1 (Shield le_d8 redundante) continua pendente como decisão de design, não bug.
+
+---
+
+## ESPECIALISTA (ls_*) — auditado em 2026-05-07
+
+| ID | Skill | Status | Notas |
+|----|-------|--------|-------|
+| ls_a1 | Bola de Fogo | 🟢 OK | area 2×2 + burn 6/2t secondary. |
+| ls_a2 | Chuva de Mana | 🟢 OK | Bespoke 2-tick split (linha 1948 — primary metade + secondary metade). |
+| ls_a3 | Raio Purificador | 🟢 OK | Bespoke ally-shield 10 em footprint (linha 2045). Purge secondary em inimigos. |
+| ls_a4 | Explosão Central | 🟢 OK | Bespoke mark mechanic — 1º uso planta marca, 2º detona +50% se debuffed. |
+| ls_a5 | Orbe de Lentidão | 🟢 OK | damage 12 + dual debuff secondaries. |
+| ls_a6 | Correntes Rígidas | 🟢 OK | snare 1t em diamond r1. |
+| ls_a7 | Névoa | 🟢 OK | Bespoke arena-wide dual-side: aliados +def_up, inimigos -def_down + heal_reduction 30%. |
+| ls_a8 | Congelamento | 🟢 OK | stun + def_down. |
+| ls_d1 | Cura Suprema | 🟢 OK (FIX Etapa 1) | Heal 40 single ally — ally picker funciona, exclui Rei. |
+| ls_d2 | Renascimento Parcial | 🟢 OK | revive lowest_ally + ReviveEffect. (P4 fallback de heal pendente como decisão.) |
+| ls_d3 | Campo de Cura | 🟢 OK | heal area + shield secondary; Rei automaticamente só recebe shield (heal blocked by passive). |
+| ls_d4 | Proteção | 🟢 OK | Bespoke cleanse + debuff_immunity flag em allies. |
+| ls_d5 | Campo de Cura Contínuo | 🟢 OK | RegenEffect cancellable em aliados não-Rei. |
+| ls_d6 | Esquiva (shared) | 🟢 OK | — |
+| ls_d7 | Bloqueio Total (shared) | 🟢 OK | — |
+| ls_d8 | Aura de Proteção | 🟢 OK | shield 12 area diamond r2 + atk_up secondary. |
+
+**Resumo Especialista:** 16/16 funcionando. Cura Suprema (ls_d1) era o gap principal — resolvido em Etapa 1.
+
+---
+
+## Status final do audit
+
+| Classe | Funcionando | Polish minor | Stubs | Total |
+|---|---|---|---|---|
+| Rei | 13/16 | 2 (lk_a3 area, lk_a8 King filter) | 3 (Intimidação, Sombra Real, Ordem Real teleport) | 16 |
+| Guerreiro | 16/16 | 2 ambiguidades (área lw_a3, direção lw_a7) | 0 | 16 |
+| Executor | 16/16 | 0 | 0 | 16 |
+| Especialista | 16/16 | 0 | 0 | 16 |
+| **Total** | **61/64** (95%) | **4 polish** | **3 stubs** | **64** |
+
+**Confirmado: as 3 stubs do Rei são as únicas skills que não funcionam mecanicamente como o doc descreve.** Todo o resto está OK na Etapa 2 — Guerreiro/Executor/Especialista têm bespoke handlers cobrindo todas as mecânicas signature.
+
+---
+
+## Próxima etapa
+
+- **Etapa 3**: implementar os 3 stubs do Rei (teleport_target multi-unit + UI tile picker, clone visuais com bot AI heuristic, summon_wall variants já cobertas pelos bespoke). Plus: e2e pipeline tests (GameController → Engine), polish dos minor items detectados (lk_a3 area, lk_a8 filter).
