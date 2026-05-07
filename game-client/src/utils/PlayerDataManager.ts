@@ -153,11 +153,36 @@ import type { TierReward, MissionTrackKey } from '../data/battlePass'
 const STORAGE_KEY = 'draft_player_data'
 const DATA_VERSION = 13 // v13: fortifications gain explicit equipped flag
 
+/** Snapshot of player state taken when GOD MODE is enabled, restored on
+ *  toggle off. Persisted to localStorage so a refresh keeps god mode in
+ *  sync. Pre-launch debug feature only — see _GOD_KEY below. */
+interface GodBackup {
+  gold:                 number
+  dg:                   number
+  level:                number
+  xp:                   number
+  attackMastery:        number
+  defenseMastery:       number
+  attackMasteryEarned:  number
+  defenseMasteryEarned: number
+  ownedSkills:          OwnedSkill[]
+}
+
+const _GOD_KEY = 'draft_god_mode_backup'
+
 class PlayerDataManager {
   private data: PlayerData
+  private _godBackup: GodBackup | null = null
 
   constructor() {
     this.data = this.load()
+    // Reload god-mode backup so the toggle survives page reloads.
+    try {
+      const raw = localStorage.getItem(_GOD_KEY)
+      if (raw) this._godBackup = JSON.parse(raw) as GodBackup
+    } catch {
+      /* ignore corrupted backup */
+    }
   }
 
   private load(): PlayerData {
@@ -800,6 +825,7 @@ class PlayerDataManager {
   // -- Economy --
 
   spendGold(amount: number): boolean {
+    if (this._godBackup) return true                  // GOD MODE: free
     if (this.data.gold < amount) return false
     this.data.gold -= amount
     this.save()
@@ -807,10 +833,96 @@ class PlayerDataManager {
   }
 
   spendDG(amount: number): boolean {
+    if (this._godBackup) return true                  // GOD MODE: free
     if (this.data.dg < amount) return false
     this.data.dg -= amount
     this.save()
     return true
+  }
+
+  // -- God mode (debug toggle, removed before launch) --
+
+  /**
+   * Returns whether GOD MODE is currently active. Pre-launch debug-only
+   * feature — gives the player infinite gold + DG + max-level skills +
+   * level 100 for QA convenience. Toggling OFF restores the snapshot
+   * taken when it was turned ON, so the player goes back to exactly
+   * where they were before.
+   */
+  isGodMode(): boolean {
+    return this._godBackup !== null
+  }
+
+  /**
+   * Toggle GOD MODE. When enabling, snapshots gold / dg / level / xp /
+   * mastery / ownedSkills, then overwrites them with maxed values
+   * (gold + dg = 999_999, level = 100, all 64 catalog skills owned at
+   * level 5). When disabling, restores the snapshot.
+   *
+   * The snapshot is mirrored to localStorage so a page refresh does
+   * not lose the player's pre-toggle state.
+   */
+  setGodMode(enabled: boolean): void {
+    if (enabled === this.isGodMode()) return
+    if (enabled) {
+      // Snapshot current state.
+      const snap: GodBackup = {
+        gold:                 this.data.gold,
+        dg:                   this.data.dg,
+        level:                this.data.level,
+        xp:                   this.data.xp,
+        attackMastery:        this.data.attackMastery,
+        defenseMastery:       this.data.defenseMastery,
+        attackMasteryEarned:  this.data.attackMasteryEarned ?? this.data.attackMastery,
+        defenseMasteryEarned: this.data.defenseMasteryEarned ?? this.data.defenseMastery,
+        ownedSkills:          this.data.ownedSkills.map((s) => ({ ...s })),
+      }
+      this._godBackup = snap
+      try { localStorage.setItem(_GOD_KEY, JSON.stringify(snap)) } catch { /* ignore */ }
+      // Apply god values.
+      this.data.gold                 = 999_999
+      this.data.dg                   = 999_999
+      this.data.level                = 100
+      this.data.xp                   = 0
+      this.data.attackMastery        = 9_999
+      this.data.defenseMastery       = 9_999
+      this.data.attackMasteryEarned  = 9_999
+      this.data.defenseMasteryEarned = 9_999
+      this.data.ownedSkills          = this._allSkillsMaxed()
+      this.save()
+    } else if (this._godBackup) {
+      // Restore the snapshot.
+      const b = this._godBackup
+      this.data.gold                 = b.gold
+      this.data.dg                   = b.dg
+      this.data.level                = b.level
+      this.data.xp                   = b.xp
+      this.data.attackMastery        = b.attackMastery
+      this.data.defenseMastery       = b.defenseMastery
+      this.data.attackMasteryEarned  = b.attackMasteryEarned
+      this.data.defenseMasteryEarned = b.defenseMasteryEarned
+      this.data.ownedSkills          = b.ownedSkills
+      this._godBackup = null
+      try { localStorage.removeItem(_GOD_KEY) } catch { /* ignore */ }
+      this.save()
+    }
+  }
+
+  /** Build the full owned-skills list at max level (all 64 catalog
+   *  entries — left + right mirrors), used by setGodMode(true). */
+  private _allSkillsMaxed(): OwnedSkill[] {
+    const classByPrefix: Record<string, string> = {
+      lk: 'king', rk: 'king',
+      lw: 'warrior', rw: 'warrior',
+      le: 'executor', re: 'executor',
+      ls: 'specialist', rs: 'specialist',
+    }
+    return SKILL_CATALOG.map((s) => ({
+      skillId:   s.id,
+      level:     5,
+      progress:  0,
+      unitClass: classByPrefix[s.id.slice(0, 2)] ?? 'specialist',
+    }))
   }
 
   addGold(amount: number): void {
