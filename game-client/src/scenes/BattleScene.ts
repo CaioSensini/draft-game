@@ -2712,7 +2712,16 @@ export default class BattleScene extends Phaser.Scene {
       const hpBarBg = this.add.rectangle(0, half + 4, barW, barH, surface.deepest)
         .setStrokeStyle(1, border.subtle, 0.9)
       const hpBar   = this.add.rectangle(-barW / 2, half + 4, barW, barH, hpStatusColor(1).fill).setOrigin(0, 0.5)
-      const shieldBar = this.add.rectangle(-barW / 2, half + 4, 0, barH, hpState.shield, 0.7).setOrigin(0, 0.5)
+      // LoL-style shield: a SEPARATE grey segment that extends to the
+      // RIGHT of the HP bar (origin 0,0.5 anchored at the HP bar's right
+      // edge) so the player reads "I have extra HP layered on top of my
+      // current HP". Grey colour (0xcccccc) + thin black stroke. Width
+      // grows proportional to shieldAmount/maxHp; at shield=maxHp the
+      // bar visually doubles. When shield is consumed by damage the
+      // tween shrinks it back, matching LoL exactly.
+      const shieldBar = this.add.rectangle(barW / 2, half + 4, 0, barH, 0xcccccc, 0.92)
+        .setOrigin(0, 0.5)
+        .setStrokeStyle(1, 0x000000, 0.5)
 
       // Hidden hpText — kept for interface compatibility
       const hpText = this.add.text(0, -999, '', { fontSize: '1px' }).setVisible(false)
