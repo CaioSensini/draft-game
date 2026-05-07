@@ -1,5 +1,7 @@
 {
-  "_meta": { "lang": "ja" },
+  "_meta": {
+    "lang": "ja"
+  },
   "roles": {
     "specialist": "スペシャリスト",
     "warrior": "戦士",
@@ -19,321 +21,1168 @@
   "ls_a1": {
     "name": "ファイアボール",
     "description": "敵フィールドの2x2範囲に28ダメージ。2ターン6/ターンの燃焼を付与。",
-    "long-description": "スペシャリストが炎の球を敵フィールドに放ち、2x2の正方形範囲に28の物理ダメージを与える。命中した対象は燃焼を受け、2ターン毎ターン6ダメージ。クラスパッシブ「燃焼」がコンボを強化：対象は2ターン受ける回復-30%。標準的な開幕スキル。"
+    "long-description": {
+      "flavor": "O fogo arcano não consome. Ele lembra ao alvo o que é dor.",
+      "detail": "スペシャリストが炎の球を敵フィールドに放ち、2x2の正方形範囲に28の物理ダメージを与える。命中した対象は燃焼を受け、2ターン毎ターン6ダメージ。クラスパッシブ「燃焼」がコンボを強化：対象は2ターン受ける回復-30%。標準的な開幕スキル。",
+      "synergies": "Combine com **Bomba de Espinhos** (Executor aliado) — bleed + burn empilhados aceleram queda. **Orbe de Lentidão** prende inimigos na área para garantir hit.",
+      "counter": "**Proteção** dá imunidade a novos debuffs (anula burn). **Cura Suprema** mitiga DoT (mas Queimação reduz cura em 30%). Posicionamento espalhado anula o AoE.\n\n---"
+    },
+    "type-label": "攻撃(重)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "DANO",
+      "BURN",
+      "DOT"
+    ]
   },
   "ls_a2": {
     "name": "マナの雨",
     "description": "敵フィールドの縦3マスのラインに2回(11+11)で22ダメージ。",
-    "long-description": "スペシャリストが魔力の雨を敵フィールドの縦3マスのラインに召喚。同じ対象に連続2回11ダメージ(計22)。各ヒットは個別に解決 — 盾や回避は対応する一撃のみ吸収。DEF軽減を通常通り通る。"
+    "long-description": {
+      "flavor": "O céu chora. As gotas perfuram o aço.",
+      "detail": "スペシャリストが魔力の雨を敵フィールドの縦3マスのラインに召喚。同じ対象に連続2回11ダメージ(計22)。各ヒットは個別に解決 — 盾や回避は対応する一撃のみ吸収。DEF軽減を通常通り通る。",
+      "synergies": "A divisão em 2 ticks permite quebrar escudos pequenos sem desperdício. Após **Bola de Fogo** (que aplica Queimação), o segundo tick beneficia do debuff.",
+      "counter": "**Esquiva** anula apenas o primeiro tick (segundo passa). Escudos absorvem ticks individualmente. **Teleport** sai da linha vertical entre ticks.\n\n---"
+    },
+    "type-label": "攻撃(重)",
+    "duration-label": "Instantâneo (mas em 2 momentos)",
+    "tags": [
+      "AREA",
+      "DANO",
+      "MULTI-TICK"
+    ]
   },
   "ls_a3": {
     "name": "浄化の光線",
     "description": "ライン上の敵に25ダメージ + 浄化。当たった味方は盾10を獲得。",
-    "long-description": "光の光線がアリーナを横6マスのラインで横断。経路上の各敵に25ダメージとパージ(全アクティブバフ除去)を適用。経路上の味方は10の盾を獲得しダメージなし。バフ積みコンポを無効化する万能スキル。"
+    "long-description": {
+      "flavor": "Um único raio. Para purificar amigos. Para apagar inimigos.",
+      "detail": "光の光線がアリーナを横6マスのラインで横断。経路上の各敵に25ダメージとパージ(全アクティブバフ除去)を適用。経路上の味方は10の盾を獲得しダメージなし。バフ積みコンポを無効化する万能スキル。",
+      "synergies": "Posicione Guerreiro aliado entre o Especialista e o Rei inimigo: dano no Rei + purge + escudo no Guerreiro. Triple-value em uma skill.",
+      "counter": "Posicionar inimigos fora da linha vertical anula. **Esquiva** ou **Fortaleza Inabalável** dos alvos principais reduzem efeito.\n\n---"
+    },
+    "type-label": "攻撃(重)",
+    "duration-label": "1 turno",
+    "tags": [
+      "LINHA",
+      "DANO",
+      "PURGE",
+      "ALIADO-SHIELD"
+    ]
   },
   "ls_a4": {
     "name": "中央爆発",
     "description": "1回目: 対象を刻印(除去不可)。2回目で50ダメージ + デバフ持ちなら+50%。回避と免疫を無視。",
-    "long-description": "2段階スキル。1回目で敵に起爆刻印を付与 — パージ、cleanse、免疫で除去不可の永続刻印。2回目で起爆し50の直接ダメージ。爆発時に対象がデバフを持っていれば+50%(75ダメージ)。回避、盾、免疫を完全無視 — 確定ダメージ。"
+    "long-description": {
+      "flavor": "O alvo é selado. A explosão é certa. O tempo é a única variável.",
+      "detail": "2段階スキル。1回目で敵に起爆刻印を付与 — パージ、cleanse、免疫で除去不可の永続刻印。2回目で起爆し50の直接ダメージ。爆発時に対象がデバフを持っていれば+50%(75ダメージ)。回避、盾、免疫を完全無視 — 確定ダメージ。",
+      "synergies": "Marque o Rei inimigo turno 1 → aplique debuffs (qualquer um) → detone turno 4 = 75 de dano. Combo definitivo. Sinergiza com qualquer DoT do time.",
+      "counter": "**Fortaleza Inabalável** reduz dano da detonação em 80%. Manter alvo marcado livre de debuffs reduz dano em 33%. Pressão constante para matar o Especialista antes da detonação.\n\n---"
+    },
+    "type-label": "攻撃(重)",
+    "duration-label": "",
+    "tags": [
+      "ALVO UNICO",
+      "MARK",
+      "BURST",
+      "SETUP-FINISH"
+    ]
   },
   "ls_a5": {
     "name": "減速の球",
     "description": "3x3範囲に12ダメージ。1ターンdef_down 25% + mov_down 1。",
-    "long-description": "スペシャリストが重力球を放ち3x3範囲で爆発、12ダメージとデバフ2種を全対象に1ターン適用：def_down 25%、mov_down 1。防御セットアップスキル。"
+    "long-description": {
+      "flavor": "O tempo se arrasta. A defesa cede. O exército inteiro hesita.",
+      "detail": "スペシャリストが重力球を放ち3x3範囲で爆発、12ダメージとデバフ2種を全対象に1ターン適用：def_down 25%、mov_down 1。防御セットアップスキル。",
+      "synergies": "Setup ideal para **Tempestade de Lâminas** ou **Investida Brutal** subsequentes — alvos com def reduzida sofrem dano amplificado.",
+      "counter": "**Proteção** (Especialista mesmo) imuniza a debuffs novos. **Bater em Retirada** sai da área. **Avançar** (Guerreiro) pode salvar a equipe pra fora.\n\n---"
+    },
+    "type-label": "攻撃(制御)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "DANO",
+      "DEBUFF",
+      "MOV-DOWN"
+    ]
   },
   "ls_a6": {
     "name": "硬直の鎖",
     "description": "+型(5マス)に10ダメージ。敵を1ターンスネア。",
-    "long-description": "魔法の鎖が地面から十字型(中央+隣接4マス)に噴出、命中した各敵に10ダメージと1ターンのスネアを適用。スネアは移動を阻害するがスキル使用は阻害しない — スタンと異なる。位置取り制御。"
+    "long-description": {
+      "flavor": "Correntes invisíveis. Pés que não se movem. Destinos que se cumprem.",
+      "detail": "魔法の鎖が地面から十字型(中央+隣接4マス)に噴出、命中した各敵に10ダメージと1ターンのスネアを適用。スネアは移動を阻害するがスキル使用は阻害しない — スタンと異なる。位置取り制御。",
+      "synergies": "Setup para skills de área alto dano — inimigos imobilizados não escapam de **Bola de Fogo** ou **Domínio Real**. Combine com **Marca da Morte** para garantir hit do bleed.",
+      "counter": "**Teleport** atravessa snare. **Proteção** imuniza. **Cleanse** remove. Posicionamento que evite formação cruz minimiza alvos.\n\n---"
+    },
+    "type-label": "攻撃(制御)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "DANO",
+      "SNARE"
+    ]
   },
   "ls_a7": {
     "name": "霧",
     "description": "敵アリーナ全域。味方: def_up 15%。敵: def_down 15% + 受ける回復-30%を2ターン。",
-    "long-description": "スペシャリストが2ターン全アリーナを覆う濃霧を召喚。霧の中の味方はDEF+15%。霧の中の敵はDEF-15%、受ける回復-30%(全ソース)。ダメージなしで試合のテンポを変えるフィールドスキル。"
+    "long-description": {
+      "flavor": "A névoa cobre o campo. O reino vê. O inimigo se perde.",
+      "detail": "スペシャリストが2ターン全アリーナを覆う濃霧を召喚。霧の中の味方はDEF+15%。霧の中の敵はDEF-15%、受ける回復-30%(全ソース)。ダメージなしで試合のテンポを変えるフィールドスキル。",
+      "synergies": "Use no início do combate para vantagem prolongada. Combine com **Cura Suprema** (cura aliados protegidos pela névoa) ou **Adrenalina** (Executor amplificado num campo onde inimigos defendem menos).",
+      "counter": "**Proteção** imuniza a debuff. **Cleanse** remove de aliados específicos. Skills de cura ainda funcionam (apenas com -30% de eficiência).\n\n---"
+    },
+    "type-label": "攻撃(制御)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "GLOBAL",
+      "DUAL-USE",
+      "BUFF",
+      "DEBUFF"
+    ]
   },
   "ls_a8": {
     "name": "凍結",
     "description": "18ダメージ + 1ターンスタン + 1ターンdef_down 20%。",
-    "long-description": "集中した氷のパルスが単体に着弾、18ダメージとスタン1ターン+def_down 20%を1ターン付与。スタンは移動とスキル使用の両方を阻害 — ゲーム最強の制御。ピックスキル。"
+    "long-description": {
+      "flavor": "O alvo congela. Por um instante, deixa de ser ameaça.",
+      "detail": "集中した氷のパルスが単体に着弾、18ダメージとスタン1ターン+def_down 20%を1ターン付与。スタンは移動とスキル使用の両方を阻害 — ゲーム最強の制御。ピックスキル。",
+      "synergies": "Coordene com Executor: Congelamento → próximo turno burst combo (Marca da Morte + Corte Mortal). Alvo stunned + def reduzida = 90+ de dano garantido.",
+      "counter": "**Proteção** imuniza. **Esquiva** anula o ataque inicial (e portanto o stun). **Cleanse** remove (mas timing crítico).\n\n---"
+    },
+    "type-label": "攻撃(制御)",
+    "duration-label": "Stun por 1 turno, debuff por 1 turno",
+    "tags": [
+      "ALVO UNICO",
+      "DANO",
+      "STUN",
+      "DEBUFF"
+    ]
   },
   "ls_d1": {
     "name": "至高の治癒",
     "description": "味方1人を35HP回復(王以外)。",
-    "long-description": "スペシャリストが回復のエネルギー波を1人の味方に送り、35HPを即座に回復。王には影響しない — 王の直接回復免疫により。Heal Capに従う。対象が燃焼下なら効果30%減少。"
+    "long-description": {
+      "flavor": "A magia não distingue heróis de simples soldados. Todos voltam a respirar.",
+      "detail": "スペシャリストが回復のエネルギー波を1人の味方に送り、35HPを即座に回復。王には影響しない — 王の直接回復免疫により。Heal Capに従う。対象が燃焼下なら効果30%減少。",
+      "synergies": "Combine com **Aura de Proteção** ou **Campo de Cura** para múltiplos efeitos defensivos. Use atrás de **Escudo do Protetor** (Guerreiro aliado) para garantia.",
+      "counter": "**Queimação** (passiva inimiga) reduz para 28. **Marca da Morte** (Executor inimigo) com bleed mantém pressão. Foco no Especialista o impede de curar.\n\n---"
+    },
+    "type-label": "防御(強)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "ALVO UNICO",
+      "CURA",
+      "RESTRICAO-REI"
+    ]
   },
   "ls_d2": {
     "name": "部分復活",
     "description": "最低HPの味方(王以外)に潜在復活(2ターン)。死亡時に25HPで復活。試合中味方1人につき1回のみ。",
-    "long-description": "スペシャリストが最低HPの味方(王除く)に2ターン続く潜在復活バッファを付与。その期間中に死亡すれば同じマスに25HPで即復活、全デバフとDoTがクリア。各味方は試合中1回のみ復活可能。"
+    "long-description": {
+      "flavor": "Quem cai protegido pelo ritual, retorna sussurrando entre os vivos.",
+      "detail": "スペシャリストが最低HPの味方(王除く)に2ターン続く潜在復活バッファを付与。その期間中に死亡すれば同じマスに25HPで即復活、全デバフとDoTがクリア。各味方は試合中1回のみ復活可能。",
+      "synergies": "Combine com **Escudo do Protetor** (Guerreiro) ou **Resistência Absoluta** — se o aliado sobrevive, recebe heal extra; se morre, revive. Win-win.",
+      "counter": "Foco no Especialista antes do revive ser cast. Skills que evitam dano fatal direto (true damage massivo num turno) podem matar antes do revive ativar (revive ativa em \"dano fatal\", não \"dano dot\").\n\n---"
+    },
+    "type-label": "防御(強)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "ALVO UNICO",
+      "REVIVE",
+      "CONDICIONAL",
+      "1X-PARTIDA"
+    ]
   },
   "ls_d3": {
     "name": "治癒の場",
     "description": "3x3範囲に12HP回復 + 盾10(1ターン)。王は盾のみ。",
-    "long-description": "スペシャリストが3x3範囲に治癒の光の場を生成、12HP回復と10の盾(1ターン)を範囲内全味方に付与。王は盾のみ受ける — 直接回復免疫による。盾は対象あたり累計100HPで上限。"
+    "long-description": {
+      "flavor": "Um instante de paz no meio do caos. Suficiente para mais um golpe.",
+      "detail": "スペシャリストが3x3範囲に治癒の光の場を生成、12HP回復と10の盾(1ターン)を範囲内全味方に付与。王は盾のみ受ける — 直接回復免疫による。盾は対象あたり累計100HPで上限。",
+      "synergies": "Combine com **Aura de Proteção** (também escudo) para defesa empilhada. Use após **Ordem Real** (Rei) para aproveitar a formação concentrada.",
+      "counter": "**Queimação** reduz a cura em 30% (8 HP efetivos). **Bola de Fogo** ou skills de área pegam todos os aliados curados antes que aproveitem.\n\n---"
+    },
+    "type-label": "防御(強)",
+    "duration-label": "1 turno",
+    "tags": [
+      "AREA",
+      "CURA",
+      "ESCUDO",
+      "REI-RESTRICAO-PARCIAL"
+    ]
   },
   "ls_d4": {
     "name": "守護",
     "description": "+型(5マス)。全味方デバフ除去 + 1ターン新デバフ免疫。",
-    "long-description": "十字型(中央+隣接4マス)の範囲cleanse、対象味方の全アクティブデバフ(bleed, burn, poison, stun, snare, silence, def_down, mov_down, atk_down, 刻印)を除去し、1ターン新デバフへの完全免疫を付与。ダメージも回復もなし。"
+    "long-description": {
+      "flavor": "O selo arcano se ergue. Nenhum mal cruza esta linha.",
+      "detail": "十字型(中央+隣接4マス)の範囲cleanse、対象味方の全アクティブデバフ(bleed, burn, poison, stun, snare, silence, def_down, mov_down, atk_down, 刻印)を除去し、1ターン新デバフへの完全免疫を付与。ダメージも回復もなし。",
+      "synergies": "Use antes de momentos críticos (revive, ressurreição, virada). Combine com **Escudo do Protetor** ou **Cura Suprema** para janela invulnerável.",
+      "counter": "Skills de dano direto não são afetadas. **Bola de Fogo** ainda causa dano (apenas o burn é negado). Foco em Especialista antes do cast.\n\n---"
+    },
+    "type-label": "防御(強)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "CLEANSE",
+      "IMUNIDADE"
+    ]
   },
   "ls_d5": {
     "name": "持続治癒の場",
     "description": "3x3範囲に2ターンregen 6HP/ターン。王は受けない。味方がダメージ受けると解除。",
-    "long-description": "静止した再生フィールドが3x3範囲を2ターンカバー。範囲内の各味方は毎ターン6HPのregenを受ける — 王は受けない。場内で何らかのダメージを受けるとそのregenはキャンセル。戦闘後のサステイン。"
+    "long-description": {
+      "flavor": "Onde a magia toca a terra, a vida insiste em florescer.",
+      "detail": "静止した再生フィールドが3x3範囲を2ターンカバー。範囲内の各味方は毎ターン6HPのregenを受ける — 王は受けない。場内で何らかのダメージを受けるとそのregenはキャンセル。戦闘後のサステイン。",
+      "synergies": "Use após **Bater em Retirada** (recolhe equipe em formação segura). Combine com **Aura de Proteção** para escudos absorverem dano e preservar regen.",
+      "counter": "Qualquer dano direto cancela o segundo tick. **Bola de Fogo** inimiga + DoTs garantem cancelamento. **Marca da Morte** com bleed mantém pressão sustentada.\n\n---"
+    },
+    "type-label": "防御(軽)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "AREA",
+      "REGEN",
+      "CONDICIONAL",
+      "REI-RESTRICAO"
+    ]
   },
   "ls_d6": {
     "name": "回避",
     "description": "次ターンの最初の直接攻撃を完全に回避。",
-    "long-description": "スペシャリストが回避姿勢を取り、次ターン受ける最初の直接攻撃を完全に回避。回避は1ヒットのみ吸収して消費。スペシャリスト/処刑者/王の共通カード。"
+    "long-description": {
+      "flavor": "O Rei não bloqueia o golpe. Ele simplesmente não está mais lá.",
+      "detail": "スペシャリストが回避姿勢を取り、次ターン受ける最初の直接攻撃を完全に回避。回避は1ヒットのみ吸収して消費。スペシャリスト/処刑者/王の共通カード。",
+      "synergies": "Use em \"leitura\" do oponente — quando você sabe que o burst vem. Combine com **Sombra Real**: oponente confuso atira em clone, e mesmo se acertar o real, a Esquiva protege.",
+      "counter": "Skills de área (**Bola de Fogo**, **Domínio Real**) ignoram Esquiva — não são \"ataques diretos\". DoTs aplicados anteriormente continuam ticando. Skills compostas com múltiplos hits (**Sequência de Socos**) só perdem o primeiro hit.\n\n---"
+    },
+    "type-label": "防御(軽)",
+    "duration-label": "Até receber 1 ataque ou fim do turno",
+    "tags": [
+      "SELF",
+      "EVADE"
+    ]
   },
   "ls_d7": {
     "name": "完全防御",
     "description": "盾60。砕けるか2ターンまで持続。",
-    "long-description": "キャスターに60HPの盾、完全消費か2ターン経過まで持続。グローバルShield Cap 100HPに従う。スペシャリストと処刑者の共通カード。DoTは盾を貫通してHPに直撃。"
+    "long-description": {
+      "flavor": "Nenhum golpe passa. Nenhuma chance é dada.",
+      "detail": "キャスターに60HPの盾、完全消費か2ターン経過まで持続。グローバルShield Cap 100HPに従う。スペシャリストと処刑者の共通カード。DoTは盾を貫通してHPに直撃。",
+      "synergies": "Use antes de momentos previsíveis de pressão inimiga. Combine com **Aura de Proteção** (Especialista) para ainda mais absorção.",
+      "counter": "**Golpe Devastador** purga o escudo inteiro. **Disparo Preciso** com bleed ativo no alvo ignora escudos. Pressão sustentada por 2-3 turnos esgota o escudo.\n\n---"
+    },
+    "type-label": "防御(軽)",
+    "duration-label": "Até ser totalmente quebrado ou 2 turnos",
+    "tags": [
+      "SELF",
+      "ESCUDO"
+    ]
   },
   "ls_d8": {
     "name": "守護のオーラ",
     "description": "ダイヤr2範囲に盾12 + 1ターンatk_up 10%。",
-    "long-description": "キャスターの周囲半径2のダイヤ型(~13マス)に守護のオーラ。範囲内全味方は12の盾(Shield Cap 100)と1ターンのatk_up 10%を獲得。攻防両用スキル。"
+    "long-description": {
+      "flavor": "A aura do mago. Pequena, mas suficiente.",
+      "detail": "キャスターの周囲半径2のダイヤ型(~13マス)に守護のオーラ。範囲内全味方は12の盾(Shield Cap 100)と1ターンのatk_up 10%を獲得。攻防両用スキル。",
+      "synergies": "Combine com **Cura Suprema** ou **Campo de Cura** para defesa em camadas. **Escudo de Grupo** (Guerreiro aliado) stackável até o cap de 100 HP.",
+      "counter": "**Golpe Devastador** ou **Corte Preciso** purgam buffs e escudo. **Disparo Preciso** com bleed ignora escudo. Skills de área grandes pegam todos protegidos.\n\n---"
+    },
+    "type-label": "防御(軽)",
+    "duration-label": "1 turno",
+    "tags": [
+      "AREA",
+      "ESCUDO",
+      "BUFF"
+    ]
   },
   "lw_a1": {
     "name": "巨人の衝撃",
     "description": "縦6x2の長方形に22ダメージ + 押し出し1マス。ブロックされたらスネア1ターン。",
-    "long-description": "戦士が動く壁のように前進、前方の縦6x2長方形の全敵に22ダメージを与え1マス後方に押し出す。押し出しが壁または他の敵にブロックされれば、その対象は1ターンのスネアを受ける。攻撃的な開幕。"
+    "long-description": {
+      "flavor": "O escudo avança como uma tempestade de aço.",
+      "detail": "戦士が動く壁のように前進、前方の縦6x2長方形の全敵に22ダメージを与え1マス後方に押し出す。押し出しが壁または他の敵にブロックされれば、その対象は1ターンのスネアを受ける。攻撃的な開幕。",
+      "synergies": "Após **Muralha Viva** (Guerreiro aliado), use Colisão Titânica para empurrar inimigos contra a muralha — garantia de snare. Setup ideal para **Investida Brutal** subsequente.",
+      "counter": "**Bater em Retirada** ou **Avançar** podem ajustar posição antes do golpe. Inimigos com `mov_down` ainda sofrem dano mas o snare condicional só ativa contra obstáculos físicos.\n\n---"
+    },
+    "type-label": "攻撃(重)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "DANO",
+      "PUSH",
+      "CONDICIONAL"
+    ]
   },
   "lw_a2": {
     "name": "衝撃",
     "description": "3x3範囲に28ダメージ。1ターンdef_down 18% + mov_down 1。",
-    "long-description": "重い衝撃が対象周囲の3x3範囲で爆発、命中した全対象に28ダメージとデバフ2種を1ターン適用：def_down 18%、mov_down 1。協調的な圧力。"
+    "long-description": {
+      "flavor": "O chão treme. A defesa inimiga começa a rachar.",
+      "detail": "重い衝撃が対象周囲の3x3範囲で爆発、命中した全対象に28ダメージとデバフ2種を1ターン適用：def_down 18%、mov_down 1。協調的な圧力。",
+      "synergies": "Setup perfeito para **Bola de Fogo** ou **Tempestade de Lâminas** no turno seguinte (def reduzida = dano amplificado). Combine com **Provocação** para um turno completo de paralisia ofensiva inimiga.",
+      "counter": "**Bloqueio Total** (60 HP de escudo) absorve a maior parte do dano direto. **Proteção** (Especialista) remove os debuffs aplicados. Posicionamento espalhado reduz o número de alvos.\n\n---"
+    },
+    "type-label": "攻撃(重)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "DANO",
+      "DEBUFF"
+    ]
   },
   "lw_a3": {
     "name": "破壊の一撃",
     "description": "2x2範囲に30ダメージ。バフ除去、命中対象の盾を破壊。",
-    "long-description": "戦士が2x2範囲に巨大な一撃、30ダメージと全命中対象にパージ：全アクティブバフ除去、Shield Capを無視して盾を完全破壊。優れた対バンカースキル。"
+    "long-description": {
+      "flavor": "Cada machado real ignora a falsa proteção.",
+      "detail": "戦士が2x2範囲に巨大な一撃、30ダメージと全命中対象にパージ：全アクティブバフ除去、Shield Capを無視して盾を完全破壊。優れた対バンカースキル。",
+      "synergies": "Combo após **Bater em Retirada** (recolhe aliados) → Golpe Devastador (rompe defesas) → **Avançar** (avança time com buff). Linha completa de virada.",
+      "counter": "**Esquiva** anula completamente. **Fortaleza Inabalável** reduz o dano para 6 (mas o purge ainda ocorre). Inimigos podem evitar empilhar escudos antes da skill ser usada.\n\n---"
+    },
+    "type-label": "攻撃(重)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "AREA",
+      "DANO",
+      "PURGE"
+    ]
   },
   "lw_a4": {
     "name": "獰猛な突進",
     "description": "縦3マスのラインに24ダメージ。中央ライン: 押し出し1 + ブロック時スネア1ターン。上下ライン: 直角に押し出し。",
-    "long-description": "戦士が縦3マスの直線で突進、命中対象に24ダメージ。押し出しはライン別：中央は突進方向に1マス(ブロック時スネア1ターン)、上下は直角に押し出されコリドーが開く。"
+    "long-description": {
+      "flavor": "A vanguarda real avança como um trovão. Nada permanece de pé.",
+      "detail": "戦士が縦3マスの直線で突進、命中対象に24ダメージ。押し出しはライン別：中央は突進方向に1マス(ブロック時スネア1ターン)、上下は直角に押し出されコリドーが開く。",
+      "synergies": "Use depois de **Empurrão Real** (Rei) para acumular reposicionamento. Combine com **Disparo Preciso** (Executor aliado) na linha central — alvo snared = alvo morto.",
+      "counter": "**Teleport** (Executor) ou **Recuo Rápido** evitam a linha. Paredes (**Muralha Viva**) bloqueiam o avanço. Posicionamento espalhado lateralmente diminui o número de hits.\n\n---"
+    },
+    "type-label": "攻撃(重)",
+    "duration-label": "",
+    "tags": [
+      "LINHA",
+      "DANO",
+      "PUSH"
+    ]
   },
   "lw_a5": {
     "name": "挑発",
     "description": "敵1体に10ダメージ + def_down 15% + 1ターンsilence_defense。",
-    "long-description": "戦士が敵1体を挑発、10ダメージとデバフ2種：def_down 15%(1ターン)、silence_defense(1ターン、防御スキル使用阻害)。重いベイトスキル。"
+    "long-description": {
+      "flavor": "Provoque um soldado e ele esquece como se proteger.",
+      "detail": "戦士が敵1体を挑発、10ダメージとデバフ2種：def_down 15%(1ターン)、silence_defense(1ターン、防御スキル使用阻害)。重いベイトスキル。",
+      "synergies": "Coordene com Executor aliado: Provocação no turno X → Corte Mortal no turno X+1 (alvo sem defesa). Combine com **Marca da Morte** para garantir foco da equipe.",
+      "counter": "**Proteção** (Especialista) remove o silence. **Cleanse** ou similar limpa debuffs. Programar dois ataques sequenciais (sem defesa) também esquiva indiretamente.\n\n---"
+    },
+    "type-label": "攻撃(制御)",
+    "duration-label": "",
+    "tags": [
+      "ALVO UNICO",
+      "DANO",
+      "DEBUFF",
+      "SILENCE"
+    ]
   },
   "lw_a6": {
     "name": "生きた壁",
     "description": "敵フィールドに縦2マスの壁、2ターン持続。隣接する敵: def_down 15%、mov_down 1、3ダメージ/ターン。",
-    "long-description": "戦士が敵フィールドに2マスの縦壁を召喚、2ターン持続。壁に隣接する敵はdef_down 15%、mov_down 1、隣接中は毎ターン3ダメージ。壁は2ターン後または任意のatk1で破壊。"
+    "long-description": {
+      "flavor": "Pedra erguida pela vontade. O caminho do inimigo termina aqui.",
+      "detail": "戦士が敵フィールドに2マスの縦壁を召喚、2ターン持続。壁に隣接する敵はdef_down 15%、mov_down 1、隣接中は毎ターン3ダメージ。壁は2ターン後または任意のatk1で破壊。",
+      "synergies": "Combine com **Empurrão Real** ou **Colisão Titânica** para empurrar inimigos contra as paredes (snare garantido). **Investida Brutal** se beneficia de inimigos confinados à linha central.",
+      "counter": "**Golpe Devastador** ou outros ataques de classe podem destruir as paredes (paredes têm HP). **Teleport** atravessa obstáculos. Inimigos podem simplesmente evitar a área debuffada.\n\n---"
+    },
+    "type-label": "攻撃(制御)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "AREA",
+      "MURALHA",
+      "DEBUFF",
+      "DOT"
+    ]
   },
   "lw_a7": {
     "name": "突進",
     "description": "縦3マスのラインに12ダメージ。1ターンdef_down 15% + mov_down 1。",
-    "long-description": "獰猛な突進の軽量版：戦士が縦3マスの直線で前進、命中対象に12ダメージとdef_down 15%、mov_down 1を1ターン付与。押し出しもスネアもなし。"
+    "long-description": {
+      "flavor": "O Guerreiro avança. O inimigo recua... mais devagar.",
+      "detail": "獰猛な突進の軽量版：戦士が縦3マスの直線で前進、命中対象に12ダメージとdef_down 15%、mov_down 1を1ターン付与。押し出しもスネアもなし。",
+      "synergies": "Setup ideal para skills de single-target alto dano da equipe. Combine com **Adrenalina** (Executor aliado) para amplificar dano subsequente.",
+      "counter": "**Esquiva** anula. **Fortaleza Inabalável** reduz dano e debuffs surtem efeito mas com impacto reduzido pelo `def_up` implícito.\n\n---"
+    },
+    "type-label": "攻撃(制御)",
+    "duration-label": "",
+    "tags": [
+      "LINHA",
+      "DANO",
+      "DEBUFF"
+    ]
   },
   "lw_a8": {
     "name": "死壁の監獄",
     "description": "中央に12ダメージ + 周囲に8つの一時壁。中の敵: スネア2ターン。壁は任意のatk1で破壊。",
-    "long-description": "戦士が死壁の監獄を作成：中央マスに12ダメージ、周囲(半径1)に環状に8つの壁を建設。監獄内の敵は2ターンスネア — 移動不可だがスキル使用は可能。監獄壁は脆い。"
+    "long-description": {
+      "flavor": "O reino constrói uma masmorra ao redor do invasor.",
+      "detail": "戦士が死壁の監獄を作成：中央マスに12ダメージ、周囲(半径1)に環状に8つの壁を建設。監獄内の敵は2ターンスネア — 移動不可だがスキル使用は可能。監獄壁は脆い。",
+      "synergies": "Combo executor: prende inimigo → time coordena Marca da Morte + Disparo Preciso. **Bola de Fogo** dentro da cela atinge alvo sem chance de escape.",
+      "counter": "**Teleport** atravessa paredes. Aliados quebrando as paredes liberam o preso (custo: 2 ataques pesados). Inimigos com **Esquiva** ativa na hora do cast podem evitar a captura inicial.\n\n---"
+    },
+    "type-label": "攻撃(制御)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "MURALHA",
+      "DANO",
+      "SNARE"
+    ]
   },
   "lw_d1": {
     "name": "守護者の盾",
     "description": "2マスまで移動 + 前方に縦3マスの盾の壁。後方6マスの長方形の味方: 1ターン-50%ダメージ。",
-    "long-description": "戦士はスキル前に2マスまで移動可能(preMovement)、その後前方に縦3マスの盾の壁を作成。壁の後ろの6x2長方形の全味方は1ターン-50%ダメージ。ピーク防御スキル。"
+    "long-description": {
+      "flavor": "O Guerreiro ergue o escudo. Atrás dele, o reino respira.",
+      "detail": "戦士はスキル前に2マスまで移動可能(preMovement)、その後前方に縦3マスの盾の壁を作成。壁の後ろの6x2長方形の全味方は1ターン-50%ダメージ。ピーク防御スキル。",
+      "synergies": "Use antes de momentos críticos da equipe (curas, revives, regeneração). **Cura Suprema** (Especialista) atrás do escudo é praticamente garantida. **Recuperação Real** (Rei) protegida nunca é interrompida.",
+      "counter": "**Bola de Fogo** e skills de área ignoram a \"frente\" — atingem por cima. **Teleport** posiciona burst diretamente atrás da parede, anulando o ângulo de proteção.\n\n---"
+    },
+    "type-label": "防御(強)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "MURALHA",
+      "BUFF AREA"
+    ]
   },
   "lw_d2": {
     "name": "守護神",
     "description": "味方の被ダメージの60%が戦士に転送、戦士で30%軽減(1ターン)。",
-    "long-description": "戦士が最低HPの味方(王以外)を保護対象としてマーク。1ターン、その味方が受ける全ダメージの60%が戦士に転送、転送ダメージは戦士で追加30%軽減。バーストへの救援スキル。"
+    "long-description": {
+      "flavor": "Em meu peito o golpe pousa. Em minhas costas o reino segue.",
+      "detail": "戦士が最低HPの味方(王以外)を保護対象としてマーク。1ターン、その味方が受ける全ダメージの60%が戦士に転送、転送ダメージは戦士で追加30%軽減。バーストへの救援スキル。",
+      "synergies": "Combine com **Proteção Real** (Rei) e **Protetor** (passiva própria). Em Guerreiro adjacente ao Rei: Proteção Real reduz mais 20% sobre o dano redirecionado. Camadas defensivas formidáveis.",
+      "counter": "Matar o Guerreiro elimina o redirect. **Disparo Preciso** com bleed ignora as reduções (true damage). Skills de área atingem ambos simultaneamente — redirect não os protege.\n\n---"
+    },
+    "type-label": "防御(強)",
+    "duration-label": "1 turno",
+    "tags": [
+      "ALVO UNICO",
+      "BUFF",
+      "DAMAGE-REDIRECT"
+    ]
   },
   "lw_d3": {
     "name": "絶対耐性",
     "description": "戦士+後方の味方: 1ターン-65%ダメージ。前に1マス移動可能。",
-    "long-description": "戦士はスキル前に1マスまで移動可能(preMovement)、その後絶対耐性の構え。1ターン、自身と直後の味方は全ダメージから-65%(true damage含む、既適用DoT除く)。重い吸収スキル。"
+    "long-description": {
+      "flavor": "Onde o Guerreiro firma os pés, dois corações batem em segurança.",
+      "detail": "戦士はスキル前に1マスまで移動可能(preMovement)、その後絶対耐性の構え。1ターン、自身と直後の味方は全ダメージから-65%(true damage含む、既適用DoT除く)。重い吸収スキル。",
+      "synergies": "Combine com **Cura Suprema** ou **Recuperação Real** atrás — proteção quase total durante curas. **Postura Defensiva** stackável para reduções compostas.",
+      "counter": "Skills de área que pegam o lado/frente do Guerreiro ignoram o \"atrás\". **Empurrão Real** ou **Intimidação** quebram a formação posicional. **Disparo Preciso** ainda penetra true damage.\n\n---"
+    },
+    "type-label": "防御(強)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "BUFF",
+      "POSICIONAL"
+    ]
   },
   "lw_d4": {
     "name": "不動の要塞",
     "description": "1ターン受けるダメージ-80%。次の移動ターンに動けない。",
-    "long-description": "戦士が生きた要塞の形態。1ターン全ダメージから-80%(true damage含む)。代償：次の移動ターンに動けず固定。戦士と王の共通カード。"
+    "long-description": {
+      "flavor": "Pés enraizados. Coração de pedra. O Rei se torna a própria muralha.",
+      "detail": "戦士が生きた要塞の形態。1ターン全ダメージから-80%(true damage含む)。代償：次の移動ターンに動けず固定。戦士と王の共通カード。",
+      "synergies": "Combine com **Espírito de Sobrevivência** para virada de jogo. Use ANTES do oponente ativar combos óbvios (ex: Adrenalina visível no Executor inimigo).",
+      "counter": "O Rei imóvel é alvo fácil para reposicionamento — **Intimidação** ou **Empurrão Real** inimigos podem deslocá-lo. **Muralha Viva** pode prendê-lo após o turno.\n\n---"
+    },
+    "type-label": "防御(軽)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "BUFF",
+      "IMOVEL"
+    ]
   },
   "lw_d5": {
     "name": "集団の盾",
     "description": "全味方に2ターン盾15。",
-    "long-description": "戦士が集団盾を配布：4味方全員(自身と王を含む)に15の盾、2ターンまたは破壊まで持続。各盾は独立 — 王も通常通り受ける(回復と異なり)。チーム維持スキル。"
+    "long-description": {
+      "flavor": "Um exército que se protege junto, vence junto.",
+      "detail": "戦士が集団盾を配布：4味方全員(自身と王を含む)に15の盾、2ターンまたは破壊まで持続。各盾は独立 — 王も通常通り受ける(回復と異なり)。チーム維持スキル。",
+      "synergies": "Combo defensivo: **Aura de Proteção** (Especialista) + Escudo de Grupo + **Postura Defensiva** = camadas múltiplas de redução. Use antes de turno previsto de pressão inimiga.",
+      "counter": "**Golpe Devastador** purga em área pequena. **Disparo Preciso** com bleed ativo no alvo ignora escudos. Concentrar burst em um único alvo derrota o spread defensivo.\n\n---"
+    },
+    "type-label": "防御(軽)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "GLOBAL",
+      "ESCUDO"
+    ]
   },
   "lw_d6": {
     "name": "防御姿勢",
     "description": "周囲3x3の味方: 1ターン-25%ダメージ。",
-    "long-description": "戦士が防御姿勢を取る。周囲3x3範囲の味方(自身含む)は1ターン-25%ダメージ。盾も回復もなし — 純粋にダメージ軽減。守護者パッシブ(-15%)と組み合わせ隣接味方は実質-40%。"
+    "long-description": {
+      "flavor": "Pés firmes, escudo erguido, formação fechada.",
+      "detail": "戦士が防御姿勢を取る。周囲3x3範囲の味方(自身含む)は1ターン-25%ダメージ。盾も回復もなし — 純粋にダメージ軽減。守護者パッシブ(-15%)と組み合わせ隣接味方は実質-40%。",
+      "synergies": "Combo com a passiva Protetor (-15%) — aliados adjacentes recebem ambas as reduções multiplicativamente: 0.85 × 0.75 = 0.6375 (efetiva redução de 36%).",
+      "counter": "Forçar o Guerreiro a se afastar dos aliados elimina o buff. Skills de área que ignoram redução percentual (true damage) atravessam.\n\n---"
+    },
+    "type-label": "防御(軽)",
+    "duration-label": "1 turno",
+    "tags": [
+      "AREA",
+      "BUFF"
+    ]
   },
   "lw_d7": {
     "name": "前進",
     "description": "4x4の味方を前に1マス移動。1ターン+1 mov + -10%ダメージ + +10% ATK。",
-    "long-description": "戦士がチームの前進を率いる。周囲4x4の全味方が1マス前(敵フィールドへ)移動、1ターン3つのバフ：+1 mov、被ダメージ-10%、ATK+10%。攻撃的な協調スキル。"
+    "long-description": {
+      "flavor": "O Rei chama. A vanguarda avança. O reino conquista.",
+      "detail": "戦士がチームの前進を率いる。周囲4x4の全味方が1マス前(敵フィールドへ)移動、1ターン3つのバフ：+1 mov、被ダメージ-10%、ATK+10%。攻撃的な協調スキル。",
+      "synergies": "Combo de avanço: Avançar → próximo turno usa **Investida** ou **Colisão Titânica** com aliados em posição de pressão. Setup ideal para tomar o muro inimigo.",
+      "counter": "**Empurrão Real** (Rei inimigo) anula o avanço empurrando todos de volta. **Muralha Viva** bloqueia. Skills de área inimigas pegam todos os aliados agrupados.\n\n---"
+    },
+    "type-label": "防御(軽)",
+    "duration-label": "1 turno",
+    "tags": [
+      "AREA",
+      "BUFF",
+      "MOVIMENTO"
+    ]
   },
   "lw_d8": {
     "name": "撤退",
     "description": "4x4の全味方を後方に1マス移動。次ターン+1 mov + 1ターン-15%ダメージ。",
-    "long-description": "戦士が戦術的撤退を命令。周囲4x4の全味方が1マス後(自陣へ)移動、次ターン+1 mov、1ターン-15%ダメージ。純粋な防御-再配置スキル。"
+    "long-description": {
+      "flavor": "Recuar não é perder. É escolher o próximo terreno.",
+      "detail": "戦士が戦術的撤退を命令。周囲4x4の全味方が1マス後(自陣へ)移動、次ターン+1 mov、1ターン-15%ダメージ。純粋な防御-再配置スキル。",
+      "synergies": "Use após pressão inimiga heavy ou antes de skills de área inimigas previstas. Combine com **Ordem Real** (Rei) ou skills curativas para janela de respiro. O miss chance é especialmente forte contra **Disparo Preciso** (true damage que ignoraria reduções percentuais).",
+      "counter": "Inimigos com `pull` (não temos no jogo atualmente) anulariam. **Investida Brutal** persegue aliados em retirada. Skills de área garantem hit múltiplo — apenas o **primeiro** dano direto tem chance de miss; ataques sequenciais ainda atingem.\n\n---"
+    },
+    "type-label": "防御(強)",
+    "duration-label": "1 turno (buffs)",
+    "tags": [
+      "AREA",
+      "BUFF",
+      "MOVIMENTO",
+      "EVADE"
+    ]
   },
   "le_a1": {
     "name": "致命の一撃",
     "description": "45ダメージ + 対象のデバフ除去。bleedありなら+50%(計67)。",
-    "long-description": "処刑者が単体に正確で致命的な切り込み — 45の直接ダメージとcleanse。一撃時に対象がBleedを持っていればダメージ+50%(計67)。重い処刑スキル。"
+    "long-description": {
+      "flavor": "O Executor identifica feridas abertas e desfere o golpe definitivo.",
+      "detail": "処刑者が単体に正確で致命的な切り込み — 45の直接ダメージとcleanse。一撃時に対象がBleedを持っていればダメージ+50%(計67)。重い処刑スキル。",
+      "synergies": "Aplique **Corte Hemorragia**, **Bomba de Espinhos** ou **Marca da Morte** no turno anterior para garantir bleed → use Corte Mortal para o burst de 67. Combine com **Adrenalina** ativa para 84 de dano (+25% × 67).",
+      "counter": "**Esquiva** anula. **Fortaleza Inabalável** reduz para 13 de dano. **Cleanse** remove o bleed antes do turno do Executor. Manter alvos limpos de DoT é a defesa principal.\n\n---"
+    },
+    "type-label": "攻撃(重)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "ALVO UNICO",
+      "DANO",
+      "PURGE",
+      "SINERGIA-BLEED"
+    ]
   },
   "le_a2": {
     "name": "刃の嵐",
     "description": "3x3範囲に26ダメージ。bleed持ちには+50%。",
-    "long-description": "処刑者が3x3範囲に刃の嵐、命中した全敵に26ダメージ。各対象は被弾時にBleed下なら個別に+50%ダメージ。"
+    "long-description": {
+      "flavor": "Lâminas dançam em todas as direções. Quem sangra, sangra mais.",
+      "detail": "処刑者が3x3範囲に刃の嵐、命中した全敵に26ダメージ。各対象は被弾時にBleed下なら個別に+50%ダメージ。",
+      "synergies": "Use **Bomba de Espinhos** primeiro (aplica bleed em área) → Tempestade de Lâminas no turno seguinte garante triple-amplificação. Em time, **Provocação** (Guerreiro aliado) prepara alvos sem defesa.",
+      "counter": "Posicionamento espalhado anula AoE. **Bater em Retirada** (Guerreiro inimigo) limpa a área. **Cleanse** remove bleeds antes da tempestade.\n\n---"
+    },
+    "type-label": "攻撃(重)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "AREA",
+      "DANO",
+      "SINERGIA-BLEED"
+    ]
   },
   "le_a3": {
     "name": "正確な射撃",
     "description": "30 true damage(DEF無視)。bleed持ちには盾も無視。",
-    "long-description": "処刑者が単体に致命的精密弾 — 30 True Damage、全DEF軽減・パッシブ・%軽減を無視。射撃時にBleedあれば盾も無視。"
+    "long-description": {
+      "flavor": "Não há armadura entre a flecha e o coração marcado.",
+      "detail": "処刑者が単体に致命的精密弾 — 30 True Damage、全DEF軽減・パッシブ・%軽減を無視。射撃時にBleedあれば盾も無視。",
+      "synergies": "Combo definitivo: **Marca da Morte** (aplica bleed) → Disparo Preciso (true damage que ignora escudos). Mesmo Reis com escudos empilhados caem nesta combinação.",
+      "counter": "**Esquiva** ainda funciona (anula o ataque inteiro). **Fortaleza Inabalável** reduz true damage em 80%. **Cleanse** remove bleed para preservar escudos. Posicionamento fora da linha vertical.\n\n---"
+    },
+    "type-label": "攻撃(重)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "ALVO UNICO",
+      "LINHA",
+      "TRUE DAMAGE",
+      "ANTI-SHIELD"
+    ]
   },
   "le_a4": {
     "name": "正確な切り込み",
     "description": "横2マスに22ダメージ + 浄化。",
-    "long-description": "処刑者が横2マスのラインに2連続切り込み、22ダメージと全命中対象にパージ。バフ維持コンポを無効化。"
+    "long-description": {
+      "flavor": "A precisão da lâmina rasga a falsa proteção.",
+      "detail": "処刑者が横2マスのラインに2連続切り込み、22ダメージと全命中対象にパージ。バフ維持コンポを無効化。",
+      "synergies": "Use Corte Preciso → próximo turno Disparo Preciso (alvo sem escudo). Combine com **Provocação** (Guerreiro aliado) para silence_defense + buff cleanse — alvo completamente exposto.",
+      "counter": "**Esquiva** anula. Posicionar-se em diagonal ao Executor evita o cone horizontal. **Aura de Proteção** (Especialista) reaplica buffs.\n\n---"
+    },
+    "type-label": "攻撃(重)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "AREA",
+      "DANO",
+      "PURGE"
+    ]
   },
   "le_a5": {
     "name": "出血の切り込み",
     "description": "横2マスに8ダメージ + 3ターンbleed 4/ターン。再適用で蓄積。",
-    "long-description": "処刑者が横2マスに浅い切り込み、8の初期ダメージとBleed：3ターン毎ターン4ダメージ(計12)。Bleedは盾を無視する物理DoT。出血中の対象に再使用するとBleedがスタック。"
+    "long-description": {
+      "flavor": "Um corte raso. Mas a ferida não para de sangrar.",
+      "detail": "処刑者が横2マスに浅い切り込み、8の初期ダメージとBleed：3ターン毎ターン4ダメージ(計12)。Bleedは盾を無視する物理DoT。出血中の対象に再使用するとBleedがスタック。",
+      "synergies": "Primeira skill em qualquer combo. Use turno 1 → Corte Mortal turno 2. **Marca da Morte** stackável (também aplica bleed mais forte).",
+      "counter": "**Cleanse** ou **Proteção** (Especialista) remove o bleed. **Cura Suprema** mitiga o tick (mas DoT bypass cura, então não totalmente). Manter HP alto reduz pressão do tick.\n\n---"
+    },
+    "type-label": "攻撃(制御)",
+    "duration-label": "3 turnos",
+    "tags": [
+      "AREA",
+      "DANO",
+      "BLEED",
+      "SETUP"
+    ]
   },
   "le_a6": {
     "name": "棘爆弾",
     "description": "ダイヤr2に10ダメージ + 2ターンbleed 5/ターン。",
-    "long-description": "処刑者が半径2のダイヤ型(~13マス)で爆発する棘爆弾を投げる、命中した全対象に10の初期ダメージと2ターン毎ターン5のBleed(計10 DoT)。広範囲bleed適用。"
+    "long-description": {
+      "flavor": "Um arremesso silencioso. Espinhos rasgam pelos quatro lados.",
+      "detail": "処刑者が半径2のダイヤ型(~13マス)で爆発する棘爆弾を投げる、命中した全対象に10の初期ダメージと2ターン毎ターン5のBleed(計10 DoT)。広範囲bleed適用。",
+      "synergies": "Combo perfeito antes de **Tempestade de Lâminas** (Executor mesmo) — todos os atingidos sofrem +50%. **Marca da Morte** complementa no canto traseiro do diamante.",
+      "counter": "**Bater em Retirada** sai da área. **Proteção** dá imunidade a debuffs novos por 1 turno. Posicionamento em fileira evita o formato diamante.\n\n---"
+    },
+    "type-label": "攻撃(制御)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "AREA",
+      "DANO",
+      "BLEED",
+      "SETUP"
+    ]
   },
   "le_a7": {
     "name": "死の刻印",
     "description": "縦8マスに12ダメージ。盾除去(20%をHPで回復)。2ターンbleed 8/ターン。",
-    "long-description": "処刑者が縦の長方形範囲(8マス、深さ4×幅2)に死の刻印を放つ。命中対象に12ダメージ、対象の全盾を除去(処刑者を除去盾の20%分HP回復)、2ターン毎ターン8のBleed(16 DoT)。"
+    "long-description": {
+      "flavor": "Marcado para a morte. O selo silencioso da execução.",
+      "detail": "処刑者が縦の長方形範囲(8マス、深さ4×幅2)に死の刻印を放つ。命中対象に12ダメージ、対象の全盾を除去(処刑者を除去盾の20%分HP回復)、2ターン毎ターン8のBleed(16 DoT)。",
+      "synergies": "Combo \"destruidor de tanks\": Marca da Morte → Disparo Preciso (true damage + ignora escudos restantes). Frente a Reis com escudos empilhados, sequência reduz HP rápido.",
+      "counter": "**Aura de Proteção** ou **Cura Suprema** (Especialista) podem reaplicar escudos perdidos. **Cleanse** remove o bleed, mas o escudo já foi removido (não retorna). Manter inimigos sem escudo até momento crítico minimiza valor da skill.\n\n---"
+    },
+    "type-label": "攻撃(制御)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "LINHA",
+      "DANO",
+      "ANTI-SHIELD",
+      "BLEED"
+    ]
   },
   "le_a8": {
     "name": "隠し罠",
     "description": "マスを武装(占有マス不可)。踏むと: 15ダメージ + スネア1ターン + 3ターンbleed 4/ターン。",
-    "long-description": "処刑者が空マスに見えない罠を設置。発動まで残る。任意の敵がそのマスに入ると爆発：15ダメージ、1ターンスネア、3ターン毎ターン4のBleed。"
+    "long-description": {
+      "flavor": "O caminho mais curto pode ser o último.",
+      "detail": "処刑者が空マスに見えない罠を設置。発動まで残る。任意の敵がそのマスに入ると爆発：15ダメージ、1ターンスネア、3ターン毎ターン4のBleed。",
+      "synergies": "Combine com **Empurrão Real** ou **Colisão Titânica** (aliados) para forçar inimigo na armadilha. **Investida Brutal** empurra alvos pelo mapa em direção a traps pré-posicionadas.",
+      "counter": "Inimigos evitam casas suspeitas (em PvP é leitura). **Teleport** ignora armadilhas (não pisa, atravessa). Forçar inimigo a entrar exige coordenação ofensiva.\n\n---"
+    },
+    "type-label": "攻撃(制御)",
+    "duration-label": "Permanente até ser ativada ou fim de combate",
+    "tags": [
+      "ALVO UNICO",
+      "TRAP",
+      "DANO",
+      "SNARE",
+      "BLEED"
+    ]
   },
   "le_d1": {
     "name": "反射",
     "description": "-25%受けるダメージ + 軽減分を次ターン攻撃者に反射。",
-    "long-description": "1ターン、処刑者は全ダメージから-25%、軽減分を正確に攻撃者に反射。例：40の攻撃→30受け、攻撃者10の反射。複数攻撃者は複数の反射を生成。"
+    "long-description": {
+      "flavor": "O que você tenta tirar, retorna a você.",
+      "detail": "1ターン、処刑者は全ダメージから-25%、軽減分を正確に攻撃者に反射。例：40の攻撃→30受け、攻撃者10の反射。複数攻撃者は複数の反射を生成。",
+      "synergies": "Use quando se espera burst inimigo (visivelmente preparado). Combine com **Adrenalina** para janela ofensiva pós-defesa.",
+      "counter": "Skills que não causam dano direto (`debuff`, `snare`) não são refletidas. **Bola de Fogo** reflete dano original mas o burn aplicado fica. Atacantes podem usar skills via DoT para evitar reflexão.\n\n---"
+    },
+    "type-label": "防御(強)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "BUFF",
+      "REFLECT"
+    ]
   },
   "le_d2": {
     "name": "アドレナリン",
     "description": "2ターン+25% ATK。終了時: 最大HPの15%失う(盾でブロック可能)。",
-    "long-description": "処刑者が極限のアドレナリンモード：2ターン+25% ATK。2ターン目終了時に最大HPの15%を反動ダメージとして受ける(その時点のアクティブ盾でブロック可能)。リスク/報酬スキル。"
+    "long-description": {
+      "flavor": "A força do desespero. O preço da pressa.",
+      "detail": "処刑者が極限のアドレナリンモード：2ターン+25% ATK。2ターン目終了時に最大HPの15%を反動ダメージとして受ける(その時点のアクティブ盾でブロック可能)。リスク/報酬スキル。",
+      "synergies": "Setup mainstream do Executor: Adrenalina → 2 turnos de Corte Mortal/Disparo Preciso amplificados. Combine com **Recuo Rápido** ou **Bloqueio Total** para absorver o tick final.",
+      "counter": "**Desarme** (Rei inimigo) cancela skill no turno 1 da Adrenalina, desperdiçando setup. **Marca da Morte** com bleed durante a janela mantém pressão sobre o Executor já fragilizado.\n\n---"
+    },
+    "type-label": "防御(強)",
+    "duration-label": "2 turnos (buff) + tick final de dano",
+    "tags": [
+      "SELF",
+      "BUFF",
+      "TRADE-OFF"
+    ]
   },
   "le_d3": {
     "name": "二重攻撃",
     "description": "次ターン: atkスキル2、def 0。クールダウン: 2ターン(連続使用不可)。",
-    "long-description": "1ターン(次のターン)、処刑者は1の代わりに2の攻撃スキルを使用可能、ただしそのターンに防御スキル使用不可。2ターンクールダウン。"
+    "long-description": {
+      "flavor": "Dois golpes. Zero defesa. Tudo ou nada.",
+      "detail": "1ターン(次のターン)、処刑者は1の代わりに2の攻撃スキルを使用可能、ただしそのターンに防御スキル使用不可。2ターンクールダウン。",
+      "synergies": "Combo overkill: Ataque em Dobro → próximo turno Marca da Morte (aplica bleed) + Corte Mortal (+50% por bleed = 67) = 79 de dano em um turno só. Útil para finalizar Reis em HP baixo.",
+      "counter": "**Provocação** (Guerreiro inimigo) com silence_defense não ajuda (Executor já não defende). **Bola de Fogo** ou skill de área aproveita a vulnerabilidade total. Burst inimigo no turno do dobro pode matar o Executor.\n\n---"
+    },
+    "type-label": "防御(強)",
+    "duration-label": "",
+    "tags": [
+      "SELF",
+      "OFENSIVO",
+      "COOLDOWN"
+    ]
   },
   "le_d4": {
     "name": "テレポート",
     "description": "5マスまでテレポート。次の移動ターンを消費。",
-    "long-description": "処刑者は半径5の任意マスへ瞬間テレポート、経路上の障害物・壁・ユニットを無視。代償：次の移動ターン消費。極端な戦術的機動。"
+    "long-description": {
+      "flavor": "Está aqui. Está lá. Está em todo lugar.",
+      "detail": "処刑者は半径5の任意マスへ瞬間テレポート、経路上の障害物・壁・ユニットを無視。代償：次の移動ターン消費。極端な戦術的機動。",
+      "synergies": "Posicionamento para ativar **Isolado** (passiva) — teleport longe da equipe = +20% dano. Combine com **Marca da Morte** posicionada em backline inimiga.",
+      "counter": "Inimigos com `mov_down` no Executor têm efeito reduzido (teleport ignora movimento normal). **Muralha Viva** não bloqueia teleport. Antecipar para onde o Executor pode aparecer é a leitura principal.\n\n---"
+    },
+    "type-label": "防御(強)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "SELF",
+      "TELEPORT",
+      "MOVIMENTO"
+    ]
   },
   "le_d5": {
     "name": "迅速撤退",
     "description": "後方に2マスまで移動 + 1ターン盾20。",
-    "long-description": "処刑者が後方に最大2マス撤退(自陣方向のみ)、1ターン20の盾を獲得。移動と盾は同一アクションの一部。軽量逃走スキル。"
+    "long-description": {
+      "flavor": "O assassino se move. O caminho está livre.",
+      "detail": "処刑者が後方に最大2マス撤退(自陣方向のみ)、1ターン20の盾を獲得。移動と盾は同一アクションの一部。軽量逃走スキル。",
+      "synergies": "Use depois de **Adrenalina** para absorver o tick final com o escudo de 20. Combine com **Teleport** depois para reposicionamento agressivo.",
+      "counter": "Paredes ou aliados bloqueiam o recuo. **Investida Brutal** persegue. **Disparo Preciso** com bleed ignora escudo.\n\n---"
+    },
+    "type-label": "防御(軽)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "MOVIMENTO",
+      "ESCUDO"
+    ]
   },
   "le_d6": {
     "name": "回避",
     "description": "次ターンの最初の直接攻撃を完全に回避。",
-    "long-description": "処刑者が回避姿勢、次ターン受ける最初の直接攻撃を完全に回避。1ヒットのみ吸収。スペシャリスト/処刑者/王の共通カード。"
+    "long-description": {
+      "flavor": "O Rei não bloqueia o golpe. Ele simplesmente não está mais lá.",
+      "detail": "処刑者が回避姿勢、次ターン受ける最初の直接攻撃を完全に回避。1ヒットのみ吸収。スペシャリスト/処刑者/王の共通カード。",
+      "synergies": "Use em \"leitura\" do oponente — quando você sabe que o burst vem. Combine com **Sombra Real**: oponente confuso atira em clone, e mesmo se acertar o real, a Esquiva protege.",
+      "counter": "Skills de área (**Bola de Fogo**, **Domínio Real**) ignoram Esquiva — não são \"ataques diretos\". DoTs aplicados anteriormente continuam ticando. Skills compostas com múltiplos hits (**Sequência de Socos**) só perdem o primeiro hit.\n\n---"
+    },
+    "type-label": "防御(軽)",
+    "duration-label": "Até receber 1 ataque ou fim do turno",
+    "tags": [
+      "SELF",
+      "EVADE"
+    ]
   },
   "le_d7": {
     "name": "完全防御",
     "description": "盾60。砕けるか2ターンまで持続。",
-    "long-description": "処刑者に60HPの盾、完全消費か2ターン経過まで持続。Shield Cap 100に従う。スペシャリストと処刑者の共通カード。"
+    "long-description": {
+      "flavor": "Nenhum golpe passa. Nenhuma chance é dada.",
+      "detail": "処刑者に60HPの盾、完全消費か2ターン経過まで持続。Shield Cap 100に従う。スペシャリストと処刑者の共通カード。",
+      "synergies": "Use antes de momentos previsíveis de pressão inimiga. Combine com **Aura de Proteção** (Especialista) para ainda mais absorção.",
+      "counter": "**Golpe Devastador** purga o escudo inteiro. **Disparo Preciso** com bleed ativo no alvo ignora escudos. Pressão sustentada por 2-3 turnos esgota o escudo.\n\n---"
+    },
+    "type-label": "防御(軽)",
+    "duration-label": "Até ser totalmente quebrado ou 2 turnos",
+    "tags": [
+      "SELF",
+      "ESCUDO"
+    ]
   },
   "le_d8": {
     "name": "盾",
     "description": "1ターン盾25。",
-    "long-description": "処刑者に1ターン25HPの即時盾。Shield Cap 100。完全防御より軽くて安価。"
+    "long-description": {
+      "flavor": "Um instante de aço. Um instante a mais de vida.",
+      "detail": "処刑者に1ターン25HPの即時盾。Shield Cap 100。完全防御より軽くて安価。",
+      "synergies": "Combine com **Recuo Rápido** (também aplica escudo) para 45 HP de absorção. Stack com **Bloqueio Total** = 85 HP de escudo (não atinge cap).",
+      "counter": "Igual aos outros escudos — **Golpe Devastador**, **Disparo Preciso** com bleed, ataques sustentados.\n\n---"
+    },
+    "type-label": "防御(軽)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "ESCUDO"
+    ]
   },
   "lk_a1": {
     "name": "王の拳",
     "description": "横2マスに25ダメージ + 2ターンself盾15。",
-    "long-description": "王が前方の横2マスに王の拳、命中した全敵に25ダメージ。同じターンに2ターン15のself盾(Shield Cap 100)。攻防ハイブリッド圧力。"
+    "long-description": {
+      "flavor": "O punho real pesa como o trono.",
+      "detail": "王が前方の横2マスに王の拳、命中した全敵に25ダメージ。同じターンに2ターン15のself盾(Shield Cap 100)。攻防ハイブリッド圧力。",
+      "synergies": "Combina com **Recuperação Real** e **Espírito de Sobrevivência** para sustentar pressão prolongada. O escudo gerado conta para o Shield Cap (100 HP), então alterne com **Chute Real** para manter o sustain sem desperdício.",
+      "counter": "Inimigos com **Golpe Devastador** (Guerreiro) ou **Corte Preciso** (Executor) podem aplicar `purge`, removendo o escudo antes que ele cumpra sua função. Posicionar-se em diagonal evita ser atingido pelo cone horizontal.\n\n---"
+    },
+    "type-label": "攻撃(重)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "AREA",
+      "DANO",
+      "ESCUDO"
+    ]
   },
   "lk_a2": {
     "name": "王のキック",
     "description": "縦2マスに27ダメージ + 2ターンself盾15。",
-    "long-description": "王が前方の縦2マスに王のキック、命中した全敵に27ダメージ。2ターン15のself盾。王の拳の縦バリアント。"
+    "long-description": {
+      "flavor": "Cada movimento do soberano carrega o peso de uma coroa.",
+      "detail": "王が前方の縦2マスに王のキック、命中した全敵に27ダメージ。2ターン15のself盾。王の拳の縦バリアント。",
+      "synergies": "Excelente após **Empurrão Real** ou **Intimidação**, que reposicionam inimigos diretamente na linha do chute. Combinação clássica: empurra → chuta → soca.",
+      "counter": "Inimigos com **Esquiva** ativa anulam o primeiro acerto. **Fortaleza Inabalável** reduz o dano em 80%, tornando o chute praticamente inofensivo.\n\n---"
+    },
+    "type-label": "攻撃(重)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "AREA",
+      "DANO",
+      "ESCUDO"
+    ]
   },
   "lk_a3": {
     "name": "拳のコンボ",
     "description": "3x2に15ダメージ + lifesteal 30%。王の免疫ルールの例外。",
-    "long-description": "王が前方3x2範囲で拳のコンボ、15ダメージ。与ダメージの30%を回復として受け取る(Lifesteal) — 王の直接回復免疫の例外(self-cast)。"
+    "long-description": {
+      "flavor": "Quem desafia o trono enfrenta uma tempestade de aço.",
+      "detail": "王が前方3x2範囲で拳のコンボ、15ダメージ。与ダメージの30%を回復として受け取る(Lifesteal) — 王の直接回復免疫の例外(self-cast)。",
+      "synergies": "Devastador após **Ordem Real** (que reposiciona a equipe e agrupa inimigos). Combina com **Domínio Real** para dobrar o sustain — a sequência cura, o Domínio gera escudo proporcional ao dano.",
+      "counter": "Inimigos espalhados anulam o sustain — cada alvo a menos é 4-5 HP a menos curados. **Queimação** do Especialista NÃO afeta esta cura porque é lifesteal, não heal externo (importante!).\n\n---"
+    },
+    "type-label": "攻撃(重)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "AREA",
+      "DANO",
+      "LIFESTEAL"
+    ]
   },
   "lk_a4": {
     "name": "王の支配",
     "description": "3x3に18ダメージ + self盾 = 1ターン与ダメージ合計の25%。",
-    "long-description": "王が3x3範囲で支配、各対象に18ダメージ(最大9体)。総ダメージ計算後、その25%を1ターンself盾として獲得。スケーラブル攻防。"
+    "long-description": {
+      "flavor": "A presença real impõe respeito num raio de aço.",
+      "detail": "王が3x3範囲で支配、各対象に18ダメージ(最大9体)。総ダメージ計算後、その25%を1ターンself盾として獲得。スケーラブル攻防。",
+      "synergies": "Combo perfeito com **Intimidação** (que junta inimigos em torno do Rei) ou **Ordem Real** (que reúne aliados ao redor, mas inimigos podem estar próximos também). Após o uso, **Sequência de Socos** maximiza o lifesteal contra os mesmos alvos.",
+      "counter": "Skills de empurrão (**Colisão Titânica**, **Investida**) afastam inimigos antes que o Domínio acerte. Inimigos isolados anulam o ganho de escudo. **Bater em Retirada** (Guerreiro inimigo) tira aliados do raio.\n\n---"
+    },
+    "type-label": "攻撃(重)",
+    "duration-label": "1 turno",
+    "tags": [
+      "AREA",
+      "DANO",
+      "ESCUDO",
+      "ESCALAVEL"
+    ]
   },
   "lk_a5": {
     "name": "王の押し出し",
     "description": "縦3マスのラインを地図端まで12ダメージ + 押し出し最大3マス。",
-    "long-description": "王が縦のラインで王から地図端まで荒々しく押し出す(幅3マス)。経路上の全敵に12ダメージ、最大3マス後方に押し出す。大規模ゾーニング。"
+    "long-description": {
+      "flavor": "O Rei comanda — e o campo de batalha obedece.",
+      "detail": "王が縦のラインで王から地図端まで荒々しく押し出す(幅3マス)。経路上の全敵に12ダメージ、最大3マス後方に押し出す。大規模ゾーニング。",
+      "synergies": "Antes de **Investida Brutal** (Guerreiro aliado) — empurra inimigos para uma posição vulnerável. Após o empurrão, **Chute Real** ou **Domínio Real** atingem reposicionados.",
+      "counter": "Paredes (de **Muralha Viva** ou **Prisão de Muralha Morta**) bloqueiam o empurrão. Inimigos contra a borda do mapa são empurrados apenas até a borda. **Fortaleza Inabalável** mitiga o dano mas não anula o empurrão.\n\n---"
+    },
+    "type-label": "攻撃(制御)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "LINHA",
+      "DANO",
+      "PUSH"
+    ]
   },
   "lk_a6": {
     "name": "反撃",
     "description": "3x3に15ダメージ + 中央から離す押し出し1マス。中央は動かない。",
-    "long-description": "王が周囲3x3範囲で反撃を爆発(王が中央)。範囲内の全敵に15ダメージ、各々を放射方向に1マス押し出す(中央から離す)。王(中央)は動かない。"
+    "long-description": {
+      "flavor": "O reino reage. Quem cerca o Rei encontra apenas espaço vazio.",
+      "detail": "王が周囲3x3範囲で反撃を爆発(王が中央)。範囲内の全敵に15ダメージ、各々を放射方向に1マス押し出す(中央から離す)。王(中央)は動かない。",
+      "synergies": "Excelente quando combinado com **Domínio Real** no mesmo turno (Domínio gera escudo proporcional ao dano causado, Contra-ataque garante que o Domínio acerte mais alvos). Setup ideal para **Sombra Real**: gera espaço, depois cria clones para confundir.",
+      "counter": "Inimigos com `mov_down` ou `snare` ativos ainda sofrem dano mas não são empurrados (o efeito ainda ocorre, apenas não há reposicionamento). Resistir a empurrões é praticamente impossível — esta é uma das skills mais \"garantidas\" do Rei.\n\n---"
+    },
+    "type-label": "攻撃(制御)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "AREA",
+      "DANO",
+      "PUSH"
+    ]
   },
   "lk_a7": {
     "name": "威嚇",
     "description": "10ダメージ + 対象と隣接者を選択地点へテレポート。境界に配置不可。",
-    "long-description": "王が対象を威嚇：10ダメージと対象+それに隣接する全敵(最大5体)をキャスター選択地点へテレポート(地図フィールド、境界除く)。極端な攻撃的再配置。"
+    "long-description": {
+      "flavor": "Um olhar real reorganiza um exército.",
+      "detail": "王が対象を威嚇：10ダメージと対象+それに隣接する全敵(最大5体)をキャスター選択地点へテレポート(地図フィールド、境界除く)。極端な攻撃的再配置。",
+      "synergies": "Setup devastador para **Domínio Real** (junta inimigos em volta do Rei), **Tempestade de Lâminas** (Executor aliado), ou **Bola de Fogo** (Especialista aliado). Conhecida como \"a chamada de execução\" em decks coordenados.",
+      "counter": "**Esquiva** anula o teleporte ao impedir o ataque inicial. Inimigos com **Fortaleza Inabalável** ainda são teleportados (o efeito não é dano-dependente). Posicionamento espalhado reduz o impacto — quanto menos adjacentes, menor o reposicionamento.\n\n---"
+    },
+    "type-label": "攻撃(制御)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "ALVO UNICO",
+      "DANO",
+      "TELEPORT"
+    ]
   },
   "lk_a8": {
     "name": "武装解除",
     "description": "6ダメージ + 対象のターンのatkスキル取消 + 1ターンsilence_attack。王には効かない。",
-    "long-description": "王が敵を武装解除：6ダメージ、対象がそのターンに選択した攻撃スキルを即座にキャンセル(コストなし、効果なし)。さらに1ターンsilence_attack適用。"
+    "long-description": {
+      "flavor": "O punho real toca o pulso. O golpe inimigo morre antes de nascer.",
+      "detail": "王が敵を武装解除：6ダメージ、対象がそのターンに選択した攻撃スキルを即座にキャンセル(コストなし、効果なし)。さらに1ターンsilence_attack適用。",
+      "synergies": "Use contra Executores inimigos com **Adrenalina** ativa para desperdiçar o buff. Combine com **Provocação** (Guerreiro aliado, que aplica silence_defense) para um turno completo de paralisia tática.",
+      "counter": "Inimigos com `cleanse` (purificação de debuffs) podem remover o silence. **Proteção** (Especialista) concede imunidade a novos debuffs por 1 turno. Programar skills com a defesa como atk + def também esquiva o silence parcial.\n\n---"
+    },
+    "type-label": "攻撃(制御)",
+    "duration-label": "",
+    "tags": [
+      "ALVO UNICO",
+      "DANO",
+      "SILENCE"
+    ]
   },
   "lk_d1": {
     "name": "影の逃走",
     "description": "味方半分の任意の場所にテレポート。ダメージ受けるか動くまで単体スキルにuntargetable。",
-    "long-description": "王が一瞬透明になり自陣の任意マス(味方半分)へテレポート。テレポート後、単体スキルにUNTARGETABLE。透明はダメージ(範囲かDoT)を受けるか自発的に動くと解除。"
+    "long-description": {
+      "flavor": "Onde o Rei some, a estratégia inimiga colapsa.",
+      "detail": "王が一瞬透明になり自陣の任意マス(味方半分)へテレポート。テレポート後、単体スキルにUNTARGETABLE。透明はダメージ(範囲かDoT)を受けるか自発的に動くと解除。",
+      "synergies": "Use após **Recuperação Real** para se afastar e regenerar em segurança. Combo defensivo elite: Fuga Sombria → Recuperação Real → Espírito de Sobrevivência = +50% HP recuperados em 3 turnos.",
+      "counter": "Skills de área (**Bola de Fogo**, **Tempestade de Lâminas**, **Domínio Real**) ignoram a invisibilidade — atingem qualquer um na zona, visível ou não. Atacantes inteligentes sabem chutar áreas prováveis de fuga.\n\n---"
+    },
+    "type-label": "防御(強)",
+    "duration-label": "Até receber dano direto ou se mover voluntariamente",
+    "tags": [
+      "SELF",
+      "TELEPORT",
+      "STEALTH",
+      "ESCAPE"
+    ]
   },
   "lk_d2": {
     "name": "王の回復",
     "description": "2ターンで最大HPの20%回復(今10%、ダメージ受けなければ次ターン10%)。王の回復免疫の例外。",
-    "long-description": "王が王の回復を放つ：即座に最大HPの10%を回復、そのターンにダメージ受けなければ次ターンに最大HPの10%。最大20%。Self-castなので王の回復免疫の例外。"
+    "long-description": {
+      "flavor": "Mesmo o leão precisa de um instante para se erguer mais forte.",
+      "detail": "王が王の回復を放つ：即座に最大HPの10%を回復、そのターンにダメージ受けなければ次ターンに最大HPの10%。最大20%。Self-castなので王の回復免疫の例外。",
+      "synergies": "Combo perfeito com **Fuga Sombria** (sai do alcance, regenera em paz). **Ordem Real** também protege os ticks ao reduzir dano em -45%. Em time defensivo, combine com **Cura Suprema** (não funciona no Rei) usada em outro aliado para focar inimigos longe.",
+      "counter": "Qualquer dano direto cancela o segundo tick. DoTs (`bleed`, `burn`) NÃO cancelam — o segundo tick passa apesar do DoT (importante regra de design). **Marca da Morte** (Executor) prioriza o Rei e força dano contínuo.\n\n---"
+    },
+    "type-label": "防御(強)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "SELF",
+      "CURA",
+      "CONDICIONAL"
+    ]
   },
   "lk_d3": {
     "name": "王の影",
     "description": "空マスに2体のクローン。王はクローンと位置交換可能。クローンは2ターン持続。敵はどれが本物か不明。",
-    "long-description": "王が近くの空マスに2体の視覚的クローンを生成。クローンは2ターン持続、本物の王と視覚的に同一。敵は攻撃するまでどれが本物か不明 — クローンは攻撃を吸収して消滅。"
+    "long-description": {
+      "flavor": "Três coroas no campo. Apenas uma é real. Quem aposta errado, morre.",
+      "detail": "王が近くの空マスに2体の視覚的クローンを生成。クローンは2ターン持続、本物の王と視覚的に同一。敵は攻撃するまでどれが本物か不明 — クローンは攻撃を吸収して消滅。",
+      "synergies": "Use antes de **Fuga Sombria** para máxima ofuscação — quando os clones existem e o Rei some, fica impossível rastreá-lo. **Intimidação** força reposicionamento inimigo antes da ilusão.",
+      "counter": "Skills de área atingem todas as casas, exposto o Rei verdadeiro pelo dano sofrido. **Sangramento** ou outros DoTs revelam o real ao tentarem aplicá-los (clones não tomam dano). Bots inimigos podem ter heurística de \"atacar todos os 3\" se houver tempo.\n\n---"
+    },
+    "type-label": "防御(強)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "SELF",
+      "STEALTH",
+      "MIND-GAMES"
+    ]
   },
   "lk_d4": {
     "name": "生存の精神",
     "description": "HP≤50%なら: +15%最大HP + 1ターン10%最大HP盾。HP>50%なら: +10%最大HP。",
-    "long-description": "適応的生存スキル。使用時にHP≤50%なら+15%最大HP(永続増加)+1ターン最大HPの10%相当の盾。HP>50%なら+10%最大HPのみ(盾なし)。"
+    "long-description": {
+      "flavor": "Quando o trono balança, o Rei encontra força nas raízes do reino.",
+      "detail": "適応的生存スキル。使用時にHP≤50%なら+15%最大HP(永続増加)+1ターン最大HPの10%相当の盾。HP>50%なら+10%最大HPのみ(盾なし)。",
+      "synergies": "Após sofrer pressão sustentada, ative para virar a maré. **Fortaleza Inabalável** + Espírito = Rei praticamente intocável por 1 turno (-80% dano + escudo + cura). Combo de virada épica.",
+      "counter": "Bursters como **Disparo Preciso** podem matar o Rei antes que ele atinja a janela de ativação (≤ 60% HP). Pressão constante mas não letal mantém o Rei abaixo do threshold ideal — paradoxalmente, dano \"morno\" pode ser mais perigoso para o Rei do que burst (porque permite usar Espírito várias vezes).\n\n---"
+    },
+    "type-label": "防御(強)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "CURA",
+      "ESCUDO",
+      "LAST-STAND"
+    ]
   },
   "lk_d5": {
     "name": "Self盾",
     "description": "2ターン盾30。",
-    "long-description": "王が自身に2ターン30HPの盾(Shield Cap 100)。完全消費または期限切れまで持続。王の汎用維持スキル。"
+    "long-description": {
+      "flavor": "A muralha mais firme é a vontade do Rei.",
+      "detail": "王が自身に2ターン30HPの盾(Shield Cap 100)。完全消費または期限切れまで持続。王の汎用維持スキル。",
+      "synergies": "Pré-cast antes de combates onde se espera burst. Stacka com escudos de **Soco Real** e **Chute Real** (até o cap de 100). **Aura de Proteção** (Especialista aliado) pode sobrepor com mais 12 HP.",
+      "counter": "**Golpe Devastador** e **Corte Preciso** aplicam `purge`, removendo o escudo instantaneamente. **Disparo Preciso** com bleed ativo no Rei ignora shields completamente.\n\n---"
+    },
+    "type-label": "防御(軽)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "SELF",
+      "ESCUDO"
+    ]
   },
   "lk_d6": {
     "name": "不動の要塞",
     "description": "1ターン受けるダメージ-80%。次の移動ターンに動けない。",
-    "long-description": "王が生きた要塞に変化。1ターン全ダメージから-80%(true damage含む)。代償：次の移動ターン動けない。戦士と王の共通カード。"
+    "long-description": {
+      "flavor": "Pés enraizados. Coração de pedra. O Rei se torna a própria muralha.",
+      "detail": "王が生きた要塞に変化。1ターン全ダメージから-80%(true damage含む)。代償：次の移動ターン動けない。戦士と王の共通カード。",
+      "synergies": "Combine com **Espírito de Sobrevivência** para virada de jogo. Use ANTES do oponente ativar combos óbvios (ex: Adrenalina visível no Executor inimigo).",
+      "counter": "O Rei imóvel é alvo fácil para reposicionamento — **Intimidação** ou **Empurrão Real** inimigos podem deslocá-lo. **Muralha Viva** pode prendê-lo após o turno.\n\n---"
+    },
+    "type-label": "防御(軽)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "BUFF",
+      "IMOVEL"
+    ]
   },
   "lk_d7": {
     "name": "回避",
     "description": "次ターンの最初の直接攻撃を完全に回避。",
-    "long-description": "王が回避姿勢、次ターン受ける最初の直接攻撃を完全に回避。スペシャリスト/処刑者/王の共通カード。王にとっては王の保護パッシブを無視する正確な射撃(true damage)への最善の防御。"
+    "long-description": {
+      "flavor": "O Rei não bloqueia o golpe. Ele simplesmente não está mais lá.",
+      "detail": "王が回避姿勢、次ターン受ける最初の直接攻撃を完全に回避。スペシャリスト/処刑者/王の共通カード。王にとっては王の保護パッシブを無視する正確な射撃(true damage)への最善の防御。",
+      "synergies": "Use em \"leitura\" do oponente — quando você sabe que o burst vem. Combine com **Sombra Real**: oponente confuso atira em clone, e mesmo se acertar o real, a Esquiva protege.",
+      "counter": "Skills de área (**Bola de Fogo**, **Domínio Real**) ignoram Esquiva — não são \"ataques diretos\". DoTs aplicados anteriormente continuam ticando. Skills compostas com múltiplos hits (**Sequência de Socos**) só perdem o primeiro hit.\n\n---"
+    },
+    "type-label": "防御(軽)",
+    "duration-label": "Até receber 1 ataque ou fim do turno",
+    "tags": [
+      "SELF",
+      "EVADE"
+    ]
   },
   "lk_d8": {
     "name": "王の命令",
     "description": "王は初期位置へ戻り、味方は隣接位置にテレポート。隣接味方: -15%ダメージ。王: 隣接味方ごと-15%(最大-45%)1ターン。",
-    "long-description": "至高の再集結スキル。王が自身の初期位置(味方半分の角)にテレポートし、3味方(王以外)を王に隣接するマスへ引き寄せる。1ターン、全隣接味方は-15%ダメージ、王は隣接味方ごと追加-15%(最大3体=-45%)。戦略的リセット。"
+    "long-description": {
+      "flavor": "Quando o Rei chama, o reino se forma.",
+      "detail": "至高の再集結スキル。王が自身の初期位置(味方半分の角)にテレポートし、3味方(王以外)を王に隣接するマスへ引き寄せる。1ターン、全隣接味方は-15%ダメージ、王は隣接味方ごと追加-15%(最大3体=-45%)。戦略的リセット。",
+      "synergies": "Após Ordem Real, use **Domínio Real** (todos os aliados próximos = dano máximo se inimigos seguirem) ou **Sombra Real** (reposiciona depois de criar clones). Combina com **Avançar** (Guerreiro) para movimento coordenado pós-formação.",
+      "counter": "Skills de área aplicadas em torno do Rei após Ordem Real punem todos de uma vez. **Bola de Fogo** centrada no Rei pega 4 unidades. Inimigos podem usar **Bater em Retirada** para se afastar antes do impacto.\n\n---"
+    },
+    "type-label": "防御(軽)",
+    "duration-label": "1 turno",
+    "tags": [
+      "GLOBAL",
+      "BUFF",
+      "TELEPORT",
+      "FORMACAO"
+    ]
+  },
+  "tags": {
+    "AREA": "Area",
+    "ALVO UNICO": "Single Target",
+    "LINHA": "Line",
+    "SELF": "Self",
+    "GLOBAL": "Global",
+    "DANO": "Damage",
+    "CURA": "Heal",
+    "ESCUDO": "Shield",
+    "BUFF": "Buff",
+    "DEBUFF": "Debuff",
+    "BLEED": "Bleed",
+    "BURN": "Burn",
+    "POISON": "Poison",
+    "STUN": "Stun",
+    "SNARE": "Snare",
+    "SILENCE": "Silence",
+    "TELEPORT": "Teleport",
+    "PUSH": "Push",
+    "PULL": "Pull",
+    "DASH": "Dash",
+    "TRUE DAMAGE": "True Damage",
+    "PURGE": "Purge",
+    "REVIVE": "Revive",
+    "SETUP": "Setup",
+    "FINISH": "Finish",
+    "CONDICIONAL": "Conditional",
+    "MULTI-TICK": "Multi-Tick",
+    "MARK": "Mark",
+    "LIFESTEAL": "Lifesteal",
+    "EVADE": "Evade",
+    "REFLECT": "Reflect",
+    "MURALHA": "Wall",
+    "TRAP": "Trap",
+    "MIND-GAMES": "Mind Games",
+    "LAST-STAND": "Last Stand",
+    "ESCAPE": "Escape",
+    "COOLDOWN": "Cooldown",
+    "IMOVEL": "Immobile",
+    "IMUNIDADE": "Immunity",
+    "CLEANSE": "Cleanse",
+    "ANTI-SHIELD": "Anti-Shield",
+    "SINERGIA-BLEED": "Bleed Synergy",
+    "RESTRICAO-REI": "King-Restricted",
+    "REI-RESTRICAO-PARCIAL": "King-Restricted (Partial)",
+    "DUAL-USE": "Dual-Use",
+    "MOV-DOWN": "Slow",
+    "OFENSIVO": "Offensive",
+    "MOVIMENTO": "Movement",
+    "FORMACAO": "Formation",
+    "REGEN": "Regen",
+    "TRADE-OFF": "Trade-off",
+    "BURST": "Burst",
+    "SETUP-FINISH": "Setup-Finish",
+    "POSICIONAL": "Positional",
+    "ESCALAVEL": "Scalable",
+    "BUFF AREA": "Buff Area",
+    "DAMAGE-REDIRECT": "Damage Redirect",
+    "DOT": "DoT",
+    "ALIADO-SHIELD": "Ally-Shield",
+    "REI-RESTRICAO": "King-Restricted",
+    "1X-PARTIDA": "Once per Match"
   }
 }

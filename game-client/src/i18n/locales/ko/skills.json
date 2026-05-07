@@ -1,5 +1,7 @@
 {
-  "_meta": { "lang": "ko" },
+  "_meta": {
+    "lang": "ko"
+  },
   "roles": {
     "specialist": "스페셜리스트",
     "warrior": "전사",
@@ -19,321 +21,1168 @@
   "ls_a1": {
     "name": "파이어볼",
     "description": "적 진영 2x2 범위 28 데미지. 2턴 6/턴 연소 부여.",
-    "long-description": "스페셜리스트가 화염구를 적 진영에 던져 2x2 정사각 범위에 28 물리 데미지. 명중한 대상은 연소를 받아 2턴 매 턴 6 데미지. 클래스 패시브 연소가 콤보 강화: 명중 대상은 2턴 받는 치유 -30%. 표준 오프닝 스킬."
+    "long-description": {
+      "flavor": "O fogo arcano não consome. Ele lembra ao alvo o que é dor.",
+      "detail": "스페셜리스트가 화염구를 적 진영에 던져 2x2 정사각 범위에 28 물리 데미지. 명중한 대상은 연소를 받아 2턴 매 턴 6 데미지. 클래스 패시브 연소가 콤보 강화: 명중 대상은 2턴 받는 치유 -30%. 표준 오프닝 스킬.",
+      "synergies": "Combine com **Bomba de Espinhos** (Executor aliado) — bleed + burn empilhados aceleram queda. **Orbe de Lentidão** prende inimigos na área para garantir hit.",
+      "counter": "**Proteção** dá imunidade a novos debuffs (anula burn). **Cura Suprema** mitiga DoT (mas Queimação reduz cura em 30%). Posicionamento espalhado anula o AoE.\n\n---"
+    },
+    "type-label": "공격(중)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "DANO",
+      "BURN",
+      "DOT"
+    ]
   },
   "ls_a2": {
     "name": "마나의 비",
     "description": "적 진영 세로 3칸 라인에 2틱(11+11) 22 데미지.",
-    "long-description": "스페셜리스트가 적 진영 세로 3칸에 마법 에너지의 비를 소환. 동일 대상에 연속 2회 11 데미지(총 22). 각 틱 개별 처리 — 방패와 회피는 해당 타격만 흡수. 틱당 데미지는 DEF 감면을 정상 통과."
+    "long-description": {
+      "flavor": "O céu chora. As gotas perfuram o aço.",
+      "detail": "스페셜리스트가 적 진영 세로 3칸에 마법 에너지의 비를 소환. 동일 대상에 연속 2회 11 데미지(총 22). 각 틱 개별 처리 — 방패와 회피는 해당 타격만 흡수. 틱당 데미지는 DEF 감면을 정상 통과.",
+      "synergies": "A divisão em 2 ticks permite quebrar escudos pequenos sem desperdício. Após **Bola de Fogo** (que aplica Queimação), o segundo tick beneficia do debuff.",
+      "counter": "**Esquiva** anula apenas o primeiro tick (segundo passa). Escudos absorvem ticks individualmente. **Teleport** sai da linha vertical entre ticks.\n\n---"
+    },
+    "type-label": "공격(중)",
+    "duration-label": "Instantâneo (mas em 2 momentos)",
+    "tags": [
+      "AREA",
+      "DANO",
+      "MULTI-TICK"
+    ]
   },
   "ls_a3": {
     "name": "정화의 빛",
     "description": "라인 위 적에게 25 데미지 + 정화. 명중 아군은 방패 10 획득.",
-    "long-description": "광선이 아레나를 가로 6칸 직선으로 가로지름 — 경로상의 각 적에게 25 데미지와 퍼지(모든 활성 버프 제거) 적용. 경로상의 아군은 10 방패를 받고 데미지 없음. 다목적 스킬."
+    "long-description": {
+      "flavor": "Um único raio. Para purificar amigos. Para apagar inimigos.",
+      "detail": "광선이 아레나를 가로 6칸 직선으로 가로지름 — 경로상의 각 적에게 25 데미지와 퍼지(모든 활성 버프 제거) 적용. 경로상의 아군은 10 방패를 받고 데미지 없음. 다목적 스킬.",
+      "synergies": "Posicione Guerreiro aliado entre o Especialista e o Rei inimigo: dano no Rei + purge + escudo no Guerreiro. Triple-value em uma skill.",
+      "counter": "Posicionar inimigos fora da linha vertical anula. **Esquiva** ou **Fortaleza Inabalável** dos alvos principais reduzem efeito.\n\n---"
+    },
+    "type-label": "공격(중)",
+    "duration-label": "1 turno",
+    "tags": [
+      "LINHA",
+      "DANO",
+      "PURGE",
+      "ALIADO-SHIELD"
+    ]
   },
   "ls_a4": {
     "name": "중앙 폭발",
     "description": "1번째: 대상 표시(제거 불가). 2번째: 50 데미지 + 디버프 있으면 +50%. 회피와 면역 무시.",
-    "long-description": "2단계 스킬. 첫 사용에 적에게 폭발 표시 — 퍼지, cleanse, 면역으로 제거 불가의 영구 표시. 두 번째 사용에 폭발하여 50 직접 데미지. 폭발 시 대상에 활성 디버프가 있으면 +50%(75). 회피, 방패, 면역을 완전 무시 — 보장 데미지."
+    "long-description": {
+      "flavor": "O alvo é selado. A explosão é certa. O tempo é a única variável.",
+      "detail": "2단계 스킬. 첫 사용에 적에게 폭발 표시 — 퍼지, cleanse, 면역으로 제거 불가의 영구 표시. 두 번째 사용에 폭발하여 50 직접 데미지. 폭발 시 대상에 활성 디버프가 있으면 +50%(75). 회피, 방패, 면역을 완전 무시 — 보장 데미지.",
+      "synergies": "Marque o Rei inimigo turno 1 → aplique debuffs (qualquer um) → detone turno 4 = 75 de dano. Combo definitivo. Sinergiza com qualquer DoT do time.",
+      "counter": "**Fortaleza Inabalável** reduz dano da detonação em 80%. Manter alvo marcado livre de debuffs reduz dano em 33%. Pressão constante para matar o Especialista antes da detonação.\n\n---"
+    },
+    "type-label": "공격(중)",
+    "duration-label": "",
+    "tags": [
+      "ALVO UNICO",
+      "MARK",
+      "BURST",
+      "SETUP-FINISH"
+    ]
   },
   "ls_a5": {
     "name": "감속 구체",
     "description": "3x3 범위 12 데미지. 1턴 def_down 25% + mov_down 1.",
-    "long-description": "스페셜리스트가 중력 구체를 투사하여 3x3 범위에서 폭발, 12 데미지와 모든 명중 대상에 디버프 2종 1턴: def_down 25%, mov_down 1. 방어적 셋업 스킬."
+    "long-description": {
+      "flavor": "O tempo se arrasta. A defesa cede. O exército inteiro hesita.",
+      "detail": "스페셜리스트가 중력 구체를 투사하여 3x3 범위에서 폭발, 12 데미지와 모든 명중 대상에 디버프 2종 1턴: def_down 25%, mov_down 1. 방어적 셋업 스킬.",
+      "synergies": "Setup ideal para **Tempestade de Lâminas** ou **Investida Brutal** subsequentes — alvos com def reduzida sofrem dano amplificado.",
+      "counter": "**Proteção** (Especialista mesmo) imuniza a debuffs novos. **Bater em Retirada** sai da área. **Avançar** (Guerreiro) pode salvar a equipe pra fora.\n\n---"
+    },
+    "type-label": "공격(제어)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "DANO",
+      "DEBUFF",
+      "MOV-DOWN"
+    ]
   },
   "ls_a6": {
     "name": "강철 사슬",
     "description": "+ 형태(5칸) 10 데미지. 적을 1턴 스네어.",
-    "long-description": "마법 사슬이 십자 패턴(중앙 + 인접 4칸)으로 땅에서 솟구쳐 명중한 각 적에게 10 데미지와 1턴 스네어 적용. 스네어는 이동 차단하지만 스킬 사용은 막지 않음 — 스턴과 다름. 위치 제어."
+    "long-description": {
+      "flavor": "Correntes invisíveis. Pés que não se movem. Destinos que se cumprem.",
+      "detail": "마법 사슬이 십자 패턴(중앙 + 인접 4칸)으로 땅에서 솟구쳐 명중한 각 적에게 10 데미지와 1턴 스네어 적용. 스네어는 이동 차단하지만 스킬 사용은 막지 않음 — 스턴과 다름. 위치 제어.",
+      "synergies": "Setup para skills de área alto dano — inimigos imobilizados não escapam de **Bola de Fogo** ou **Domínio Real**. Combine com **Marca da Morte** para garantir hit do bleed.",
+      "counter": "**Teleport** atravessa snare. **Proteção** imuniza. **Cleanse** remove. Posicionamento que evite formação cruz minimiza alvos.\n\n---"
+    },
+    "type-label": "공격(제어)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "DANO",
+      "SNARE"
+    ]
   },
   "ls_a7": {
     "name": "안개",
     "description": "적 아레나 전체. 아군: def_up 15%. 적: def_down 15% + 받는 치유 -30% 2턴.",
-    "long-description": "스페셜리스트가 2턴 동안 아레나 전체를 덮는 짙은 안개를 소환. 안개 속 아군은 DEF +15%. 안개 속 적은 DEF -15%, 받는 치유 -30%(모든 출처). 데미지 없이 경기 템포를 바꾸는 필드 스킬."
+    "long-description": {
+      "flavor": "A névoa cobre o campo. O reino vê. O inimigo se perde.",
+      "detail": "스페셜리스트가 2턴 동안 아레나 전체를 덮는 짙은 안개를 소환. 안개 속 아군은 DEF +15%. 안개 속 적은 DEF -15%, 받는 치유 -30%(모든 출처). 데미지 없이 경기 템포를 바꾸는 필드 스킬.",
+      "synergies": "Use no início do combate para vantagem prolongada. Combine com **Cura Suprema** (cura aliados protegidos pela névoa) ou **Adrenalina** (Executor amplificado num campo onde inimigos defendem menos).",
+      "counter": "**Proteção** imuniza a debuff. **Cleanse** remove de aliados específicos. Skills de cura ainda funcionam (apenas com -30% de eficiência).\n\n---"
+    },
+    "type-label": "공격(제어)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "GLOBAL",
+      "DUAL-USE",
+      "BUFF",
+      "DEBUFF"
+    ]
   },
   "ls_a8": {
     "name": "동결",
     "description": "18 데미지 + 1턴 스턴 + 1턴 def_down 20%.",
-    "long-description": "집중된 얼음 펄스가 단일 대상 명중, 18 데미지와 1턴 스턴 + 1턴 def_down 20% 적용. 스턴은 이동과 스킬 사용 모두 차단 — 게임에서 가장 강한 제어. 픽 스킬."
+    "long-description": {
+      "flavor": "O alvo congela. Por um instante, deixa de ser ameaça.",
+      "detail": "집중된 얼음 펄스가 단일 대상 명중, 18 데미지와 1턴 스턴 + 1턴 def_down 20% 적용. 스턴은 이동과 스킬 사용 모두 차단 — 게임에서 가장 강한 제어. 픽 스킬.",
+      "synergies": "Coordene com Executor: Congelamento → próximo turno burst combo (Marca da Morte + Corte Mortal). Alvo stunned + def reduzida = 90+ de dano garantido.",
+      "counter": "**Proteção** imuniza. **Esquiva** anula o ataque inicial (e portanto o stun). **Cleanse** remove (mas timing crítico).\n\n---"
+    },
+    "type-label": "공격(제어)",
+    "duration-label": "Stun por 1 turno, debuff por 1 turno",
+    "tags": [
+      "ALVO UNICO",
+      "DANO",
+      "STUN",
+      "DEBUFF"
+    ]
   },
   "ls_d1": {
     "name": "최상의 치유",
     "description": "아군 1명(왕 제외)을 35 HP 회복.",
-    "long-description": "스페셜리스트가 회복 에너지 파동을 단일 아군에게 전달, 35 HP 즉시 회복. 왕에게는 영향 없음 — 왕의 직접 치유 면역 규칙. Heal Cap 적용. 대상이 연소 상태면 효과 30% 감소."
+    "long-description": {
+      "flavor": "A magia não distingue heróis de simples soldados. Todos voltam a respirar.",
+      "detail": "스페셜리스트가 회복 에너지 파동을 단일 아군에게 전달, 35 HP 즉시 회복. 왕에게는 영향 없음 — 왕의 직접 치유 면역 규칙. Heal Cap 적용. 대상이 연소 상태면 효과 30% 감소.",
+      "synergies": "Combine com **Aura de Proteção** ou **Campo de Cura** para múltiplos efeitos defensivos. Use atrás de **Escudo do Protetor** (Guerreiro aliado) para garantia.",
+      "counter": "**Queimação** (passiva inimiga) reduz para 28. **Marca da Morte** (Executor inimigo) com bleed mantém pressão. Foco no Especialista o impede de curar.\n\n---"
+    },
+    "type-label": "방어(강)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "ALVO UNICO",
+      "CURA",
+      "RESTRICAO-REI"
+    ]
   },
   "ls_d2": {
     "name": "부분 부활",
     "description": "최저 HP 아군(왕 제외)에게 잠재 부활(2턴). 사망 시 25 HP로 부활. 매치당 아군별 1회.",
-    "long-description": "스페셜리스트가 최저 HP 아군(왕 제외)에 2턴 지속의 잠재 부활 버퍼 부여. 그 윈도우에 사망하면 같은 칸에 25 HP로 즉시 부활, 모든 디버프와 DoT 정리. 각 아군은 매치당 1회만 부활 가능."
+    "long-description": {
+      "flavor": "Quem cai protegido pelo ritual, retorna sussurrando entre os vivos.",
+      "detail": "스페셜리스트가 최저 HP 아군(왕 제외)에 2턴 지속의 잠재 부활 버퍼 부여. 그 윈도우에 사망하면 같은 칸에 25 HP로 즉시 부활, 모든 디버프와 DoT 정리. 각 아군은 매치당 1회만 부활 가능.",
+      "synergies": "Combine com **Escudo do Protetor** (Guerreiro) ou **Resistência Absoluta** — se o aliado sobrevive, recebe heal extra; se morre, revive. Win-win.",
+      "counter": "Foco no Especialista antes do revive ser cast. Skills que evitam dano fatal direto (true damage massivo num turno) podem matar antes do revive ativar (revive ativa em \"dano fatal\", não \"dano dot\").\n\n---"
+    },
+    "type-label": "방어(강)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "ALVO UNICO",
+      "REVIVE",
+      "CONDICIONAL",
+      "1X-PARTIDA"
+    ]
   },
   "ls_d3": {
     "name": "치유 영역",
     "description": "3x3 범위 12 HP 회복 + 방패 10(1턴). 왕은 방패만.",
-    "long-description": "스페셜리스트가 3x3 범위에 치유의 빛 영역 생성, 12 HP 회복과 10 방패(1턴) 모든 범위 내 아군에게 적용. 왕은 방패만 — 직접 치유 면역. 방패는 대상당 누적 100 HP 한계."
+    "long-description": {
+      "flavor": "Um instante de paz no meio do caos. Suficiente para mais um golpe.",
+      "detail": "스페셜리스트가 3x3 범위에 치유의 빛 영역 생성, 12 HP 회복과 10 방패(1턴) 모든 범위 내 아군에게 적용. 왕은 방패만 — 직접 치유 면역. 방패는 대상당 누적 100 HP 한계.",
+      "synergies": "Combine com **Aura de Proteção** (também escudo) para defesa empilhada. Use após **Ordem Real** (Rei) para aproveitar a formação concentrada.",
+      "counter": "**Queimação** reduz a cura em 30% (8 HP efetivos). **Bola de Fogo** ou skills de área pegam todos os aliados curados antes que aproveitem.\n\n---"
+    },
+    "type-label": "방어(강)",
+    "duration-label": "1 turno",
+    "tags": [
+      "AREA",
+      "CURA",
+      "ESCUDO",
+      "REI-RESTRICAO-PARCIAL"
+    ]
   },
   "ls_d4": {
     "name": "보호",
     "description": "+ 형태(5칸). 모든 아군 디버프 제거 + 1턴 새 디버프 면역.",
-    "long-description": "십자 형태(중앙 + 인접 4칸) 범위 cleanse, 영향받는 아군의 모든 활성 디버프(bleed, burn, poison, stun, snare, silence, def_down, mov_down, atk_down, 표시) 제거 및 1턴 새 디버프 완전 면역 부여. 데미지 없음, 치유 없음."
+    "long-description": {
+      "flavor": "O selo arcano se ergue. Nenhum mal cruza esta linha.",
+      "detail": "십자 형태(중앙 + 인접 4칸) 범위 cleanse, 영향받는 아군의 모든 활성 디버프(bleed, burn, poison, stun, snare, silence, def_down, mov_down, atk_down, 표시) 제거 및 1턴 새 디버프 완전 면역 부여. 데미지 없음, 치유 없음.",
+      "synergies": "Use antes de momentos críticos (revive, ressurreição, virada). Combine com **Escudo do Protetor** ou **Cura Suprema** para janela invulnerável.",
+      "counter": "Skills de dano direto não são afetadas. **Bola de Fogo** ainda causa dano (apenas o burn é negado). Foco em Especialista antes do cast.\n\n---"
+    },
+    "type-label": "방어(강)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "CLEANSE",
+      "IMUNIDADE"
+    ]
   },
   "ls_d5": {
     "name": "지속 치유 영역",
     "description": "3x3 범위 매 턴 6 HP regen 2턴. 왕 제외. 아군 데미지 시 취소.",
-    "long-description": "정적 재생 필드가 3x3 범위를 2턴 커버. 범위 내 각 아군은 매 턴 6 HP regen 받음 — 왕은 받지 않음. 필드 안에서 어떤 데미지든 받으면 그 아군의 regen 취소. 전투 후 지속력."
+    "long-description": {
+      "flavor": "Onde a magia toca a terra, a vida insiste em florescer.",
+      "detail": "정적 재생 필드가 3x3 범위를 2턴 커버. 범위 내 각 아군은 매 턴 6 HP regen 받음 — 왕은 받지 않음. 필드 안에서 어떤 데미지든 받으면 그 아군의 regen 취소. 전투 후 지속력.",
+      "synergies": "Use após **Bater em Retirada** (recolhe equipe em formação segura). Combine com **Aura de Proteção** para escudos absorverem dano e preservar regen.",
+      "counter": "Qualquer dano direto cancela o segundo tick. **Bola de Fogo** inimiga + DoTs garantem cancelamento. **Marca da Morte** com bleed mantém pressão sustentada.\n\n---"
+    },
+    "type-label": "방어(경)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "AREA",
+      "REGEN",
+      "CONDICIONAL",
+      "REI-RESTRICAO"
+    ]
   },
   "ls_d6": {
     "name": "회피",
     "description": "다음 턴 첫 직접 공격을 완전 회피.",
-    "long-description": "스페셜리스트가 회피 자세, 다음 턴 받는 첫 직접 공격을 완전 회피. 1히트만 흡수 후 소비. 스페셜리스트/처형자/왕 공유 카드."
+    "long-description": {
+      "flavor": "O Rei não bloqueia o golpe. Ele simplesmente não está mais lá.",
+      "detail": "스페셜리스트가 회피 자세, 다음 턴 받는 첫 직접 공격을 완전 회피. 1히트만 흡수 후 소비. 스페셜리스트/처형자/왕 공유 카드.",
+      "synergies": "Use em \"leitura\" do oponente — quando você sabe que o burst vem. Combine com **Sombra Real**: oponente confuso atira em clone, e mesmo se acertar o real, a Esquiva protege.",
+      "counter": "Skills de área (**Bola de Fogo**, **Domínio Real**) ignoram Esquiva — não são \"ataques diretos\". DoTs aplicados anteriormente continuam ticando. Skills compostas com múltiplos hits (**Sequência de Socos**) só perdem o primeiro hit.\n\n---"
+    },
+    "type-label": "방어(경)",
+    "duration-label": "Até receber 1 ataque ou fim do turno",
+    "tags": [
+      "SELF",
+      "EVADE"
+    ]
   },
   "ls_d7": {
     "name": "완전 차단",
     "description": "방패 60. 부서지거나 2턴 지속.",
-    "long-description": "캐스터에게 60 HP 방패, 완전 소비 또는 2턴 만료까지 지속. 글로벌 Shield Cap 100 HP/단위 적용. 스페셜리스트와 처형자 공유 카드. DoT는 방패 우회하여 HP 직격."
+    "long-description": {
+      "flavor": "Nenhum golpe passa. Nenhuma chance é dada.",
+      "detail": "캐스터에게 60 HP 방패, 완전 소비 또는 2턴 만료까지 지속. 글로벌 Shield Cap 100 HP/단위 적용. 스페셜리스트와 처형자 공유 카드. DoT는 방패 우회하여 HP 직격.",
+      "synergies": "Use antes de momentos previsíveis de pressão inimiga. Combine com **Aura de Proteção** (Especialista) para ainda mais absorção.",
+      "counter": "**Golpe Devastador** purga o escudo inteiro. **Disparo Preciso** com bleed ativo no alvo ignora escudos. Pressão sustentada por 2-3 turnos esgota o escudo.\n\n---"
+    },
+    "type-label": "방어(경)",
+    "duration-label": "Até ser totalmente quebrado ou 2 turnos",
+    "tags": [
+      "SELF",
+      "ESCUDO"
+    ]
   },
   "ls_d8": {
     "name": "보호의 오라",
     "description": "다이아 r2 범위 방패 12 + 1턴 atk_up 10%.",
-    "long-description": "캐스터 주위 반경 2 다이아 형태(~13칸) 보호 오라. 범위 내 모든 아군은 12 방패(Shield Cap 100)와 1턴 atk_up 10% 획득. 공격-방어 양용 스킬."
+    "long-description": {
+      "flavor": "A aura do mago. Pequena, mas suficiente.",
+      "detail": "캐스터 주위 반경 2 다이아 형태(~13칸) 보호 오라. 범위 내 모든 아군은 12 방패(Shield Cap 100)와 1턴 atk_up 10% 획득. 공격-방어 양용 스킬.",
+      "synergies": "Combine com **Cura Suprema** ou **Campo de Cura** para defesa em camadas. **Escudo de Grupo** (Guerreiro aliado) stackável até o cap de 100 HP.",
+      "counter": "**Golpe Devastador** ou **Corte Preciso** purgam buffs e escudo. **Disparo Preciso** com bleed ignora escudo. Skills de área grandes pegam todos protegidos.\n\n---"
+    },
+    "type-label": "방어(경)",
+    "duration-label": "1 turno",
+    "tags": [
+      "AREA",
+      "ESCUDO",
+      "BUFF"
+    ]
   },
   "lw_a1": {
     "name": "타이탄 충돌",
     "description": "세로 6x2 사각형 22 데미지 + 1칸 밀어내기. 차단 시: 스네어 1턴.",
-    "long-description": "전사가 움직이는 벽처럼 전진, 전방 세로 6x2 사각형 모든 적에게 22 데미지와 1칸 뒤로 밀어내기. 대상의 밀어내기가 벽이나 다른 적에게 차단되면 1턴 스네어. 공격적인 오프닝."
+    "long-description": {
+      "flavor": "O escudo avança como uma tempestade de aço.",
+      "detail": "전사가 움직이는 벽처럼 전진, 전방 세로 6x2 사각형 모든 적에게 22 데미지와 1칸 뒤로 밀어내기. 대상의 밀어내기가 벽이나 다른 적에게 차단되면 1턴 스네어. 공격적인 오프닝.",
+      "synergies": "Após **Muralha Viva** (Guerreiro aliado), use Colisão Titânica para empurrar inimigos contra a muralha — garantia de snare. Setup ideal para **Investida Brutal** subsequente.",
+      "counter": "**Bater em Retirada** ou **Avançar** podem ajustar posição antes do golpe. Inimigos com `mov_down` ainda sofrem dano mas o snare condicional só ativa contra obstáculos físicos.\n\n---"
+    },
+    "type-label": "공격(중)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "DANO",
+      "PUSH",
+      "CONDICIONAL"
+    ]
   },
   "lw_a2": {
     "name": "충격",
     "description": "3x3 범위 28 데미지. 1턴 def_down 18% + mov_down 1.",
-    "long-description": "무거운 충격이 대상 주위 3x3 범위에서 폭발, 모든 명중 대상에 28 데미지와 디버프 2종 1턴: def_down 18%, mov_down 1. 협력 압박."
+    "long-description": {
+      "flavor": "O chão treme. A defesa inimiga começa a rachar.",
+      "detail": "무거운 충격이 대상 주위 3x3 범위에서 폭발, 모든 명중 대상에 28 데미지와 디버프 2종 1턴: def_down 18%, mov_down 1. 협력 압박.",
+      "synergies": "Setup perfeito para **Bola de Fogo** ou **Tempestade de Lâminas** no turno seguinte (def reduzida = dano amplificado). Combine com **Provocação** para um turno completo de paralisia ofensiva inimiga.",
+      "counter": "**Bloqueio Total** (60 HP de escudo) absorve a maior parte do dano direto. **Proteção** (Especialista) remove os debuffs aplicados. Posicionamento espalhado reduz o número de alvos.\n\n---"
+    },
+    "type-label": "공격(중)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "DANO",
+      "DEBUFF"
+    ]
   },
   "lw_a3": {
     "name": "파괴 일격",
     "description": "2x2 범위 30 데미지. 명중 대상의 버프 제거 및 방패 파괴.",
-    "long-description": "전사가 2x2 범위에 거대한 일격, 30 데미지와 모든 명중 대상에 퍼지: 모든 활성 버프 제거 및 Shield Cap 무시하여 방패 완전 파괴. 우수한 안티-벙커 스킬."
+    "long-description": {
+      "flavor": "Cada machado real ignora a falsa proteção.",
+      "detail": "전사가 2x2 범위에 거대한 일격, 30 데미지와 모든 명중 대상에 퍼지: 모든 활성 버프 제거 및 Shield Cap 무시하여 방패 완전 파괴. 우수한 안티-벙커 스킬.",
+      "synergies": "Combo após **Bater em Retirada** (recolhe aliados) → Golpe Devastador (rompe defesas) → **Avançar** (avança time com buff). Linha completa de virada.",
+      "counter": "**Esquiva** anula completamente. **Fortaleza Inabalável** reduz o dano para 6 (mas o purge ainda ocorre). Inimigos podem evitar empilhar escudos antes da skill ser usada.\n\n---"
+    },
+    "type-label": "공격(중)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "AREA",
+      "DANO",
+      "PURGE"
+    ]
   },
   "lw_a4": {
     "name": "잔혹한 돌격",
     "description": "세로 3칸 라인 24 데미지. 중앙 라인: 밀기 1 + 차단 시 스네어 1턴. 위/아래 라인: 수직으로 밀어냄.",
-    "long-description": "전사가 세로 3칸 직선으로 돌격, 모든 명중 대상에 24 데미지. 밀어내기는 라인별 분리: 중앙 라인은 돌격 방향으로 1칸(차단 시 스네어 1턴), 위/아래 라인은 수직으로 밀어내어 통로 형성."
+    "long-description": {
+      "flavor": "A vanguarda real avança como um trovão. Nada permanece de pé.",
+      "detail": "전사가 세로 3칸 직선으로 돌격, 모든 명중 대상에 24 데미지. 밀어내기는 라인별 분리: 중앙 라인은 돌격 방향으로 1칸(차단 시 스네어 1턴), 위/아래 라인은 수직으로 밀어내어 통로 형성.",
+      "synergies": "Use depois de **Empurrão Real** (Rei) para acumular reposicionamento. Combine com **Disparo Preciso** (Executor aliado) na linha central — alvo snared = alvo morto.",
+      "counter": "**Teleport** (Executor) ou **Recuo Rápido** evitam a linha. Paredes (**Muralha Viva**) bloqueiam o avanço. Posicionamento espalhado lateralmente diminui o número de hits.\n\n---"
+    },
+    "type-label": "공격(중)",
+    "duration-label": "",
+    "tags": [
+      "LINHA",
+      "DANO",
+      "PUSH"
+    ]
   },
   "lw_a5": {
     "name": "도발",
     "description": "적 1명에게 10 데미지 + def_down 15% + 1턴 silence_defense.",
-    "long-description": "전사가 단일 적을 도발, 10 데미지와 디버프 2종: def_down 15%(1턴), silence_defense(1턴, 방어 스킬 사용 차단). 무거운 미끼 스킬."
+    "long-description": {
+      "flavor": "Provoque um soldado e ele esquece como se proteger.",
+      "detail": "전사가 단일 적을 도발, 10 데미지와 디버프 2종: def_down 15%(1턴), silence_defense(1턴, 방어 스킬 사용 차단). 무거운 미끼 스킬.",
+      "synergies": "Coordene com Executor aliado: Provocação no turno X → Corte Mortal no turno X+1 (alvo sem defesa). Combine com **Marca da Morte** para garantir foco da equipe.",
+      "counter": "**Proteção** (Especialista) remove o silence. **Cleanse** ou similar limpa debuffs. Programar dois ataques sequenciais (sem defesa) também esquiva indiretamente.\n\n---"
+    },
+    "type-label": "공격(제어)",
+    "duration-label": "",
+    "tags": [
+      "ALVO UNICO",
+      "DANO",
+      "DEBUFF",
+      "SILENCE"
+    ]
   },
   "lw_a6": {
     "name": "살아있는 벽",
     "description": "적 진영 세로 2칸 벽 2턴 지속. 인접 적: def_down 15%, mov_down 1, 매 턴 3 데미지.",
-    "long-description": "전사가 적 진영에 세로 2칸의 살아있는 벽 소환, 2턴 지속. 벽에 인접한 적은 인접 동안 def_down 15%, mov_down 1, 매 턴 3 데미지. 벽은 2턴 후 또는 atk1 스킬에 의해 파괴."
+    "long-description": {
+      "flavor": "Pedra erguida pela vontade. O caminho do inimigo termina aqui.",
+      "detail": "전사가 적 진영에 세로 2칸의 살아있는 벽 소환, 2턴 지속. 벽에 인접한 적은 인접 동안 def_down 15%, mov_down 1, 매 턴 3 데미지. 벽은 2턴 후 또는 atk1 스킬에 의해 파괴.",
+      "synergies": "Combine com **Empurrão Real** ou **Colisão Titânica** para empurrar inimigos contra as paredes (snare garantido). **Investida Brutal** se beneficia de inimigos confinados à linha central.",
+      "counter": "**Golpe Devastador** ou outros ataques de classe podem destruir as paredes (paredes têm HP). **Teleport** atravessa obstáculos. Inimigos podem simplesmente evitar a área debuffada.\n\n---"
+    },
+    "type-label": "공격(제어)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "AREA",
+      "MURALHA",
+      "DEBUFF",
+      "DOT"
+    ]
   },
   "lw_a7": {
     "name": "돌격",
     "description": "세로 3칸 라인 12 데미지. 1턴 def_down 15% + mov_down 1.",
-    "long-description": "잔혹한 돌격의 경량판: 전사가 세로 3칸 직선으로 전진, 모든 명중 대상에 12 데미지와 1턴 def_down 15% 및 mov_down 1. 밀기 없음, 스네어 없음."
+    "long-description": {
+      "flavor": "O Guerreiro avança. O inimigo recua... mais devagar.",
+      "detail": "잔혹한 돌격의 경량판: 전사가 세로 3칸 직선으로 전진, 모든 명중 대상에 12 데미지와 1턴 def_down 15% 및 mov_down 1. 밀기 없음, 스네어 없음.",
+      "synergies": "Setup ideal para skills de single-target alto dano da equipe. Combine com **Adrenalina** (Executor aliado) para amplificar dano subsequente.",
+      "counter": "**Esquiva** anula. **Fortaleza Inabalável** reduz dano e debuffs surtem efeito mas com impacto reduzido pelo `def_up` implícito.\n\n---"
+    },
+    "type-label": "공격(제어)",
+    "duration-label": "",
+    "tags": [
+      "LINHA",
+      "DANO",
+      "DEBUFF"
+    ]
   },
   "lw_a8": {
     "name": "죽은 벽 감옥",
     "description": "중앙 12 데미지 + 주위 8개의 임시 벽. 내부 적: 스네어 2턴. 벽은 atk1로 파괴.",
-    "long-description": "전사가 죽은 벽 감옥 생성: 중앙 칸에 12 데미지, 주위(반경 1) 고리 모양 8개 벽 세움. 감옥 내 적은 2턴 스네어 — 이동 불가지만 스킬 사용 가능. 감옥 벽은 약함."
+    "long-description": {
+      "flavor": "O reino constrói uma masmorra ao redor do invasor.",
+      "detail": "전사가 죽은 벽 감옥 생성: 중앙 칸에 12 데미지, 주위(반경 1) 고리 모양 8개 벽 세움. 감옥 내 적은 2턴 스네어 — 이동 불가지만 스킬 사용 가능. 감옥 벽은 약함.",
+      "synergies": "Combo executor: prende inimigo → time coordena Marca da Morte + Disparo Preciso. **Bola de Fogo** dentro da cela atinge alvo sem chance de escape.",
+      "counter": "**Teleport** atravessa paredes. Aliados quebrando as paredes liberam o preso (custo: 2 ataques pesados). Inimigos com **Esquiva** ativa na hora do cast podem evitar a captura inicial.\n\n---"
+    },
+    "type-label": "공격(제어)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "MURALHA",
+      "DANO",
+      "SNARE"
+    ]
   },
   "lw_d1": {
     "name": "수호자의 방패",
     "description": "최대 2칸 이동 + 전방 세로 3칸 방패 벽. 후방 6칸 사각형 아군: 1턴 -50% 데미지.",
-    "long-description": "전사는 시전 전 최대 2칸 이동 가능(preMovement), 그 후 전방에 세로 3칸 방패 벽 생성. 벽 후방 6x2 사각형의 모든 아군은 1턴 -50% 데미지. 정점 방어 스킬."
+    "long-description": {
+      "flavor": "O Guerreiro ergue o escudo. Atrás dele, o reino respira.",
+      "detail": "전사는 시전 전 최대 2칸 이동 가능(preMovement), 그 후 전방에 세로 3칸 방패 벽 생성. 벽 후방 6x2 사각형의 모든 아군은 1턴 -50% 데미지. 정점 방어 스킬.",
+      "synergies": "Use antes de momentos críticos da equipe (curas, revives, regeneração). **Cura Suprema** (Especialista) atrás do escudo é praticamente garantida. **Recuperação Real** (Rei) protegida nunca é interrompida.",
+      "counter": "**Bola de Fogo** e skills de área ignoram a \"frente\" — atingem por cima. **Teleport** posiciona burst diretamente atrás da parede, anulando o ângulo de proteção.\n\n---"
+    },
+    "type-label": "방어(강)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "MURALHA",
+      "BUFF AREA"
+    ]
   },
   "lw_d2": {
     "name": "수호신",
     "description": "아군이 받는 데미지의 60%가 전사로 전환, 전사에서 30% 감소(1턴).",
-    "long-description": "전사가 최저 HP 아군(왕 제외)을 보호 대상으로 표시. 1턴 동안 그 아군이 받는 모든 데미지의 60%가 전사로 전환되고, 전환된 데미지는 전사에서 추가 30% 감소를 거침. 버스트 대응 구조."
+    "long-description": {
+      "flavor": "Em meu peito o golpe pousa. Em minhas costas o reino segue.",
+      "detail": "전사가 최저 HP 아군(왕 제외)을 보호 대상으로 표시. 1턴 동안 그 아군이 받는 모든 데미지의 60%가 전사로 전환되고, 전환된 데미지는 전사에서 추가 30% 감소를 거침. 버스트 대응 구조.",
+      "synergies": "Combine com **Proteção Real** (Rei) e **Protetor** (passiva própria). Em Guerreiro adjacente ao Rei: Proteção Real reduz mais 20% sobre o dano redirecionado. Camadas defensivas formidáveis.",
+      "counter": "Matar o Guerreiro elimina o redirect. **Disparo Preciso** com bleed ignora as reduções (true damage). Skills de área atingem ambos simultaneamente — redirect não os protege.\n\n---"
+    },
+    "type-label": "방어(강)",
+    "duration-label": "1 turno",
+    "tags": [
+      "ALVO UNICO",
+      "BUFF",
+      "DAMAGE-REDIRECT"
+    ]
   },
   "lw_d3": {
     "name": "절대 저항",
     "description": "전사 + 후방 아군: 1턴 -65% 데미지. 1칸 미리 이동 가능.",
-    "long-description": "전사는 시전 전 최대 1칸 이동 가능(preMovement), 그 후 절대 저항 자세. 1턴 동안 자신과 바로 뒤 아군은 모든 데미지에서 -65%(true damage 포함, 이미 적용된 DoT 제외)."
+    "long-description": {
+      "flavor": "Onde o Guerreiro firma os pés, dois corações batem em segurança.",
+      "detail": "전사는 시전 전 최대 1칸 이동 가능(preMovement), 그 후 절대 저항 자세. 1턴 동안 자신과 바로 뒤 아군은 모든 데미지에서 -65%(true damage 포함, 이미 적용된 DoT 제외).",
+      "synergies": "Combine com **Cura Suprema** ou **Recuperação Real** atrás — proteção quase total durante curas. **Postura Defensiva** stackável para reduções compostas.",
+      "counter": "Skills de área que pegam o lado/frente do Guerreiro ignoram o \"atrás\". **Empurrão Real** ou **Intimidação** quebram a formação posicional. **Disparo Preciso** ainda penetra true damage.\n\n---"
+    },
+    "type-label": "방어(강)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "BUFF",
+      "POSICIONAL"
+    ]
   },
   "lw_d4": {
     "name": "흔들리지 않는 요새",
     "description": "1턴 받는 데미지 -80%. 다음 이동 턴에 이동 불가.",
-    "long-description": "전사가 살아있는 요새 형태. 1턴 동안 모든 데미지 -80%(true damage 포함). 대가: 다음 이동 턴에 이동 불가, 제자리 고정. 전사와 왕 공유 카드."
+    "long-description": {
+      "flavor": "Pés enraizados. Coração de pedra. O Rei se torna a própria muralha.",
+      "detail": "전사가 살아있는 요새 형태. 1턴 동안 모든 데미지 -80%(true damage 포함). 대가: 다음 이동 턴에 이동 불가, 제자리 고정. 전사와 왕 공유 카드.",
+      "synergies": "Combine com **Espírito de Sobrevivência** para virada de jogo. Use ANTES do oponente ativar combos óbvios (ex: Adrenalina visível no Executor inimigo).",
+      "counter": "O Rei imóvel é alvo fácil para reposicionamento — **Intimidação** ou **Empurrão Real** inimigos podem deslocá-lo. **Muralha Viva** pode prendê-lo após o turno.\n\n---"
+    },
+    "type-label": "방어(경)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "BUFF",
+      "IMOVEL"
+    ]
   },
   "lw_d5": {
     "name": "팀 방패",
     "description": "모든 아군 2턴 방패 15.",
-    "long-description": "전사가 집단 방패 분배: 4명의 아군 모두(자신과 왕 포함) 15 방패 획득, 2턴 또는 부서질 때까지 지속. 각 방패 독립 — 왕도 정상 획득(치유와 다름). 팀 유지 스킬."
+    "long-description": {
+      "flavor": "Um exército que se protege junto, vence junto.",
+      "detail": "전사가 집단 방패 분배: 4명의 아군 모두(자신과 왕 포함) 15 방패 획득, 2턴 또는 부서질 때까지 지속. 각 방패 독립 — 왕도 정상 획득(치유와 다름). 팀 유지 스킬.",
+      "synergies": "Combo defensivo: **Aura de Proteção** (Especialista) + Escudo de Grupo + **Postura Defensiva** = camadas múltiplas de redução. Use antes de turno previsto de pressão inimiga.",
+      "counter": "**Golpe Devastador** purga em área pequena. **Disparo Preciso** com bleed ativo no alvo ignora escudos. Concentrar burst em um único alvo derrota o spread defensivo.\n\n---"
+    },
+    "type-label": "방어(경)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "GLOBAL",
+      "ESCUDO"
+    ]
   },
   "lw_d6": {
     "name": "방어 자세",
     "description": "주위 3x3 아군: 1턴 -25% 데미지.",
-    "long-description": "전사가 방어 자세 취함. 주위 3x3 범위 아군(자신 포함)은 1턴 -25% 데미지. 방패 없음, 치유 없음 — 순수 데미지 감소. 수호자 패시브(-15%)와 결합 시 인접 아군 실질 -40%."
+    "long-description": {
+      "flavor": "Pés firmes, escudo erguido, formação fechada.",
+      "detail": "전사가 방어 자세 취함. 주위 3x3 범위 아군(자신 포함)은 1턴 -25% 데미지. 방패 없음, 치유 없음 — 순수 데미지 감소. 수호자 패시브(-15%)와 결합 시 인접 아군 실질 -40%.",
+      "synergies": "Combo com a passiva Protetor (-15%) — aliados adjacentes recebem ambas as reduções multiplicativamente: 0.85 × 0.75 = 0.6375 (efetiva redução de 36%).",
+      "counter": "Forçar o Guerreiro a se afastar dos aliados elimina o buff. Skills de área que ignoram redução percentual (true damage) atravessam.\n\n---"
+    },
+    "type-label": "방어(경)",
+    "duration-label": "1 turno",
+    "tags": [
+      "AREA",
+      "BUFF"
+    ]
   },
   "lw_d7": {
     "name": "전진",
     "description": "4x4 아군을 1칸 앞으로 이동. 1턴 +1 mov + -10% 데미지 + +10% ATK.",
-    "long-description": "전사가 팀의 전진 주도. 주위 4x4 사분면의 모든 아군은 1칸 앞(적 진영 방향)으로 이동하고 1턴 3가지 버프: +1 mov, 받는 데미지 -10%, ATK +10%."
+    "long-description": {
+      "flavor": "O Rei chama. A vanguarda avança. O reino conquista.",
+      "detail": "전사가 팀의 전진 주도. 주위 4x4 사분면의 모든 아군은 1칸 앞(적 진영 방향)으로 이동하고 1턴 3가지 버프: +1 mov, 받는 데미지 -10%, ATK +10%.",
+      "synergies": "Combo de avanço: Avançar → próximo turno usa **Investida** ou **Colisão Titânica** com aliados em posição de pressão. Setup ideal para tomar o muro inimigo.",
+      "counter": "**Empurrão Real** (Rei inimigo) anula o avanço empurrando todos de volta. **Muralha Viva** bloqueia. Skills de área inimigas pegam todos os aliados agrupados.\n\n---"
+    },
+    "type-label": "방어(경)",
+    "duration-label": "1 turno",
+    "tags": [
+      "AREA",
+      "BUFF",
+      "MOVIMENTO"
+    ]
   },
   "lw_d8": {
     "name": "후퇴",
     "description": "4x4 모든 아군을 1칸 뒤로 이동. 다음 턴 +1 mov + 1턴 -15% 데미지.",
-    "long-description": "전사가 전술적 후퇴 명령. 주위 4x4 사분면의 모든 아군은 1칸 뒤(자기 진영 방향)로 이동하고 다음 턴 +1 mov, 1턴 -15% 데미지. 순수 방어-재배치."
+    "long-description": {
+      "flavor": "Recuar não é perder. É escolher o próximo terreno.",
+      "detail": "전사가 전술적 후퇴 명령. 주위 4x4 사분면의 모든 아군은 1칸 뒤(자기 진영 방향)로 이동하고 다음 턴 +1 mov, 1턴 -15% 데미지. 순수 방어-재배치.",
+      "synergies": "Use após pressão inimiga heavy ou antes de skills de área inimigas previstas. Combine com **Ordem Real** (Rei) ou skills curativas para janela de respiro. O miss chance é especialmente forte contra **Disparo Preciso** (true damage que ignoraria reduções percentuais).",
+      "counter": "Inimigos com `pull` (não temos no jogo atualmente) anulariam. **Investida Brutal** persegue aliados em retirada. Skills de área garantem hit múltiplo — apenas o **primeiro** dano direto tem chance de miss; ataques sequenciais ainda atingem.\n\n---"
+    },
+    "type-label": "방어(강)",
+    "duration-label": "1 turno (buffs)",
+    "tags": [
+      "AREA",
+      "BUFF",
+      "MOVIMENTO",
+      "EVADE"
+    ]
   },
   "le_a1": {
     "name": "치명적 일격",
     "description": "45 데미지 + 대상의 디버프 제거. bleed 있으면: +50%(총 67).",
-    "long-description": "처형자가 단일 대상에게 정밀하고 치명적인 베기 — 45 직접 데미지와 cleanse. 일격 시 대상이 Bleed를 가지고 있으면 +50%(총 67). 무거운 처형 스킬."
+    "long-description": {
+      "flavor": "O Executor identifica feridas abertas e desfere o golpe definitivo.",
+      "detail": "처형자가 단일 대상에게 정밀하고 치명적인 베기 — 45 직접 데미지와 cleanse. 일격 시 대상이 Bleed를 가지고 있으면 +50%(총 67). 무거운 처형 스킬.",
+      "synergies": "Aplique **Corte Hemorragia**, **Bomba de Espinhos** ou **Marca da Morte** no turno anterior para garantir bleed → use Corte Mortal para o burst de 67. Combine com **Adrenalina** ativa para 84 de dano (+25% × 67).",
+      "counter": "**Esquiva** anula. **Fortaleza Inabalável** reduz para 13 de dano. **Cleanse** remove o bleed antes do turno do Executor. Manter alvos limpos de DoT é a defesa principal.\n\n---"
+    },
+    "type-label": "공격(중)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "ALVO UNICO",
+      "DANO",
+      "PURGE",
+      "SINERGIA-BLEED"
+    ]
   },
   "le_a2": {
     "name": "칼날 폭풍",
     "description": "3x3 범위 26 데미지. 대상이 bleed 있으면: +50%.",
-    "long-description": "처형자가 3x3 범위에 칼날 폭풍을 풀어놓음, 모든 명중 적에게 26 데미지. 각 대상은 적중 시 Bleed 상태면 개별로 +50% 데미지."
+    "long-description": {
+      "flavor": "Lâminas dançam em todas as direções. Quem sangra, sangra mais.",
+      "detail": "처형자가 3x3 범위에 칼날 폭풍을 풀어놓음, 모든 명중 적에게 26 데미지. 각 대상은 적중 시 Bleed 상태면 개별로 +50% 데미지.",
+      "synergies": "Use **Bomba de Espinhos** primeiro (aplica bleed em área) → Tempestade de Lâminas no turno seguinte garante triple-amplificação. Em time, **Provocação** (Guerreiro aliado) prepara alvos sem defesa.",
+      "counter": "Posicionamento espalhado anula AoE. **Bater em Retirada** (Guerreiro inimigo) limpa a área. **Cleanse** remove bleeds antes da tempestade.\n\n---"
+    },
+    "type-label": "공격(중)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "AREA",
+      "DANO",
+      "SINERGIA-BLEED"
+    ]
   },
   "le_a3": {
     "name": "정밀 사격",
     "description": "30 true damage(DEF 무시). 대상에 bleed 있으면: 방패도 무시.",
-    "long-description": "처형자가 단일 대상에게 치명적 정밀 발사체 — 30 True Damage, 모든 DEF 감면, 패시브, 백분율 데미지 감소 무시. 사격 시 대상에 Bleed 활성이면 모든 활성 방패도 무시."
+    "long-description": {
+      "flavor": "Não há armadura entre a flecha e o coração marcado.",
+      "detail": "처형자가 단일 대상에게 치명적 정밀 발사체 — 30 True Damage, 모든 DEF 감면, 패시브, 백분율 데미지 감소 무시. 사격 시 대상에 Bleed 활성이면 모든 활성 방패도 무시.",
+      "synergies": "Combo definitivo: **Marca da Morte** (aplica bleed) → Disparo Preciso (true damage que ignora escudos). Mesmo Reis com escudos empilhados caem nesta combinação.",
+      "counter": "**Esquiva** ainda funciona (anula o ataque inteiro). **Fortaleza Inabalável** reduz true damage em 80%. **Cleanse** remove bleed para preservar escudos. Posicionamento fora da linha vertical.\n\n---"
+    },
+    "type-label": "공격(중)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "ALVO UNICO",
+      "LINHA",
+      "TRUE DAMAGE",
+      "ANTI-SHIELD"
+    ]
   },
   "le_a4": {
     "name": "정밀 베기",
     "description": "가로 2칸 22 데미지 + 정화.",
-    "long-description": "처형자가 가로 2칸 라인에 연속 두 번의 베기, 22 데미지와 모든 명중 대상에 퍼지. 안티-버프 스킬."
+    "long-description": {
+      "flavor": "A precisão da lâmina rasga a falsa proteção.",
+      "detail": "처형자가 가로 2칸 라인에 연속 두 번의 베기, 22 데미지와 모든 명중 대상에 퍼지. 안티-버프 스킬.",
+      "synergies": "Use Corte Preciso → próximo turno Disparo Preciso (alvo sem escudo). Combine com **Provocação** (Guerreiro aliado) para silence_defense + buff cleanse — alvo completamente exposto.",
+      "counter": "**Esquiva** anula. Posicionar-se em diagonal ao Executor evita o cone horizontal. **Aura de Proteção** (Especialista) reaplica buffs.\n\n---"
+    },
+    "type-label": "공격(중)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "AREA",
+      "DANO",
+      "PURGE"
+    ]
   },
   "le_a5": {
     "name": "출혈 베기",
     "description": "가로 2칸 8 데미지 + 매 턴 4 bleed 3턴. 재적용 시 누적.",
-    "long-description": "처형자가 가로 2칸에 얕은 베기, 8 초기 데미지와 Bleed: 3턴 매 턴 4 데미지(총 12). Bleed는 방패를 무시하는 물리 DoT. 이미 출혈 중인 대상에 재사용 시 Bleed 누적."
+    "long-description": {
+      "flavor": "Um corte raso. Mas a ferida não para de sangrar.",
+      "detail": "처형자가 가로 2칸에 얕은 베기, 8 초기 데미지와 Bleed: 3턴 매 턴 4 데미지(총 12). Bleed는 방패를 무시하는 물리 DoT. 이미 출혈 중인 대상에 재사용 시 Bleed 누적.",
+      "synergies": "Primeira skill em qualquer combo. Use turno 1 → Corte Mortal turno 2. **Marca da Morte** stackável (também aplica bleed mais forte).",
+      "counter": "**Cleanse** ou **Proteção** (Especialista) remove o bleed. **Cura Suprema** mitiga o tick (mas DoT bypass cura, então não totalmente). Manter HP alto reduz pressão do tick.\n\n---"
+    },
+    "type-label": "공격(제어)",
+    "duration-label": "3 turnos",
+    "tags": [
+      "AREA",
+      "DANO",
+      "BLEED",
+      "SETUP"
+    ]
   },
   "le_a6": {
     "name": "가시 폭탄",
     "description": "다이아 r2 10 데미지 + 매 턴 5 bleed 2턴.",
-    "long-description": "처형자가 가시 폭탄 투척, 반경 2 다이아 형태(~13칸)에서 폭발, 모든 명중 대상에 10 초기 데미지와 매 턴 5 Bleed 2턴(총 10 DoT). 광범위 bleed 적용."
+    "long-description": {
+      "flavor": "Um arremesso silencioso. Espinhos rasgam pelos quatro lados.",
+      "detail": "처형자가 가시 폭탄 투척, 반경 2 다이아 형태(~13칸)에서 폭발, 모든 명중 대상에 10 초기 데미지와 매 턴 5 Bleed 2턴(총 10 DoT). 광범위 bleed 적용.",
+      "synergies": "Combo perfeito antes de **Tempestade de Lâminas** (Executor mesmo) — todos os atingidos sofrem +50%. **Marca da Morte** complementa no canto traseiro do diamante.",
+      "counter": "**Bater em Retirada** sai da área. **Proteção** dá imunidade a debuffs novos por 1 turno. Posicionamento em fileira evita o formato diamante.\n\n---"
+    },
+    "type-label": "공격(제어)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "AREA",
+      "DANO",
+      "BLEED",
+      "SETUP"
+    ]
   },
   "le_a7": {
     "name": "죽음의 표식",
     "description": "세로 8칸 12 데미지. 방패 제거(20%를 HP로 회복). 매 턴 8 bleed 2턴.",
-    "long-description": "처형자가 세로 직사각형 범위(8칸, 깊이 4 × 폭 2)에 죽음의 표식 시전. 모든 명중에 12 데미지, 대상의 모든 방패 제거(처형자는 제거된 방패의 20%를 HP로 회복), 매 턴 8 Bleed 2턴(16 DoT)."
+    "long-description": {
+      "flavor": "Marcado para a morte. O selo silencioso da execução.",
+      "detail": "처형자가 세로 직사각형 범위(8칸, 깊이 4 × 폭 2)에 죽음의 표식 시전. 모든 명중에 12 데미지, 대상의 모든 방패 제거(처형자는 제거된 방패의 20%를 HP로 회복), 매 턴 8 Bleed 2턴(16 DoT).",
+      "synergies": "Combo \"destruidor de tanks\": Marca da Morte → Disparo Preciso (true damage + ignora escudos restantes). Frente a Reis com escudos empilhados, sequência reduz HP rápido.",
+      "counter": "**Aura de Proteção** ou **Cura Suprema** (Especialista) podem reaplicar escudos perdidos. **Cleanse** remove o bleed, mas o escudo já foi removido (não retorna). Manter inimigos sem escudo até momento crítico minimiza valor da skill.\n\n---"
+    },
+    "type-label": "공격(제어)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "LINHA",
+      "DANO",
+      "ANTI-SHIELD",
+      "BLEED"
+    ]
   },
   "le_a8": {
     "name": "숨겨진 함정",
     "description": "한 칸 무장(점유 불가). 밟으면: 15 데미지 + 스네어 1턴 + 매 턴 4 bleed 3턴.",
-    "long-description": "처형자가 빈 칸에 보이지 않는 함정 설치. 활성화 전까지 유지. 어떤 적이든 그 칸에 들어오면 폭발: 15 데미지, 1턴 스네어, 매 턴 4 Bleed 3턴."
+    "long-description": {
+      "flavor": "O caminho mais curto pode ser o último.",
+      "detail": "처형자가 빈 칸에 보이지 않는 함정 설치. 활성화 전까지 유지. 어떤 적이든 그 칸에 들어오면 폭발: 15 데미지, 1턴 스네어, 매 턴 4 Bleed 3턴.",
+      "synergies": "Combine com **Empurrão Real** ou **Colisão Titânica** (aliados) para forçar inimigo na armadilha. **Investida Brutal** empurra alvos pelo mapa em direção a traps pré-posicionadas.",
+      "counter": "Inimigos evitam casas suspeitas (em PvP é leitura). **Teleport** ignora armadilhas (não pisa, atravessa). Forçar inimigo a entrar exige coordenação ofensiva.\n\n---"
+    },
+    "type-label": "공격(제어)",
+    "duration-label": "Permanente até ser ativada ou fim de combate",
+    "tags": [
+      "ALVO UNICO",
+      "TRAP",
+      "DANO",
+      "SNARE",
+      "BLEED"
+    ]
   },
   "le_d1": {
     "name": "반사",
     "description": "받는 데미지 -25% + 다음 턴 감소된 양을 공격자에게 반사.",
-    "long-description": "1턴 동안 처형자는 모든 데미지에서 -25%, 감소된 값을 공격자에게 정확히 반사. 예: 40 공격 → 30 받음, 공격자 10 반사. 다중 공격자는 다중 반사 생성."
+    "long-description": {
+      "flavor": "O que você tenta tirar, retorna a você.",
+      "detail": "1턴 동안 처형자는 모든 데미지에서 -25%, 감소된 값을 공격자에게 정확히 반사. 예: 40 공격 → 30 받음, 공격자 10 반사. 다중 공격자는 다중 반사 생성.",
+      "synergies": "Use quando se espera burst inimigo (visivelmente preparado). Combine com **Adrenalina** para janela ofensiva pós-defesa.",
+      "counter": "Skills que não causam dano direto (`debuff`, `snare`) não são refletidas. **Bola de Fogo** reflete dano original mas o burn aplicado fica. Atacantes podem usar skills via DoT para evitar reflexão.\n\n---"
+    },
+    "type-label": "방어(강)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "BUFF",
+      "REFLECT"
+    ]
   },
   "le_d2": {
     "name": "아드레날린",
     "description": "2턴 +25% ATK. 종료 시: 최대 HP 15% 잃음(방패로 차단 가능).",
-    "long-description": "처형자가 극도의 아드레날린 모드: 2턴 +25% ATK. 둘째 턴 종료 시 최대 HP 15%를 반동 데미지로 받음(그 시점 활성 방패로 차단 가능). 위험/보상 스킬."
+    "long-description": {
+      "flavor": "A força do desespero. O preço da pressa.",
+      "detail": "처형자가 극도의 아드레날린 모드: 2턴 +25% ATK. 둘째 턴 종료 시 최대 HP 15%를 반동 데미지로 받음(그 시점 활성 방패로 차단 가능). 위험/보상 스킬.",
+      "synergies": "Setup mainstream do Executor: Adrenalina → 2 turnos de Corte Mortal/Disparo Preciso amplificados. Combine com **Recuo Rápido** ou **Bloqueio Total** para absorver o tick final.",
+      "counter": "**Desarme** (Rei inimigo) cancela skill no turno 1 da Adrenalina, desperdiçando setup. **Marca da Morte** com bleed durante a janela mantém pressão sobre o Executor já fragilizado.\n\n---"
+    },
+    "type-label": "방어(강)",
+    "duration-label": "2 turnos (buff) + tick final de dano",
+    "tags": [
+      "SELF",
+      "BUFF",
+      "TRADE-OFF"
+    ]
   },
   "le_d3": {
     "name": "이중 공격",
     "description": "다음 턴: atk 스킬 2개, def 0. 쿨다운: 2턴(연속 사용 불가).",
-    "long-description": "1턴(다음) 동안 처형자는 1개 대신 2개의 공격 스킬 사용 가능, 그러나 그 턴에 어떤 방어 스킬도 사용 불가. 2턴 쿨다운."
+    "long-description": {
+      "flavor": "Dois golpes. Zero defesa. Tudo ou nada.",
+      "detail": "1턴(다음) 동안 처형자는 1개 대신 2개의 공격 스킬 사용 가능, 그러나 그 턴에 어떤 방어 스킬도 사용 불가. 2턴 쿨다운.",
+      "synergies": "Combo overkill: Ataque em Dobro → próximo turno Marca da Morte (aplica bleed) + Corte Mortal (+50% por bleed = 67) = 79 de dano em um turno só. Útil para finalizar Reis em HP baixo.",
+      "counter": "**Provocação** (Guerreiro inimigo) com silence_defense não ajuda (Executor já não defende). **Bola de Fogo** ou skill de área aproveita a vulnerabilidade total. Burst inimigo no turno do dobro pode matar o Executor.\n\n---"
+    },
+    "type-label": "방어(강)",
+    "duration-label": "",
+    "tags": [
+      "SELF",
+      "OFENSIVO",
+      "COOLDOWN"
+    ]
   },
   "le_d4": {
     "name": "텔레포트",
     "description": "최대 5칸 텔레포트. 다음 이동 턴 소모.",
-    "long-description": "처형자가 반경 5의 어떤 칸으로든 즉시 텔레포트, 경로상의 장애물, 벽, 유닛 무시. 대가: 다음 이동 턴 소모. 극단적 전술 기동성."
+    "long-description": {
+      "flavor": "Está aqui. Está lá. Está em todo lugar.",
+      "detail": "처형자가 반경 5의 어떤 칸으로든 즉시 텔레포트, 경로상의 장애물, 벽, 유닛 무시. 대가: 다음 이동 턴 소모. 극단적 전술 기동성.",
+      "synergies": "Posicionamento para ativar **Isolado** (passiva) — teleport longe da equipe = +20% dano. Combine com **Marca da Morte** posicionada em backline inimiga.",
+      "counter": "Inimigos com `mov_down` no Executor têm efeito reduzido (teleport ignora movimento normal). **Muralha Viva** não bloqueia teleport. Antecipar para onde o Executor pode aparecer é a leitura principal.\n\n---"
+    },
+    "type-label": "방어(강)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "SELF",
+      "TELEPORT",
+      "MOVIMENTO"
+    ]
   },
   "le_d5": {
     "name": "신속 후퇴",
     "description": "최대 2칸 뒤로 이동 + 1턴 방패 20.",
-    "long-description": "처형자가 최대 2칸 뒤로 후퇴(자기 진영 방향만)하고 1턴 동안 20 방패 획득. 이동과 방패는 같은 동작의 일부. 가벼운 도주 스킬."
+    "long-description": {
+      "flavor": "O assassino se move. O caminho está livre.",
+      "detail": "처형자가 최대 2칸 뒤로 후퇴(자기 진영 방향만)하고 1턴 동안 20 방패 획득. 이동과 방패는 같은 동작의 일부. 가벼운 도주 스킬.",
+      "synergies": "Use depois de **Adrenalina** para absorver o tick final com o escudo de 20. Combine com **Teleport** depois para reposicionamento agressivo.",
+      "counter": "Paredes ou aliados bloqueiam o recuo. **Investida Brutal** persegue. **Disparo Preciso** com bleed ignora escudo.\n\n---"
+    },
+    "type-label": "방어(경)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "MOVIMENTO",
+      "ESCUDO"
+    ]
   },
   "le_d6": {
     "name": "회피",
     "description": "다음 턴 첫 직접 공격을 완전 회피.",
-    "long-description": "처형자가 회피 자세, 다음 턴 받는 첫 직접 공격을 완전 회피. 1히트만 흡수. 스페셜리스트/처형자/왕 공유 카드."
+    "long-description": {
+      "flavor": "O Rei não bloqueia o golpe. Ele simplesmente não está mais lá.",
+      "detail": "처형자가 회피 자세, 다음 턴 받는 첫 직접 공격을 완전 회피. 1히트만 흡수. 스페셜리스트/처형자/왕 공유 카드.",
+      "synergies": "Use em \"leitura\" do oponente — quando você sabe que o burst vem. Combine com **Sombra Real**: oponente confuso atira em clone, e mesmo se acertar o real, a Esquiva protege.",
+      "counter": "Skills de área (**Bola de Fogo**, **Domínio Real**) ignoram Esquiva — não são \"ataques diretos\". DoTs aplicados anteriormente continuam ticando. Skills compostas com múltiplos hits (**Sequência de Socos**) só perdem o primeiro hit.\n\n---"
+    },
+    "type-label": "방어(경)",
+    "duration-label": "Até receber 1 ataque ou fim do turno",
+    "tags": [
+      "SELF",
+      "EVADE"
+    ]
   },
   "le_d7": {
     "name": "완전 차단",
     "description": "방패 60. 부서지거나 2턴 지속.",
-    "long-description": "처형자에게 60 HP 방패, 완전 소비 또는 2턴 만료까지 지속. 글로벌 Shield Cap 100 HP/단위 적용. 스페셜리스트와 처형자 공유 카드."
+    "long-description": {
+      "flavor": "Nenhum golpe passa. Nenhuma chance é dada.",
+      "detail": "처형자에게 60 HP 방패, 완전 소비 또는 2턴 만료까지 지속. 글로벌 Shield Cap 100 HP/단위 적용. 스페셜리스트와 처형자 공유 카드.",
+      "synergies": "Use antes de momentos previsíveis de pressão inimiga. Combine com **Aura de Proteção** (Especialista) para ainda mais absorção.",
+      "counter": "**Golpe Devastador** purga o escudo inteiro. **Disparo Preciso** com bleed ativo no alvo ignora escudos. Pressão sustentada por 2-3 turnos esgota o escudo.\n\n---"
+    },
+    "type-label": "방어(경)",
+    "duration-label": "Até ser totalmente quebrado ou 2 turnos",
+    "tags": [
+      "SELF",
+      "ESCUDO"
+    ]
   },
   "le_d8": {
     "name": "방패",
     "description": "1턴 방패 25.",
-    "long-description": "처형자에게 1턴 25 HP 빠른 방패. Shield Cap 100. 완전 차단보다 가볍고 저렴함."
+    "long-description": {
+      "flavor": "Um instante de aço. Um instante a mais de vida.",
+      "detail": "처형자에게 1턴 25 HP 빠른 방패. Shield Cap 100. 완전 차단보다 가볍고 저렴함.",
+      "synergies": "Combine com **Recuo Rápido** (também aplica escudo) para 45 HP de absorção. Stack com **Bloqueio Total** = 85 HP de escudo (não atinge cap).",
+      "counter": "Igual aos outros escudos — **Golpe Devastador**, **Disparo Preciso** com bleed, ataques sustentados.\n\n---"
+    },
+    "type-label": "방어(경)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "ESCUDO"
+    ]
   },
   "lk_a1": {
     "name": "왕의 주먹",
     "description": "가로 2칸 25 데미지 + 2턴 self 방패 15.",
-    "long-description": "왕이 전방 가로 2칸에 왕의 주먹, 명중한 모든 적에게 25 데미지. 같은 턴에 2턴 15 self 방패(Shield Cap 100). 공격-방어 하이브리드 압박."
+    "long-description": {
+      "flavor": "O punho real pesa como o trono.",
+      "detail": "왕이 전방 가로 2칸에 왕의 주먹, 명중한 모든 적에게 25 데미지. 같은 턴에 2턴 15 self 방패(Shield Cap 100). 공격-방어 하이브리드 압박.",
+      "synergies": "Combina com **Recuperação Real** e **Espírito de Sobrevivência** para sustentar pressão prolongada. O escudo gerado conta para o Shield Cap (100 HP), então alterne com **Chute Real** para manter o sustain sem desperdício.",
+      "counter": "Inimigos com **Golpe Devastador** (Guerreiro) ou **Corte Preciso** (Executor) podem aplicar `purge`, removendo o escudo antes que ele cumpra sua função. Posicionar-se em diagonal evita ser atingido pelo cone horizontal.\n\n---"
+    },
+    "type-label": "공격(중)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "AREA",
+      "DANO",
+      "ESCUDO"
+    ]
   },
   "lk_a2": {
     "name": "왕의 발차기",
     "description": "세로 2칸 27 데미지 + 2턴 self 방패 15.",
-    "long-description": "왕이 전방 세로 2칸에 왕의 발차기, 명중한 모든 적에게 27 데미지. 2턴 15 self 방패. 왕의 주먹의 세로 변형."
+    "long-description": {
+      "flavor": "Cada movimento do soberano carrega o peso de uma coroa.",
+      "detail": "왕이 전방 세로 2칸에 왕의 발차기, 명중한 모든 적에게 27 데미지. 2턴 15 self 방패. 왕의 주먹의 세로 변형.",
+      "synergies": "Excelente após **Empurrão Real** ou **Intimidação**, que reposicionam inimigos diretamente na linha do chute. Combinação clássica: empurra → chuta → soca.",
+      "counter": "Inimigos com **Esquiva** ativa anulam o primeiro acerto. **Fortaleza Inabalável** reduz o dano em 80%, tornando o chute praticamente inofensivo.\n\n---"
+    },
+    "type-label": "공격(중)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "AREA",
+      "DANO",
+      "ESCUDO"
+    ]
   },
   "lk_a3": {
     "name": "주먹 콤보",
     "description": "3x2 15 데미지 + lifesteal 30%. 왕 면역 규칙의 예외.",
-    "long-description": "왕이 전방 3x2 범위에 주먹 콤보 발산, 15 데미지. 입힌 데미지의 30%를 치유로 회수(Lifesteal) — 왕 직접 치유 면역의 명시적 예외(self-cast)."
+    "long-description": {
+      "flavor": "Quem desafia o trono enfrenta uma tempestade de aço.",
+      "detail": "왕이 전방 3x2 범위에 주먹 콤보 발산, 15 데미지. 입힌 데미지의 30%를 치유로 회수(Lifesteal) — 왕 직접 치유 면역의 명시적 예외(self-cast).",
+      "synergies": "Devastador após **Ordem Real** (que reposiciona a equipe e agrupa inimigos). Combina com **Domínio Real** para dobrar o sustain — a sequência cura, o Domínio gera escudo proporcional ao dano.",
+      "counter": "Inimigos espalhados anulam o sustain — cada alvo a menos é 4-5 HP a menos curados. **Queimação** do Especialista NÃO afeta esta cura porque é lifesteal, não heal externo (importante!).\n\n---"
+    },
+    "type-label": "공격(중)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "AREA",
+      "DANO",
+      "LIFESTEAL"
+    ]
   },
   "lk_a4": {
     "name": "왕의 지배",
     "description": "3x3 18 데미지 + self 방패 = 1턴 입힌 총 데미지의 25%.",
-    "long-description": "왕이 3x3 범위에 지배 부여, 각 명중 대상에 18 데미지(최대 9명). 총 데미지 계산 후 그 25%를 1턴 self 방패로 획득. 확장 가능한 공격-방어."
+    "long-description": {
+      "flavor": "A presença real impõe respeito num raio de aço.",
+      "detail": "왕이 3x3 범위에 지배 부여, 각 명중 대상에 18 데미지(최대 9명). 총 데미지 계산 후 그 25%를 1턴 self 방패로 획득. 확장 가능한 공격-방어.",
+      "synergies": "Combo perfeito com **Intimidação** (que junta inimigos em torno do Rei) ou **Ordem Real** (que reúne aliados ao redor, mas inimigos podem estar próximos também). Após o uso, **Sequência de Socos** maximiza o lifesteal contra os mesmos alvos.",
+      "counter": "Skills de empurrão (**Colisão Titânica**, **Investida**) afastam inimigos antes que o Domínio acerte. Inimigos isolados anulam o ganho de escudo. **Bater em Retirada** (Guerreiro inimigo) tira aliados do raio.\n\n---"
+    },
+    "type-label": "공격(중)",
+    "duration-label": "1 turno",
+    "tags": [
+      "AREA",
+      "DANO",
+      "ESCUDO",
+      "ESCALAVEL"
+    ]
   },
   "lk_a5": {
     "name": "왕의 밀어내기",
     "description": "세로 3칸 라인 지도 끝까지 12 데미지 + 최대 3칸 밀어내기.",
-    "long-description": "왕이 세로 라인으로 왕에서 지도 끝까지 잔혹한 힘으로 밀어냄(폭 3칸). 경로상의 모든 적에게 12 데미지와 최대 3칸 뒤로 밀어내기. 대규모 존 컨트롤."
+    "long-description": {
+      "flavor": "O Rei comanda — e o campo de batalha obedece.",
+      "detail": "왕이 세로 라인으로 왕에서 지도 끝까지 잔혹한 힘으로 밀어냄(폭 3칸). 경로상의 모든 적에게 12 데미지와 최대 3칸 뒤로 밀어내기. 대규모 존 컨트롤.",
+      "synergies": "Antes de **Investida Brutal** (Guerreiro aliado) — empurra inimigos para uma posição vulnerável. Após o empurrão, **Chute Real** ou **Domínio Real** atingem reposicionados.",
+      "counter": "Paredes (de **Muralha Viva** ou **Prisão de Muralha Morta**) bloqueiam o empurrão. Inimigos contra a borda do mapa são empurrados apenas até a borda. **Fortaleza Inabalável** mitiga o dano mas não anula o empurrão.\n\n---"
+    },
+    "type-label": "공격(제어)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "LINHA",
+      "DANO",
+      "PUSH"
+    ]
   },
   "lk_a6": {
     "name": "반격",
     "description": "3x3 15 데미지 + 중앙에서 멀어지는 1칸 밀어내기. 중앙은 움직이지 않음.",
-    "long-description": "왕이 자신 주위 3x3 범위에 반격 폭발(자신이 중앙). 범위 내 모든 적에게 15 데미지와 각각을 방사 방향(중앙에서 멀어지게)으로 1칸 밀어냄. 왕(중앙)은 움직이지 않음."
+    "long-description": {
+      "flavor": "O reino reage. Quem cerca o Rei encontra apenas espaço vazio.",
+      "detail": "왕이 자신 주위 3x3 범위에 반격 폭발(자신이 중앙). 범위 내 모든 적에게 15 데미지와 각각을 방사 방향(중앙에서 멀어지게)으로 1칸 밀어냄. 왕(중앙)은 움직이지 않음.",
+      "synergies": "Excelente quando combinado com **Domínio Real** no mesmo turno (Domínio gera escudo proporcional ao dano causado, Contra-ataque garante que o Domínio acerte mais alvos). Setup ideal para **Sombra Real**: gera espaço, depois cria clones para confundir.",
+      "counter": "Inimigos com `mov_down` ou `snare` ativos ainda sofrem dano mas não são empurrados (o efeito ainda ocorre, apenas não há reposicionamento). Resistir a empurrões é praticamente impossível — esta é uma das skills mais \"garantidas\" do Rei.\n\n---"
+    },
+    "type-label": "공격(제어)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "AREA",
+      "DANO",
+      "PUSH"
+    ]
   },
   "lk_a7": {
     "name": "위협",
     "description": "10 데미지 + 대상과 인접자를 선택 위치로 텔레포트. 가장자리 배치 불가.",
-    "long-description": "왕이 대상을 위협: 10 데미지와 대상 + 그에 인접한 모든 적(최대 5명)을 캐스터가 선택한 위치로 텔레포트(지도 진영, 가장자리 제외). 극단적 공격적 재배치."
+    "long-description": {
+      "flavor": "Um olhar real reorganiza um exército.",
+      "detail": "왕이 대상을 위협: 10 데미지와 대상 + 그에 인접한 모든 적(최대 5명)을 캐스터가 선택한 위치로 텔레포트(지도 진영, 가장자리 제외). 극단적 공격적 재배치.",
+      "synergies": "Setup devastador para **Domínio Real** (junta inimigos em volta do Rei), **Tempestade de Lâminas** (Executor aliado), ou **Bola de Fogo** (Especialista aliado). Conhecida como \"a chamada de execução\" em decks coordenados.",
+      "counter": "**Esquiva** anula o teleporte ao impedir o ataque inicial. Inimigos com **Fortaleza Inabalável** ainda são teleportados (o efeito não é dano-dependente). Posicionamento espalhado reduz o impacto — quanto menos adjacentes, menor o reposicionamento.\n\n---"
+    },
+    "type-label": "공격(제어)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "ALVO UNICO",
+      "DANO",
+      "TELEPORT"
+    ]
   },
   "lk_a8": {
     "name": "무장 해제",
     "description": "6 데미지 + 대상의 턴 atk 스킬 취소 + 1턴 silence_attack. 왕에게는 효과 없음.",
-    "long-description": "왕이 적을 무장 해제: 6 데미지와 대상이 그 턴에 선택한 어떤 공격 스킬이든 즉시 취소(비용 없음, 효과 없음). 추가로 1턴 silence_attack 적용. 외과적 카운터 플레이."
+    "long-description": {
+      "flavor": "O punho real toca o pulso. O golpe inimigo morre antes de nascer.",
+      "detail": "왕이 적을 무장 해제: 6 데미지와 대상이 그 턴에 선택한 어떤 공격 스킬이든 즉시 취소(비용 없음, 효과 없음). 추가로 1턴 silence_attack 적용. 외과적 카운터 플레이.",
+      "synergies": "Use contra Executores inimigos com **Adrenalina** ativa para desperdiçar o buff. Combine com **Provocação** (Guerreiro aliado, que aplica silence_defense) para um turno completo de paralisia tática.",
+      "counter": "Inimigos com `cleanse` (purificação de debuffs) podem remover o silence. **Proteção** (Especialista) concede imunidade a novos debuffs por 1 turno. Programar skills com a defesa como atk + def também esquiva o silence parcial.\n\n---"
+    },
+    "type-label": "공격(제어)",
+    "duration-label": "",
+    "tags": [
+      "ALVO UNICO",
+      "DANO",
+      "SILENCE"
+    ]
   },
   "lk_d1": {
     "name": "그림자 도주",
     "description": "아군 절반의 어디든 텔레포트. 데미지 받거나 이동 전까지 단일 대상 스킬에 untargetable.",
-    "long-description": "왕이 잠시 보이지 않게 되어 자기 진영(지도 아군 절반)의 어떤 칸으로든 텔레포트. 텔레포트 후 단일 대상 스킬에 UNTARGETABLE. 보이지 않음은 왕이 데미지(범위 또는 DoT) 받거나 다음 턴 자발적 이동 시 깨짐."
+    "long-description": {
+      "flavor": "Onde o Rei some, a estratégia inimiga colapsa.",
+      "detail": "왕이 잠시 보이지 않게 되어 자기 진영(지도 아군 절반)의 어떤 칸으로든 텔레포트. 텔레포트 후 단일 대상 스킬에 UNTARGETABLE. 보이지 않음은 왕이 데미지(범위 또는 DoT) 받거나 다음 턴 자발적 이동 시 깨짐.",
+      "synergies": "Use após **Recuperação Real** para se afastar e regenerar em segurança. Combo defensivo elite: Fuga Sombria → Recuperação Real → Espírito de Sobrevivência = +50% HP recuperados em 3 turnos.",
+      "counter": "Skills de área (**Bola de Fogo**, **Tempestade de Lâminas**, **Domínio Real**) ignoram a invisibilidade — atingem qualquer um na zona, visível ou não. Atacantes inteligentes sabem chutar áreas prováveis de fuga.\n\n---"
+    },
+    "type-label": "방어(강)",
+    "duration-label": "Até receber dano direto ou se mover voluntariamente",
+    "tags": [
+      "SELF",
+      "TELEPORT",
+      "STEALTH",
+      "ESCAPE"
+    ]
   },
   "lk_d2": {
     "name": "왕의 회복",
     "description": "2턴 동안 최대 HP 20% 회복(현재 10%, 데미지 안 받으면 다음 턴 10%). 왕의 치유 면역 예외.",
-    "long-description": "왕이 왕의 회복 시전: 즉시(이번 턴) 최대 HP 10%를 치유로 받고, 그 턴에 데미지 안 받으면 다음 턴 최대 HP 10% 추가. 최대 20%. Self-cast이므로 왕 치유 면역 규칙의 명시적 예외."
+    "long-description": {
+      "flavor": "Mesmo o leão precisa de um instante para se erguer mais forte.",
+      "detail": "왕이 왕의 회복 시전: 즉시(이번 턴) 최대 HP 10%를 치유로 받고, 그 턴에 데미지 안 받으면 다음 턴 최대 HP 10% 추가. 최대 20%. Self-cast이므로 왕 치유 면역 규칙의 명시적 예외.",
+      "synergies": "Combo perfeito com **Fuga Sombria** (sai do alcance, regenera em paz). **Ordem Real** também protege os ticks ao reduzir dano em -45%. Em time defensivo, combine com **Cura Suprema** (não funciona no Rei) usada em outro aliado para focar inimigos longe.",
+      "counter": "Qualquer dano direto cancela o segundo tick. DoTs (`bleed`, `burn`) NÃO cancelam — o segundo tick passa apesar do DoT (importante regra de design). **Marca da Morte** (Executor) prioriza o Rei e força dano contínuo.\n\n---"
+    },
+    "type-label": "방어(강)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "SELF",
+      "CURA",
+      "CONDICIONAL"
+    ]
   },
   "lk_d3": {
     "name": "왕의 그림자",
     "description": "빈 칸에 2개의 클론 생성. 왕은 하나와 위치 교환 가능. 클론은 2턴 지속. 적은 어떤 것이 진짜인지 모름.",
-    "long-description": "왕이 근처 빈 칸에 시각적 클론 2개 생성. 클론은 2턴 지속하며 진짜 왕과 시각적으로 동일. 적은 공격 전까지 어떤 것이 진짜인지 모름 — 클론은 적중 흡수 후 사라짐."
+    "long-description": {
+      "flavor": "Três coroas no campo. Apenas uma é real. Quem aposta errado, morre.",
+      "detail": "왕이 근처 빈 칸에 시각적 클론 2개 생성. 클론은 2턴 지속하며 진짜 왕과 시각적으로 동일. 적은 공격 전까지 어떤 것이 진짜인지 모름 — 클론은 적중 흡수 후 사라짐.",
+      "synergies": "Use antes de **Fuga Sombria** para máxima ofuscação — quando os clones existem e o Rei some, fica impossível rastreá-lo. **Intimidação** força reposicionamento inimigo antes da ilusão.",
+      "counter": "Skills de área atingem todas as casas, exposto o Rei verdadeiro pelo dano sofrido. **Sangramento** ou outros DoTs revelam o real ao tentarem aplicá-los (clones não tomam dano). Bots inimigos podem ter heurística de \"atacar todos os 3\" se houver tempo.\n\n---"
+    },
+    "type-label": "방어(강)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "SELF",
+      "STEALTH",
+      "MIND-GAMES"
+    ]
   },
   "lk_d4": {
     "name": "생존 정신",
     "description": "HP ≤ 50%: +15% 최대 HP + 1턴 10% 최대 HP 방패. HP > 50%: +10% 최대 HP.",
-    "long-description": "적응형 생존 스킬. 사용 시 왕 HP ≤ 50%이면 +15% 최대 HP(영구 증가) + 1턴 최대 HP 10% 상당의 방패. HP > 50%이면 +10% 최대 HP만(방패 없음)."
+    "long-description": {
+      "flavor": "Quando o trono balança, o Rei encontra força nas raízes do reino.",
+      "detail": "적응형 생존 스킬. 사용 시 왕 HP ≤ 50%이면 +15% 최대 HP(영구 증가) + 1턴 최대 HP 10% 상당의 방패. HP > 50%이면 +10% 최대 HP만(방패 없음).",
+      "synergies": "Após sofrer pressão sustentada, ative para virar a maré. **Fortaleza Inabalável** + Espírito = Rei praticamente intocável por 1 turno (-80% dano + escudo + cura). Combo de virada épica.",
+      "counter": "Bursters como **Disparo Preciso** podem matar o Rei antes que ele atinja a janela de ativação (≤ 60% HP). Pressão constante mas não letal mantém o Rei abaixo do threshold ideal — paradoxalmente, dano \"morno\" pode ser mais perigoso para o Rei do que burst (porque permite usar Espírito várias vezes).\n\n---"
+    },
+    "type-label": "방어(강)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "CURA",
+      "ESCUDO",
+      "LAST-STAND"
+    ]
   },
   "lk_d5": {
     "name": "Self 방패",
     "description": "2턴 방패 30.",
-    "long-description": "왕이 자신에게 2턴 30 HP 방패(Shield Cap 100). 완전 소비 또는 만료까지 지속. 왕의 일반 유지 스킬."
+    "long-description": {
+      "flavor": "A muralha mais firme é a vontade do Rei.",
+      "detail": "왕이 자신에게 2턴 30 HP 방패(Shield Cap 100). 완전 소비 또는 만료까지 지속. 왕의 일반 유지 스킬.",
+      "synergies": "Pré-cast antes de combates onde se espera burst. Stacka com escudos de **Soco Real** e **Chute Real** (até o cap de 100). **Aura de Proteção** (Especialista aliado) pode sobrepor com mais 12 HP.",
+      "counter": "**Golpe Devastador** e **Corte Preciso** aplicam `purge`, removendo o escudo instantaneamente. **Disparo Preciso** com bleed ativo no Rei ignora shields completamente.\n\n---"
+    },
+    "type-label": "방어(경)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "SELF",
+      "ESCUDO"
+    ]
   },
   "lk_d6": {
     "name": "흔들리지 않는 요새",
     "description": "1턴 받는 데미지 -80%. 다음 이동 턴에 이동 불가.",
-    "long-description": "왕이 살아있는 요새로 변신. 1턴 동안 모든 데미지 -80%(true damage 포함). 대가: 다음 이동 턴에 이동 불가. 전사와 왕 공유 카드."
+    "long-description": {
+      "flavor": "Pés enraizados. Coração de pedra. O Rei se torna a própria muralha.",
+      "detail": "왕이 살아있는 요새로 변신. 1턴 동안 모든 데미지 -80%(true damage 포함). 대가: 다음 이동 턴에 이동 불가. 전사와 왕 공유 카드.",
+      "synergies": "Combine com **Espírito de Sobrevivência** para virada de jogo. Use ANTES do oponente ativar combos óbvios (ex: Adrenalina visível no Executor inimigo).",
+      "counter": "O Rei imóvel é alvo fácil para reposicionamento — **Intimidação** ou **Empurrão Real** inimigos podem deslocá-lo. **Muralha Viva** pode prendê-lo após o turno.\n\n---"
+    },
+    "type-label": "방어(경)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "BUFF",
+      "IMOVEL"
+    ]
   },
   "lk_d7": {
     "name": "회피",
     "description": "다음 턴 첫 직접 공격을 완전 회피.",
-    "long-description": "왕이 회피 자세, 다음 턴 받는 첫 직접 공격을 완전 회피. 스페셜리스트/처형자/왕 공유 카드. 왕에게는 왕의 보호 패시브를 무시하는 정밀 사격(true damage)에 대한 최선의 방어."
+    "long-description": {
+      "flavor": "O Rei não bloqueia o golpe. Ele simplesmente não está mais lá.",
+      "detail": "왕이 회피 자세, 다음 턴 받는 첫 직접 공격을 완전 회피. 스페셜리스트/처형자/왕 공유 카드. 왕에게는 왕의 보호 패시브를 무시하는 정밀 사격(true damage)에 대한 최선의 방어.",
+      "synergies": "Use em \"leitura\" do oponente — quando você sabe que o burst vem. Combine com **Sombra Real**: oponente confuso atira em clone, e mesmo se acertar o real, a Esquiva protege.",
+      "counter": "Skills de área (**Bola de Fogo**, **Domínio Real**) ignoram Esquiva — não são \"ataques diretos\". DoTs aplicados anteriormente continuam ticando. Skills compostas com múltiplos hits (**Sequência de Socos**) só perdem o primeiro hit.\n\n---"
+    },
+    "type-label": "방어(경)",
+    "duration-label": "Até receber 1 ataque ou fim do turno",
+    "tags": [
+      "SELF",
+      "EVADE"
+    ]
   },
   "lk_d8": {
     "name": "왕의 명령",
     "description": "왕은 초기 위치로 복귀, 아군은 인접 위치로 텔레포트. 인접 아군: -15% 데미지. 왕: 인접 아군당 -15%(최대 -45%) 1턴.",
-    "long-description": "최고의 재집결 스킬. 왕이 자신의 초기 위치(아군 절반의 모서리)로 텔레포트하고 3명의 아군(왕 제외)을 왕에 인접한 칸으로 끌어당김. 1턴 동안 모든 인접 아군 -15% 데미지, 왕은 인접 아군마다 추가 -15%(최대 3명 = 왕에 -45%). 전략적 리셋."
+    "long-description": {
+      "flavor": "Quando o Rei chama, o reino se forma.",
+      "detail": "최고의 재집결 스킬. 왕이 자신의 초기 위치(아군 절반의 모서리)로 텔레포트하고 3명의 아군(왕 제외)을 왕에 인접한 칸으로 끌어당김. 1턴 동안 모든 인접 아군 -15% 데미지, 왕은 인접 아군마다 추가 -15%(최대 3명 = 왕에 -45%). 전략적 리셋.",
+      "synergies": "Após Ordem Real, use **Domínio Real** (todos os aliados próximos = dano máximo se inimigos seguirem) ou **Sombra Real** (reposiciona depois de criar clones). Combina com **Avançar** (Guerreiro) para movimento coordenado pós-formação.",
+      "counter": "Skills de área aplicadas em torno do Rei após Ordem Real punem todos de uma vez. **Bola de Fogo** centrada no Rei pega 4 unidades. Inimigos podem usar **Bater em Retirada** para se afastar antes do impacto.\n\n---"
+    },
+    "type-label": "방어(경)",
+    "duration-label": "1 turno",
+    "tags": [
+      "GLOBAL",
+      "BUFF",
+      "TELEPORT",
+      "FORMACAO"
+    ]
+  },
+  "tags": {
+    "AREA": "Area",
+    "ALVO UNICO": "Single Target",
+    "LINHA": "Line",
+    "SELF": "Self",
+    "GLOBAL": "Global",
+    "DANO": "Damage",
+    "CURA": "Heal",
+    "ESCUDO": "Shield",
+    "BUFF": "Buff",
+    "DEBUFF": "Debuff",
+    "BLEED": "Bleed",
+    "BURN": "Burn",
+    "POISON": "Poison",
+    "STUN": "Stun",
+    "SNARE": "Snare",
+    "SILENCE": "Silence",
+    "TELEPORT": "Teleport",
+    "PUSH": "Push",
+    "PULL": "Pull",
+    "DASH": "Dash",
+    "TRUE DAMAGE": "True Damage",
+    "PURGE": "Purge",
+    "REVIVE": "Revive",
+    "SETUP": "Setup",
+    "FINISH": "Finish",
+    "CONDICIONAL": "Conditional",
+    "MULTI-TICK": "Multi-Tick",
+    "MARK": "Mark",
+    "LIFESTEAL": "Lifesteal",
+    "EVADE": "Evade",
+    "REFLECT": "Reflect",
+    "MURALHA": "Wall",
+    "TRAP": "Trap",
+    "MIND-GAMES": "Mind Games",
+    "LAST-STAND": "Last Stand",
+    "ESCAPE": "Escape",
+    "COOLDOWN": "Cooldown",
+    "IMOVEL": "Immobile",
+    "IMUNIDADE": "Immunity",
+    "CLEANSE": "Cleanse",
+    "ANTI-SHIELD": "Anti-Shield",
+    "SINERGIA-BLEED": "Bleed Synergy",
+    "RESTRICAO-REI": "King-Restricted",
+    "REI-RESTRICAO-PARCIAL": "King-Restricted (Partial)",
+    "DUAL-USE": "Dual-Use",
+    "MOV-DOWN": "Slow",
+    "OFENSIVO": "Offensive",
+    "MOVIMENTO": "Movement",
+    "FORMACAO": "Formation",
+    "REGEN": "Regen",
+    "TRADE-OFF": "Trade-off",
+    "BURST": "Burst",
+    "SETUP-FINISH": "Setup-Finish",
+    "POSICIONAL": "Positional",
+    "ESCALAVEL": "Scalable",
+    "BUFF AREA": "Buff Area",
+    "DAMAGE-REDIRECT": "Damage Redirect",
+    "DOT": "DoT",
+    "ALIADO-SHIELD": "Ally-Shield",
+    "REI-RESTRICAO": "King-Restricted",
+    "1X-PARTIDA": "Once per Match"
   }
 }
