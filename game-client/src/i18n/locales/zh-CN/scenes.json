@@ -552,7 +552,8 @@
       "header": "背包",
       "hint": "点击或拖拽以装备",
       "all-equipped": "已全部装备",
-      "owned-counter": "{owned} / {max}"
+      "owned-counter": "{owned} / {max}",
+      "equipped-badge": "已装备"
     },
     "groups": {
       "attack1": "攻击 · 伤害",
