@@ -2165,38 +2165,52 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   private _drawGrid() {
-    // INTEGRATION_SPEC §4 + Print 12: ally half = navy wash with alt checker,
-    // enemy half = crimson wash with alt checker, wall column = neutral gray
-    // with a 1px highlight on the top edge.
+    // ally half (cols 0-7) = navy wash with alt checker, enemy half
+    // (cols 8-15) = crimson wash with alt checker. The central wall is
+    // a 10-px GOLD stripe rendered on top of the tiles, straddling the
+    // cols 7|8 boundary (5 px on each side) — it does NOT consume a
+    // playable column. MovementEngine still treats `col === WALL_COL`
+    // (= 8) as the first red tile and `col === WALL_COL - 1` (= 7) as
+    // the last blue tile; the stripe is purely cosmetic.
     //
-    // `_drawGrid` is idempotent and runs once in create(); per-tile hover /
-    // movement / target / area states live in separate overlay Rectangles.
+    // `_drawGrid` is idempotent and runs once in create(); per-tile
+    // hover / movement / target / area states live in separate overlay
+    // Rectangles.
     const g = this.add.graphics()
-    const WALL_COL = 8
+    const WALL_COL = 8                  // pixel boundary between cols 7|8
+    const STRIPE_W = 10                 // gold-stripe width (px)
 
-    // ── Checkerboard tile pattern (ally navy / enemy crimson / wall gray) ──
-    // Alt stripes read brighter than the base wash so the grid pattern is
-    // visible even at a glance. Values live on `tile.allySideAlt` and
-    // `tile.enemySideAlt` — see DesignTokens comment for the contrast story.
+    // ── Checkerboard tile pattern (8 ally + 8 enemy, fully symmetric) ──
     for (let col = 0; col < COLS; col++) {
       for (let row = 0; row < ROWS; row++) {
         const isEven = (col + row) % 2 === 0
-        let baseColor: number
-        if (col === WALL_COL) {
-          baseColor = dsTile.wall
-        } else if (col < WALL_COL) {
-          baseColor = isEven ? dsTile.allySide : dsTile.allySideAlt
-        } else {
-          baseColor = isEven ? dsTile.enemySide : dsTile.enemySideAlt
-        }
+        const baseColor = col < WALL_COL
+          ? (isEven ? dsTile.allySide  : dsTile.allySideAlt)
+          : (isEven ? dsTile.enemySide : dsTile.enemySideAlt)
         g.fillStyle(baseColor, 1)
         g.fillRect(GRID_X + col * TILE, GRID_Y + row * TILE, TILE, TILE)
       }
     }
 
-    // ── Wall column highlight — 1px bright top edge per spec §4 ──
-    g.fillStyle(dsTile.wallShine, 0.6)
-    g.fillRect(GRID_X + WALL_COL * TILE, GRID_Y, TILE, 1)
+    // ── Central gold wall stripe — 10 px wide, centred on cols 7|8 ──
+    // Drawn on top of the tiles so it occludes the inner tile grid line
+    // at that boundary. Sub-shine + drop-shadow give it AAA presence
+    // without being garish.
+    const stripeX  = GRID_X + WALL_COL * TILE - STRIPE_W / 2
+    const stripeY  = GRID_Y
+    const stripeH  = ROWS * TILE
+    // Soft drop shadow (offset 1 px right + down)
+    g.fillStyle(0x000000, 0.45)
+    g.fillRect(stripeX + 1, stripeY + 1, STRIPE_W, stripeH)
+    // Body — accent.primary (gold)
+    g.fillStyle(accent.primary, 1)
+    g.fillRect(stripeX, stripeY, STRIPE_W, stripeH)
+    // Inner gloss highlight on the LEFT edge — catches the light
+    g.fillStyle(0xffffff, 0.18)
+    g.fillRect(stripeX + 1, stripeY, 2, stripeH)
+    // Outer rim — slightly darker gold along the RIGHT edge for depth
+    g.fillStyle(0x000000, 0.28)
+    g.fillRect(stripeX + STRIPE_W - 1, stripeY, 1, stripeH)
 
     // ── Grid lines (subtle border between every cell) ──
     g.lineStyle(1, border.subtle, 0.85)
