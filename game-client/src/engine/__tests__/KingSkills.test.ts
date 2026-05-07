@@ -111,12 +111,12 @@ describe('King — Attack 1 (sustain)', () => {
     })
   })
 
-  // ── lk_a3 Sequência de Socos ───────────────────────────────────────────────
-  describe('lk_a3 — Sequência de Socos (15 dmg + lifesteal 30%)', () => {
+  // ── lk_a3 Sequência de Socos (Balance Pass v1.1: 17 dmg + lifesteal 35%) ───
+  describe('lk_a3 — Sequência de Socos (17 dmg + lifesteal 35%)', () => {
     it('catalog entry', () => {
       const s = kingSkill('lk_a3')
       expect(s.name).toBe('Sequência de Socos')
-      expect(s.power).toBe(15)
+      expect(s.power).toBe(17)
       expect(s.effectType).toBe('lifesteal')
     })
 
@@ -126,8 +126,8 @@ describe('King — Attack 1 (sustain)', () => {
       king.applyPureDamage(50)       // King needs headroom
       const hpBefore = king.hp
 
-      // rawDamage = 15 (the King hits the Warrior for 15); lifesteal 30% → 5
-      resolver.resolve('lifesteal', ctx(king, target, 30, 15))
+      // rawDamage = 17 (the King hits the Warrior for 17); lifesteal 35% → 6
+      resolver.resolve('lifesteal', ctx(king, target, 35, 17))
 
       // Heal should have applied despite King immunity.
       expect(king.hp).toBeGreaterThan(hpBefore)
@@ -138,7 +138,7 @@ describe('King — Attack 1 (sustain)', () => {
       const target  = mkChar('e', 'executor', 'right')
       warrior.applyPureDamage(80)
       const hpBefore = warrior.hp
-      resolver.resolve('lifesteal', ctx(warrior, target, 30, 15))
+      resolver.resolve('lifesteal', ctx(warrior, target, 35, 17))
       expect(warrior.hp).toBeGreaterThan(hpBefore)
     })
   })
@@ -188,10 +188,37 @@ describe('King — Attack 1 (sustain)', () => {
       applyFn(king, skill, { kind: 'area', col: 8, row: 3 }, 'left')
 
       // Each warrior takes damage from the 3x3 blast centered at (8, 3).
-      // Shield applied to King = round(totalDamageDealt × 0.25).
-      // We don't pin the exact damage number (depends on targeting, modifiers),
-      // but the shield MUST be > 0 and reasonable (< 30 on 3 warriors at base).
+      // Shield applied to King = min(round(totalDamageDealt × 0.25), 30) per
+      // Balance Pass v1.1 cap. The shield MUST be > 0 and never exceed 30.
       expect(king.totalShield).toBeGreaterThan(0)
+      expect(king.totalShield).toBeLessThanOrEqual(30)
+    })
+
+    // v1.1 — explicit cap regression: with enough damage to overflow the
+    // raw 25%-of-damage formula past 30 HP, the shield clamps to 30.
+    it('shield is capped at 30 HP even when raw 25% would exceed it', () => {
+      const king = mkChar('k', 'king', 'left', 5, 3)
+      // 5 warriors at 200 HP each → maximum damage potential well past 120 raw,
+      // which 25%-of would yield ≥30 shield. Cap applies.
+      const enemies = [
+        mkChar('w1', 'warrior', 'right', 7, 2),
+        mkChar('w2', 'warrior', 'right', 7, 3),
+        mkChar('w3', 'warrior', 'right', 7, 4),
+        mkChar('w4', 'warrior', 'right', 8, 2),
+        mkChar('w5', 'warrior', 'right', 8, 3),
+      ]
+      const battle = new Battle({
+        leftTeam:  new Team('left',  [king]),
+        rightTeam: new Team('right', enemies),
+      })
+      const engine = new CombatEngine(battle, undefined, PASSIVE_CATALOG)
+      engine.syncGrid(battle.allCharacters)
+      const skill = new Skill(kingSkill('lk_a4'))
+      const applyFn = (engine as unknown as {
+        _applyAttackSkill: (c: Character, s: Skill, t: { kind: string; col: number; row: number }, side: string) => void
+      })._applyAttackSkill.bind(engine)
+      applyFn(king, skill, { kind: 'area', col: 8, row: 3 }, 'left')
+
       expect(king.totalShield).toBeLessThanOrEqual(30)
     })
 
@@ -410,10 +437,15 @@ describe('King — Defense 1 (self-sustain)', () => {
       applyFn(king, skill)
     }
 
-    it('HP ≤ 50%: +15% max HP AND shield = 10% max HP, both 1-turn', () => {
+    // Balance Pass v1.1 — single-branch + threshold gate:
+    //   HP ≤ 60% → +15% max HP + shield 10% max HP for 1 turn.
+    //   HP > 60% → no-op (skill cannot be activated).
+    // The previous "always fires, two branches" shape is retired.
+
+    it('HP ≤ 60%: +15% max HP + shield = 10% max HP, both 1-turn', () => {
       const king = mkChar('k', 'king', 'left', 2, 2)   // base HP 180
-      king.applyPureDamage(100)                           // 80 / 180 = 0.44 → crítico
-      expect(king.hp / king.maxHp).toBeLessThanOrEqual(0.50)
+      king.applyPureDamage(80)                            // 100 / 180 = 0.55 → activates
+      expect(king.hp / king.maxHp).toBeLessThanOrEqual(0.60)
 
       applyEspirito(king)
 
@@ -426,19 +458,26 @@ describe('King — Defense 1 (self-sustain)', () => {
       expect(king.maxHpBonusTicks).toBe(1)
     })
 
-    it('HP > 50%: +10% max HP only, NO shield', () => {
+    it('HP > 60%: skill is a no-op (no max-HP bonus, no shield)', () => {
       const king = mkChar('k', 'king', 'left', 2, 2)   // base HP 180
-      king.applyPureDamage(50)                            // 130 / 180 = 0.72 → saudável
-      expect(king.hp / king.maxHp).toBeGreaterThan(0.50)
+      king.applyPureDamage(50)                            // 130 / 180 = 0.72 → blocked
+      expect(king.hp / king.maxHp).toBeGreaterThan(0.60)
 
       applyEspirito(king)
 
-      // +10% of 180 = 18 max HP bonus
-      expect(king.maxHpBonus).toBe(18)
-      expect(king.maxHp).toBe(180 + 18)
-      // No shield in this branch
+      expect(king.maxHpBonus).toBe(0)
+      expect(king.maxHp).toBe(180)
       expect(king.totalShield).toBe(0)
-      expect(king.maxHpBonusTicks).toBe(1)
+    })
+
+    it('exactly 60% HP: skill activates (boundary inclusive)', () => {
+      const king = mkChar('k', 'king', 'left', 2, 2)   // base HP 180
+      king.applyPureDamage(72)                            // 108 / 180 = 0.60
+      expect(king.hp / king.maxHp).toBeCloseTo(0.60, 5)
+
+      applyEspirito(king)
+      expect(king.maxHpBonus).toBe(27)
+      expect(king.totalShield).toBe(18)
     })
 
     it('max-HP bonus expires after one tick and clamps current HP down', () => {
@@ -463,12 +502,12 @@ describe('King — Defense 1 (self-sustain)', () => {
 
     it('max-HP bonus expiration CLAMPS HP when current exceeds base max', () => {
       const king = mkChar('k', 'king', 'left', 2, 2)
-      king.applyPureDamage(50)                            // HP 130 → healthy branch
-      applyEspirito(king)                                   // +10% = 198 max
+      king.applyPureDamage(80)                            // HP 100 → activates
+      applyEspirito(king)                                   // +15% = 207 max
 
       // Heal up into the bonus range.
-      king.heal(60, { ignoreKingImmunity: true })         // 130 + 60 = 190 ≤ 198
-      expect(king.hp).toBe(190)
+      king.heal(105, { ignoreKingImmunity: true })        // 100 + 105 = 205 ≤ 207
+      expect(king.hp).toBe(205)
       expect(king.hp).toBeGreaterThan(king.baseStats.maxHp)
 
       // Tick — bonus expires, excess HP is lost (clamped to 180).

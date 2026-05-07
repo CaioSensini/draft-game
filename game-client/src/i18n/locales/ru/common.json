@@ -18,7 +18,10 @@
   "studio-name": "CODEFORJE VIO",
   "section": {
     "description": "ОПИСАНИЕ",
-    "long-description": "ПОДРОБНОЕ ОПИСАНИЕ"
+    "long-description": "ПОДРОБНОЕ ОПИСАНИЕ",
+    "detail": "ОПИСАНИЕ",
+    "synergies": "СИНЕРГИИ",
+    "counter": "КОНТРИГРА"
   },
   "labels": {
     "level-cap-max": "MAX",

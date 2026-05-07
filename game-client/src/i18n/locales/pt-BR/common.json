@@ -18,7 +18,10 @@
   "studio-name": "CODEFORJE VIO",
   "section": {
     "description": "DESCRIÇÃO",
-    "long-description": "DESCRIÇÃO DETALHADA"
+    "long-description": "DESCRIÇÃO DETALHADA",
+    "detail": "DESCRIÇÃO",
+    "synergies": "SINERGIAS",
+    "counter": "COUNTER-PLAY"
   },
   "labels": {
     "level-cap-max": "MAX",

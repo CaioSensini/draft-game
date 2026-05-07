@@ -1,5 +1,7 @@
 {
-  "_meta": { "lang": "it" },
+  "_meta": {
+    "lang": "it"
+  },
   "roles": {
     "specialist": "Specialista",
     "warrior": "Guerriero",
@@ -19,321 +21,1168 @@
   "ls_a1": {
     "name": "Palla di Fuoco",
     "description": "28 danni in area 2x2 nel campo nemico. Applica bruciatura 6/turno per 2 turni.",
-    "long-description": "Lo Specialista lancia una sfera fiammeggiante sul campo nemico, infliggendo 28 danni fisici in un'area quadrata 2x2. Ogni bersaglio colpito riceve Bruciatura, un DoT di fuoco che infligge 6 danni a turno per 2 turni. La passiva di classe, Bruciatura, rinforza la combo: i bersagli colpiti ricevono -30% di cura per 2 turni. Abilità di apertura standard per frammentare i raggruppamenti."
+    "long-description": {
+      "flavor": "O fogo arcano não consome. Ele lembra ao alvo o que é dor.",
+      "detail": "Lo Specialista lancia una sfera fiammeggiante sul campo nemico, infliggendo 28 danni fisici in un'area quadrata 2x2. Ogni bersaglio colpito riceve Bruciatura, un DoT di fuoco che infligge 6 danni a turno per 2 turni. La passiva di classe, Bruciatura, rinforza la combo: i bersagli colpiti ricevono -30% di cura per 2 turni. Abilità di apertura standard per frammentare i raggruppamenti.",
+      "synergies": "Combine com **Bomba de Espinhos** (Executor aliado) — bleed + burn empilhados aceleram queda. **Orbe de Lentidão** prende inimigos na área para garantir hit.",
+      "counter": "**Proteção** dá imunidade a novos debuffs (anula burn). **Cura Suprema** mitiga DoT (mas Queimação reduz cura em 30%). Posicionamento espalhado anula o AoE.\n\n---"
+    },
+    "type-label": "Attacco (Pesante)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "DANO",
+      "BURN",
+      "DOT"
+    ]
   },
   "ls_a2": {
     "name": "Pioggia di Mana",
     "description": "22 danni in 2 tick (11+11) in linea verticale di 3 caselle nel campo nemico.",
-    "long-description": "Lo Specialista invoca una pioggia di energia magica che percorre una linea verticale di 3 caselle nel campo nemico, colpendo lo stesso bersaglio due volte consecutive con 11 danni per tick (22 totali). Ogni tick è risolto individualmente — scudi e schivate assorbono solo il colpo corrispondente. Il danno per tick passa attraverso la mitigazione DEF normalmente."
+    "long-description": {
+      "flavor": "O céu chora. As gotas perfuram o aço.",
+      "detail": "Lo Specialista invoca una pioggia di energia magica che percorre una linea verticale di 3 caselle nel campo nemico, colpendo lo stesso bersaglio due volte consecutive con 11 danni per tick (22 totali). Ogni tick è risolto individualmente — scudi e schivate assorbono solo il colpo corrispondente. Il danno per tick passa attraverso la mitigazione DEF normalmente.",
+      "synergies": "A divisão em 2 ticks permite quebrar escudos pequenos sem desperdício. Após **Bola de Fogo** (que aplica Queimação), o segundo tick beneficia do debuff.",
+      "counter": "**Esquiva** anula apenas o primeiro tick (segundo passa). Escudos absorvem ticks individualmente. **Teleport** sai da linha vertical entre ticks.\n\n---"
+    },
+    "type-label": "Attacco (Pesante)",
+    "duration-label": "Instantâneo (mas em 2 momentos)",
+    "tags": [
+      "AREA",
+      "DANO",
+      "MULTI-TICK"
+    ]
   },
   "ls_a3": {
     "name": "Raggio Purificatore",
     "description": "25 danni + purga sui nemici nella linea. Alleati colpiti guadagnano scudo 10.",
-    "long-description": "Un fascio luminoso attraversa l'intera arena in linea orizzontale di 6 caselle, infliggendo 25 danni a ogni nemico nel suo percorso e applicando Purga — rimuove tutti i buff attivi dai bersagli colpiti. Gli alleati nel percorso ricevono 10 di scudo e nessun danno. Abilità versatile per annullare composizioni basate su buff sostenuti."
+    "long-description": {
+      "flavor": "Um único raio. Para purificar amigos. Para apagar inimigos.",
+      "detail": "Un fascio luminoso attraversa l'intera arena in linea orizzontale di 6 caselle, infliggendo 25 danni a ogni nemico nel suo percorso e applicando Purga — rimuove tutti i buff attivi dai bersagli colpiti. Gli alleati nel percorso ricevono 10 di scudo e nessun danno. Abilità versatile per annullare composizioni basate su buff sostenuti.",
+      "synergies": "Posicione Guerreiro aliado entre o Especialista e o Rei inimigo: dano no Rei + purge + escudo no Guerreiro. Triple-value em uma skill.",
+      "counter": "Posicionar inimigos fora da linha vertical anula. **Esquiva** ou **Fortaleza Inabalável** dos alvos principais reduzem efeito.\n\n---"
+    },
+    "type-label": "Attacco (Pesante)",
+    "duration-label": "1 turno",
+    "tags": [
+      "LINHA",
+      "DANO",
+      "PURGE",
+      "ALIADO-SHIELD"
+    ]
   },
   "ls_a4": {
     "name": "Esplosione Centrale",
     "description": "1° uso: marca il bersaglio (non rimovibile). 2° uso su marcato: 50 danni + 50% extra se ha debuff. Ignora Schivata e immunità.",
-    "long-description": "Abilità a due fasi. Il primo uso marca un nemico con Marchio di Detonazione — un marchio permanente che NON può essere rimosso da purga, cleanse o immunità. Il secondo uso detona il marchio per 50 danni diretti. Se il bersaglio aveva un debuff attivo al momento della detonazione, l'esplosione è amplificata di +50% (75 danni). La detonazione ignora Schivata, scudi e immunità — danno garantito."
+    "long-description": {
+      "flavor": "O alvo é selado. A explosão é certa. O tempo é a única variável.",
+      "detail": "Abilità a due fasi. Il primo uso marca un nemico con Marchio di Detonazione — un marchio permanente che NON può essere rimosso da purga, cleanse o immunità. Il secondo uso detona il marchio per 50 danni diretti. Se il bersaglio aveva un debuff attivo al momento della detonazione, l'esplosione è amplificata di +50% (75 danni). La detonazione ignora Schivata, scudi e immunità — danno garantito.",
+      "synergies": "Marque o Rei inimigo turno 1 → aplique debuffs (qualquer um) → detone turno 4 = 75 de dano. Combo definitivo. Sinergiza com qualquer DoT do time.",
+      "counter": "**Fortaleza Inabalável** reduz dano da detonação em 80%. Manter alvo marcado livre de debuffs reduz dano em 33%. Pressão constante para matar o Especialista antes da detonação.\n\n---"
+    },
+    "type-label": "Attacco (Pesante)",
+    "duration-label": "",
+    "tags": [
+      "ALVO UNICO",
+      "MARK",
+      "BURST",
+      "SETUP-FINISH"
+    ]
   },
   "ls_a5": {
     "name": "Orbe di Lentezza",
     "description": "12 danni in area 3x3. def_down 25% + mov_down 1 per 1 turno.",
-    "long-description": "Lo Specialista proietta un orbe gravitazionale che detona in un'area 3x3, infliggendo 12 danni e applicando due debuff a tutti i bersagli colpiti: def_down 25% e mov_down 1 per 1 turno. Abilità di setup difensivo: prepara il terreno per gli attaccanti del team per finire bersagli con DEF ridotta."
+    "long-description": {
+      "flavor": "O tempo se arrasta. A defesa cede. O exército inteiro hesita.",
+      "detail": "Lo Specialista proietta un orbe gravitazionale che detona in un'area 3x3, infliggendo 12 danni e applicando due debuff a tutti i bersagli colpiti: def_down 25% e mov_down 1 per 1 turno. Abilità di setup difensivo: prepara il terreno per gli attaccanti del team per finire bersagli con DEF ridotta.",
+      "synergies": "Setup ideal para **Tempestade de Lâminas** ou **Investida Brutal** subsequentes — alvos com def reduzida sofrem dano amplificado.",
+      "counter": "**Proteção** (Especialista mesmo) imuniza a debuffs novos. **Bater em Retirada** sai da área. **Avançar** (Guerreiro) pode salvar a equipe pra fora.\n\n---"
+    },
+    "type-label": "Attacco (Controllo)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "DANO",
+      "DEBUFF",
+      "MOV-DOWN"
+    ]
   },
   "ls_a6": {
     "name": "Catene Rigide",
     "description": "10 danni in formato + (5 caselle). Snare nemici per 1 turno.",
-    "long-description": "Catene magiche emergono dal terreno in pattern a croce (5 caselle: centro + 4 adiacenti), infliggendo 10 danni a ogni nemico colpito e applicando Snare per 1 turno. Snare impedisce il movimento ma NON l'uso di abilità — diverso da Stun. Controllo posizionale: blocca nemici in posizioni sfavorevoli per gli attacchi ad area del team."
+    "long-description": {
+      "flavor": "Correntes invisíveis. Pés que não se movem. Destinos que se cumprem.",
+      "detail": "Catene magiche emergono dal terreno in pattern a croce (5 caselle: centro + 4 adiacenti), infliggendo 10 danni a ogni nemico colpito e applicando Snare per 1 turno. Snare impedisce il movimento ma NON l'uso di abilità — diverso da Stun. Controllo posizionale: blocca nemici in posizioni sfavorevoli per gli attacchi ad area del team.",
+      "synergies": "Setup para skills de área alto dano — inimigos imobilizados não escapam de **Bola de Fogo** ou **Domínio Real**. Combine com **Marca da Morte** para garantir hit do bleed.",
+      "counter": "**Teleport** atravessa snare. **Proteção** imuniza. **Cleanse** remove. Posicionamento que evite formação cruz minimiza alvos.\n\n---"
+    },
+    "type-label": "Attacco (Controllo)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "DANO",
+      "SNARE"
+    ]
   },
   "ls_a7": {
     "name": "Nebbia",
     "description": "Tutta l'arena nemica. Alleati: def_up 15%. Nemici: def_down 15% + cura ricevuta -30% per 2 turni.",
-    "long-description": "Lo Specialista invoca una nebbia densa che copre l'intera arena per 2 turni. Gli alleati all'interno ricevono +15% DEF. I nemici all'interno ricevono -15% DEF e -30% cura ricevuta (tutte le fonti). Abilità di campo che altera il tempo della partita senza causare danni."
+    "long-description": {
+      "flavor": "A névoa cobre o campo. O reino vê. O inimigo se perde.",
+      "detail": "Lo Specialista invoca una nebbia densa che copre l'intera arena per 2 turni. Gli alleati all'interno ricevono +15% DEF. I nemici all'interno ricevono -15% DEF e -30% cura ricevuta (tutte le fonti). Abilità di campo che altera il tempo della partita senza causare danni.",
+      "synergies": "Use no início do combate para vantagem prolongada. Combine com **Cura Suprema** (cura aliados protegidos pela névoa) ou **Adrenalina** (Executor amplificado num campo onde inimigos defendem menos).",
+      "counter": "**Proteção** imuniza a debuff. **Cleanse** remove de aliados específicos. Skills de cura ainda funcionam (apenas com -30% de eficiência).\n\n---"
+    },
+    "type-label": "Attacco (Controllo)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "GLOBAL",
+      "DUAL-USE",
+      "BUFF",
+      "DEBUFF"
+    ]
   },
   "ls_a8": {
     "name": "Congelamento",
     "description": "18 danni + stun 1t + def_down 20% per 1 turno.",
-    "long-description": "Un impulso di ghiaccio concentrato colpisce un singolo bersaglio, infliggendo 18 danni e applicando Stun per 1 turno + def_down 20% per 1 turno. Stun impedisce sia il movimento SIA l'uso di abilità — il controllo più forte del gioco. Abilità di pick: isola un bersaglio prioritario."
+    "long-description": {
+      "flavor": "O alvo congela. Por um instante, deixa de ser ameaça.",
+      "detail": "Un impulso di ghiaccio concentrato colpisce un singolo bersaglio, infliggendo 18 danni e applicando Stun per 1 turno + def_down 20% per 1 turno. Stun impedisce sia il movimento SIA l'uso di abilità — il controllo più forte del gioco. Abilità di pick: isola un bersaglio prioritario.",
+      "synergies": "Coordene com Executor: Congelamento → próximo turno burst combo (Marca da Morte + Corte Mortal). Alvo stunned + def reduzida = 90+ de dano garantido.",
+      "counter": "**Proteção** imuniza. **Esquiva** anula o ataque inicial (e portanto o stun). **Cleanse** remove (mas timing crítico).\n\n---"
+    },
+    "type-label": "Attacco (Controllo)",
+    "duration-label": "Stun por 1 turno, debuff por 1 turno",
+    "tags": [
+      "ALVO UNICO",
+      "DANO",
+      "STUN",
+      "DEBUFF"
+    ]
   },
   "ls_d1": {
     "name": "Cura Suprema",
     "description": "Cura 35 HP su 1 alleato (non re).",
-    "long-description": "Lo Specialista canalizza un'onda di energia restauratrice su un singolo alleato, restituendo 35 HP istantaneamente. La cura NON influenza i Re — sono immuni alla cura diretta secondo la regola di Immunità Reale. Soggetta al Heal Cap e ridotta del 30% se il bersaglio è sotto Bruciatura."
+    "long-description": {
+      "flavor": "A magia não distingue heróis de simples soldados. Todos voltam a respirar.",
+      "detail": "Lo Specialista canalizza un'onda di energia restauratrice su un singolo alleato, restituendo 35 HP istantaneamente. La cura NON influenza i Re — sono immuni alla cura diretta secondo la regola di Immunità Reale. Soggetta al Heal Cap e ridotta del 30% se il bersaglio è sotto Bruciatura.",
+      "synergies": "Combine com **Aura de Proteção** ou **Campo de Cura** para múltiplos efeitos defensivos. Use atrás de **Escudo do Protetor** (Guerreiro aliado) para garantia.",
+      "counter": "**Queimação** (passiva inimiga) reduz para 28. **Marca da Morte** (Executor inimigo) com bleed mantém pressão. Foco no Especialista o impede de curar.\n\n---"
+    },
+    "type-label": "Difesa (Forte)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "ALVO UNICO",
+      "CURA",
+      "RESTRICAO-REI"
+    ]
   },
   "ls_d2": {
     "name": "Rinascita Parziale",
     "description": "Rianimazione latente (2 turni) sull'alleato con HP più bassi (non re). Rianima a 25 HP se muore. Max 1x per alleato per partita.",
-    "long-description": "Lo Specialista marca l'alleato con HP più bassi (escluso il Re) con un buffer di Rianimazione latente che dura 2 turni. Se l'alleato muore in quella finestra, rianima istantaneamente con 25 HP sulla stessa casella, con tutti i debuff e DoT cancellati. Ogni alleato può essere resuscitato solo una volta per partita."
+    "long-description": {
+      "flavor": "Quem cai protegido pelo ritual, retorna sussurrando entre os vivos.",
+      "detail": "Lo Specialista marca l'alleato con HP più bassi (escluso il Re) con un buffer di Rianimazione latente che dura 2 turni. Se l'alleato muore in quella finestra, rianima istantaneamente con 25 HP sulla stessa casella, con tutti i debuff e DoT cancellati. Ogni alleato può essere resuscitato solo una volta per partita.",
+      "synergies": "Combine com **Escudo do Protetor** (Guerreiro) ou **Resistência Absoluta** — se o aliado sobrevive, recebe heal extra; se morre, revive. Win-win.",
+      "counter": "Foco no Especialista antes do revive ser cast. Skills que evitam dano fatal direto (true damage massivo num turno) podem matar antes do revive ativar (revive ativa em \"dano fatal\", não \"dano dot\").\n\n---"
+    },
+    "type-label": "Difesa (Forte)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "ALVO UNICO",
+      "REVIVE",
+      "CONDICIONAL",
+      "1X-PARTIDA"
+    ]
   },
   "ls_d3": {
     "name": "Campo di Cura",
     "description": "Cura 12 HP + scudo 10 (1t) in area 3x3. Il Re riceve solo lo scudo.",
-    "long-description": "Lo Specialista crea un campo di luce curativa in un'area 3x3, ripristinando 12 HP e applicando 10 di scudo (1 turno) a tutti gli alleati nell'area. I Re ricevono SOLO lo scudo — nessuna cura, secondo la regola di Immunità Reale. Lo scudo è limitato a 100 HP totali accumulati per bersaglio."
+    "long-description": {
+      "flavor": "Um instante de paz no meio do caos. Suficiente para mais um golpe.",
+      "detail": "Lo Specialista crea un campo di luce curativa in un'area 3x3, ripristinando 12 HP e applicando 10 di scudo (1 turno) a tutti gli alleati nell'area. I Re ricevono SOLO lo scudo — nessuna cura, secondo la regola di Immunità Reale. Lo scudo è limitato a 100 HP totali accumulati per bersaglio.",
+      "synergies": "Combine com **Aura de Proteção** (também escudo) para defesa empilhada. Use após **Ordem Real** (Rei) para aproveitar a formação concentrada.",
+      "counter": "**Queimação** reduz a cura em 30% (8 HP efetivos). **Bola de Fogo** ou skills de área pegam todos os aliados curados antes que aproveitem.\n\n---"
+    },
+    "type-label": "Difesa (Forte)",
+    "duration-label": "1 turno",
+    "tags": [
+      "AREA",
+      "CURA",
+      "ESCUDO",
+      "REI-RESTRICAO-PARCIAL"
+    ]
   },
   "ls_d4": {
     "name": "Protezione",
     "description": "Formato + (5 caselle). Rimuove tutti i debuff alleati + immunità a nuovi debuff per 1 turno.",
-    "long-description": "Cleanse in area in formato a croce (centro + 4 adiacenti), rimuovendo tutti i debuff attivi dagli alleati colpiti (bleed, burn, poison, stun, snare, silence, def_down, mov_down, atk_down, marchi) e concedendo immunità totale a nuovi debuff per 1 turno. Nessun danno, nessuna cura — puramente una risposta a setup di controllo e DoT pesanti."
+    "long-description": {
+      "flavor": "O selo arcano se ergue. Nenhum mal cruza esta linha.",
+      "detail": "Cleanse in area in formato a croce (centro + 4 adiacenti), rimuovendo tutti i debuff attivi dagli alleati colpiti (bleed, burn, poison, stun, snare, silence, def_down, mov_down, atk_down, marchi) e concedendo immunità totale a nuovi debuff per 1 turno. Nessun danno, nessuna cura — puramente una risposta a setup di controllo e DoT pesanti.",
+      "synergies": "Use antes de momentos críticos (revive, ressurreição, virada). Combine com **Escudo do Protetor** ou **Cura Suprema** para janela invulnerável.",
+      "counter": "Skills de dano direto não são afetadas. **Bola de Fogo** ainda causa dano (apenas o burn é negado). Foco em Especialista antes do cast.\n\n---"
+    },
+    "type-label": "Difesa (Forte)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "CLEANSE",
+      "IMUNIDADE"
+    ]
   },
   "ls_d5": {
     "name": "Campo di Cura Continuo",
     "description": "Regen 6 HP/turno per 2 turni in area 3x3. Il Re non riceve. Annullato se l'alleato subisce danni.",
-    "long-description": "Un campo di rigenerazione stazionario copre un'area 3x3 per 2 turni. Ogni alleato all'interno riceve Regen di 6 HP per turno — i Re non ricevono. Se un alleato subisce QUALSIASI danno mentre è nel campo, il regen è annullato per quell'alleato. Sustain post-combattimento."
+    "long-description": {
+      "flavor": "Onde a magia toca a terra, a vida insiste em florescer.",
+      "detail": "Un campo di rigenerazione stazionario copre un'area 3x3 per 2 turni. Ogni alleato all'interno riceve Regen di 6 HP per turno — i Re non ricevono. Se un alleato subisce QUALSIASI danno mentre è nel campo, il regen è annullato per quell'alleato. Sustain post-combattimento.",
+      "synergies": "Use após **Bater em Retirada** (recolhe equipe em formação segura). Combine com **Aura de Proteção** para escudos absorverem dano e preservar regen.",
+      "counter": "Qualquer dano direto cancela o segundo tick. **Bola de Fogo** inimiga + DoTs garantem cancelamento. **Marca da Morte** com bleed mantém pressão sustentada.\n\n---"
+    },
+    "type-label": "Difesa (Leggera)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "AREA",
+      "REGEN",
+      "CONDICIONAL",
+      "REI-RESTRICAO"
+    ]
   },
   "ls_d6": {
     "name": "Schivata",
     "description": "Schiva completamente il primo attacco diretto nel prossimo turno.",
-    "long-description": "Lo Specialista assume postura evasiva e schiva completamente il prossimo attacco diretto ricevuto nel prossimo turno. Schivata assorbe solo un colpo, poi si consuma. Funziona contro danno diretto e ad area che colpisce il caster. NON blocca DoT già applicati né effetti senza danno. Carta condivisa tra Specialista, Esecutore e Re."
+    "long-description": {
+      "flavor": "O Rei não bloqueia o golpe. Ele simplesmente não está mais lá.",
+      "detail": "Lo Specialista assume postura evasiva e schiva completamente il prossimo attacco diretto ricevuto nel prossimo turno. Schivata assorbe solo un colpo, poi si consuma. Funziona contro danno diretto e ad area che colpisce il caster. NON blocca DoT già applicati né effetti senza danno. Carta condivisa tra Specialista, Esecutore e Re.",
+      "synergies": "Use em \"leitura\" do oponente — quando você sabe que o burst vem. Combine com **Sombra Real**: oponente confuso atira em clone, e mesmo se acertar o real, a Esquiva protege.",
+      "counter": "Skills de área (**Bola de Fogo**, **Domínio Real**) ignoram Esquiva — não são \"ataques diretos\". DoTs aplicados anteriormente continuam ticando. Skills compostas com múltiplos hits (**Sequência de Socos**) só perdem o primeiro hit.\n\n---"
+    },
+    "type-label": "Difesa (Leggera)",
+    "duration-label": "Até receber 1 ataque ou fim do turno",
+    "tags": [
+      "SELF",
+      "EVADE"
+    ]
   },
   "ls_d7": {
     "name": "Blocco Totale",
     "description": "Scudo 60. Persiste fino a rotto o 2 turni.",
-    "long-description": "Concede al caster uno scudo di 60 HP, persistente fino a totale consumo o scadenza in 2 turni. Lo scudo è soggetto allo Shield Cap globale di 100 HP accumulati per unità. Carta condivisa tra Specialista ed Esecutore. Lo scudo assorbe danni prima di HP, ma i DoT ignorano lo scudo e colpiscono direttamente HP."
+    "long-description": {
+      "flavor": "Nenhum golpe passa. Nenhuma chance é dada.",
+      "detail": "Concede al caster uno scudo di 60 HP, persistente fino a totale consumo o scadenza in 2 turni. Lo scudo è soggetto allo Shield Cap globale di 100 HP accumulati per unità. Carta condivisa tra Specialista ed Esecutore. Lo scudo assorbe danni prima di HP, ma i DoT ignorano lo scudo e colpiscono direttamente HP.",
+      "synergies": "Use antes de momentos previsíveis de pressão inimiga. Combine com **Aura de Proteção** (Especialista) para ainda mais absorção.",
+      "counter": "**Golpe Devastador** purga o escudo inteiro. **Disparo Preciso** com bleed ativo no alvo ignora escudos. Pressão sustentada por 2-3 turnos esgota o escudo.\n\n---"
+    },
+    "type-label": "Difesa (Leggera)",
+    "duration-label": "Até ser totalmente quebrado ou 2 turnos",
+    "tags": [
+      "SELF",
+      "ESCUDO"
+    ]
   },
   "ls_d8": {
     "name": "Aura di Protezione",
     "description": "Scudo 12 + atk_up 10% per 1 turno in area diamante r2.",
-    "long-description": "Un'aura protettiva copre un'area a forma di diamante di raggio 2 (~13 caselle) attorno al caster. Tutti gli alleati nell'area ricevono 12 di scudo (Shield Cap 100) e atk_up 10% per 1 turno. Abilità offensivo-difensiva che prepara un turno di attacco coordinato: l'intero team entra con più sustain e più danni in uscita."
+    "long-description": {
+      "flavor": "A aura do mago. Pequena, mas suficiente.",
+      "detail": "Un'aura protettiva copre un'area a forma di diamante di raggio 2 (~13 caselle) attorno al caster. Tutti gli alleati nell'area ricevono 12 di scudo (Shield Cap 100) e atk_up 10% per 1 turno. Abilità offensivo-difensiva che prepara un turno di attacco coordinato: l'intero team entra con più sustain e più danni in uscita.",
+      "synergies": "Combine com **Cura Suprema** ou **Campo de Cura** para defesa em camadas. **Escudo de Grupo** (Guerreiro aliado) stackável até o cap de 100 HP.",
+      "counter": "**Golpe Devastador** ou **Corte Preciso** purgam buffs e escudo. **Disparo Preciso** com bleed ignora escudo. Skills de área grandes pegam todos protegidos.\n\n---"
+    },
+    "type-label": "Difesa (Leggera)",
+    "duration-label": "1 turno",
+    "tags": [
+      "AREA",
+      "ESCUDO",
+      "BUFF"
+    ]
   },
   "lw_a1": {
     "name": "Collisione Titanica",
     "description": "22 danni in rettangolo 6x2 verticale + push 1 casella. Se bloccato: snare 1t.",
-    "long-description": "Il Guerriero avanza come una muraglia in movimento, colpendo tutti i nemici in un rettangolo verticale 6x2 davanti, infliggendo 22 danni e spingendoli 1 casella indietro. Se il push di un bersaglio è bloccato da muro o altro nemico, quel bersaglio riceve Snare per 1 turno. Apertura aggressiva che riposiziona un'intera linea nemica."
+    "long-description": {
+      "flavor": "O escudo avança como uma tempestade de aço.",
+      "detail": "Il Guerriero avanza come una muraglia in movimento, colpendo tutti i nemici in un rettangolo verticale 6x2 davanti, infliggendo 22 danni e spingendoli 1 casella indietro. Se il push di un bersaglio è bloccato da muro o altro nemico, quel bersaglio riceve Snare per 1 turno. Apertura aggressiva che riposiziona un'intera linea nemica.",
+      "synergies": "Após **Muralha Viva** (Guerreiro aliado), use Colisão Titânica para empurrar inimigos contra a muralha — garantia de snare. Setup ideal para **Investida Brutal** subsequente.",
+      "counter": "**Bater em Retirada** ou **Avançar** podem ajustar posição antes do golpe. Inimigos com `mov_down` ainda sofrem dano mas o snare condicional só ativa contra obstáculos físicos.\n\n---"
+    },
+    "type-label": "Attacco (Pesante)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "DANO",
+      "PUSH",
+      "CONDICIONAL"
+    ]
   },
   "lw_a2": {
     "name": "Impatto",
     "description": "28 danni in area 3x3. def_down 18% + mov_down 1 per 1 turno.",
-    "long-description": "Un colpo pesante d'impatto detona in un'area 3x3 attorno al bersaglio, infliggendo 28 danni a tutti i colpiti e applicando due debuff per 1 turno: def_down 18% e mov_down 1. Pressione coordinata: indebolisce la difesa di un raggruppamento e limita la ritirata."
+    "long-description": {
+      "flavor": "O chão treme. A defesa inimiga começa a rachar.",
+      "detail": "Un colpo pesante d'impatto detona in un'area 3x3 attorno al bersaglio, infliggendo 28 danni a tutti i colpiti e applicando due debuff per 1 turno: def_down 18% e mov_down 1. Pressione coordinata: indebolisce la difesa di un raggruppamento e limita la ritirata.",
+      "synergies": "Setup perfeito para **Bola de Fogo** ou **Tempestade de Lâminas** no turno seguinte (def reduzida = dano amplificado). Combine com **Provocação** para um turno completo de paralisia ofensiva inimiga.",
+      "counter": "**Bloqueio Total** (60 HP de escudo) absorve a maior parte do dano direto. **Proteção** (Especialista) remove os debuffs aplicados. Posicionamento espalhado reduz o número de alvos.\n\n---"
+    },
+    "type-label": "Attacco (Pesante)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "DANO",
+      "DEBUFF"
+    ]
   },
   "lw_a3": {
     "name": "Colpo Devastante",
     "description": "30 danni in area 2x2. Rimuove buff e rompe scudi dei colpiti.",
-    "long-description": "Il Guerriero sferra un colpo colossale in area 2x2, infliggendo 30 danni e applicando Purga a tutti i bersagli colpiti: rimuove tutti i buff attivi e rompe completamente gli scudi, ignorando lo Shield Cap. Eccellente abilità anti-bunker contro composizioni difensive — smonta Blocco Totale, Aura di Protezione, Scudo del Protettore in un colpo."
+    "long-description": {
+      "flavor": "Cada machado real ignora a falsa proteção.",
+      "detail": "Il Guerriero sferra un colpo colossale in area 2x2, infliggendo 30 danni e applicando Purga a tutti i bersagli colpiti: rimuove tutti i buff attivi e rompe completamente gli scudi, ignorando lo Shield Cap. Eccellente abilità anti-bunker contro composizioni difensive — smonta Blocco Totale, Aura di Protezione, Scudo del Protettore in un colpo.",
+      "synergies": "Combo após **Bater em Retirada** (recolhe aliados) → Golpe Devastador (rompe defesas) → **Avançar** (avança time com buff). Linha completa de virada.",
+      "counter": "**Esquiva** anula completamente. **Fortaleza Inabalável** reduz o dano para 6 (mas o purge ainda ocorre). Inimigos podem evitar empilhar escudos antes da skill ser usada.\n\n---"
+    },
+    "type-label": "Attacco (Pesante)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "AREA",
+      "DANO",
+      "PURGE"
+    ]
   },
   "lw_a4": {
     "name": "Carica Brutale",
     "description": "24 danni in linea verticale 3 caselle. Linea centrale: push 1 + snare 1t se bloccato. Linee sopra/sotto: spinte perpendicolarmente.",
-    "long-description": "Il Guerriero carica in linea retta verticale di 3 caselle, infliggendo 24 danni a tutti i colpiti. Il push si divide per linea: la linea centrale è spinta 1 casella nella direzione della carica (snare 1t se bloccato), mentre le linee sopra e sotto sono spinte perpendicolarmente, aprendo un corridoio."
+    "long-description": {
+      "flavor": "A vanguarda real avança como um trovão. Nada permanece de pé.",
+      "detail": "Il Guerriero carica in linea retta verticale di 3 caselle, infliggendo 24 danni a tutti i colpiti. Il push si divide per linea: la linea centrale è spinta 1 casella nella direzione della carica (snare 1t se bloccato), mentre le linee sopra e sotto sono spinte perpendicolarmente, aprendo un corridoio.",
+      "synergies": "Use depois de **Empurrão Real** (Rei) para acumular reposicionamento. Combine com **Disparo Preciso** (Executor aliado) na linha central — alvo snared = alvo morto.",
+      "counter": "**Teleport** (Executor) ou **Recuo Rápido** evitam a linha. Paredes (**Muralha Viva**) bloqueiam o avanço. Posicionamento espalhado lateralmente diminui o número de hits.\n\n---"
+    },
+    "type-label": "Attacco (Pesante)",
+    "duration-label": "",
+    "tags": [
+      "LINHA",
+      "DANO",
+      "PUSH"
+    ]
   },
   "lw_a5": {
     "name": "Provocazione",
     "description": "10 danni + def_down 15% + silence_defense 1t su 1 nemico.",
-    "long-description": "Il Guerriero provoca un singolo nemico, infliggendo 10 danni e applicando due debuff: def_down 15% per 1 turno e silence_defense per 1 turno (impedisce l'uso di qualsiasi abilità difensiva). Abilità di bait pesante: forza uno Specialista o Esecutore a essere giustiziato senza poter usare Schivata, Blocco Totale o Riflesso."
+    "long-description": {
+      "flavor": "Provoque um soldado e ele esquece como se proteger.",
+      "detail": "Il Guerriero provoca un singolo nemico, infliggendo 10 danni e applicando due debuff: def_down 15% per 1 turno e silence_defense per 1 turno (impedisce l'uso di qualsiasi abilità difensiva). Abilità di bait pesante: forza uno Specialista o Esecutore a essere giustiziato senza poter usare Schivata, Blocco Totale o Riflesso.",
+      "synergies": "Coordene com Executor aliado: Provocação no turno X → Corte Mortal no turno X+1 (alvo sem defesa). Combine com **Marca da Morte** para garantir foco da equipe.",
+      "counter": "**Proteção** (Especialista) remove o silence. **Cleanse** ou similar limpa debuffs. Programar dois ataques sequenciais (sem defesa) também esquiva indiretamente.\n\n---"
+    },
+    "type-label": "Attacco (Controllo)",
+    "duration-label": "",
+    "tags": [
+      "ALVO UNICO",
+      "DANO",
+      "DEBUFF",
+      "SILENCE"
+    ]
   },
   "lw_a6": {
     "name": "Muraglia Vivente",
     "description": "Muraglia verticale 2 caselle nel campo nemico dura 2t. Nemici adiacenti: def_down 15%, mov_down 1, 3 danni/turno.",
-    "long-description": "Il Guerriero invoca una muraglia vivente di 2 caselle verticali nel campo nemico, persistente per 2 turni. I nemici adiacenti alla muraglia ricevono def_down 15%, mov_down 1 e subiscono 3 danni per turno mentre rimangono adiacenti. La muraglia è distrutta automaticamente dopo 2 turni O da qualsiasi atk1."
+    "long-description": {
+      "flavor": "Pedra erguida pela vontade. O caminho do inimigo termina aqui.",
+      "detail": "Il Guerriero invoca una muraglia vivente di 2 caselle verticali nel campo nemico, persistente per 2 turni. I nemici adiacenti alla muraglia ricevono def_down 15%, mov_down 1 e subiscono 3 danni per turno mentre rimangono adiacenti. La muraglia è distrutta automaticamente dopo 2 turni O da qualsiasi atk1.",
+      "synergies": "Combine com **Empurrão Real** ou **Colisão Titânica** para empurrar inimigos contra as paredes (snare garantido). **Investida Brutal** se beneficia de inimigos confinados à linha central.",
+      "counter": "**Golpe Devastador** ou outros ataques de classe podem destruir as paredes (paredes têm HP). **Teleport** atravessa obstáculos. Inimigos podem simplesmente evitar a área debuffada.\n\n---"
+    },
+    "type-label": "Attacco (Controllo)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "AREA",
+      "MURALHA",
+      "DEBUFF",
+      "DOT"
+    ]
   },
   "lw_a7": {
     "name": "Carica",
     "description": "12 danni in linea verticale 3 caselle. def_down 15% + mov_down 1 per 1 turno.",
-    "long-description": "Versione più leggera di Carica Brutale: il Guerriero avanza in linea verticale di 3 caselle, infliggendo 12 danni a tutti i colpiti e applicando def_down 15% e mov_down 1 per 1 turno. Senza push, senza snare. Pressione sostenuta e abilità di pick."
+    "long-description": {
+      "flavor": "O Guerreiro avança. O inimigo recua... mais devagar.",
+      "detail": "Versione più leggera di Carica Brutale: il Guerriero avanza in linea verticale di 3 caselle, infliggendo 12 danni a tutti i colpiti e applicando def_down 15% e mov_down 1 per 1 turno. Senza push, senza snare. Pressione sostenuta e abilità di pick.",
+      "synergies": "Setup ideal para skills de single-target alto dano da equipe. Combine com **Adrenalina** (Executor aliado) para amplificar dano subsequente.",
+      "counter": "**Esquiva** anula. **Fortaleza Inabalável** reduz dano e debuffs surtem efeito mas com impacto reduzido pelo `def_up` implícito.\n\n---"
+    },
+    "type-label": "Attacco (Controllo)",
+    "duration-label": "",
+    "tags": [
+      "LINHA",
+      "DANO",
+      "DEBUFF"
+    ]
   },
   "lw_a8": {
     "name": "Prigione di Muraglia Morta",
     "description": "12 danni al centro + 8 muri temporanei attorno. Nemici dentro: snare 2t. I muri si rompono con qualsiasi atk1.",
-    "long-description": "Il Guerriero crea una prigione di muraglie morte: infligge 12 danni su una casella centrale e erige 8 muri formando un anello attorno (raggio 1). I nemici dentro la prigione ricevono Snare per 2 turni — non possono muoversi, ma possono ancora usare abilità. I muri della prigione sono fragili."
+    "long-description": {
+      "flavor": "O reino constrói uma masmorra ao redor do invasor.",
+      "detail": "Il Guerriero crea una prigione di muraglie morte: infligge 12 danni su una casella centrale e erige 8 muri formando un anello attorno (raggio 1). I nemici dentro la prigione ricevono Snare per 2 turni — non possono muoversi, ma possono ancora usare abilità. I muri della prigione sono fragili.",
+      "synergies": "Combo executor: prende inimigo → time coordena Marca da Morte + Disparo Preciso. **Bola de Fogo** dentro da cela atinge alvo sem chance de escape.",
+      "counter": "**Teleport** atravessa paredes. Aliados quebrando as paredes liberam o preso (custo: 2 ataques pesados). Inimigos com **Esquiva** ativa na hora do cast podem evitar a captura inicial.\n\n---"
+    },
+    "type-label": "Attacco (Controllo)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "MURALHA",
+      "DANO",
+      "SNARE"
+    ]
   },
   "lw_d1": {
     "name": "Scudo del Protettore",
     "description": "Muove fino a 2 caselle + crea muraglia di scudo 3 caselle verticale davanti. Alleati in rettangolo 6 caselle dietro: -50% danni per 1 turno.",
-    "long-description": "Il Guerriero può muoversi fino a 2 caselle prima di canalizzare l'abilità (preMovement), poi crea una muraglia di scudo di 3 caselle verticali davanti. Tutti gli alleati in un rettangolo 6x2 dietro la muraglia ricevono -50% danni per 1 turno. Abilità difensiva di picco — prepara il team per un turno di assorbimento pesante."
+    "long-description": {
+      "flavor": "O Guerreiro ergue o escudo. Atrás dele, o reino respira.",
+      "detail": "Il Guerriero può muoversi fino a 2 caselle prima di canalizzare l'abilità (preMovement), poi crea una muraglia di scudo di 3 caselle verticali davanti. Tutti gli alleati in un rettangolo 6x2 dietro la muraglia ricevono -50% danni per 1 turno. Abilità difensiva di picco — prepara il team per un turno di assorbimento pesante.",
+      "synergies": "Use antes de momentos críticos da equipe (curas, revives, regeneração). **Cura Suprema** (Especialista) atrás do escudo é praticamente garantida. **Recuperação Real** (Rei) protegida nunca é interrompida.",
+      "counter": "**Bola de Fogo** e skills de área ignoram a \"frente\" — atingem por cima. **Teleport** posiciona burst diretamente atrás da parede, anulando o ângulo de proteção.\n\n---"
+    },
+    "type-label": "Difesa (Forte)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "MURALHA",
+      "BUFF AREA"
+    ]
   },
   "lw_d2": {
     "name": "Guardiano",
     "description": "60% del danno ricevuto dall'alleato è reindirizzato al guerriero, ridotto del 30% sul guerriero (1 turno).",
-    "long-description": "Il Guerriero marca l'alleato con HP più bassi (non re) come protetto. Per 1 turno, 60% di tutti i danni che quell'alleato riceve sono reindirizzati al Guerriero, e quel danno reindirizzato passa attraverso una riduzione aggiuntiva del 30% sul Guerriero. Abilità di salvataggio contro burst."
+    "long-description": {
+      "flavor": "Em meu peito o golpe pousa. Em minhas costas o reino segue.",
+      "detail": "Il Guerriero marca l'alleato con HP più bassi (non re) come protetto. Per 1 turno, 60% di tutti i danni che quell'alleato riceve sono reindirizzati al Guerriero, e quel danno reindirizzato passa attraverso una riduzione aggiuntiva del 30% sul Guerriero. Abilità di salvataggio contro burst.",
+      "synergies": "Combine com **Proteção Real** (Rei) e **Protetor** (passiva própria). Em Guerreiro adjacente ao Rei: Proteção Real reduz mais 20% sobre o dano redirecionado. Camadas defensivas formidáveis.",
+      "counter": "Matar o Guerreiro elimina o redirect. **Disparo Preciso** com bleed ignora as reduções (true damage). Skills de área atingem ambos simultaneamente — redirect não os protege.\n\n---"
+    },
+    "type-label": "Difesa (Forte)",
+    "duration-label": "1 turno",
+    "tags": [
+      "ALVO UNICO",
+      "BUFF",
+      "DAMAGE-REDIRECT"
+    ]
   },
   "lw_d3": {
     "name": "Resistenza Assoluta",
     "description": "Guerriero + alleato dietro: -65% danni per 1 turno. Può muovere 1 casella prima.",
-    "long-description": "Il Guerriero può muoversi fino a 1 casella prima di canalizzare (preMovement), poi assume postura di resistenza assoluta. Per 1 turno, lui e l'alleato immediatamente dietro ricevono -65% di tutti i danni (inclusi true damage, ma non DoT già applicati). Abilità di assorbimento pesante."
+    "long-description": {
+      "flavor": "Onde o Guerreiro firma os pés, dois corações batem em segurança.",
+      "detail": "Il Guerriero può muoversi fino a 1 casella prima di canalizzare (preMovement), poi assume postura di resistenza assoluta. Per 1 turno, lui e l'alleato immediatamente dietro ricevono -65% di tutti i danni (inclusi true damage, ma non DoT già applicati). Abilità di assorbimento pesante.",
+      "synergies": "Combine com **Cura Suprema** ou **Recuperação Real** atrás — proteção quase total durante curas. **Postura Defensiva** stackável para reduções compostas.",
+      "counter": "Skills de área que pegam o lado/frente do Guerreiro ignoram o \"atrás\". **Empurrão Real** ou **Intimidação** quebram a formação posicional. **Disparo Preciso** ainda penetra true damage.\n\n---"
+    },
+    "type-label": "Difesa (Forte)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "BUFF",
+      "POSICIONAL"
+    ]
   },
   "lw_d4": {
     "name": "Fortezza Incrollabile",
     "description": "-80% danni ricevuti per 1 turno. Non può muovere nel prossimo turno di movimento.",
-    "long-description": "Il Guerriero assume forma di fortezza vivente. Per 1 turno, riceve -80% di tutti i danni (inclusi true damage). Il costo: NON può muoversi nel prossimo turno di movimento, intrappolato sul posto. Abilità di scambio di tempo. Carta condivisa tra Guerriero e Re."
+    "long-description": {
+      "flavor": "Pés enraizados. Coração de pedra. O Rei se torna a própria muralha.",
+      "detail": "Il Guerriero assume forma di fortezza vivente. Per 1 turno, riceve -80% di tutti i danni (inclusi true damage). Il costo: NON può muoversi nel prossimo turno di movimento, intrappolato sul posto. Abilità di scambio di tempo. Carta condivisa tra Guerriero e Re.",
+      "synergies": "Combine com **Espírito de Sobrevivência** para virada de jogo. Use ANTES do oponente ativar combos óbvios (ex: Adrenalina visível no Executor inimigo).",
+      "counter": "O Rei imóvel é alvo fácil para reposicionamento — **Intimidação** ou **Empurrão Real** inimigos podem deslocá-lo. **Muralha Viva** pode prendê-lo após o turno.\n\n---"
+    },
+    "type-label": "Difesa (Leggera)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "BUFF",
+      "IMOVEL"
+    ]
   },
   "lw_d5": {
     "name": "Scudo di Gruppo",
     "description": "Scudo 15 su tutti gli alleati per 2 turni.",
-    "long-description": "Il Guerriero distribuisce uno scudo collettivo: tutti i 4 alleati (incluso lui stesso e il Re) ricevono 15 di scudo, persistente per 2 turni o fino a rotto. Ogni scudo è indipendente — i Re ricevono normalmente, contrariamente alle cure. Soggetto allo Shield Cap di 100 HP per unità."
+    "long-description": {
+      "flavor": "Um exército que se protege junto, vence junto.",
+      "detail": "Il Guerriero distribuisce uno scudo collettivo: tutti i 4 alleati (incluso lui stesso e il Re) ricevono 15 di scudo, persistente per 2 turni o fino a rotto. Ogni scudo è indipendente — i Re ricevono normalmente, contrariamente alle cure. Soggetto allo Shield Cap di 100 HP per unità.",
+      "synergies": "Combo defensivo: **Aura de Proteção** (Especialista) + Escudo de Grupo + **Postura Defensiva** = camadas múltiplas de redução. Use antes de turno previsto de pressão inimiga.",
+      "counter": "**Golpe Devastador** purga em área pequena. **Disparo Preciso** com bleed ativo no alvo ignora escudos. Concentrar burst em um único alvo derrota o spread defensivo.\n\n---"
+    },
+    "type-label": "Difesa (Leggera)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "GLOBAL",
+      "ESCUDO"
+    ]
   },
   "lw_d6": {
     "name": "Postura Difensiva",
     "description": "Alleati in 3x3 attorno: -25% danni per 1 turno.",
-    "long-description": "Il Guerriero adotta postura difensiva. Gli alleati in un'area 3x3 attorno a lui (incluso se stesso) ricevono -25% danni per 1 turno. Nessuno scudo, nessuna cura — puramente una riduzione del danno applicata a tutti i colpi ricevuti dagli alleati nell'area. Combina con la passiva Protettore (-15%) per effettivi -40%."
+    "long-description": {
+      "flavor": "Pés firmes, escudo erguido, formação fechada.",
+      "detail": "Il Guerriero adotta postura difensiva. Gli alleati in un'area 3x3 attorno a lui (incluso se stesso) ricevono -25% danni per 1 turno. Nessuno scudo, nessuna cura — puramente una riduzione del danno applicata a tutti i colpi ricevuti dagli alleati nell'area. Combina con la passiva Protettore (-15%) per effettivi -40%.",
+      "synergies": "Combo com a passiva Protetor (-15%) — aliados adjacentes recebem ambas as reduções multiplicativamente: 0.85 × 0.75 = 0.6375 (efetiva redução de 36%).",
+      "counter": "Forçar o Guerreiro a se afastar dos aliados elimina o buff. Skills de área que ignoram redução percentual (true damage) atravessam.\n\n---"
+    },
+    "type-label": "Difesa (Leggera)",
+    "duration-label": "1 turno",
+    "tags": [
+      "AREA",
+      "BUFF"
+    ]
   },
   "lw_d7": {
     "name": "Avanzare",
     "description": "Muove alleati in 4x4 1 casella in avanti. +1 mov + -10% danni + +10% ATK per 1 turno.",
-    "long-description": "Il Guerriero guida l'avanzata del team. Tutti gli alleati in un quadrante 4x4 attorno a lui si muovono 1 casella in avanti (verso il campo nemico) e ricevono tre buff per 1 turno: +1 mov, -10% danni ricevuti e +10% ATK. Abilità offensivo-coordinata."
+    "long-description": {
+      "flavor": "O Rei chama. A vanguarda avança. O reino conquista.",
+      "detail": "Il Guerriero guida l'avanzata del team. Tutti gli alleati in un quadrante 4x4 attorno a lui si muovono 1 casella in avanti (verso il campo nemico) e ricevono tre buff per 1 turno: +1 mov, -10% danni ricevuti e +10% ATK. Abilità offensivo-coordinata.",
+      "synergies": "Combo de avanço: Avançar → próximo turno usa **Investida** ou **Colisão Titânica** com aliados em posição de pressão. Setup ideal para tomar o muro inimigo.",
+      "counter": "**Empurrão Real** (Rei inimigo) anula o avanço empurrando todos de volta. **Muralha Viva** bloqueia. Skills de área inimigas pegam todos os aliados agrupados.\n\n---"
+    },
+    "type-label": "Difesa (Leggera)",
+    "duration-label": "1 turno",
+    "tags": [
+      "AREA",
+      "BUFF",
+      "MOVIMENTO"
+    ]
   },
   "lw_d8": {
     "name": "Ritirata",
     "description": "Muove tutti gli alleati 1 casella indietro in 4x4. +1 mov prossimo turno + -15% danni per 1 turno.",
-    "long-description": "Il Guerriero ordina ritirata tattica. Tutti gli alleati in un quadrante 4x4 attorno a lui si muovono 1 casella indietro (verso il campo proprio) e ricevono +1 mov nel prossimo turno e -15% danni per 1 turno. Abilità puramente difensivo-riposizionale."
+    "long-description": {
+      "flavor": "Recuar não é perder. É escolher o próximo terreno.",
+      "detail": "Il Guerriero ordina ritirata tattica. Tutti gli alleati in un quadrante 4x4 attorno a lui si muovono 1 casella indietro (verso il campo proprio) e ricevono +1 mov nel prossimo turno e -15% danni per 1 turno. Abilità puramente difensivo-riposizionale.",
+      "synergies": "Use após pressão inimiga heavy ou antes de skills de área inimigas previstas. Combine com **Ordem Real** (Rei) ou skills curativas para janela de respiro. O miss chance é especialmente forte contra **Disparo Preciso** (true damage que ignoraria reduções percentuais).",
+      "counter": "Inimigos com `pull` (não temos no jogo atualmente) anulariam. **Investida Brutal** persegue aliados em retirada. Skills de área garantem hit múltiplo — apenas o **primeiro** dano direto tem chance de miss; ataques sequenciais ainda atingem.\n\n---"
+    },
+    "type-label": "Difesa (Forte)",
+    "duration-label": "1 turno (buffs)",
+    "tags": [
+      "AREA",
+      "BUFF",
+      "MOVIMENTO",
+      "EVADE"
+    ]
   },
   "le_a1": {
     "name": "Colpo Mortale",
     "description": "45 danni + rimuove debuff del bersaglio. Se aveva bleed: +50% danni (67 totali).",
-    "long-description": "L'Esecutore sferra un taglio preciso e letale su un singolo bersaglio, infliggendo 45 danni diretti e applicando Cleanse sul bersaglio. Se il bersaglio aveva Bleed attivo al momento del taglio, il danno è amplificato di +50% (67 totali). Abilità di esecuzione pesante — premia setup con bleed pregresso."
+    "long-description": {
+      "flavor": "O Executor identifica feridas abertas e desfere o golpe definitivo.",
+      "detail": "L'Esecutore sferra un taglio preciso e letale su un singolo bersaglio, infliggendo 45 danni diretti e applicando Cleanse sul bersaglio. Se il bersaglio aveva Bleed attivo al momento del taglio, il danno è amplificato di +50% (67 totali). Abilità di esecuzione pesante — premia setup con bleed pregresso.",
+      "synergies": "Aplique **Corte Hemorragia**, **Bomba de Espinhos** ou **Marca da Morte** no turno anterior para garantir bleed → use Corte Mortal para o burst de 67. Combine com **Adrenalina** ativa para 84 de dano (+25% × 67).",
+      "counter": "**Esquiva** anula. **Fortaleza Inabalável** reduz para 13 de dano. **Cleanse** remove o bleed antes do turno do Executor. Manter alvos limpos de DoT é a defesa principal.\n\n---"
+    },
+    "type-label": "Attacco (Pesante)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "ALVO UNICO",
+      "DANO",
+      "PURGE",
+      "SINERGIA-BLEED"
+    ]
   },
   "le_a2": {
     "name": "Tempesta di Lame",
     "description": "26 danni in area 3x3. Se i bersagli avevano bleed: +50% danni su di loro.",
-    "long-description": "L'Esecutore scatena una tempesta di lame in area 3x3, infliggendo 26 danni a tutti i nemici colpiti. Ogni bersaglio individualmente riceve +50% danni se era sotto Bleed al momento del colpo. Abilità di cleanup ad area che combina con qualsiasi fonte di bleed del team."
+    "long-description": {
+      "flavor": "Lâminas dançam em todas as direções. Quem sangra, sangra mais.",
+      "detail": "L'Esecutore scatena una tempesta di lame in area 3x3, infliggendo 26 danni a tutti i nemici colpiti. Ogni bersaglio individualmente riceve +50% danni se era sotto Bleed al momento del colpo. Abilità di cleanup ad area che combina con qualsiasi fonte di bleed del team.",
+      "synergies": "Use **Bomba de Espinhos** primeiro (aplica bleed em área) → Tempestade de Lâminas no turno seguinte garante triple-amplificação. Em time, **Provocação** (Guerreiro aliado) prepara alvos sem defesa.",
+      "counter": "Posicionamento espalhado anula AoE. **Bater em Retirada** (Guerreiro inimigo) limpa a área. **Cleanse** remove bleeds antes da tempestade.\n\n---"
+    },
+    "type-label": "Attacco (Pesante)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "AREA",
+      "DANO",
+      "SINERGIA-BLEED"
+    ]
   },
   "le_a3": {
     "name": "Tiro Preciso",
     "description": "30 true damage (ignora DEF). Se il bersaglio aveva bleed: ignora anche scudi.",
-    "long-description": "L'Esecutore spara un proiettile di precisione letale su un singolo bersaglio, infliggendo 30 di True Damage — danno puro che IGNORA tutta la mitigazione DEF, passive e qualsiasi riduzione percentuale di danno. Se il bersaglio aveva Bleed attivo, il colpo IGNORA anche tutti gli scudi attivi sul bersaglio. Abilità di esecuzione chirurgica."
+    "long-description": {
+      "flavor": "Não há armadura entre a flecha e o coração marcado.",
+      "detail": "L'Esecutore spara un proiettile di precisione letale su un singolo bersaglio, infliggendo 30 di True Damage — danno puro che IGNORA tutta la mitigazione DEF, passive e qualsiasi riduzione percentuale di danno. Se il bersaglio aveva Bleed attivo, il colpo IGNORA anche tutti gli scudi attivi sul bersaglio. Abilità di esecuzione chirurgica.",
+      "synergies": "Combo definitivo: **Marca da Morte** (aplica bleed) → Disparo Preciso (true damage que ignora escudos). Mesmo Reis com escudos empilhados caem nesta combinação.",
+      "counter": "**Esquiva** ainda funciona (anula o ataque inteiro). **Fortaleza Inabalável** reduz true damage em 80%. **Cleanse** remove bleed para preservar escudos. Posicionamento fora da linha vertical.\n\n---"
+    },
+    "type-label": "Attacco (Pesante)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "ALVO UNICO",
+      "LINHA",
+      "TRUE DAMAGE",
+      "ANTI-SHIELD"
+    ]
   },
   "le_a4": {
     "name": "Taglio Preciso",
     "description": "22 danni in 2 caselle orizzontali + purga.",
-    "long-description": "L'Esecutore sferra due tagli consecutivi che colpiscono una linea orizzontale di 2 caselle, infliggendo 22 danni e applicando Purga a tutti i colpiti. Abilità anti-buff: annulla composizioni basate su sustain di buff. Sinergia classica con Spinta Reale per purga di massa."
+    "long-description": {
+      "flavor": "A precisão da lâmina rasga a falsa proteção.",
+      "detail": "L'Esecutore sferra due tagli consecutivi che colpiscono una linea orizzontale di 2 caselle, infliggendo 22 danni e applicando Purga a tutti i colpiti. Abilità anti-buff: annulla composizioni basate su sustain di buff. Sinergia classica con Spinta Reale per purga di massa.",
+      "synergies": "Use Corte Preciso → próximo turno Disparo Preciso (alvo sem escudo). Combine com **Provocação** (Guerreiro aliado) para silence_defense + buff cleanse — alvo completamente exposto.",
+      "counter": "**Esquiva** anula. Posicionar-se em diagonal ao Executor evita o cone horizontal. **Aura de Proteção** (Especialista) reaplica buffs.\n\n---"
+    },
+    "type-label": "Attacco (Pesante)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "AREA",
+      "DANO",
+      "PURGE"
+    ]
   },
   "le_a5": {
     "name": "Taglio Sanguinante",
     "description": "8 danni + bleed 4/turno per 3t in 2 caselle orizzontali. Cumulativo se riapplicato.",
-    "long-description": "L'Esecutore sferra un taglio rasente su una linea orizzontale di 2 caselle, infliggendo 8 danni iniziali e applicando Bleed: 4 danni per turno per 3 turni (12 totali). Bleed è DoT fisico che ignora gli scudi. Se Taglio Sanguinante è usato di nuovo su bersaglio già sanguinante, il bleed si STACK."
+    "long-description": {
+      "flavor": "Um corte raso. Mas a ferida não para de sangrar.",
+      "detail": "L'Esecutore sferra un taglio rasente su una linea orizzontale di 2 caselle, infliggendo 8 danni iniziali e applicando Bleed: 4 danni per turno per 3 turni (12 totali). Bleed è DoT fisico che ignora gli scudi. Se Taglio Sanguinante è usato di nuovo su bersaglio già sanguinante, il bleed si STACK.",
+      "synergies": "Primeira skill em qualquer combo. Use turno 1 → Corte Mortal turno 2. **Marca da Morte** stackável (também aplica bleed mais forte).",
+      "counter": "**Cleanse** ou **Proteção** (Especialista) remove o bleed. **Cura Suprema** mitiga o tick (mas DoT bypass cura, então não totalmente). Manter HP alto reduz pressão do tick.\n\n---"
+    },
+    "type-label": "Attacco (Controllo)",
+    "duration-label": "3 turnos",
+    "tags": [
+      "AREA",
+      "DANO",
+      "BLEED",
+      "SETUP"
+    ]
   },
   "le_a6": {
     "name": "Bomba di Spine",
     "description": "10 danni + bleed 5/turno per 2t in diamante r2.",
-    "long-description": "L'Esecutore lancia una bomba di spine che detona in formato diamante di raggio 2 (~13 caselle), infliggendo 10 danni iniziali a tutti i colpiti e applicando Bleed di 5 per turno per 2 turni (10 DoT totali). Copertura ampia per applicare bleed su più bersagli simultaneamente."
+    "long-description": {
+      "flavor": "Um arremesso silencioso. Espinhos rasgam pelos quatro lados.",
+      "detail": "L'Esecutore lancia una bomba di spine che detona in formato diamante di raggio 2 (~13 caselle), infliggendo 10 danni iniziali a tutti i colpiti e applicando Bleed di 5 per turno per 2 turni (10 DoT totali). Copertura ampia per applicare bleed su più bersagli simultaneamente.",
+      "synergies": "Combo perfeito antes de **Tempestade de Lâminas** (Executor mesmo) — todos os atingidos sofrem +50%. **Marca da Morte** complementa no canto traseiro do diamante.",
+      "counter": "**Bater em Retirada** sai da área. **Proteção** dá imunidade a debuffs novos por 1 turno. Posicionamento em fileira evita o formato diamante.\n\n---"
+    },
+    "type-label": "Attacco (Controllo)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "AREA",
+      "DANO",
+      "BLEED",
+      "SETUP"
+    ]
   },
   "le_a7": {
     "name": "Marchio della Morte",
     "description": "12 danni in 8 caselle verticali. Rimuove scudi (cura 20% di essi come HP). Bleed 8/turno per 2t.",
-    "long-description": "L'Esecutore canalizza Marchio della Morte in un'area rettangolare verticale di 8 caselle (4 di profondità × 2 di larghezza). Infligge 12 danni a tutti i colpiti, RIMUOVE tutti gli scudi dei bersagli (e cura l'Esecutore del 20% dello scudo rimosso come HP) e applica Bleed di 8 per turno per 2 turni (16 DoT)."
+    "long-description": {
+      "flavor": "Marcado para a morte. O selo silencioso da execução.",
+      "detail": "L'Esecutore canalizza Marchio della Morte in un'area rettangolare verticale di 8 caselle (4 di profondità × 2 di larghezza). Infligge 12 danni a tutti i colpiti, RIMUOVE tutti gli scudi dei bersagli (e cura l'Esecutore del 20% dello scudo rimosso come HP) e applica Bleed di 8 per turno per 2 turni (16 DoT).",
+      "synergies": "Combo \"destruidor de tanks\": Marca da Morte → Disparo Preciso (true damage + ignora escudos restantes). Frente a Reis com escudos empilhados, sequência reduz HP rápido.",
+      "counter": "**Aura de Proteção** ou **Cura Suprema** (Especialista) podem reaplicar escudos perdidos. **Cleanse** remove o bleed, mas o escudo já foi removido (não retorna). Manter inimigos sem escudo até momento crítico minimiza valor da skill.\n\n---"
+    },
+    "type-label": "Attacco (Controllo)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "LINHA",
+      "DANO",
+      "ANTI-SHIELD",
+      "BLEED"
+    ]
   },
   "le_a8": {
     "name": "Trappola Nascosta",
     "description": "Arma una casella (non su occupata). Al passaggio: 15 danni + snare 1t + bleed 4/turno per 3t.",
-    "long-description": "L'Esecutore piazza una trappola invisibile su una casella vuota. La trappola rimane fino all'attivazione. Quando QUALSIASI nemico entra nella casella, detona: infligge 15 danni, applica Snare per 1 turno e Bleed 4 per turno per 3 turni. Abilità di zoning."
+    "long-description": {
+      "flavor": "O caminho mais curto pode ser o último.",
+      "detail": "L'Esecutore piazza una trappola invisibile su una casella vuota. La trappola rimane fino all'attivazione. Quando QUALSIASI nemico entra nella casella, detona: infligge 15 danni, applica Snare per 1 turno e Bleed 4 per turno per 3 turni. Abilità di zoning.",
+      "synergies": "Combine com **Empurrão Real** ou **Colisão Titânica** (aliados) para forçar inimigo na armadilha. **Investida Brutal** empurra alvos pelo mapa em direção a traps pré-posicionadas.",
+      "counter": "Inimigos evitam casas suspeitas (em PvP é leitura). **Teleport** ignora armadilhas (não pisa, atravessa). Forçar inimigo a entrar exige coordenação ofensiva.\n\n---"
+    },
+    "type-label": "Attacco (Controllo)",
+    "duration-label": "Permanente até ser ativada ou fim de combate",
+    "tags": [
+      "ALVO UNICO",
+      "TRAP",
+      "DANO",
+      "SNARE",
+      "BLEED"
+    ]
   },
   "le_d1": {
     "name": "Riflettere",
     "description": "-25% danni ricevuti + riflette il mitigato all'attaccante nel prossimo turno.",
-    "long-description": "Per 1 turno, l'Esecutore riceve -25% di tutti i danni e riflette ESATTAMENTE il valore mitigato all'attaccante. Esempio: attacco da 40 → riceve 30, attaccante riceve 10 di reflect. Più attaccanti generano più reflect, ciascuno proporzionale al danno originale. Bait perfetto contro Specialisti ed Esecutori aggressivi."
+    "long-description": {
+      "flavor": "O que você tenta tirar, retorna a você.",
+      "detail": "Per 1 turno, l'Esecutore riceve -25% di tutti i danni e riflette ESATTAMENTE il valore mitigato all'attaccante. Esempio: attacco da 40 → riceve 30, attaccante riceve 10 di reflect. Più attaccanti generano più reflect, ciascuno proporzionale al danno originale. Bait perfetto contro Specialisti ed Esecutori aggressivi.",
+      "synergies": "Use quando se espera burst inimigo (visivelmente preparado). Combine com **Adrenalina** para janela ofensiva pós-defesa.",
+      "counter": "Skills que não causam dano direto (`debuff`, `snare`) não são refletidas. **Bola de Fogo** reflete dano original mas o burn aplicado fica. Atacantes podem usar skills via DoT para evitar reflexão.\n\n---"
+    },
+    "type-label": "Difesa (Forte)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "BUFF",
+      "REFLECT"
+    ]
   },
   "le_d2": {
     "name": "Adrenalina",
     "description": "+25% ATK per 2 turni. Alla fine: perde 15% HP max (bloccabile da scudo).",
-    "long-description": "L'Esecutore entra in modalità adrenalina estrema: guadagna +25% ATK per 2 turni. Alla FINE del secondo turno, subisce 15% degli HP max come danno backlash (bloccabile da scudo attivo). Abilità rischio/ricompensa — produce due turni di burst estremo, ma costa HP alla fine."
+    "long-description": {
+      "flavor": "A força do desespero. O preço da pressa.",
+      "detail": "L'Esecutore entra in modalità adrenalina estrema: guadagna +25% ATK per 2 turni. Alla FINE del secondo turno, subisce 15% degli HP max come danno backlash (bloccabile da scudo attivo). Abilità rischio/ricompensa — produce due turni di burst estremo, ma costa HP alla fine.",
+      "synergies": "Setup mainstream do Executor: Adrenalina → 2 turnos de Corte Mortal/Disparo Preciso amplificados. Combine com **Recuo Rápido** ou **Bloqueio Total** para absorver o tick final.",
+      "counter": "**Desarme** (Rei inimigo) cancela skill no turno 1 da Adrenalina, desperdiçando setup. **Marca da Morte** com bleed durante a janela mantém pressão sobre o Executor já fragilizado.\n\n---"
+    },
+    "type-label": "Difesa (Forte)",
+    "duration-label": "2 turnos (buff) + tick final de dano",
+    "tags": [
+      "SELF",
+      "BUFF",
+      "TRADE-OFF"
+    ]
   },
   "le_d3": {
     "name": "Attacco Doppio",
     "description": "Prossimo turno: 2 abilità atk, 0 def. Cooldown: 2 turni (non usabile consecutivamente).",
-    "long-description": "Per 1 turno (il prossimo), l'Esecutore può usare 2 abilità d'attacco invece di 1, ma perde la possibilità di usare qualsiasi abilità difensiva in quel turno. Cooldown di 2 turni. Abilità di picco di pressione — soprattutto combinata con Adrenalina e bleed pregressi."
+    "long-description": {
+      "flavor": "Dois golpes. Zero defesa. Tudo ou nada.",
+      "detail": "Per 1 turno (il prossimo), l'Esecutore può usare 2 abilità d'attacco invece di 1, ma perde la possibilità di usare qualsiasi abilità difensiva in quel turno. Cooldown di 2 turni. Abilità di picco di pressione — soprattutto combinata con Adrenalina e bleed pregressi.",
+      "synergies": "Combo overkill: Ataque em Dobro → próximo turno Marca da Morte (aplica bleed) + Corte Mortal (+50% por bleed = 67) = 79 de dano em um turno só. Útil para finalizar Reis em HP baixo.",
+      "counter": "**Provocação** (Guerreiro inimigo) com silence_defense não ajuda (Executor já não defende). **Bola de Fogo** ou skill de área aproveita a vulnerabilidade total. Burst inimigo no turno do dobro pode matar o Executor.\n\n---"
+    },
+    "type-label": "Difesa (Forte)",
+    "duration-label": "",
+    "tags": [
+      "SELF",
+      "OFENSIVO",
+      "COOLDOWN"
+    ]
   },
   "le_d4": {
     "name": "Teletrasporto",
     "description": "Si teletrasporta fino a 5 caselle. Consuma il prossimo turno di movimento.",
-    "long-description": "L'Esecutore si teletrasporta istantaneamente su qualsiasi casella entro un raggio di 5, IGNORANDO ostacoli, muri e unità lungo il percorso. Il costo: consuma il prossimo turno di movimento. Abilità di mobilità tattica estrema."
+    "long-description": {
+      "flavor": "Está aqui. Está lá. Está em todo lugar.",
+      "detail": "L'Esecutore si teletrasporta istantaneamente su qualsiasi casella entro un raggio di 5, IGNORANDO ostacoli, muri e unità lungo il percorso. Il costo: consuma il prossimo turno di movimento. Abilità di mobilità tattica estrema.",
+      "synergies": "Posicionamento para ativar **Isolado** (passiva) — teleport longe da equipe = +20% dano. Combine com **Marca da Morte** posicionada em backline inimiga.",
+      "counter": "Inimigos com `mov_down` no Executor têm efeito reduzido (teleport ignora movimento normal). **Muralha Viva** não bloqueia teleport. Antecipar para onde o Executor pode aparecer é a leitura principal.\n\n---"
+    },
+    "type-label": "Difesa (Forte)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "SELF",
+      "TELEPORT",
+      "MOVIMENTO"
+    ]
   },
   "le_d5": {
     "name": "Ritirata Veloce",
     "description": "Muove fino a 2 caselle indietro + scudo 20 per 1 turno.",
-    "long-description": "L'Esecutore si ritira fino a 2 caselle indietro (solo verso il campo proprio) e guadagna 20 di scudo per 1 turno. Movimento e scudo sono parte della stessa azione — non può muovere in avanti né lateralmente. Abilità di fuga leggera."
+    "long-description": {
+      "flavor": "O assassino se move. O caminho está livre.",
+      "detail": "L'Esecutore si ritira fino a 2 caselle indietro (solo verso il campo proprio) e guadagna 20 di scudo per 1 turno. Movimento e scudo sono parte della stessa azione — non può muovere in avanti né lateralmente. Abilità di fuga leggera.",
+      "synergies": "Use depois de **Adrenalina** para absorver o tick final com o escudo de 20. Combine com **Teleport** depois para reposicionamento agressivo.",
+      "counter": "Paredes ou aliados bloqueiam o recuo. **Investida Brutal** persegue. **Disparo Preciso** com bleed ignora escudo.\n\n---"
+    },
+    "type-label": "Difesa (Leggera)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "MOVIMENTO",
+      "ESCUDO"
+    ]
   },
   "le_d6": {
     "name": "Schivata",
     "description": "Schiva completamente il primo attacco diretto nel prossimo turno.",
-    "long-description": "L'Esecutore assume postura evasiva e schiva completamente il prossimo attacco diretto ricevuto nel prossimo turno. Schivata assorbe solo un colpo, poi si consuma. Carta condivisa tra Specialista, Esecutore e Re."
+    "long-description": {
+      "flavor": "O Rei não bloqueia o golpe. Ele simplesmente não está mais lá.",
+      "detail": "L'Esecutore assume postura evasiva e schiva completamente il prossimo attacco diretto ricevuto nel prossimo turno. Schivata assorbe solo un colpo, poi si consuma. Carta condivisa tra Specialista, Esecutore e Re.",
+      "synergies": "Use em \"leitura\" do oponente — quando você sabe que o burst vem. Combine com **Sombra Real**: oponente confuso atira em clone, e mesmo se acertar o real, a Esquiva protege.",
+      "counter": "Skills de área (**Bola de Fogo**, **Domínio Real**) ignoram Esquiva — não são \"ataques diretos\". DoTs aplicados anteriormente continuam ticando. Skills compostas com múltiplos hits (**Sequência de Socos**) só perdem o primeiro hit.\n\n---"
+    },
+    "type-label": "Difesa (Leggera)",
+    "duration-label": "Até receber 1 ataque ou fim do turno",
+    "tags": [
+      "SELF",
+      "EVADE"
+    ]
   },
   "le_d7": {
     "name": "Blocco Totale",
     "description": "Scudo 60. Persiste fino a rotto o 2 turni.",
-    "long-description": "Concede all'Esecutore uno scudo di 60 HP, persistente fino a totale consumo o scadenza in 2 turni. Lo scudo è soggetto allo Shield Cap globale di 100 HP. Carta condivisa tra Specialista ed Esecutore. Per l'Esecutore più prezioso poiché la passiva Isolato diventa vulnerabile quando si distanzia dagli alleati."
+    "long-description": {
+      "flavor": "Nenhum golpe passa. Nenhuma chance é dada.",
+      "detail": "Concede all'Esecutore uno scudo di 60 HP, persistente fino a totale consumo o scadenza in 2 turni. Lo scudo è soggetto allo Shield Cap globale di 100 HP. Carta condivisa tra Specialista ed Esecutore. Per l'Esecutore più prezioso poiché la passiva Isolato diventa vulnerabile quando si distanzia dagli alleati.",
+      "synergies": "Use antes de momentos previsíveis de pressão inimiga. Combine com **Aura de Proteção** (Especialista) para ainda mais absorção.",
+      "counter": "**Golpe Devastador** purga o escudo inteiro. **Disparo Preciso** com bleed ativo no alvo ignora escudos. Pressão sustentada por 2-3 turnos esgota o escudo.\n\n---"
+    },
+    "type-label": "Difesa (Leggera)",
+    "duration-label": "Até ser totalmente quebrado ou 2 turnos",
+    "tags": [
+      "SELF",
+      "ESCUDO"
+    ]
   },
   "le_d8": {
     "name": "Scudo",
     "description": "Scudo 25 per 1 turno.",
-    "long-description": "Concede all'Esecutore uno scudo rapido di 25 HP per 1 turno. Soggetto allo Shield Cap di 100 HP accumulati. Più leggero e meno costoso di Blocco Totale — utile in rotazioni dove si vuole assorbire un singolo colpo senza impegnare 2 turni di scudo attivo."
+    "long-description": {
+      "flavor": "Um instante de aço. Um instante a mais de vida.",
+      "detail": "Concede all'Esecutore uno scudo rapido di 25 HP per 1 turno. Soggetto allo Shield Cap di 100 HP accumulati. Più leggero e meno costoso di Blocco Totale — utile in rotazioni dove si vuole assorbire un singolo colpo senza impegnare 2 turni di scudo attivo.",
+      "synergies": "Combine com **Recuo Rápido** (também aplica escudo) para 45 HP de absorção. Stack com **Bloqueio Total** = 85 HP de escudo (não atinge cap).",
+      "counter": "Igual aos outros escudos — **Golpe Devastador**, **Disparo Preciso** com bleed, ataques sustentados.\n\n---"
+    },
+    "type-label": "Difesa (Leggera)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "ESCUDO"
+    ]
   },
   "lk_a1": {
     "name": "Pugno Reale",
     "description": "25 danni in 2 caselle orizzontali + self scudo 15 per 2 turni.",
-    "long-description": "Il Re sferra un pugno reale in linea orizzontale di 2 caselle davanti, infliggendo 25 danni a tutti i nemici colpiti. Nello stesso turno, riceve 15 di self scudo per 2 turni (Shield Cap 100). Pressione ibrida attacco-difesa — il Re mantiene pressione sul fronte mentre si sostiene."
+    "long-description": {
+      "flavor": "O punho real pesa como o trono.",
+      "detail": "Il Re sferra un pugno reale in linea orizzontale di 2 caselle davanti, infliggendo 25 danni a tutti i nemici colpiti. Nello stesso turno, riceve 15 di self scudo per 2 turni (Shield Cap 100). Pressione ibrida attacco-difesa — il Re mantiene pressione sul fronte mentre si sostiene.",
+      "synergies": "Combina com **Recuperação Real** e **Espírito de Sobrevivência** para sustentar pressão prolongada. O escudo gerado conta para o Shield Cap (100 HP), então alterne com **Chute Real** para manter o sustain sem desperdício.",
+      "counter": "Inimigos com **Golpe Devastador** (Guerreiro) ou **Corte Preciso** (Executor) podem aplicar `purge`, removendo o escudo antes que ele cumpra sua função. Posicionar-se em diagonal evita ser atingido pelo cone horizontal.\n\n---"
+    },
+    "type-label": "Attacco (Pesante)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "AREA",
+      "DANO",
+      "ESCUDO"
+    ]
   },
   "lk_a2": {
     "name": "Calcio Reale",
     "description": "27 danni in 2 caselle verticali + self scudo 15 per 2 turni.",
-    "long-description": "Il Re sferra un calcio reale in linea verticale di 2 caselle davanti, infliggendo 27 danni a tutti i nemici colpiti. Riceve 15 di self scudo per 2 turni. Variante verticale di Pugno Reale — scelta di orientamento tattica secondo la formazione nemica."
+    "long-description": {
+      "flavor": "Cada movimento do soberano carrega o peso de uma coroa.",
+      "detail": "Il Re sferra un calcio reale in linea verticale di 2 caselle davanti, infliggendo 27 danni a tutti i nemici colpiti. Riceve 15 di self scudo per 2 turni. Variante verticale di Pugno Reale — scelta di orientamento tattica secondo la formazione nemica.",
+      "synergies": "Excelente após **Empurrão Real** ou **Intimidação**, que reposicionam inimigos diretamente na linha do chute. Combinação clássica: empurra → chuta → soca.",
+      "counter": "Inimigos com **Esquiva** ativa anulam o primeiro acerto. **Fortaleza Inabalável** reduz o dano em 80%, tornando o chute praticamente inofensivo.\n\n---"
+    },
+    "type-label": "Attacco (Pesante)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "AREA",
+      "DANO",
+      "ESCUDO"
+    ]
   },
   "lk_a3": {
     "name": "Combo di Pugni",
     "description": "15 danni in 3x2 + lifesteal 30%. Eccezione alla regola di immunità del re.",
-    "long-description": "Il Re scatena una sequenza di pugni in raffica, infliggendo 15 danni in un'area 3x2 davanti. Riceve 30% del danno causato come cura (Lifesteal) — eccezione esplicita alla regola di Immunità Reale, perché l'abilità è self-cast. Se colpisce 4 bersagli a 15 ciascuno (60 totali), recupera 18 HP."
+    "long-description": {
+      "flavor": "Quem desafia o trono enfrenta uma tempestade de aço.",
+      "detail": "Il Re scatena una sequenza di pugni in raffica, infliggendo 15 danni in un'area 3x2 davanti. Riceve 30% del danno causato come cura (Lifesteal) — eccezione esplicita alla regola di Immunità Reale, perché l'abilità è self-cast. Se colpisce 4 bersagli a 15 ciascuno (60 totali), recupera 18 HP.",
+      "synergies": "Devastador após **Ordem Real** (que reposiciona a equipe e agrupa inimigos). Combina com **Domínio Real** para dobrar o sustain — a sequência cura, o Domínio gera escudo proporcional ao dano.",
+      "counter": "Inimigos espalhados anulam o sustain — cada alvo a menos é 4-5 HP a menos curados. **Queimação** do Especialista NÃO afeta esta cura porque é lifesteal, não heal externo (importante!).\n\n---"
+    },
+    "type-label": "Attacco (Pesante)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "AREA",
+      "DANO",
+      "LIFESTEAL"
+    ]
   },
   "lk_a4": {
     "name": "Dominio Reale",
     "description": "18 danni in 3x3 + self scudo = 25% del danno totale causato per 1 turno.",
-    "long-description": "Il Re impone il suo dominio in un'area 3x3, infliggendo 18 danni a ogni bersaglio colpito (fino a 9 bersagli). Dopo il calcolo del danno totale, riceve 25% di quel totale come self scudo per 1 turno. Abilità offensivo-difensiva scalabile — più nemici presi, più scudo."
+    "long-description": {
+      "flavor": "A presença real impõe respeito num raio de aço.",
+      "detail": "Il Re impone il suo dominio in un'area 3x3, infliggendo 18 danni a ogni bersaglio colpito (fino a 9 bersagli). Dopo il calcolo del danno totale, riceve 25% di quel totale come self scudo per 1 turno. Abilità offensivo-difensiva scalabile — più nemici presi, più scudo.",
+      "synergies": "Combo perfeito com **Intimidação** (que junta inimigos em torno do Rei) ou **Ordem Real** (que reúne aliados ao redor, mas inimigos podem estar próximos também). Após o uso, **Sequência de Socos** maximiza o lifesteal contra os mesmos alvos.",
+      "counter": "Skills de empurrão (**Colisão Titânica**, **Investida**) afastam inimigos antes que o Domínio acerte. Inimigos isolados anulam o ganho de escudo. **Bater em Retirada** (Guerreiro inimigo) tira aliados do raio.\n\n---"
+    },
+    "type-label": "Attacco (Pesante)",
+    "duration-label": "1 turno",
+    "tags": [
+      "AREA",
+      "DANO",
+      "ESCUDO",
+      "ESCALAVEL"
+    ]
   },
   "lk_a5": {
     "name": "Spinta Reale",
     "description": "12 danni in linea verticale 3 caselle fino al fine mappa + push fino a 3 caselle.",
-    "long-description": "Il Re spinge con forza brutale in linea verticale che va dal Re fino al fine mappa (larghezza 3 caselle). Infligge 12 danni a tutti i nemici nel percorso e li spinge fino a 3 caselle indietro. Massiva abilità di zoning — pulisce il fronte intero."
+    "long-description": {
+      "flavor": "O Rei comanda — e o campo de batalha obedece.",
+      "detail": "Il Re spinge con forza brutale in linea verticale che va dal Re fino al fine mappa (larghezza 3 caselle). Infligge 12 danni a tutti i nemici nel percorso e li spinge fino a 3 caselle indietro. Massiva abilità di zoning — pulisce il fronte intero.",
+      "synergies": "Antes de **Investida Brutal** (Guerreiro aliado) — empurra inimigos para uma posição vulnerável. Após o empurrão, **Chute Real** ou **Domínio Real** atingem reposicionados.",
+      "counter": "Paredes (de **Muralha Viva** ou **Prisão de Muralha Morta**) bloqueiam o empurrão. Inimigos contra a borda do mapa são empurrados apenas até a borda. **Fortaleza Inabalável** mitiga o dano mas não anula o empurrão.\n\n---"
+    },
+    "type-label": "Attacco (Controllo)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "LINHA",
+      "DANO",
+      "PUSH"
+    ]
   },
   "lk_a6": {
     "name": "Contrattacco",
     "description": "15 danni in 3x3 + push 1 casella allontanando dal centro. Il centro non si muove.",
-    "long-description": "Il Re detona un contrattacco in un'area 3x3 attorno a lui (lui è il centro). Infligge 15 danni a tutti i nemici nell'area e spinge ciascuno 1 casella in direzione radiale (allontanandosi dal centro). Il Re (centro) NON si muove. Abilità di pulizia di adiacenza."
+    "long-description": {
+      "flavor": "O reino reage. Quem cerca o Rei encontra apenas espaço vazio.",
+      "detail": "Il Re detona un contrattacco in un'area 3x3 attorno a lui (lui è il centro). Infligge 15 danni a tutti i nemici nell'area e spinge ciascuno 1 casella in direzione radiale (allontanandosi dal centro). Il Re (centro) NON si muove. Abilità di pulizia di adiacenza.",
+      "synergies": "Excelente quando combinado com **Domínio Real** no mesmo turno (Domínio gera escudo proporcional ao dano causado, Contra-ataque garante que o Domínio acerte mais alvos). Setup ideal para **Sombra Real**: gera espaço, depois cria clones para confundir.",
+      "counter": "Inimigos com `mov_down` ou `snare` ativos ainda sofrem dano mas não são empurrados (o efeito ainda ocorre, apenas não há reposicionamento). Resistir a empurrões é praticamente impossível — esta é uma das skills mais \"garantidas\" do Rei.\n\n---"
+    },
+    "type-label": "Attacco (Controllo)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "AREA",
+      "DANO",
+      "PUSH"
+    ]
   },
   "lk_a7": {
     "name": "Intimidazione",
     "description": "10 danni + teletrasporta bersaglio e adiacenti al luogo scelto. Non può posizionare ai bordi.",
-    "long-description": "Il Re intimidisce un bersaglio: infligge 10 danni e teletrasporta il bersaglio PIÙ tutti i nemici adiacenti a esso (fino a 5 unità) in una posizione scelta dal caster (sul campo della mappa, eccetto bordi). Abilità di riposizionamento offensivo estremo."
+    "long-description": {
+      "flavor": "Um olhar real reorganiza um exército.",
+      "detail": "Il Re intimidisce un bersaglio: infligge 10 danni e teletrasporta il bersaglio PIÙ tutti i nemici adiacenti a esso (fino a 5 unità) in una posizione scelta dal caster (sul campo della mappa, eccetto bordi). Abilità di riposizionamento offensivo estremo.",
+      "synergies": "Setup devastador para **Domínio Real** (junta inimigos em volta do Rei), **Tempestade de Lâminas** (Executor aliado), ou **Bola de Fogo** (Especialista aliado). Conhecida como \"a chamada de execução\" em decks coordenados.",
+      "counter": "**Esquiva** anula o teleporte ao impedir o ataque inicial. Inimigos com **Fortaleza Inabalável** ainda são teleportados (o efeito não é dano-dependente). Posicionamento espalhado reduz o impacto — quanto menos adjacentes, menor o reposicionamento.\n\n---"
+    },
+    "type-label": "Attacco (Controllo)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "ALVO UNICO",
+      "DANO",
+      "TELEPORT"
+    ]
   },
   "lk_a8": {
     "name": "Disarmare",
     "description": "6 danni + cancella skill atk del bersaglio nel turno + silence_attack 1t. Non colpisce i re.",
-    "long-description": "Il Re disarma un nemico: infligge 6 danni e CANCELLA immediatamente qualsiasi abilità d'attacco che il bersaglio avesse selezionato per quel turno (l'abilità è scartata, senza costo, senza effetto). Applica anche silence_attack per 1 turno. Abilità di contro-gioco chirurgica."
+    "long-description": {
+      "flavor": "O punho real toca o pulso. O golpe inimigo morre antes de nascer.",
+      "detail": "Il Re disarma un nemico: infligge 6 danni e CANCELLA immediatamente qualsiasi abilità d'attacco che il bersaglio avesse selezionato per quel turno (l'abilità è scartata, senza costo, senza effetto). Applica anche silence_attack per 1 turno. Abilità di contro-gioco chirurgica.",
+      "synergies": "Use contra Executores inimigos com **Adrenalina** ativa para desperdiçar o buff. Combine com **Provocação** (Guerreiro aliado, que aplica silence_defense) para um turno completo de paralisia tática.",
+      "counter": "Inimigos com `cleanse` (purificação de debuffs) podem remover o silence. **Proteção** (Especialista) concede imunidade a novos debuffs por 1 turno. Programar skills com a defesa como atk + def também esquiva o silence parcial.\n\n---"
+    },
+    "type-label": "Attacco (Controllo)",
+    "duration-label": "",
+    "tags": [
+      "ALVO UNICO",
+      "DANO",
+      "SILENCE"
+    ]
   },
   "lk_d1": {
     "name": "Fuga Oscura",
     "description": "Si teletrasporta ovunque nella metà alleata. Il Re diventa untargetable da skill single-target fino a ricevere danni o muovere.",
-    "long-description": "Il Re diventa invisibile per un momento e si teletrasporta su qualsiasi casella del campo proprio (metà alleata della mappa). Dopo il teleport, diventa UNTARGETABLE dalle abilità single-target. L'invisibilità si rompe se il Re riceve danni (da area o DoT) o se si muove volontariamente nel prossimo turno."
+    "long-description": {
+      "flavor": "Onde o Rei some, a estratégia inimiga colapsa.",
+      "detail": "Il Re diventa invisibile per un momento e si teletrasporta su qualsiasi casella del campo proprio (metà alleata della mappa). Dopo il teleport, diventa UNTARGETABLE dalle abilità single-target. L'invisibilità si rompe se il Re riceve danni (da area o DoT) o se si muove volontariamente nel prossimo turno.",
+      "synergies": "Use após **Recuperação Real** para se afastar e regenerar em segurança. Combo defensivo elite: Fuga Sombria → Recuperação Real → Espírito de Sobrevivência = +50% HP recuperados em 3 turnos.",
+      "counter": "Skills de área (**Bola de Fogo**, **Tempestade de Lâminas**, **Domínio Real**) ignoram a invisibilidade — atingem qualquer um na zona, visível ou não. Atacantes inteligentes sabem chutar áreas prováveis de fuga.\n\n---"
+    },
+    "type-label": "Difesa (Forte)",
+    "duration-label": "Até receber dano direto ou se mover voluntariamente",
+    "tags": [
+      "SELF",
+      "TELEPORT",
+      "STEALTH",
+      "ESCAPE"
+    ]
   },
   "lk_d2": {
     "name": "Recupero Reale",
     "description": "Recupera 20% HP max in 2 turni (10% ora, 10% prossimo turno se non subisce danni). Eccezione all'immunità di cura del re.",
-    "long-description": "Il Re canalizza Recupero Reale: riceve 10% degli HP max come cura immediatamente (questo turno) e altri 10% degli HP max nel prossimo turno SE NON subisce danni in quel turno. Massimo possibile: 20% degli HP max. Eccezione esplicita alla regola di Immunità Reale alla cura."
+    "long-description": {
+      "flavor": "Mesmo o leão precisa de um instante para se erguer mais forte.",
+      "detail": "Il Re canalizza Recupero Reale: riceve 10% degli HP max come cura immediatamente (questo turno) e altri 10% degli HP max nel prossimo turno SE NON subisce danni in quel turno. Massimo possibile: 20% degli HP max. Eccezione esplicita alla regola di Immunità Reale alla cura.",
+      "synergies": "Combo perfeito com **Fuga Sombria** (sai do alcance, regenera em paz). **Ordem Real** também protege os ticks ao reduzir dano em -45%. Em time defensivo, combine com **Cura Suprema** (não funciona no Rei) usada em outro aliado para focar inimigos longe.",
+      "counter": "Qualquer dano direto cancela o segundo tick. DoTs (`bleed`, `burn`) NÃO cancelam — o segundo tick passa apesar do DoT (importante regra de design). **Marca da Morte** (Executor) prioriza o Rei e força dano contínuo.\n\n---"
+    },
+    "type-label": "Difesa (Forte)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "SELF",
+      "CURA",
+      "CONDICIONAL"
+    ]
   },
   "lk_d3": {
     "name": "Ombra Reale",
     "description": "Crea 2 cloni in celle vuote. Il Re può scambiare posizione con uno. I cloni durano 2 turni. I nemici non sanno quale è reale.",
-    "long-description": "Il Re crea 2 cloni visivi su caselle vuote vicine. I cloni durano 2 turni e sono visivamente identici al Re reale. I nemici non sanno quale è il vero fino ad attaccare — i cloni assorbono il colpo e scompaiono se colpiti. Il Re reale può scambiare istantaneamente posizione con un clone."
+    "long-description": {
+      "flavor": "Três coroas no campo. Apenas uma é real. Quem aposta errado, morre.",
+      "detail": "Il Re crea 2 cloni visivi su caselle vuote vicine. I cloni durano 2 turni e sono visivamente identici al Re reale. I nemici non sanno quale è il vero fino ad attaccare — i cloni assorbono il colpo e scompaiono se colpiti. Il Re reale può scambiare istantaneamente posizione con un clone.",
+      "synergies": "Use antes de **Fuga Sombria** para máxima ofuscação — quando os clones existem e o Rei some, fica impossível rastreá-lo. **Intimidação** força reposicionamento inimigo antes da ilusão.",
+      "counter": "Skills de área atingem todas as casas, exposto o Rei verdadeiro pelo dano sofrido. **Sangramento** ou outros DoTs revelam o real ao tentarem aplicá-los (clones não tomam dano). Bots inimigos podem ter heurística de \"atacar todos os 3\" se houver tempo.\n\n---"
+    },
+    "type-label": "Difesa (Forte)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "SELF",
+      "STEALTH",
+      "MIND-GAMES"
+    ]
   },
   "lk_d4": {
     "name": "Spirito di Sopravvivenza",
     "description": "Se HP ≤ 50%: +15% HP max + scudo 10% HP max per 1 turno. Se HP > 50%: +10% HP max.",
-    "long-description": "Abilità di sopravvivenza adattiva. Se il Re è a HP ≤ 50% al momento dell'uso, guadagna +15% degli HP max (aumento permanente) PIÙ scudo equivalente al 10% degli HP max per 1 turno. Se il Re è a HP > 50%, guadagna solo +10% degli HP max (senza scudo)."
+    "long-description": {
+      "flavor": "Quando o trono balança, o Rei encontra força nas raízes do reino.",
+      "detail": "Abilità di sopravvivenza adattiva. Se il Re è a HP ≤ 50% al momento dell'uso, guadagna +15% degli HP max (aumento permanente) PIÙ scudo equivalente al 10% degli HP max per 1 turno. Se il Re è a HP > 50%, guadagna solo +10% degli HP max (senza scudo).",
+      "synergies": "Após sofrer pressão sustentada, ative para virar a maré. **Fortaleza Inabalável** + Espírito = Rei praticamente intocável por 1 turno (-80% dano + escudo + cura). Combo de virada épica.",
+      "counter": "Bursters como **Disparo Preciso** podem matar o Rei antes que ele atinja a janela de ativação (≤ 60% HP). Pressão constante mas não letal mantém o Rei abaixo do threshold ideal — paradoxalmente, dano \"morno\" pode ser mais perigoso para o Rei do que burst (porque permite usar Espírito várias vezes).\n\n---"
+    },
+    "type-label": "Difesa (Forte)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "CURA",
+      "ESCUDO",
+      "LAST-STAND"
+    ]
   },
   "lk_d5": {
     "name": "Scudo Self",
     "description": "Scudo 30 per 2 turni.",
-    "long-description": "Il Re si concede uno scudo di 30 HP per 2 turni (Shield Cap 100). Persiste fino a totale consumo o scadenza. Abilità di mantenimento generica del Re — insieme a Pugno Reale e Calcio Reale, è uno dei principali modi per mantenere uno scudo attivo sul Re."
+    "long-description": {
+      "flavor": "A muralha mais firme é a vontade do Rei.",
+      "detail": "Il Re si concede uno scudo di 30 HP per 2 turni (Shield Cap 100). Persiste fino a totale consumo o scadenza. Abilità di mantenimento generica del Re — insieme a Pugno Reale e Calcio Reale, è uno dei principali modi per mantenere uno scudo attivo sul Re.",
+      "synergies": "Pré-cast antes de combates onde se espera burst. Stacka com escudos de **Soco Real** e **Chute Real** (até o cap de 100). **Aura de Proteção** (Especialista aliado) pode sobrepor com mais 12 HP.",
+      "counter": "**Golpe Devastador** e **Corte Preciso** aplicam `purge`, removendo o escudo instantaneamente. **Disparo Preciso** com bleed ativo no Rei ignora shields completamente.\n\n---"
+    },
+    "type-label": "Difesa (Leggera)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "SELF",
+      "ESCUDO"
+    ]
   },
   "lk_d6": {
     "name": "Fortezza Incrollabile",
     "description": "-80% danni ricevuti per 1 turno. Non può muovere nel prossimo turno di movimento.",
-    "long-description": "Il Re si trasforma in fortezza vivente. Per 1 turno, riceve -80% di tutti i danni (inclusi true damage). Il costo: NON può muovere nel prossimo turno di movimento. Carta condivisa tra Guerriero e Re."
+    "long-description": {
+      "flavor": "Pés enraizados. Coração de pedra. O Rei se torna a própria muralha.",
+      "detail": "Il Re si trasforma in fortezza vivente. Per 1 turno, riceve -80% di tutti i danni (inclusi true damage). Il costo: NON può muovere nel prossimo turno di movimento. Carta condivisa tra Guerriero e Re.",
+      "synergies": "Combine com **Espírito de Sobrevivência** para virada de jogo. Use ANTES do oponente ativar combos óbvios (ex: Adrenalina visível no Executor inimigo).",
+      "counter": "O Rei imóvel é alvo fácil para reposicionamento — **Intimidação** ou **Empurrão Real** inimigos podem deslocá-lo. **Muralha Viva** pode prendê-lo após o turno.\n\n---"
+    },
+    "type-label": "Difesa (Leggera)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "BUFF",
+      "IMOVEL"
+    ]
   },
   "lk_d7": {
     "name": "Schivata",
     "description": "Schiva completamente il primo attacco diretto nel prossimo turno.",
-    "long-description": "Il Re assume postura evasiva e schiva completamente il prossimo attacco diretto ricevuto nel prossimo turno. Carta condivisa tra Specialista, Esecutore e Re. Per il Re, è la migliore difesa contro Tiro Preciso (true damage) che ignora la passiva Protezione Reale."
+    "long-description": {
+      "flavor": "O Rei não bloqueia o golpe. Ele simplesmente não está mais lá.",
+      "detail": "Il Re assume postura evasiva e schiva completamente il prossimo attacco diretto ricevuto nel prossimo turno. Carta condivisa tra Specialista, Esecutore e Re. Per il Re, è la migliore difesa contro Tiro Preciso (true damage) che ignora la passiva Protezione Reale.",
+      "synergies": "Use em \"leitura\" do oponente — quando você sabe que o burst vem. Combine com **Sombra Real**: oponente confuso atira em clone, e mesmo se acertar o real, a Esquiva protege.",
+      "counter": "Skills de área (**Bola de Fogo**, **Domínio Real**) ignoram Esquiva — não são \"ataques diretos\". DoTs aplicados anteriormente continuam ticando. Skills compostas com múltiplos hits (**Sequência de Socos**) só perdem o primeiro hit.\n\n---"
+    },
+    "type-label": "Difesa (Leggera)",
+    "duration-label": "Até receber 1 ataque ou fim do turno",
+    "tags": [
+      "SELF",
+      "EVADE"
+    ]
   },
   "lk_d8": {
     "name": "Ordine Reale",
     "description": "Il Re torna alla posizione iniziale, alleati teletrasportati a posizioni adiacenti. Alleati adiacenti: -15% danni. Re: -15% per alleato adiacente (max -45%) per 1 turno.",
-    "long-description": "Suprema abilità di raggruppamento. Il Re si teletrasporta alla sua posizione iniziale (angolo della metà alleata) e tira tutti i 3 alleati (non Re) verso caselle adiacenti al Re. Per 1 turno, tutti gli alleati adiacenti ricevono -15% danni e il Re riceve -15% aggiuntivo per ogni alleato adiacente (fino a 3 alleati = -45% sul Re). Abilità di reset strategico."
+    "long-description": {
+      "flavor": "Quando o Rei chama, o reino se forma.",
+      "detail": "Suprema abilità di raggruppamento. Il Re si teletrasporta alla sua posizione iniziale (angolo della metà alleata) e tira tutti i 3 alleati (non Re) verso caselle adiacenti al Re. Per 1 turno, tutti gli alleati adiacenti ricevono -15% danni e il Re riceve -15% aggiuntivo per ogni alleato adiacente (fino a 3 alleati = -45% sul Re). Abilità di reset strategico.",
+      "synergies": "Após Ordem Real, use **Domínio Real** (todos os aliados próximos = dano máximo se inimigos seguirem) ou **Sombra Real** (reposiciona depois de criar clones). Combina com **Avançar** (Guerreiro) para movimento coordenado pós-formação.",
+      "counter": "Skills de área aplicadas em torno do Rei após Ordem Real punem todos de uma vez. **Bola de Fogo** centrada no Rei pega 4 unidades. Inimigos podem usar **Bater em Retirada** para se afastar antes do impacto.\n\n---"
+    },
+    "type-label": "Difesa (Leggera)",
+    "duration-label": "1 turno",
+    "tags": [
+      "GLOBAL",
+      "BUFF",
+      "TELEPORT",
+      "FORMACAO"
+    ]
+  },
+  "tags": {
+    "AREA": "Area",
+    "ALVO UNICO": "Single Target",
+    "LINHA": "Line",
+    "SELF": "Self",
+    "GLOBAL": "Global",
+    "DANO": "Damage",
+    "CURA": "Heal",
+    "ESCUDO": "Shield",
+    "BUFF": "Buff",
+    "DEBUFF": "Debuff",
+    "BLEED": "Bleed",
+    "BURN": "Burn",
+    "POISON": "Poison",
+    "STUN": "Stun",
+    "SNARE": "Snare",
+    "SILENCE": "Silence",
+    "TELEPORT": "Teleport",
+    "PUSH": "Push",
+    "PULL": "Pull",
+    "DASH": "Dash",
+    "TRUE DAMAGE": "True Damage",
+    "PURGE": "Purge",
+    "REVIVE": "Revive",
+    "SETUP": "Setup",
+    "FINISH": "Finish",
+    "CONDICIONAL": "Conditional",
+    "MULTI-TICK": "Multi-Tick",
+    "MARK": "Mark",
+    "LIFESTEAL": "Lifesteal",
+    "EVADE": "Evade",
+    "REFLECT": "Reflect",
+    "MURALHA": "Wall",
+    "TRAP": "Trap",
+    "MIND-GAMES": "Mind Games",
+    "LAST-STAND": "Last Stand",
+    "ESCAPE": "Escape",
+    "COOLDOWN": "Cooldown",
+    "IMOVEL": "Immobile",
+    "IMUNIDADE": "Immunity",
+    "CLEANSE": "Cleanse",
+    "ANTI-SHIELD": "Anti-Shield",
+    "SINERGIA-BLEED": "Bleed Synergy",
+    "RESTRICAO-REI": "King-Restricted",
+    "REI-RESTRICAO-PARCIAL": "King-Restricted (Partial)",
+    "DUAL-USE": "Dual-Use",
+    "MOV-DOWN": "Slow",
+    "OFENSIVO": "Offensive",
+    "MOVIMENTO": "Movement",
+    "FORMACAO": "Formation",
+    "REGEN": "Regen",
+    "TRADE-OFF": "Trade-off",
+    "BURST": "Burst",
+    "SETUP-FINISH": "Setup-Finish",
+    "POSICIONAL": "Positional",
+    "ESCALAVEL": "Scalable",
+    "BUFF AREA": "Buff Area",
+    "DAMAGE-REDIRECT": "Damage Redirect",
+    "DOT": "DoT",
+    "ALIADO-SHIELD": "Ally-Shield",
+    "REI-RESTRICAO": "King-Restricted",
+    "1X-PARTIDA": "Once per Match"
   }
 }

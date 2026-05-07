@@ -18,7 +18,10 @@
   "studio-name": "CODEFORJE VIO",
   "section": {
     "description": "描述",
-    "long-description": "详细描述"
+    "long-description": "详细描述",
+    "detail": "描述",
+    "synergies": "协同",
+    "counter": "反制"
   },
   "labels": {
     "level-cap-max": "MAX",

@@ -249,7 +249,7 @@ export type EngineEvent =
   // ── Status effects ──
   | { type: 'STATUS_APPLIED';
       unitId: string
-      status: 'bleed' | 'poison' | 'burn' | 'stun' | 'snare' | 'regen' | 'reflect' | 'evade'
+      status: 'bleed' | 'poison' | 'burn' | 'stun' | 'snare' | 'regen' | 'reflect' | 'evade' | 'evade_chance'
             | 'shield'
             | 'def_down' | 'atk_down' | 'mov_down'
             | 'def_up'   | 'atk_up'   | 'mov_up'

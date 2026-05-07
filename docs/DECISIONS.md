@@ -4,6 +4,38 @@
 
 ---
 
+## 2026-05-06 — Cards v1.1: Balance Pass + Schema + 64 longDescriptions (cards-v1.1)
+
+**Contexto:** Aplicação do CARTAS_DRAFT_v1.1.md aprovado pela usuária — 7 ajustes mecânicos baseados em análise de outliers + schema reforçado (tags, typeLabel, durationLabel, longDescription estruturada) + descrições estilo AAA para todas as 64 cartas + UI atualizada + tradução para 11 idiomas. Sessão executada em sub-etapas com gates entre commits.
+
+**Sub A — 7 ajustes mecânicos do balance pass (commit 1):**
+
+1. **Sequência de Socos (lk_a3):** dano 15→17, lifesteal 30%→35%. Skill subutilizada por dano baixo; buff modesto pra incentivar uso.
+2. **Domínio Real (lk_a4):** shield = 25% do dano, agora capado em 30 HP (anti-stacking com Adrenalina/atk_up).
+3. **Espírito de Sobrevivência (lk_d4):** simplificado — sempre +15% HP max + shield 10% HP max por 1t, mas SÓ ativa se HP ≤ 60%. Acima desse limiar a skill é no-op (engine retorna sem aplicar). Antes tinha duas branches por threshold de 50%, comunicação visual confusa.
+4. **Bater em Retirada (lw_d8):** removido o +1 mov, adicionado secondary effect `evade_chance` (50% chance de evadir o próximo dano direto). Diferencia de Avançar (eram quase espelho).
+5. **Marca da Morte (le_a7):** removido o lifesteal de 20% do shield removido; mantém remove shield + bleed. Skill fazia coisa demais.
+6. **Adrenalina (le_d2):** mantém +25% ATK por 2t e custo de 15% HP, mas custo agora tem cap "não pode reduzir HP abaixo de 1". Evita suicídio acidental.
+7. **Cura Suprema (ls_d1):** heal 35→40. Com Queimação (-30% cura): 28 efetivo (era 24). Mais viável em time de 4.
+
+**Tipos novos:**
+
+- `SkillEffectType` ganhou `evade_chance` (probabilistic dodge). Adicionado em `BUFF_EFFECTS`, `ALL_EFFECT_TYPES`, e no switch exhaustivo de `Skill.isValidTargetSide`.
+- `EffectType` (runtime) ganhou `evade_chance` + nova classe `EvadeChanceEffect` (charges + chance percent + roller injetável pra testes determinísticos). Factory `createEffect` atualizado.
+- `EngineEvent.STATUS_APPLIED.status` aceita `evade_chance` agora.
+- `EffectResolver` ganhou `handleEvadeChance` que anexa `EvadeChanceEffect` ao alvo e emite STATUS_APPLIED.
+
+**Tests:**
+
+- KingSkills.test.ts: lk_a3 (números atualizados), lk_a4 (+1 teste de cap explícito), lk_d4 (3 testes reescritos: HP≤60% activates, HP>60% no-op, exatamente 60% boundary inclusive).
+- ExecutorSkills.test.ts: le_a7 (3 testes de lifesteal removidos, 1 de regression no-self-heal adicionado), le_d2 (teste lethal-kills invertido para teste clamp-to-1).
+- WarriorSkills.test.ts: lw_d8 (+1 teste pro evade_chance secondary).
+- SpecialistSkills.test.ts: ls_d1 (35→40).
+
+**549/549 tests passing (era 547 antes, +2 net).**
+
+---
+
 ## 2026-04-23 — ETAPA 6 adendo: 3 ajustes pós-jogo (sub 6.7/6.8/6.9)
 
 **Contexto:** Ao jogar o projeto após ETAPA 6, a usuária identificou 3 bugs visuais adicionais. Sessão única entrega 3 commits em ~1h. Finalmente identificado o root cause das "listras pretas" que eram ambíguas em sub 6.3.

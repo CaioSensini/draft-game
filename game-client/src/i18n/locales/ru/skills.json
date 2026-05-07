@@ -1,5 +1,7 @@
 {
-  "_meta": { "lang": "ru" },
+  "_meta": {
+    "lang": "ru"
+  },
   "roles": {
     "specialist": "Специалист",
     "warrior": "Воин",
@@ -19,321 +21,1168 @@
   "ls_a1": {
     "name": "Огненный Шар",
     "description": "28 урона по области 2x2 на поле врага. Применяет горение 6/ход на 2 хода.",
-    "long-description": "Специалист бросает пылающую сферу на поле врага, нанося 28 физического урона по квадратной области 2x2. Каждая поражённая цель получает Горение — огневой DoT, наносящий 6 урона за ход в течение 2 ходов. Пассивка класса, Горение, усиливает комбо: поражённые цели получают -30% к лечению на 2 хода. Стандартное открытие для разделения групп."
+    "long-description": {
+      "flavor": "O fogo arcano não consome. Ele lembra ao alvo o que é dor.",
+      "detail": "Специалист бросает пылающую сферу на поле врага, нанося 28 физического урона по квадратной области 2x2. Каждая поражённая цель получает Горение — огневой DoT, наносящий 6 урона за ход в течение 2 ходов. Пассивка класса, Горение, усиливает комбо: поражённые цели получают -30% к лечению на 2 хода. Стандартное открытие для разделения групп.",
+      "synergies": "Combine com **Bomba de Espinhos** (Executor aliado) — bleed + burn empilhados aceleram queda. **Orbe de Lentidão** prende inimigos na área para garantir hit.",
+      "counter": "**Proteção** dá imunidade a novos debuffs (anula burn). **Cura Suprema** mitiga DoT (mas Queimação reduz cura em 30%). Posicionamento espalhado anula o AoE.\n\n---"
+    },
+    "type-label": "Атака (Тяжёлая)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "DANO",
+      "BURN",
+      "DOT"
+    ]
   },
   "ls_a2": {
     "name": "Дождь Маны",
     "description": "22 урона в 2 тика (11+11) по вертикальной линии в 3 клетки на поле врага.",
-    "long-description": "Специалист призывает дождь магической энергии, проходящий по вертикальной линии в 3 клетки на поле врага и поражающий одну цель дважды подряд по 11 урона за тик (всего 22). Каждый тик решается отдельно — щиты и уклонения поглощают только соответствующий удар. Урон за тик проходит через DEF-смягчение нормально."
+    "long-description": {
+      "flavor": "O céu chora. As gotas perfuram o aço.",
+      "detail": "Специалист призывает дождь магической энергии, проходящий по вертикальной линии в 3 клетки на поле врага и поражающий одну цель дважды подряд по 11 урона за тик (всего 22). Каждый тик решается отдельно — щиты и уклонения поглощают только соответствующий удар. Урон за тик проходит через DEF-смягчение нормально.",
+      "synergies": "A divisão em 2 ticks permite quebrar escudos pequenos sem desperdício. Após **Bola de Fogo** (que aplica Queimação), o segundo tick beneficia do debuff.",
+      "counter": "**Esquiva** anula apenas o primeiro tick (segundo passa). Escudos absorvem ticks individualmente. **Teleport** sai da linha vertical entre ticks.\n\n---"
+    },
+    "type-label": "Атака (Тяжёлая)",
+    "duration-label": "Instantâneo (mas em 2 momentos)",
+    "tags": [
+      "AREA",
+      "DANO",
+      "MULTI-TICK"
+    ]
   },
   "ls_a3": {
     "name": "Очищающий Луч",
     "description": "25 урона + очищение по врагам на линии. Поражённые союзники получают щит 10.",
-    "long-description": "Световой луч пересекает всю арену по горизонтальной линии в 6 клеток, нанося 25 урона каждому врагу на пути и применяя Очищение — снимает все активные баффы (atk_up, def_up, regen, щит и т.д.) с поражённых целей. Союзники на пути получают 10 щита и не получают урона. Универсальный навык против стек-баффов."
+    "long-description": {
+      "flavor": "Um único raio. Para purificar amigos. Para apagar inimigos.",
+      "detail": "Световой луч пересекает всю арену по горизонтальной линии в 6 клеток, нанося 25 урона каждому врагу на пути и применяя Очищение — снимает все активные баффы (atk_up, def_up, regen, щит и т.д.) с поражённых целей. Союзники на пути получают 10 щита и не получают урона. Универсальный навык против стек-баффов.",
+      "synergies": "Posicione Guerreiro aliado entre o Especialista e o Rei inimigo: dano no Rei + purge + escudo no Guerreiro. Triple-value em uma skill.",
+      "counter": "Posicionar inimigos fora da linha vertical anula. **Esquiva** ou **Fortaleza Inabalável** dos alvos principais reduzem efeito.\n\n---"
+    },
+    "type-label": "Атака (Тяжёлая)",
+    "duration-label": "1 turno",
+    "tags": [
+      "LINHA",
+      "DANO",
+      "PURGE",
+      "ALIADO-SHIELD"
+    ]
   },
   "ls_a4": {
     "name": "Центральный Взрыв",
     "description": "1-е использование: метит цель (несъёмная). 2-е на меченой: 50 урона + 50% дополнительно при дебаффе. Игнорирует Уклонение и иммунитеты.",
-    "long-description": "Двухфазный навык. Первое использование метит врага Меткой Детонации — постоянной меткой, которую НЕЛЬЗЯ снять очищением, cleanse или иммунитетом. Второе использование детонирует метку, нанося 50 прямого урона. Если у цели был активный дебафф в момент детонации, взрыв усиливается на +50% (75 урона). Детонация полностью игнорирует Уклонение, щиты и иммунитеты — гарантированный урон."
+    "long-description": {
+      "flavor": "O alvo é selado. A explosão é certa. O tempo é a única variável.",
+      "detail": "Двухфазный навык. Первое использование метит врага Меткой Детонации — постоянной меткой, которую НЕЛЬЗЯ снять очищением, cleanse или иммунитетом. Второе использование детонирует метку, нанося 50 прямого урона. Если у цели был активный дебафф в момент детонации, взрыв усиливается на +50% (75 урона). Детонация полностью игнорирует Уклонение, щиты и иммунитеты — гарантированный урон.",
+      "synergies": "Marque o Rei inimigo turno 1 → aplique debuffs (qualquer um) → detone turno 4 = 75 de dano. Combo definitivo. Sinergiza com qualquer DoT do time.",
+      "counter": "**Fortaleza Inabalável** reduz dano da detonação em 80%. Manter alvo marcado livre de debuffs reduz dano em 33%. Pressão constante para matar o Especialista antes da detonação.\n\n---"
+    },
+    "type-label": "Атака (Тяжёлая)",
+    "duration-label": "",
+    "tags": [
+      "ALVO UNICO",
+      "MARK",
+      "BURST",
+      "SETUP-FINISH"
+    ]
   },
   "ls_a5": {
     "name": "Сфера Замедления",
     "description": "12 урона по области 3x3. def_down 25% + mov_down 1 на 1 ход.",
-    "long-description": "Специалист проецирует гравитационную сферу, детонирующую в области 3x3, нанося 12 урона и применяя два дебаффа ко всем поражённым: def_down 25% и mov_down 1 на 1 ход. Навык установки защиты: подготавливает почву для атакующих команды."
+    "long-description": {
+      "flavor": "O tempo se arrasta. A defesa cede. O exército inteiro hesita.",
+      "detail": "Специалист проецирует гравитационную сферу, детонирующую в области 3x3, нанося 12 урона и применяя два дебаффа ко всем поражённым: def_down 25% и mov_down 1 на 1 ход. Навык установки защиты: подготавливает почву для атакующих команды.",
+      "synergies": "Setup ideal para **Tempestade de Lâminas** ou **Investida Brutal** subsequentes — alvos com def reduzida sofrem dano amplificado.",
+      "counter": "**Proteção** (Especialista mesmo) imuniza a debuffs novos. **Bater em Retirada** sai da área. **Avançar** (Guerreiro) pode salvar a equipe pra fora.\n\n---"
+    },
+    "type-label": "Атака (Контроль)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "DANO",
+      "DEBUFF",
+      "MOV-DOWN"
+    ]
   },
   "ls_a6": {
     "name": "Жёсткие Цепи",
     "description": "10 урона в форме + (5 клеток). Снаряет врагов на 1 ход.",
-    "long-description": "Магические цепи прорываются из земли в форме креста (5 клеток: центр + 4 смежных), нанося 10 урона каждому поражённому врагу и применяя Снаряжение на 1 ход. Снаряжение запрещает движение, но НЕ запрещает использование навыков — отличается от Оглушения. Позиционный контроль."
+    "long-description": {
+      "flavor": "Correntes invisíveis. Pés que não se movem. Destinos que se cumprem.",
+      "detail": "Магические цепи прорываются из земли в форме креста (5 клеток: центр + 4 смежных), нанося 10 урона каждому поражённому врагу и применяя Снаряжение на 1 ход. Снаряжение запрещает движение, но НЕ запрещает использование навыков — отличается от Оглушения. Позиционный контроль.",
+      "synergies": "Setup para skills de área alto dano — inimigos imobilizados não escapam de **Bola de Fogo** ou **Domínio Real**. Combine com **Marca da Morte** para garantir hit do bleed.",
+      "counter": "**Teleport** atravessa snare. **Proteção** imuniza. **Cleanse** remove. Posicionamento que evite formação cruz minimiza alvos.\n\n---"
+    },
+    "type-label": "Атака (Контроль)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "DANO",
+      "SNARE"
+    ]
   },
   "ls_a7": {
     "name": "Туман",
     "description": "Вся арена врага. Союзники: def_up 15%. Враги: def_down 15% + полученное лечение -30% на 2 хода.",
-    "long-description": "Специалист призывает плотный туман, покрывающий всю арену на 2 хода. Союзники внутри получают +15% DEF. Враги внутри получают -15% DEF и -30% к получаемому лечению (все источники — heal, regen, lifesteal). Полевой навык, изменяющий темп матча без нанесения урона."
+    "long-description": {
+      "flavor": "A névoa cobre o campo. O reino vê. O inimigo se perde.",
+      "detail": "Специалист призывает плотный туман, покрывающий всю арену на 2 хода. Союзники внутри получают +15% DEF. Враги внутри получают -15% DEF и -30% к получаемому лечению (все источники — heal, regen, lifesteal). Полевой навык, изменяющий темп матча без нанесения урона.",
+      "synergies": "Use no início do combate para vantagem prolongada. Combine com **Cura Suprema** (cura aliados protegidos pela névoa) ou **Adrenalina** (Executor amplificado num campo onde inimigos defendem menos).",
+      "counter": "**Proteção** imuniza a debuff. **Cleanse** remove de aliados específicos. Skills de cura ainda funcionam (apenas com -30% de eficiência).\n\n---"
+    },
+    "type-label": "Атака (Контроль)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "GLOBAL",
+      "DUAL-USE",
+      "BUFF",
+      "DEBUFF"
+    ]
   },
   "ls_a8": {
     "name": "Заморозка",
     "description": "18 урона + оглушение 1х + def_down 20% на 1 ход.",
-    "long-description": "Концентрированный ледяной импульс поражает одну цель, нанося 18 урона и применяя Оглушение на 1 ход + def_down 20% на 1 ход. Оглушение блокирует и движение, И использование навыков — самый сильный контроль в игре. Pick-навык."
+    "long-description": {
+      "flavor": "O alvo congela. Por um instante, deixa de ser ameaça.",
+      "detail": "Концентрированный ледяной импульс поражает одну цель, нанося 18 урона и применяя Оглушение на 1 ход + def_down 20% на 1 ход. Оглушение блокирует и движение, И использование навыков — самый сильный контроль в игре. Pick-навык.",
+      "synergies": "Coordene com Executor: Congelamento → próximo turno burst combo (Marca da Morte + Corte Mortal). Alvo stunned + def reduzida = 90+ de dano garantido.",
+      "counter": "**Proteção** imuniza. **Esquiva** anula o ataque inicial (e portanto o stun). **Cleanse** remove (mas timing crítico).\n\n---"
+    },
+    "type-label": "Атака (Контроль)",
+    "duration-label": "Stun por 1 turno, debuff por 1 turno",
+    "tags": [
+      "ALVO UNICO",
+      "DANO",
+      "STUN",
+      "DEBUFF"
+    ]
   },
   "ls_d1": {
     "name": "Высшее Исцеление",
     "description": "Лечит 35 HP одного союзника (не короля).",
-    "long-description": "Специалист направляет волну восстановительной энергии в одного союзника, мгновенно возвращая 35 HP. Лечение НЕ влияет на Королей — они невосприимчивы к прямому лечению по правилу Королевской Невосприимчивости. Подвержено Heal Cap и снижается на 30%, если цель под Горением."
+    "long-description": {
+      "flavor": "A magia não distingue heróis de simples soldados. Todos voltam a respirar.",
+      "detail": "Специалист направляет волну восстановительной энергии в одного союзника, мгновенно возвращая 35 HP. Лечение НЕ влияет на Королей — они невосприимчивы к прямому лечению по правилу Королевской Невосприимчивости. Подвержено Heal Cap и снижается на 30%, если цель под Горением.",
+      "synergies": "Combine com **Aura de Proteção** ou **Campo de Cura** para múltiplos efeitos defensivos. Use atrás de **Escudo do Protetor** (Guerreiro aliado) para garantia.",
+      "counter": "**Queimação** (passiva inimiga) reduz para 28. **Marca da Morte** (Executor inimigo) com bleed mantém pressão. Foco no Especialista o impede de curar.\n\n---"
+    },
+    "type-label": "Защита (Сильная)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "ALVO UNICO",
+      "CURA",
+      "RESTRICAO-REI"
+    ]
   },
   "ls_d2": {
     "name": "Частичное Возрождение",
     "description": "Латентное оживление (2 хода) на союзнике с самым низким HP (не король). Воскрешает с 25 HP при смерти. Макс. 1 раз на союзника за матч.",
-    "long-description": "Специалист метит союзника с самым низким HP (исключая Короля) латентным буфером Воскрешения, длящимся 2 хода. Если союзник умирает в этом окне, он мгновенно воскрешается с 25 HP на той же клетке, со всеми дебаффами и DoT очищенными. Каждый союзник может быть воскрешён только один раз за матч."
+    "long-description": {
+      "flavor": "Quem cai protegido pelo ritual, retorna sussurrando entre os vivos.",
+      "detail": "Специалист метит союзника с самым низким HP (исключая Короля) латентным буфером Воскрешения, длящимся 2 хода. Если союзник умирает в этом окне, он мгновенно воскрешается с 25 HP на той же клетке, со всеми дебаффами и DoT очищенными. Каждый союзник может быть воскрешён только один раз за матч.",
+      "synergies": "Combine com **Escudo do Protetor** (Guerreiro) ou **Resistência Absoluta** — se o aliado sobrevive, recebe heal extra; se morre, revive. Win-win.",
+      "counter": "Foco no Especialista antes do revive ser cast. Skills que evitam dano fatal direto (true damage massivo num turno) podem matar antes do revive ativar (revive ativa em \"dano fatal\", não \"dano dot\").\n\n---"
+    },
+    "type-label": "Защита (Сильная)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "ALVO UNICO",
+      "REVIVE",
+      "CONDICIONAL",
+      "1X-PARTIDA"
+    ]
   },
   "ls_d3": {
     "name": "Поле Лечения",
     "description": "Лечит 12 HP + щит 10 (1х) по области 3x3. Король получает только щит.",
-    "long-description": "Специалист создаёт поле целебного света по области 3x3, восстанавливая 12 HP и применяя 10 щита (1 ход) на всех союзников в области. Короли получают ТОЛЬКО щит — без лечения, согласно правилу Королевской Невосприимчивости. Щит ограничен 100 HP на цель."
+    "long-description": {
+      "flavor": "Um instante de paz no meio do caos. Suficiente para mais um golpe.",
+      "detail": "Специалист создаёт поле целебного света по области 3x3, восстанавливая 12 HP и применяя 10 щита (1 ход) на всех союзников в области. Короли получают ТОЛЬКО щит — без лечения, согласно правилу Королевской Невосприимчивости. Щит ограничен 100 HP на цель.",
+      "synergies": "Combine com **Aura de Proteção** (também escudo) para defesa empilhada. Use após **Ordem Real** (Rei) para aproveitar a formação concentrada.",
+      "counter": "**Queimação** reduz a cura em 30% (8 HP efetivos). **Bola de Fogo** ou skills de área pegam todos os aliados curados antes que aproveitem.\n\n---"
+    },
+    "type-label": "Защита (Сильная)",
+    "duration-label": "1 turno",
+    "tags": [
+      "AREA",
+      "CURA",
+      "ESCUDO",
+      "REI-RESTRICAO-PARCIAL"
+    ]
   },
   "ls_d4": {
     "name": "Защита",
     "description": "Форма + (5 клеток). Снимает все союзные дебаффы + иммунитет к новым дебаффам на 1 ход.",
-    "long-description": "Площадное cleanse в форме креста (центр + 4 смежных), снимающее все активные дебаффы с затронутых союзников (bleed, burn, poison, stun, snare, silence, def_down, mov_down, atk_down, метки) и дающее полную невосприимчивость к новым дебаффам на 1 ход. Без урона и без лечения."
+    "long-description": {
+      "flavor": "O selo arcano se ergue. Nenhum mal cruza esta linha.",
+      "detail": "Площадное cleanse в форме креста (центр + 4 смежных), снимающее все активные дебаффы с затронутых союзников (bleed, burn, poison, stun, snare, silence, def_down, mov_down, atk_down, метки) и дающее полную невосприимчивость к новым дебаффам на 1 ход. Без урона и без лечения.",
+      "synergies": "Use antes de momentos críticos (revive, ressurreição, virada). Combine com **Escudo do Protetor** ou **Cura Suprema** para janela invulnerável.",
+      "counter": "Skills de dano direto não são afetadas. **Bola de Fogo** ainda causa dano (apenas o burn é negado). Foco em Especialista antes do cast.\n\n---"
+    },
+    "type-label": "Защита (Сильная)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "CLEANSE",
+      "IMUNIDADE"
+    ]
   },
   "ls_d5": {
     "name": "Постоянное Поле Лечения",
     "description": "Regen 6 HP/ход на 2 хода в области 3x3. Король не получает. Отменяется, если союзник получает урон.",
-    "long-description": "Стационарное поле регенерации покрывает область 3x3 на 2 хода. Каждый союзник внутри получает Regen 6 HP за ход — Короли не получают. Если союзник получает ЛЮБОЙ урон в поле, regen для этого союзника отменяется. Sustain после боя."
+    "long-description": {
+      "flavor": "Onde a magia toca a terra, a vida insiste em florescer.",
+      "detail": "Стационарное поле регенерации покрывает область 3x3 на 2 хода. Каждый союзник внутри получает Regen 6 HP за ход — Короли не получают. Если союзник получает ЛЮБОЙ урон в поле, regen для этого союзника отменяется. Sustain после боя.",
+      "synergies": "Use após **Bater em Retirada** (recolhe equipe em formação segura). Combine com **Aura de Proteção** para escudos absorverem dano e preservar regen.",
+      "counter": "Qualquer dano direto cancela o segundo tick. **Bola de Fogo** inimiga + DoTs garantem cancelamento. **Marca da Morte** com bleed mantém pressão sustentada.\n\n---"
+    },
+    "type-label": "Защита (Лёгкая)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "AREA",
+      "REGEN",
+      "CONDICIONAL",
+      "REI-RESTRICAO"
+    ]
   },
   "ls_d6": {
     "name": "Уклонение",
     "description": "Полностью уклоняется от первой прямой атаки в следующем ходу.",
-    "long-description": "Специалист принимает уклоняющуюся стойку и полностью уклоняется от следующей прямой атаки в следующем ходу. Уклонение поглощает только один удар, затем расходуется. Общая карта между Специалистом, Палачом и Королём."
+    "long-description": {
+      "flavor": "O Rei não bloqueia o golpe. Ele simplesmente não está mais lá.",
+      "detail": "Специалист принимает уклоняющуюся стойку и полностью уклоняется от следующей прямой атаки в следующем ходу. Уклонение поглощает только один удар, затем расходуется. Общая карта между Специалистом, Палачом и Королём.",
+      "synergies": "Use em \"leitura\" do oponente — quando você sabe que o burst vem. Combine com **Sombra Real**: oponente confuso atira em clone, e mesmo se acertar o real, a Esquiva protege.",
+      "counter": "Skills de área (**Bola de Fogo**, **Domínio Real**) ignoram Esquiva — não são \"ataques diretos\". DoTs aplicados anteriormente continuam ticando. Skills compostas com múltiplos hits (**Sequência de Socos**) só perdem o primeiro hit.\n\n---"
+    },
+    "type-label": "Защита (Лёгкая)",
+    "duration-label": "Até receber 1 ataque ou fim do turno",
+    "tags": [
+      "SELF",
+      "EVADE"
+    ]
   },
   "ls_d7": {
     "name": "Полный Блок",
     "description": "Щит 60. Действует до пробития или 2 хода.",
-    "long-description": "Даёт касту щит 60 HP, действующий до полного расхода или истечения 2 ходов. Щит подчиняется глобальному Shield Cap 100 HP на единицу. Общая карта между Специалистом и Палачом. DoT (bleed, burn, poison) обходят щит и бьют прямо по HP."
+    "long-description": {
+      "flavor": "Nenhum golpe passa. Nenhuma chance é dada.",
+      "detail": "Даёт касту щит 60 HP, действующий до полного расхода или истечения 2 ходов. Щит подчиняется глобальному Shield Cap 100 HP на единицу. Общая карта между Специалистом и Палачом. DoT (bleed, burn, poison) обходят щит и бьют прямо по HP.",
+      "synergies": "Use antes de momentos previsíveis de pressão inimiga. Combine com **Aura de Proteção** (Especialista) para ainda mais absorção.",
+      "counter": "**Golpe Devastador** purga o escudo inteiro. **Disparo Preciso** com bleed ativo no alvo ignora escudos. Pressão sustentada por 2-3 turnos esgota o escudo.\n\n---"
+    },
+    "type-label": "Защита (Лёгкая)",
+    "duration-label": "Até ser totalmente quebrado ou 2 turnos",
+    "tags": [
+      "SELF",
+      "ESCUDO"
+    ]
   },
   "ls_d8": {
     "name": "Аура Защиты",
     "description": "Щит 12 + atk_up 10% на 1 ход в области алмаз r2.",
-    "long-description": "Защитная аура покрывает область алмаз радиуса 2 (~13 клеток) вокруг каста. Все союзники в области получают 12 щита (Shield Cap 100) и atk_up 10% на 1 ход. Атакующе-защитный навык."
+    "long-description": {
+      "flavor": "A aura do mago. Pequena, mas suficiente.",
+      "detail": "Защитная аура покрывает область алмаз радиуса 2 (~13 клеток) вокруг каста. Все союзники в области получают 12 щита (Shield Cap 100) и atk_up 10% на 1 ход. Атакующе-защитный навык.",
+      "synergies": "Combine com **Cura Suprema** ou **Campo de Cura** para defesa em camadas. **Escudo de Grupo** (Guerreiro aliado) stackável até o cap de 100 HP.",
+      "counter": "**Golpe Devastador** ou **Corte Preciso** purgam buffs e escudo. **Disparo Preciso** com bleed ignora escudo. Skills de área grandes pegam todos protegidos.\n\n---"
+    },
+    "type-label": "Защита (Лёгкая)",
+    "duration-label": "1 turno",
+    "tags": [
+      "AREA",
+      "ESCUDO",
+      "BUFF"
+    ]
   },
   "lw_a1": {
     "name": "Титаническое Столкновение",
     "description": "22 урона в вертикальном прямоугольнике 6x2 + push 1 клетка. Если заблокировано: snare 1х.",
-    "long-description": "Воин наступает как движущаяся стена — поражает всех врагов в вертикальном прямоугольнике 6x2 впереди, нанося 22 урона и отталкивая их на 1 клетку назад. Если толчок цели заблокирован стеной или другим врагом, эта цель получает Снаряжение на 1 ход. Агрессивное открытие, переставляющее всю вражескую линию."
+    "long-description": {
+      "flavor": "O escudo avança como uma tempestade de aço.",
+      "detail": "Воин наступает как движущаяся стена — поражает всех врагов в вертикальном прямоугольнике 6x2 впереди, нанося 22 урона и отталкивая их на 1 клетку назад. Если толчок цели заблокирован стеной или другим врагом, эта цель получает Снаряжение на 1 ход. Агрессивное открытие, переставляющее всю вражескую линию.",
+      "synergies": "Após **Muralha Viva** (Guerreiro aliado), use Colisão Titânica para empurrar inimigos contra a muralha — garantia de snare. Setup ideal para **Investida Brutal** subsequente.",
+      "counter": "**Bater em Retirada** ou **Avançar** podem ajustar posição antes do golpe. Inimigos com `mov_down` ainda sofrem dano mas o snare condicional só ativa contra obstáculos físicos.\n\n---"
+    },
+    "type-label": "Атака (Тяжёлая)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "DANO",
+      "PUSH",
+      "CONDICIONAL"
+    ]
   },
   "lw_a2": {
     "name": "Удар",
     "description": "28 урона в области 3x3. def_down 18% + mov_down 1 на 1 ход.",
-    "long-description": "Тяжёлый удар детонирует в области 3x3 вокруг цели, нанося 28 урона всем поражённым и применяя два дебаффа на 1 ход: def_down 18% и mov_down 1. Координированное давление: ослабляет защиту группы и ограничивает отступление."
+    "long-description": {
+      "flavor": "O chão treme. A defesa inimiga começa a rachar.",
+      "detail": "Тяжёлый удар детонирует в области 3x3 вокруг цели, нанося 28 урона всем поражённым и применяя два дебаффа на 1 ход: def_down 18% и mov_down 1. Координированное давление: ослабляет защиту группы и ограничивает отступление.",
+      "synergies": "Setup perfeito para **Bola de Fogo** ou **Tempestade de Lâminas** no turno seguinte (def reduzida = dano amplificado). Combine com **Provocação** para um turno completo de paralisia ofensiva inimiga.",
+      "counter": "**Bloqueio Total** (60 HP de escudo) absorve a maior parte do dano direto. **Proteção** (Especialista) remove os debuffs aplicados. Posicionamento espalhado reduz o número de alvos.\n\n---"
+    },
+    "type-label": "Атака (Тяжёлая)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "DANO",
+      "DEBUFF"
+    ]
   },
   "lw_a3": {
     "name": "Разрушительный Удар",
     "description": "30 урона в области 2x2. Снимает баффы и пробивает щиты поражённых.",
-    "long-description": "Воин наносит колоссальный удар в области 2x2, нанося 30 урона и применяя Очищение ко всем поражённым: снимает все активные баффы и полностью пробивает щиты, игнорируя Shield Cap. Отличный анти-бункер навык против защитных композиций."
+    "long-description": {
+      "flavor": "Cada machado real ignora a falsa proteção.",
+      "detail": "Воин наносит колоссальный удар в области 2x2, нанося 30 урона и применяя Очищение ко всем поражённым: снимает все активные баффы и полностью пробивает щиты, игнорируя Shield Cap. Отличный анти-бункер навык против защитных композиций.",
+      "synergies": "Combo após **Bater em Retirada** (recolhe aliados) → Golpe Devastador (rompe defesas) → **Avançar** (avança time com buff). Linha completa de virada.",
+      "counter": "**Esquiva** anula completamente. **Fortaleza Inabalável** reduz o dano para 6 (mas o purge ainda ocorre). Inimigos podem evitar empilhar escudos antes da skill ser usada.\n\n---"
+    },
+    "type-label": "Атака (Тяжёлая)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "AREA",
+      "DANO",
+      "PURGE"
+    ]
   },
   "lw_a4": {
     "name": "Брутальный Натиск",
     "description": "24 урона по вертикальной линии 3 клетки. Центральная линия: push 1 + snare 1х если заблокировано. Верх/низ: толкаются перпендикулярно.",
-    "long-description": "Воин наступает по прямой вертикальной линии 3 клетки, нанося 24 урона всем поражённым. Толчок делится по линиям: центральная линия толкается на 1 клетку в направлении атаки (snare 1х если заблокировано), верхняя и нижняя — перпендикулярно, открывая коридор."
+    "long-description": {
+      "flavor": "A vanguarda real avança como um trovão. Nada permanece de pé.",
+      "detail": "Воин наступает по прямой вертикальной линии 3 клетки, нанося 24 урона всем поражённым. Толчок делится по линиям: центральная линия толкается на 1 клетку в направлении атаки (snare 1х если заблокировано), верхняя и нижняя — перпендикулярно, открывая коридор.",
+      "synergies": "Use depois de **Empurrão Real** (Rei) para acumular reposicionamento. Combine com **Disparo Preciso** (Executor aliado) na linha central — alvo snared = alvo morto.",
+      "counter": "**Teleport** (Executor) ou **Recuo Rápido** evitam a linha. Paredes (**Muralha Viva**) bloqueiam o avanço. Posicionamento espalhado lateralmente diminui o número de hits.\n\n---"
+    },
+    "type-label": "Атака (Тяжёлая)",
+    "duration-label": "",
+    "tags": [
+      "LINHA",
+      "DANO",
+      "PUSH"
+    ]
   },
   "lw_a5": {
     "name": "Провокация",
     "description": "10 урона + def_down 15% + silence_defense 1х на 1 врага.",
-    "long-description": "Воин провоцирует одного врага, нанося 10 урона и применяя два дебаффа: def_down 15% на 1 ход и silence_defense на 1 ход (запрещает использование защитных навыков). Тяжёлый bait-навык."
+    "long-description": {
+      "flavor": "Provoque um soldado e ele esquece como se proteger.",
+      "detail": "Воин провоцирует одного врага, нанося 10 урона и применяя два дебаффа: def_down 15% на 1 ход и silence_defense на 1 ход (запрещает использование защитных навыков). Тяжёлый bait-навык.",
+      "synergies": "Coordene com Executor aliado: Provocação no turno X → Corte Mortal no turno X+1 (alvo sem defesa). Combine com **Marca da Morte** para garantir foco da equipe.",
+      "counter": "**Proteção** (Especialista) remove o silence. **Cleanse** ou similar limpa debuffs. Programar dois ataques sequenciais (sem defesa) também esquiva indiretamente.\n\n---"
+    },
+    "type-label": "Атака (Контроль)",
+    "duration-label": "",
+    "tags": [
+      "ALVO UNICO",
+      "DANO",
+      "DEBUFF",
+      "SILENCE"
+    ]
   },
   "lw_a6": {
     "name": "Живая Стена",
     "description": "Вертикальная стена 2 клетки на поле врага длится 2х. Смежные враги: def_down 15%, mov_down 1, 3 урона/ход.",
-    "long-description": "Воин призывает живую стену 2 вертикальных клетки на поле врага, длящуюся 2 хода. Враги, смежные со стеной, получают def_down 15%, mov_down 1 и 3 урона за ход, пока остаются смежными. Стена разрушается через 2 хода ИЛИ от любого atk1."
+    "long-description": {
+      "flavor": "Pedra erguida pela vontade. O caminho do inimigo termina aqui.",
+      "detail": "Воин призывает живую стену 2 вертикальных клетки на поле врага, длящуюся 2 хода. Враги, смежные со стеной, получают def_down 15%, mov_down 1 и 3 урона за ход, пока остаются смежными. Стена разрушается через 2 хода ИЛИ от любого atk1.",
+      "synergies": "Combine com **Empurrão Real** ou **Colisão Titânica** para empurrar inimigos contra as paredes (snare garantido). **Investida Brutal** se beneficia de inimigos confinados à linha central.",
+      "counter": "**Golpe Devastador** ou outros ataques de classe podem destruir as paredes (paredes têm HP). **Teleport** atravessa obstáculos. Inimigos podem simplesmente evitar a área debuffada.\n\n---"
+    },
+    "type-label": "Атака (Контроль)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "AREA",
+      "MURALHA",
+      "DEBUFF",
+      "DOT"
+    ]
   },
   "lw_a7": {
     "name": "Натиск",
     "description": "12 урона по вертикальной линии 3 клетки. def_down 15% + mov_down 1 на 1 ход.",
-    "long-description": "Более лёгкая версия Брутального Натиска: Воин продвигается по вертикальной линии 3 клетки, нанося 12 урона всем поражённым и применяя def_down 15% и mov_down 1 на 1 ход. Без push, без snare."
+    "long-description": {
+      "flavor": "O Guerreiro avança. O inimigo recua... mais devagar.",
+      "detail": "Более лёгкая версия Брутального Натиска: Воин продвигается по вертикальной линии 3 клетки, нанося 12 урона всем поражённым и применяя def_down 15% и mov_down 1 на 1 ход. Без push, без snare.",
+      "synergies": "Setup ideal para skills de single-target alto dano da equipe. Combine com **Adrenalina** (Executor aliado) para amplificar dano subsequente.",
+      "counter": "**Esquiva** anula. **Fortaleza Inabalável** reduz dano e debuffs surtem efeito mas com impacto reduzido pelo `def_up` implícito.\n\n---"
+    },
+    "type-label": "Атака (Контроль)",
+    "duration-label": "",
+    "tags": [
+      "LINHA",
+      "DANO",
+      "DEBUFF"
+    ]
   },
   "lw_a8": {
     "name": "Тюрьма Мёртвой Стены",
     "description": "12 урона в центре + 8 временных стен вокруг. Враги внутри: snare 2х. Стены ломаются от любого atk1.",
-    "long-description": "Воин создаёт тюрьму мёртвых стен: наносит 12 урона на центральной клетке и возводит 8 стен в кольце вокруг (радиус 1). Враги внутри тюрьмы получают Снаряжение на 2 хода — не могут двигаться, но могут использовать навыки. Стены тюрьмы хрупкие."
+    "long-description": {
+      "flavor": "O reino constrói uma masmorra ao redor do invasor.",
+      "detail": "Воин создаёт тюрьму мёртвых стен: наносит 12 урона на центральной клетке и возводит 8 стен в кольце вокруг (радиус 1). Враги внутри тюрьмы получают Снаряжение на 2 хода — не могут двигаться, но могут использовать навыки. Стены тюрьмы хрупкие.",
+      "synergies": "Combo executor: prende inimigo → time coordena Marca da Morte + Disparo Preciso. **Bola de Fogo** dentro da cela atinge alvo sem chance de escape.",
+      "counter": "**Teleport** atravessa paredes. Aliados quebrando as paredes liberam o preso (custo: 2 ataques pesados). Inimigos com **Esquiva** ativa na hora do cast podem evitar a captura inicial.\n\n---"
+    },
+    "type-label": "Атака (Контроль)",
+    "duration-label": "",
+    "tags": [
+      "AREA",
+      "MURALHA",
+      "DANO",
+      "SNARE"
+    ]
   },
   "lw_d1": {
     "name": "Щит Защитника",
     "description": "Двигается до 2 клеток + создаёт стену щита 3 вертикальные клетки впереди. Союзники в прямоугольнике 6 клеток сзади: -50% урона на 1 ход.",
-    "long-description": "Воин может двигаться до 2 клеток перед каст-навыком (preMovement), затем создаёт стену щита 3 вертикальные клетки впереди. Все союзники в прямоугольнике 6x2 за стеной получают -50% урона на 1 ход. Пиковая защита."
+    "long-description": {
+      "flavor": "O Guerreiro ergue o escudo. Atrás dele, o reino respira.",
+      "detail": "Воин может двигаться до 2 клеток перед каст-навыком (preMovement), затем создаёт стену щита 3 вертикальные клетки впереди. Все союзники в прямоугольнике 6x2 за стеной получают -50% урона на 1 ход. Пиковая защита.",
+      "synergies": "Use antes de momentos críticos da equipe (curas, revives, regeneração). **Cura Suprema** (Especialista) atrás do escudo é praticamente garantida. **Recuperação Real** (Rei) protegida nunca é interrompida.",
+      "counter": "**Bola de Fogo** e skills de área ignoram a \"frente\" — atingem por cima. **Teleport** posiciona burst diretamente atrás da parede, anulando o ângulo de proteção.\n\n---"
+    },
+    "type-label": "Защита (Сильная)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "MURALHA",
+      "BUFF AREA"
+    ]
   },
   "lw_d2": {
     "name": "Хранитель",
     "description": "60% урона, полученного союзником, перенаправляется воину, снижается на 30% на воине (1 ход).",
-    "long-description": "Воин метит союзника с самым низким HP (не король) как защищённого. На 1 ход 60% всего урона, который этот союзник получает, перенаправляется на Воина, и этот перенаправленный урон проходит через дополнительное снижение на 30% на Воине."
+    "long-description": {
+      "flavor": "Em meu peito o golpe pousa. Em minhas costas o reino segue.",
+      "detail": "Воин метит союзника с самым низким HP (не король) как защищённого. На 1 ход 60% всего урона, который этот союзник получает, перенаправляется на Воина, и этот перенаправленный урон проходит через дополнительное снижение на 30% на Воине.",
+      "synergies": "Combine com **Proteção Real** (Rei) e **Protetor** (passiva própria). Em Guerreiro adjacente ao Rei: Proteção Real reduz mais 20% sobre o dano redirecionado. Camadas defensivas formidáveis.",
+      "counter": "Matar o Guerreiro elimina o redirect. **Disparo Preciso** com bleed ignora as reduções (true damage). Skills de área atingem ambos simultaneamente — redirect não os protege.\n\n---"
+    },
+    "type-label": "Защита (Сильная)",
+    "duration-label": "1 turno",
+    "tags": [
+      "ALVO UNICO",
+      "BUFF",
+      "DAMAGE-REDIRECT"
+    ]
   },
   "lw_d3": {
     "name": "Абсолютное Сопротивление",
     "description": "Воин + союзник сзади: -65% урона на 1 ход. Может двигаться 1 клетку перед.",
-    "long-description": "Воин может двигаться до 1 клетки перед каст-навыком (preMovement), затем принимает стойку абсолютного сопротивления. На 1 ход он и союзник, сразу за ним, получают -65% от всего урона (включая true damage, но не от уже применённых DoT)."
+    "long-description": {
+      "flavor": "Onde o Guerreiro firma os pés, dois corações batem em segurança.",
+      "detail": "Воин может двигаться до 1 клетки перед каст-навыком (preMovement), затем принимает стойку абсолютного сопротивления. На 1 ход он и союзник, сразу за ним, получают -65% от всего урона (включая true damage, но не от уже применённых DoT).",
+      "synergies": "Combine com **Cura Suprema** ou **Recuperação Real** atrás — proteção quase total durante curas. **Postura Defensiva** stackável para reduções compostas.",
+      "counter": "Skills de área que pegam o lado/frente do Guerreiro ignoram o \"atrás\". **Empurrão Real** ou **Intimidação** quebram a formação posicional. **Disparo Preciso** ainda penetra true damage.\n\n---"
+    },
+    "type-label": "Защита (Сильная)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "BUFF",
+      "POSICIONAL"
+    ]
   },
   "lw_d4": {
     "name": "Нерушимая Крепость",
     "description": "-80% получаемого урона на 1 ход. Не может двигаться в следующем ходу движения.",
-    "long-description": "Воин принимает форму живой крепости. На 1 ход получает -80% от всего урона (включая true damage). Цена: НЕ может двигаться в следующем ходу движения, заблокирован на месте. Общая карта между Воином и Королём."
+    "long-description": {
+      "flavor": "Pés enraizados. Coração de pedra. O Rei se torna a própria muralha.",
+      "detail": "Воин принимает форму живой крепости. На 1 ход получает -80% от всего урона (включая true damage). Цена: НЕ может двигаться в следующем ходу движения, заблокирован на месте. Общая карта между Воином и Королём.",
+      "synergies": "Combine com **Espírito de Sobrevivência** para virada de jogo. Use ANTES do oponente ativar combos óbvios (ex: Adrenalina visível no Executor inimigo).",
+      "counter": "O Rei imóvel é alvo fácil para reposicionamento — **Intimidação** ou **Empurrão Real** inimigos podem deslocá-lo. **Muralha Viva** pode prendê-lo após o turno.\n\n---"
+    },
+    "type-label": "Защита (Лёгкая)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "BUFF",
+      "IMOVEL"
+    ]
   },
   "lw_d5": {
     "name": "Групповой Щит",
     "description": "Щит 15 на всех союзниках на 2 хода.",
-    "long-description": "Воин раздаёт коллективный щит: все 4 союзника (включая себя и Короля) получают 15 щита, длящегося 2 хода или до пробития. Каждый щит независимый — Короли получают нормально, в отличие от лечения."
+    "long-description": {
+      "flavor": "Um exército que se protege junto, vence junto.",
+      "detail": "Воин раздаёт коллективный щит: все 4 союзника (включая себя и Короля) получают 15 щита, длящегося 2 хода или до пробития. Каждый щит независимый — Короли получают нормально, в отличие от лечения.",
+      "synergies": "Combo defensivo: **Aura de Proteção** (Especialista) + Escudo de Grupo + **Postura Defensiva** = camadas múltiplas de redução. Use antes de turno previsto de pressão inimiga.",
+      "counter": "**Golpe Devastador** purga em área pequena. **Disparo Preciso** com bleed ativo no alvo ignora escudos. Concentrar burst em um único alvo derrota o spread defensivo.\n\n---"
+    },
+    "type-label": "Защита (Лёгкая)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "GLOBAL",
+      "ESCUDO"
+    ]
   },
   "lw_d6": {
     "name": "Защитная Стойка",
     "description": "Союзники в 3x3 вокруг: -25% урона на 1 ход.",
-    "long-description": "Воин принимает защитную стойку. Союзники в области 3x3 вокруг него (включая себя) получают -25% урона на 1 ход. Без щита и без лечения — чисто снижение урона."
+    "long-description": {
+      "flavor": "Pés firmes, escudo erguido, formação fechada.",
+      "detail": "Воин принимает защитную стойку. Союзники в области 3x3 вокруг него (включая себя) получают -25% урона на 1 ход. Без щита и без лечения — чисто снижение урона.",
+      "synergies": "Combo com a passiva Protetor (-15%) — aliados adjacentes recebem ambas as reduções multiplicativamente: 0.85 × 0.75 = 0.6375 (efetiva redução de 36%).",
+      "counter": "Forçar o Guerreiro a se afastar dos aliados elimina o buff. Skills de área que ignoram redução percentual (true damage) atravessam.\n\n---"
+    },
+    "type-label": "Защита (Лёгкая)",
+    "duration-label": "1 turno",
+    "tags": [
+      "AREA",
+      "BUFF"
+    ]
   },
   "lw_d7": {
     "name": "Наступать",
     "description": "Двигает союзников в 4x4 на 1 клетку вперёд. +1 mov + -10% урона + +10% ATK на 1 ход.",
-    "long-description": "Воин ведёт наступление команды. Все союзники в квадранте 4x4 вокруг него двигаются на 1 клетку вперёд (к полю врага) и получают три баффа на 1 ход: +1 mov, -10% получаемого урона и +10% ATK."
+    "long-description": {
+      "flavor": "O Rei chama. A vanguarda avança. O reino conquista.",
+      "detail": "Воин ведёт наступление команды. Все союзники в квадранте 4x4 вокруг него двигаются на 1 клетку вперёд (к полю врага) и получают три баффа на 1 ход: +1 mov, -10% получаемого урона и +10% ATK.",
+      "synergies": "Combo de avanço: Avançar → próximo turno usa **Investida** ou **Colisão Titânica** com aliados em posição de pressão. Setup ideal para tomar o muro inimigo.",
+      "counter": "**Empurrão Real** (Rei inimigo) anula o avanço empurrando todos de volta. **Muralha Viva** bloqueia. Skills de área inimigas pegam todos os aliados agrupados.\n\n---"
+    },
+    "type-label": "Защита (Лёгкая)",
+    "duration-label": "1 turno",
+    "tags": [
+      "AREA",
+      "BUFF",
+      "MOVIMENTO"
+    ]
   },
   "lw_d8": {
     "name": "Отступление",
     "description": "Двигает всех союзников 1 клетку назад в 4x4. +1 mov следующий ход + -15% урона на 1 ход.",
-    "long-description": "Воин приказывает тактическое отступление. Все союзники в квадранте 4x4 вокруг него двигаются на 1 клетку назад (к своему полю) и получают +1 mov в следующем ходу и -15% урона на 1 ход."
+    "long-description": {
+      "flavor": "Recuar não é perder. É escolher o próximo terreno.",
+      "detail": "Воин приказывает тактическое отступление. Все союзники в квадранте 4x4 вокруг него двигаются на 1 клетку назад (к своему полю) и получают +1 mov в следующем ходу и -15% урона на 1 ход.",
+      "synergies": "Use após pressão inimiga heavy ou antes de skills de área inimigas previstas. Combine com **Ordem Real** (Rei) ou skills curativas para janela de respiro. O miss chance é especialmente forte contra **Disparo Preciso** (true damage que ignoraria reduções percentuais).",
+      "counter": "Inimigos com `pull` (não temos no jogo atualmente) anulariam. **Investida Brutal** persegue aliados em retirada. Skills de área garantem hit múltiplo — apenas o **primeiro** dano direto tem chance de miss; ataques sequenciais ainda atingem.\n\n---"
+    },
+    "type-label": "Защита (Сильная)",
+    "duration-label": "1 turno (buffs)",
+    "tags": [
+      "AREA",
+      "BUFF",
+      "MOVIMENTO",
+      "EVADE"
+    ]
   },
   "le_a1": {
     "name": "Смертельный Удар",
     "description": "45 урона + снимает дебаффы цели. Если был bleed: +50% урона (всего 67).",
-    "long-description": "Палач наносит точный смертельный удар по одной цели — 45 прямого урона и применяет Cleanse на цели. Если у цели был активный Bleed в момент удара, урон усиливается на +50% (всего 67). Тяжёлый навык казни."
+    "long-description": {
+      "flavor": "O Executor identifica feridas abertas e desfere o golpe definitivo.",
+      "detail": "Палач наносит точный смертельный удар по одной цели — 45 прямого урона и применяет Cleanse на цели. Если у цели был активный Bleed в момент удара, урон усиливается на +50% (всего 67). Тяжёлый навык казни.",
+      "synergies": "Aplique **Corte Hemorragia**, **Bomba de Espinhos** ou **Marca da Morte** no turno anterior para garantir bleed → use Corte Mortal para o burst de 67. Combine com **Adrenalina** ativa para 84 de dano (+25% × 67).",
+      "counter": "**Esquiva** anula. **Fortaleza Inabalável** reduz para 13 de dano. **Cleanse** remove o bleed antes do turno do Executor. Manter alvos limpos de DoT é a defesa principal.\n\n---"
+    },
+    "type-label": "Атака (Тяжёлая)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "ALVO UNICO",
+      "DANO",
+      "PURGE",
+      "SINERGIA-BLEED"
+    ]
   },
   "le_a2": {
     "name": "Буря Лезвий",
     "description": "26 урона в области 3x3. Если у целей был bleed: +50% урона на них.",
-    "long-description": "Палач высвобождает бурю лезвий в области 3x3, нанося 26 урона всем поражённым врагам. Каждая цель индивидуально получает +50% урона, если она была под Bleed в момент удара."
+    "long-description": {
+      "flavor": "Lâminas dançam em todas as direções. Quem sangra, sangra mais.",
+      "detail": "Палач высвобождает бурю лезвий в области 3x3, нанося 26 урона всем поражённым врагам. Каждая цель индивидуально получает +50% урона, если она была под Bleed в момент удара.",
+      "synergies": "Use **Bomba de Espinhos** primeiro (aplica bleed em área) → Tempestade de Lâminas no turno seguinte garante triple-amplificação. Em time, **Provocação** (Guerreiro aliado) prepara alvos sem defesa.",
+      "counter": "Posicionamento espalhado anula AoE. **Bater em Retirada** (Guerreiro inimigo) limpa a área. **Cleanse** remove bleeds antes da tempestade.\n\n---"
+    },
+    "type-label": "Атака (Тяжёлая)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "AREA",
+      "DANO",
+      "SINERGIA-BLEED"
+    ]
   },
   "le_a3": {
     "name": "Точный Выстрел",
     "description": "30 true damage (игнорирует DEF). Если у цели был bleed: игнорирует и щиты.",
-    "long-description": "Палач стреляет смертельным точным снарядом по одной цели — 30 True Damage, игнорирующих все DEF-снижения, пассивки и любое процентное снижение урона. Если у цели был активный Bleed во время выстрела, выстрел также ИГНОРИРУЕТ все активные щиты."
+    "long-description": {
+      "flavor": "Não há armadura entre a flecha e o coração marcado.",
+      "detail": "Палач стреляет смертельным точным снарядом по одной цели — 30 True Damage, игнорирующих все DEF-снижения, пассивки и любое процентное снижение урона. Если у цели был активный Bleed во время выстрела, выстрел также ИГНОРИРУЕТ все активные щиты.",
+      "synergies": "Combo definitivo: **Marca da Morte** (aplica bleed) → Disparo Preciso (true damage que ignora escudos). Mesmo Reis com escudos empilhados caem nesta combinação.",
+      "counter": "**Esquiva** ainda funciona (anula o ataque inteiro). **Fortaleza Inabalável** reduz true damage em 80%. **Cleanse** remove bleed para preservar escudos. Posicionamento fora da linha vertical.\n\n---"
+    },
+    "type-label": "Атака (Тяжёлая)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "ALVO UNICO",
+      "LINHA",
+      "TRUE DAMAGE",
+      "ANTI-SHIELD"
+    ]
   },
   "le_a4": {
     "name": "Точный Разрез",
     "description": "22 урона по 2 горизонтальным клеткам + очищение.",
-    "long-description": "Палач наносит два последовательных разреза, поражающих горизонтальную линию в 2 клетки, нанося 22 урона и применяя Очищение ко всем поражённым. Анти-бафф навык."
+    "long-description": {
+      "flavor": "A precisão da lâmina rasga a falsa proteção.",
+      "detail": "Палач наносит два последовательных разреза, поражающих горизонтальную линию в 2 клетки, нанося 22 урона и применяя Очищение ко всем поражённым. Анти-бафф навык.",
+      "synergies": "Use Corte Preciso → próximo turno Disparo Preciso (alvo sem escudo). Combine com **Provocação** (Guerreiro aliado) para silence_defense + buff cleanse — alvo completamente exposto.",
+      "counter": "**Esquiva** anula. Posicionar-se em diagonal ao Executor evita o cone horizontal. **Aura de Proteção** (Especialista) reaplica buffs.\n\n---"
+    },
+    "type-label": "Атака (Тяжёлая)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "AREA",
+      "DANO",
+      "PURGE"
+    ]
   },
   "le_a5": {
     "name": "Кровавый Разрез",
     "description": "8 урона + bleed 4/ход на 3х по 2 горизонтальным клеткам. Накопительный при повторном применении.",
-    "long-description": "Палач наносит скользящий разрез по горизонтальной линии в 2 клетки, нанося 8 начального урона и применяя Bleed: 4 урона за ход на 3 хода (всего 12). Bleed — физический DoT, игнорирующий щиты. При повторном применении на уже кровоточащей цели Bleed СКЛАДЫВАЕТСЯ."
+    "long-description": {
+      "flavor": "Um corte raso. Mas a ferida não para de sangrar.",
+      "detail": "Палач наносит скользящий разрез по горизонтальной линии в 2 клетки, нанося 8 начального урона и применяя Bleed: 4 урона за ход на 3 хода (всего 12). Bleed — физический DoT, игнорирующий щиты. При повторном применении на уже кровоточащей цели Bleed СКЛАДЫВАЕТСЯ.",
+      "synergies": "Primeira skill em qualquer combo. Use turno 1 → Corte Mortal turno 2. **Marca da Morte** stackável (também aplica bleed mais forte).",
+      "counter": "**Cleanse** ou **Proteção** (Especialista) remove o bleed. **Cura Suprema** mitiga o tick (mas DoT bypass cura, então não totalmente). Manter HP alto reduz pressão do tick.\n\n---"
+    },
+    "type-label": "Атака (Контроль)",
+    "duration-label": "3 turnos",
+    "tags": [
+      "AREA",
+      "DANO",
+      "BLEED",
+      "SETUP"
+    ]
   },
   "le_a6": {
     "name": "Бомба Шипов",
     "description": "10 урона + bleed 5/ход на 2х в алмазе r2.",
-    "long-description": "Палач бросает бомбу шипов, детонирующую в алмазе радиуса 2 (~13 клеток), нанося 10 начального урона всем поражённым и применяя Bleed 5 за ход на 2 хода (всего 10 DoT). Широкое покрытие для применения bleed на множестве целей."
+    "long-description": {
+      "flavor": "Um arremesso silencioso. Espinhos rasgam pelos quatro lados.",
+      "detail": "Палач бросает бомбу шипов, детонирующую в алмазе радиуса 2 (~13 клеток), нанося 10 начального урона всем поражённым и применяя Bleed 5 за ход на 2 хода (всего 10 DoT). Широкое покрытие для применения bleed на множестве целей.",
+      "synergies": "Combo perfeito antes de **Tempestade de Lâminas** (Executor mesmo) — todos os atingidos sofrem +50%. **Marca da Morte** complementa no canto traseiro do diamante.",
+      "counter": "**Bater em Retirada** sai da área. **Proteção** dá imunidade a debuffs novos por 1 turno. Posicionamento em fileira evita o formato diamante.\n\n---"
+    },
+    "type-label": "Атака (Контроль)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "AREA",
+      "DANO",
+      "BLEED",
+      "SETUP"
+    ]
   },
   "le_a7": {
     "name": "Метка Смерти",
     "description": "12 урона в вертикальной области 8 клеток. Снимает щиты (лечит 20% от них как HP). Bleed 8/ход на 2х.",
-    "long-description": "Палач направляет Метку Смерти в вертикальную прямоугольную область 8 клеток (4 глубина × 2 ширина). Наносит 12 урона всем поражённым, СНИМАЕТ все щиты целей (и лечит Палача на 20% от снятого щита как HP) и применяет Bleed 8 за ход на 2 хода (16 DoT)."
+    "long-description": {
+      "flavor": "Marcado para a morte. O selo silencioso da execução.",
+      "detail": "Палач направляет Метку Смерти в вертикальную прямоугольную область 8 клеток (4 глубина × 2 ширина). Наносит 12 урона всем поражённым, СНИМАЕТ все щиты целей (и лечит Палача на 20% от снятого щита как HP) и применяет Bleed 8 за ход на 2 хода (16 DoT).",
+      "synergies": "Combo \"destruidor de tanks\": Marca da Morte → Disparo Preciso (true damage + ignora escudos restantes). Frente a Reis com escudos empilhados, sequência reduz HP rápido.",
+      "counter": "**Aura de Proteção** ou **Cura Suprema** (Especialista) podem reaplicar escudos perdidos. **Cleanse** remove o bleed, mas o escudo já foi removido (não retorna). Manter inimigos sem escudo até momento crítico minimiza valor da skill.\n\n---"
+    },
+    "type-label": "Атака (Контроль)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "LINHA",
+      "DANO",
+      "ANTI-SHIELD",
+      "BLEED"
+    ]
   },
   "le_a8": {
     "name": "Скрытая Ловушка",
     "description": "Вооружает клетку (не на занятой). При наступлении: 15 урона + snare 1х + bleed 4/ход на 3х.",
-    "long-description": "Палач устанавливает невидимую ловушку на пустой клетке. Ловушка остаётся до активации. Когда ЛЮБОЙ враг входит в клетку, она детонирует: наносит 15 урона, применяет Снаряжение на 1 ход и Bleed 4 за ход на 3 хода."
+    "long-description": {
+      "flavor": "O caminho mais curto pode ser o último.",
+      "detail": "Палач устанавливает невидимую ловушку на пустой клетке. Ловушка остаётся до активации. Когда ЛЮБОЙ враг входит в клетку, она детонирует: наносит 15 урона, применяет Снаряжение на 1 ход и Bleed 4 за ход на 3 хода.",
+      "synergies": "Combine com **Empurrão Real** ou **Colisão Titânica** (aliados) para forçar inimigo na armadilha. **Investida Brutal** empurra alvos pelo mapa em direção a traps pré-posicionadas.",
+      "counter": "Inimigos evitam casas suspeitas (em PvP é leitura). **Teleport** ignora armadilhas (não pisa, atravessa). Forçar inimigo a entrar exige coordenação ofensiva.\n\n---"
+    },
+    "type-label": "Атака (Контроль)",
+    "duration-label": "Permanente até ser ativada ou fim de combate",
+    "tags": [
+      "ALVO UNICO",
+      "TRAP",
+      "DANO",
+      "SNARE",
+      "BLEED"
+    ]
   },
   "le_d1": {
     "name": "Отражение",
     "description": "-25% получаемого урона + отражает смягчённый атакующему в следующем ходу.",
-    "long-description": "На 1 ход Палач получает -25% от всего урона и отражает ТОЧНО смягчённое значение обратно атакующему. Пример: атака 40 → получает 30, атакующий получает 10 отражения. Несколько атакующих генерируют несколько отражений."
+    "long-description": {
+      "flavor": "O que você tenta tirar, retorna a você.",
+      "detail": "На 1 ход Палач получает -25% от всего урона и отражает ТОЧНО смягчённое значение обратно атакующему. Пример: атака 40 → получает 30, атакующий получает 10 отражения. Несколько атакующих генерируют несколько отражений.",
+      "synergies": "Use quando se espera burst inimigo (visivelmente preparado). Combine com **Adrenalina** para janela ofensiva pós-defesa.",
+      "counter": "Skills que não causam dano direto (`debuff`, `snare`) não são refletidas. **Bola de Fogo** reflete dano original mas o burn aplicado fica. Atacantes podem usar skills via DoT para evitar reflexão.\n\n---"
+    },
+    "type-label": "Защита (Сильная)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "BUFF",
+      "REFLECT"
+    ]
   },
   "le_d2": {
     "name": "Адреналин",
     "description": "+25% ATK на 2 хода. В конце: теряет 15% макс HP (можно блокировать щитом).",
-    "long-description": "Палач входит в режим экстремального адреналина: получает +25% ATK на 2 хода. В КОНЦЕ второго хода терпит 15% макс HP как урон отдачи (можно блокировать активным щитом). Навык риска/награды."
+    "long-description": {
+      "flavor": "A força do desespero. O preço da pressa.",
+      "detail": "Палач входит в режим экстремального адреналина: получает +25% ATK на 2 хода. В КОНЦЕ второго хода терпит 15% макс HP как урон отдачи (можно блокировать активным щитом). Навык риска/награды.",
+      "synergies": "Setup mainstream do Executor: Adrenalina → 2 turnos de Corte Mortal/Disparo Preciso amplificados. Combine com **Recuo Rápido** ou **Bloqueio Total** para absorver o tick final.",
+      "counter": "**Desarme** (Rei inimigo) cancela skill no turno 1 da Adrenalina, desperdiçando setup. **Marca da Morte** com bleed durante a janela mantém pressão sobre o Executor já fragilizado.\n\n---"
+    },
+    "type-label": "Защита (Сильная)",
+    "duration-label": "2 turnos (buff) + tick final de dano",
+    "tags": [
+      "SELF",
+      "BUFF",
+      "TRADE-OFF"
+    ]
   },
   "le_d3": {
     "name": "Двойная Атака",
     "description": "Следующий ход: 2 atk-навыка, 0 def. Cooldown: 2 хода (нельзя использовать подряд).",
-    "long-description": "На 1 ход (следующий) Палач может использовать 2 атакующих навыка вместо 1, но теряет возможность использовать любые защитные навыки в этом ходу. Cooldown 2 хода."
+    "long-description": {
+      "flavor": "Dois golpes. Zero defesa. Tudo ou nada.",
+      "detail": "На 1 ход (следующий) Палач может использовать 2 атакующих навыка вместо 1, но теряет возможность использовать любые защитные навыки в этом ходу. Cooldown 2 хода.",
+      "synergies": "Combo overkill: Ataque em Dobro → próximo turno Marca da Morte (aplica bleed) + Corte Mortal (+50% por bleed = 67) = 79 de dano em um turno só. Útil para finalizar Reis em HP baixo.",
+      "counter": "**Provocação** (Guerreiro inimigo) com silence_defense não ajuda (Executor já não defende). **Bola de Fogo** ou skill de área aproveita a vulnerabilidade total. Burst inimigo no turno do dobro pode matar o Executor.\n\n---"
+    },
+    "type-label": "Защита (Сильная)",
+    "duration-label": "",
+    "tags": [
+      "SELF",
+      "OFENSIVO",
+      "COOLDOWN"
+    ]
   },
   "le_d4": {
     "name": "Телепорт",
     "description": "Телепортирует до 5 клеток. Расходует следующий ход движения.",
-    "long-description": "Палач мгновенно телепортируется на любую клетку в радиусе 5, ИГНОРИРУЯ препятствия, стены и единицы на пути. Цена: расходует следующий ход движения. Экстремальная тактическая мобильность."
+    "long-description": {
+      "flavor": "Está aqui. Está lá. Está em todo lugar.",
+      "detail": "Палач мгновенно телепортируется на любую клетку в радиусе 5, ИГНОРИРУЯ препятствия, стены и единицы на пути. Цена: расходует следующий ход движения. Экстремальная тактическая мобильность.",
+      "synergies": "Posicionamento para ativar **Isolado** (passiva) — teleport longe da equipe = +20% dano. Combine com **Marca da Morte** posicionada em backline inimiga.",
+      "counter": "Inimigos com `mov_down` no Executor têm efeito reduzido (teleport ignora movimento normal). **Muralha Viva** não bloqueia teleport. Antecipar para onde o Executor pode aparecer é a leitura principal.\n\n---"
+    },
+    "type-label": "Защита (Сильная)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "SELF",
+      "TELEPORT",
+      "MOVIMENTO"
+    ]
   },
   "le_d5": {
     "name": "Быстрое Отступление",
     "description": "Двигается до 2 клеток назад + щит 20 на 1 ход.",
-    "long-description": "Палач отступает до 2 клеток назад (только к своему полю) и получает 20 щита на 1 ход. Движение и щит — часть одного действия."
+    "long-description": {
+      "flavor": "O assassino se move. O caminho está livre.",
+      "detail": "Палач отступает до 2 клеток назад (только к своему полю) и получает 20 щита на 1 ход. Движение и щит — часть одного действия.",
+      "synergies": "Use depois de **Adrenalina** para absorver o tick final com o escudo de 20. Combine com **Teleport** depois para reposicionamento agressivo.",
+      "counter": "Paredes ou aliados bloqueiam o recuo. **Investida Brutal** persegue. **Disparo Preciso** com bleed ignora escudo.\n\n---"
+    },
+    "type-label": "Защита (Лёгкая)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "MOVIMENTO",
+      "ESCUDO"
+    ]
   },
   "le_d6": {
     "name": "Уклонение",
     "description": "Полностью уклоняется от первой прямой атаки в следующем ходу.",
-    "long-description": "Палач принимает уклоняющуюся стойку и полностью уклоняется от следующей прямой атаки в следующем ходу. Общая карта между Специалистом, Палачом и Королём."
+    "long-description": {
+      "flavor": "O Rei não bloqueia o golpe. Ele simplesmente não está mais lá.",
+      "detail": "Палач принимает уклоняющуюся стойку и полностью уклоняется от следующей прямой атаки в следующем ходу. Общая карта между Специалистом, Палачом и Королём.",
+      "synergies": "Use em \"leitura\" do oponente — quando você sabe que o burst vem. Combine com **Sombra Real**: oponente confuso atira em clone, e mesmo se acertar o real, a Esquiva protege.",
+      "counter": "Skills de área (**Bola de Fogo**, **Domínio Real**) ignoram Esquiva — não são \"ataques diretos\". DoTs aplicados anteriormente continuam ticando. Skills compostas com múltiplos hits (**Sequência de Socos**) só perdem o primeiro hit.\n\n---"
+    },
+    "type-label": "Защита (Лёгкая)",
+    "duration-label": "Até receber 1 ataque ou fim do turno",
+    "tags": [
+      "SELF",
+      "EVADE"
+    ]
   },
   "le_d7": {
     "name": "Полный Блок",
     "description": "Щит 60. Действует до пробития или 2 хода.",
-    "long-description": "Даёт Палачу щит 60 HP, действующий до полного расхода или истечения 2 ходов. Щит подчиняется глобальному Shield Cap 100 HP на единицу. Общая карта между Специалистом и Палачом."
+    "long-description": {
+      "flavor": "Nenhum golpe passa. Nenhuma chance é dada.",
+      "detail": "Даёт Палачу щит 60 HP, действующий до полного расхода или истечения 2 ходов. Щит подчиняется глобальному Shield Cap 100 HP на единицу. Общая карта между Специалистом и Палачом.",
+      "synergies": "Use antes de momentos previsíveis de pressão inimiga. Combine com **Aura de Proteção** (Especialista) para ainda mais absorção.",
+      "counter": "**Golpe Devastador** purga o escudo inteiro. **Disparo Preciso** com bleed ativo no alvo ignora escudos. Pressão sustentada por 2-3 turnos esgota o escudo.\n\n---"
+    },
+    "type-label": "Защита (Лёгкая)",
+    "duration-label": "Até ser totalmente quebrado ou 2 turnos",
+    "tags": [
+      "SELF",
+      "ESCUDO"
+    ]
   },
   "le_d8": {
     "name": "Щит",
     "description": "Щит 25 на 1 ход.",
-    "long-description": "Даёт Палачу быстрый щит 25 HP на 1 ход. Подчиняется Shield Cap 100 HP. Легче и дешевле Полного Блока."
+    "long-description": {
+      "flavor": "Um instante de aço. Um instante a mais de vida.",
+      "detail": "Даёт Палачу быстрый щит 25 HP на 1 ход. Подчиняется Shield Cap 100 HP. Легче и дешевле Полного Блока.",
+      "synergies": "Combine com **Recuo Rápido** (também aplica escudo) para 45 HP de absorção. Stack com **Bloqueio Total** = 85 HP de escudo (não atinge cap).",
+      "counter": "Igual aos outros escudos — **Golpe Devastador**, **Disparo Preciso** com bleed, ataques sustentados.\n\n---"
+    },
+    "type-label": "Защита (Лёгкая)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "ESCUDO"
+    ]
   },
   "lk_a1": {
     "name": "Королевский Удар",
     "description": "25 урона в 2 горизонтальных клетках + self щит 15 на 2 хода.",
-    "long-description": "Король наносит королевский удар по горизонтальной линии 2 клетки впереди, нанося 25 урона всем поражённым врагам. В том же ходу получает 15 self щита на 2 хода (Shield Cap 100). Гибридное атакующе-защитное давление."
+    "long-description": {
+      "flavor": "O punho real pesa como o trono.",
+      "detail": "Король наносит королевский удар по горизонтальной линии 2 клетки впереди, нанося 25 урона всем поражённым врагам. В том же ходу получает 15 self щита на 2 хода (Shield Cap 100). Гибридное атакующе-защитное давление.",
+      "synergies": "Combina com **Recuperação Real** e **Espírito de Sobrevivência** para sustentar pressão prolongada. O escudo gerado conta para o Shield Cap (100 HP), então alterne com **Chute Real** para manter o sustain sem desperdício.",
+      "counter": "Inimigos com **Golpe Devastador** (Guerreiro) ou **Corte Preciso** (Executor) podem aplicar `purge`, removendo o escudo antes que ele cumpra sua função. Posicionar-se em diagonal evita ser atingido pelo cone horizontal.\n\n---"
+    },
+    "type-label": "Атака (Тяжёлая)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "AREA",
+      "DANO",
+      "ESCUDO"
+    ]
   },
   "lk_a2": {
     "name": "Королевский Пинок",
     "description": "27 урона в 2 вертикальных клетках + self щит 15 на 2 хода.",
-    "long-description": "Король наносит королевский пинок по вертикальной линии 2 клетки впереди, нанося 27 урона всем поражённым врагам. Получает 15 self щита на 2 хода. Вертикальный вариант Королевского Удара."
+    "long-description": {
+      "flavor": "Cada movimento do soberano carrega o peso de uma coroa.",
+      "detail": "Король наносит королевский пинок по вертикальной линии 2 клетки впереди, нанося 27 урона всем поражённым врагам. Получает 15 self щита на 2 хода. Вертикальный вариант Королевского Удара.",
+      "synergies": "Excelente após **Empurrão Real** ou **Intimidação**, que reposicionam inimigos diretamente na linha do chute. Combinação clássica: empurra → chuta → soca.",
+      "counter": "Inimigos com **Esquiva** ativa anulam o primeiro acerto. **Fortaleza Inabalável** reduz o dano em 80%, tornando o chute praticamente inofensivo.\n\n---"
+    },
+    "type-label": "Атака (Тяжёлая)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "AREA",
+      "DANO",
+      "ESCUDO"
+    ]
   },
   "lk_a3": {
     "name": "Серия Ударов",
     "description": "15 урона в 3x2 + lifesteal 30%. Исключение из правила невосприимчивости короля.",
-    "long-description": "Король высвобождает серию ударов, нанося 15 урона в области 3x2 впереди. Получает 30% от нанесённого урона как лечение (Lifesteal) — явное исключение из правила Королевской Невосприимчивости, поскольку навык self-cast."
+    "long-description": {
+      "flavor": "Quem desafia o trono enfrenta uma tempestade de aço.",
+      "detail": "Король высвобождает серию ударов, нанося 15 урона в области 3x2 впереди. Получает 30% от нанесённого урона как лечение (Lifesteal) — явное исключение из правила Королевской Невосприимчивости, поскольку навык self-cast.",
+      "synergies": "Devastador após **Ordem Real** (que reposiciona a equipe e agrupa inimigos). Combina com **Domínio Real** para dobrar o sustain — a sequência cura, o Domínio gera escudo proporcional ao dano.",
+      "counter": "Inimigos espalhados anulam o sustain — cada alvo a menos é 4-5 HP a menos curados. **Queimação** do Especialista NÃO afeta esta cura porque é lifesteal, não heal externo (importante!).\n\n---"
+    },
+    "type-label": "Атака (Тяжёлая)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "AREA",
+      "DANO",
+      "LIFESTEAL"
+    ]
   },
   "lk_a4": {
     "name": "Королевское Господство",
     "description": "18 урона в 3x3 + self щит = 25% от общего нанесённого урона на 1 ход.",
-    "long-description": "Король устанавливает господство в области 3x3, нанося 18 урона каждой поражённой цели (до 9 целей). После расчёта общего урона получает 25% этого значения как self щит на 1 ход. Масштабируемая атака-защита."
+    "long-description": {
+      "flavor": "A presença real impõe respeito num raio de aço.",
+      "detail": "Король устанавливает господство в области 3x3, нанося 18 урона каждой поражённой цели (до 9 целей). После расчёта общего урона получает 25% этого значения как self щит на 1 ход. Масштабируемая атака-защита.",
+      "synergies": "Combo perfeito com **Intimidação** (que junta inimigos em torno do Rei) ou **Ordem Real** (que reúne aliados ao redor, mas inimigos podem estar próximos também). Após o uso, **Sequência de Socos** maximiza o lifesteal contra os mesmos alvos.",
+      "counter": "Skills de empurrão (**Colisão Titânica**, **Investida**) afastam inimigos antes que o Domínio acerte. Inimigos isolados anulam o ganho de escudo. **Bater em Retirada** (Guerreiro inimigo) tira aliados do raio.\n\n---"
+    },
+    "type-label": "Атака (Тяжёлая)",
+    "duration-label": "1 turno",
+    "tags": [
+      "AREA",
+      "DANO",
+      "ESCUDO",
+      "ESCALAVEL"
+    ]
   },
   "lk_a5": {
     "name": "Королевский Толчок",
     "description": "12 урона по вертикальной линии 3 клетки до конца карты + push до 3 клеток.",
-    "long-description": "Король толкает с брутальной силой по вертикальной линии от Короля до конца карты (3 клетки ширины). Наносит 12 урона всем врагам на пути и толкает их до 3 клеток назад. Массивный навык зонирования."
+    "long-description": {
+      "flavor": "O Rei comanda — e o campo de batalha obedece.",
+      "detail": "Король толкает с брутальной силой по вертикальной линии от Короля до конца карты (3 клетки ширины). Наносит 12 урона всем врагам на пути и толкает их до 3 клеток назад. Массивный навык зонирования.",
+      "synergies": "Antes de **Investida Brutal** (Guerreiro aliado) — empurra inimigos para uma posição vulnerável. Após o empurrão, **Chute Real** ou **Domínio Real** atingem reposicionados.",
+      "counter": "Paredes (de **Muralha Viva** ou **Prisão de Muralha Morta**) bloqueiam o empurrão. Inimigos contra a borda do mapa são empurrados apenas até a borda. **Fortaleza Inabalável** mitiga o dano mas não anula o empurrão.\n\n---"
+    },
+    "type-label": "Атака (Контроль)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "LINHA",
+      "DANO",
+      "PUSH"
+    ]
   },
   "lk_a6": {
     "name": "Контратака",
     "description": "15 урона в 3x3 + push 1 клетка от центра. Центр не двигается.",
-    "long-description": "Король взрывает контратаку в области 3x3 вокруг себя (он центр). Наносит 15 урона всем врагам в области и толкает каждого на 1 клетку в радиальном направлении (от центра). Король (центр) НЕ двигается."
+    "long-description": {
+      "flavor": "O reino reage. Quem cerca o Rei encontra apenas espaço vazio.",
+      "detail": "Король взрывает контратаку в области 3x3 вокруг себя (он центр). Наносит 15 урона всем врагам в области и толкает каждого на 1 клетку в радиальном направлении (от центра). Король (центр) НЕ двигается.",
+      "synergies": "Excelente quando combinado com **Domínio Real** no mesmo turno (Domínio gera escudo proporcional ao dano causado, Contra-ataque garante que o Domínio acerte mais alvos). Setup ideal para **Sombra Real**: gera espaço, depois cria clones para confundir.",
+      "counter": "Inimigos com `mov_down` ou `snare` ativos ainda sofrem dano mas não são empurrados (o efeito ainda ocorre, apenas não há reposicionamento). Resistir a empurrões é praticamente impossível — esta é uma das skills mais \"garantidas\" do Rei.\n\n---"
+    },
+    "type-label": "Атака (Контроль)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "AREA",
+      "DANO",
+      "PUSH"
+    ]
   },
   "lk_a7": {
     "name": "Запугивание",
     "description": "10 урона + телепортирует цель и смежных в выбранное место. Нельзя ставить на края.",
-    "long-description": "Король запугивает цель: наносит 10 урона и телепортирует цель ПЛЮС всех смежных с ней врагов (до 5 единиц) в место, выбранное кастером (на поле карты, кроме краёв). Экстремальное атакующее переразмещение."
+    "long-description": {
+      "flavor": "Um olhar real reorganiza um exército.",
+      "detail": "Король запугивает цель: наносит 10 урона и телепортирует цель ПЛЮС всех смежных с ней врагов (до 5 единиц) в место, выбранное кастером (на поле карты, кроме краёв). Экстремальное атакующее переразмещение.",
+      "synergies": "Setup devastador para **Domínio Real** (junta inimigos em volta do Rei), **Tempestade de Lâminas** (Executor aliado), ou **Bola de Fogo** (Especialista aliado). Conhecida como \"a chamada de execução\" em decks coordenados.",
+      "counter": "**Esquiva** anula o teleporte ao impedir o ataque inicial. Inimigos com **Fortaleza Inabalável** ainda são teleportados (o efeito não é dano-dependente). Posicionamento espalhado reduz o impacto — quanto menos adjacentes, menor o reposicionamento.\n\n---"
+    },
+    "type-label": "Атака (Контроль)",
+    "duration-label": "Instantâneo",
+    "tags": [
+      "ALVO UNICO",
+      "DANO",
+      "TELEPORT"
+    ]
   },
   "lk_a8": {
     "name": "Разоружение",
     "description": "6 урона + отменяет atk-навык цели в ходу + silence_attack 1х. Не влияет на королей.",
-    "long-description": "Король разоружает врага: наносит 6 урона и НЕМЕДЛЕННО отменяет любой атакующий навык, выбранный целью на этот ход. Дополнительно применяет silence_attack на 1 ход. Хирургический контр-навык."
+    "long-description": {
+      "flavor": "O punho real toca o pulso. O golpe inimigo morre antes de nascer.",
+      "detail": "Король разоружает врага: наносит 6 урона и НЕМЕДЛЕННО отменяет любой атакующий навык, выбранный целью на этот ход. Дополнительно применяет silence_attack на 1 ход. Хирургический контр-навык.",
+      "synergies": "Use contra Executores inimigos com **Adrenalina** ativa para desperdiçar o buff. Combine com **Provocação** (Guerreiro aliado, que aplica silence_defense) para um turno completo de paralisia tática.",
+      "counter": "Inimigos com `cleanse` (purificação de debuffs) podem remover o silence. **Proteção** (Especialista) concede imunidade a novos debuffs por 1 turno. Programar skills com a defesa como atk + def também esquiva o silence parcial.\n\n---"
+    },
+    "type-label": "Атака (Контроль)",
+    "duration-label": "",
+    "tags": [
+      "ALVO UNICO",
+      "DANO",
+      "SILENCE"
+    ]
   },
   "lk_d1": {
     "name": "Тёмное Бегство",
     "description": "Телепортируется в любое место союзной половины. Король становится untargetable от single-target навыков, пока не получит урон или не двинется.",
-    "long-description": "Король становится невидимым на момент и телепортируется на любую клетку своего поля (союзная половина карты). После телепорта становится UNTARGETABLE для single-target навыков. Невидимость пробивается, если Король получает урон или произвольно двигается."
+    "long-description": {
+      "flavor": "Onde o Rei some, a estratégia inimiga colapsa.",
+      "detail": "Король становится невидимым на момент и телепортируется на любую клетку своего поля (союзная половина карты). После телепорта становится UNTARGETABLE для single-target навыков. Невидимость пробивается, если Король получает урон или произвольно двигается.",
+      "synergies": "Use após **Recuperação Real** para se afastar e regenerar em segurança. Combo defensivo elite: Fuga Sombria → Recuperação Real → Espírito de Sobrevivência = +50% HP recuperados em 3 turnos.",
+      "counter": "Skills de área (**Bola de Fogo**, **Tempestade de Lâminas**, **Domínio Real**) ignoram a invisibilidade — atingem qualquer um na zona, visível ou não. Atacantes inteligentes sabem chutar áreas prováveis de fuga.\n\n---"
+    },
+    "type-label": "Защита (Сильная)",
+    "duration-label": "Até receber dano direto ou se mover voluntariamente",
+    "tags": [
+      "SELF",
+      "TELEPORT",
+      "STEALTH",
+      "ESCAPE"
+    ]
   },
   "lk_d2": {
     "name": "Королевское Восстановление",
     "description": "Восстанавливает 20% макс HP за 2 хода (10% сейчас, 10% следующий ход если не получит урона). Исключение из невосприимчивости короля.",
-    "long-description": "Король направляет Королевское Восстановление: получает 10% макс HP как лечение немедленно (этот ход) и ещё 10% макс HP в следующем ходу, ЕСЛИ НЕ получит урон в этом ходу. Максимум: 20% макс HP. Явное исключение из правила Королевской Невосприимчивости."
+    "long-description": {
+      "flavor": "Mesmo o leão precisa de um instante para se erguer mais forte.",
+      "detail": "Король направляет Королевское Восстановление: получает 10% макс HP как лечение немедленно (этот ход) и ещё 10% макс HP в следующем ходу, ЕСЛИ НЕ получит урон в этом ходу. Максимум: 20% макс HP. Явное исключение из правила Королевской Невосприимчивости.",
+      "synergies": "Combo perfeito com **Fuga Sombria** (sai do alcance, regenera em paz). **Ordem Real** também protege os ticks ao reduzir dano em -45%. Em time defensivo, combine com **Cura Suprema** (não funciona no Rei) usada em outro aliado para focar inimigos longe.",
+      "counter": "Qualquer dano direto cancela o segundo tick. DoTs (`bleed`, `burn`) NÃO cancelam — o segundo tick passa apesar do DoT (importante regra de design). **Marca da Morte** (Executor) prioriza o Rei e força dano contínuo.\n\n---"
+    },
+    "type-label": "Защита (Сильная)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "SELF",
+      "CURA",
+      "CONDICIONAL"
+    ]
   },
   "lk_d3": {
     "name": "Королевская Тень",
     "description": "Создаёт 2 клонов в пустых клетках. Король может обменяться позицией с одним. Клоны длятся 2 хода. Враги не знают, кто настоящий.",
-    "long-description": "Король создаёт 2 визуальных клонов на близких пустых клетках. Клоны длятся 2 хода и визуально идентичны настоящему Королю. Враги не знают, кто настоящий, пока не атакуют — клоны поглощают удар и исчезают, если их поразят."
+    "long-description": {
+      "flavor": "Três coroas no campo. Apenas uma é real. Quem aposta errado, morre.",
+      "detail": "Король создаёт 2 визуальных клонов на близких пустых клетках. Клоны длятся 2 хода и визуально идентичны настоящему Королю. Враги не знают, кто настоящий, пока не атакуют — клоны поглощают удар и исчезают, если их поразят.",
+      "synergies": "Use antes de **Fuga Sombria** para máxima ofuscação — quando os clones existem e o Rei some, fica impossível rastreá-lo. **Intimidação** força reposicionamento inimigo antes da ilusão.",
+      "counter": "Skills de área atingem todas as casas, exposto o Rei verdadeiro pelo dano sofrido. **Sangramento** ou outros DoTs revelam o real ao tentarem aplicá-los (clones não tomam dano). Bots inimigos podem ter heurística de \"atacar todos os 3\" se houver tempo.\n\n---"
+    },
+    "type-label": "Защита (Сильная)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "SELF",
+      "STEALTH",
+      "MIND-GAMES"
+    ]
   },
   "lk_d4": {
     "name": "Дух Выживания",
     "description": "Если HP ≤ 50%: +15% макс HP + щит 10% макс HP на 1 ход. Если HP > 50%: +10% макс HP.",
-    "long-description": "Адаптивный навык выживания. Если Король на HP ≤ 50% во время использования, получает +15% макс HP (постоянное увеличение) ПЛЮС щит, эквивалентный 10% макс HP на 1 ход. Если Король на HP > 50%, получает только +10% макс HP (без щита)."
+    "long-description": {
+      "flavor": "Quando o trono balança, o Rei encontra força nas raízes do reino.",
+      "detail": "Адаптивный навык выживания. Если Король на HP ≤ 50% во время использования, получает +15% макс HP (постоянное увеличение) ПЛЮС щит, эквивалентный 10% макс HP на 1 ход. Если Король на HP > 50%, получает только +10% макс HP (без щита).",
+      "synergies": "Após sofrer pressão sustentada, ative para virar a maré. **Fortaleza Inabalável** + Espírito = Rei praticamente intocável por 1 turno (-80% dano + escudo + cura). Combo de virada épica.",
+      "counter": "Bursters como **Disparo Preciso** podem matar o Rei antes que ele atinja a janela de ativação (≤ 60% HP). Pressão constante mas não letal mantém o Rei abaixo do threshold ideal — paradoxalmente, dano \"morno\" pode ser mais perigoso para o Rei do que burst (porque permite usar Espírito várias vezes).\n\n---"
+    },
+    "type-label": "Защита (Сильная)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "CURA",
+      "ESCUDO",
+      "LAST-STAND"
+    ]
   },
   "lk_d5": {
     "name": "Self Щит",
     "description": "Щит 30 на 2 хода.",
-    "long-description": "Король даёт себе щит 30 HP на 2 хода (Shield Cap 100). Действует до полного расхода или истечения. Общий навык поддержки Короля."
+    "long-description": {
+      "flavor": "A muralha mais firme é a vontade do Rei.",
+      "detail": "Король даёт себе щит 30 HP на 2 хода (Shield Cap 100). Действует до полного расхода или истечения. Общий навык поддержки Короля.",
+      "synergies": "Pré-cast antes de combates onde se espera burst. Stacka com escudos de **Soco Real** e **Chute Real** (até o cap de 100). **Aura de Proteção** (Especialista aliado) pode sobrepor com mais 12 HP.",
+      "counter": "**Golpe Devastador** e **Corte Preciso** aplicam `purge`, removendo o escudo instantaneamente. **Disparo Preciso** com bleed ativo no Rei ignora shields completamente.\n\n---"
+    },
+    "type-label": "Защита (Лёгкая)",
+    "duration-label": "2 turnos",
+    "tags": [
+      "SELF",
+      "ESCUDO"
+    ]
   },
   "lk_d6": {
     "name": "Нерушимая Крепость",
     "description": "-80% получаемого урона на 1 ход. Не может двигаться в следующем ходу движения.",
-    "long-description": "Король превращается в живую крепость. На 1 ход получает -80% от всего урона (включая true damage). Цена: НЕ может двигаться в следующем ходу движения. Общая карта между Воином и Королём."
+    "long-description": {
+      "flavor": "Pés enraizados. Coração de pedra. O Rei se torna a própria muralha.",
+      "detail": "Король превращается в живую крепость. На 1 ход получает -80% от всего урона (включая true damage). Цена: НЕ может двигаться в следующем ходу движения. Общая карта между Воином и Королём.",
+      "synergies": "Combine com **Espírito de Sobrevivência** para virada de jogo. Use ANTES do oponente ativar combos óbvios (ex: Adrenalina visível no Executor inimigo).",
+      "counter": "O Rei imóvel é alvo fácil para reposicionamento — **Intimidação** ou **Empurrão Real** inimigos podem deslocá-lo. **Muralha Viva** pode prendê-lo após o turno.\n\n---"
+    },
+    "type-label": "Защита (Лёгкая)",
+    "duration-label": "1 turno",
+    "tags": [
+      "SELF",
+      "BUFF",
+      "IMOVEL"
+    ]
   },
   "lk_d7": {
     "name": "Уклонение",
     "description": "Полностью уклоняется от первой прямой атаки в следующем ходу.",
-    "long-description": "Король принимает уклоняющуюся стойку и полностью уклоняется от следующей прямой атаки в следующем ходу. Общая карта между Специалистом, Палачом и Королём. Для Короля — лучшая защита от Точного Выстрела (true damage)."
+    "long-description": {
+      "flavor": "O Rei não bloqueia o golpe. Ele simplesmente não está mais lá.",
+      "detail": "Король принимает уклоняющуюся стойку и полностью уклоняется от следующей прямой атаки в следующем ходу. Общая карта между Специалистом, Палачом и Королём. Для Короля — лучшая защита от Точного Выстрела (true damage).",
+      "synergies": "Use em \"leitura\" do oponente — quando você sabe que o burst vem. Combine com **Sombra Real**: oponente confuso atira em clone, e mesmo se acertar o real, a Esquiva protege.",
+      "counter": "Skills de área (**Bola de Fogo**, **Domínio Real**) ignoram Esquiva — não são \"ataques diretos\". DoTs aplicados anteriormente continuam ticando. Skills compostas com múltiplos hits (**Sequência de Socos**) só perdem o primeiro hit.\n\n---"
+    },
+    "type-label": "Защита (Лёгкая)",
+    "duration-label": "Até receber 1 ataque ou fim do turno",
+    "tags": [
+      "SELF",
+      "EVADE"
+    ]
   },
   "lk_d8": {
     "name": "Королевский Приказ",
     "description": "Король возвращается в начальную позицию, союзники телепортируются на смежные позиции. Смежные союзники: -15% урона. Король: -15% за каждого смежного союзника (макс -45%) на 1 ход.",
-    "long-description": "Высший навык перегруппировки. Король телепортируется в свою начальную позицию (угол союзной половины) и притягивает 3 союзников (не Король) на клетки, смежные с Королём. На 1 ход все смежные союзники получают -15% урона, а Король получает -15% дополнительно за каждого смежного союзника (до 3 союзников = -45% на Короле). Стратегический сброс."
+    "long-description": {
+      "flavor": "Quando o Rei chama, o reino se forma.",
+      "detail": "Высший навык перегруппировки. Король телепортируется в свою начальную позицию (угол союзной половины) и притягивает 3 союзников (не Король) на клетки, смежные с Королём. На 1 ход все смежные союзники получают -15% урона, а Король получает -15% дополнительно за каждого смежного союзника (до 3 союзников = -45% на Короле). Стратегический сброс.",
+      "synergies": "Após Ordem Real, use **Domínio Real** (todos os aliados próximos = dano máximo se inimigos seguirem) ou **Sombra Real** (reposiciona depois de criar clones). Combina com **Avançar** (Guerreiro) para movimento coordenado pós-formação.",
+      "counter": "Skills de área aplicadas em torno do Rei após Ordem Real punem todos de uma vez. **Bola de Fogo** centrada no Rei pega 4 unidades. Inimigos podem usar **Bater em Retirada** para se afastar antes do impacto.\n\n---"
+    },
+    "type-label": "Защита (Лёгкая)",
+    "duration-label": "1 turno",
+    "tags": [
+      "GLOBAL",
+      "BUFF",
+      "TELEPORT",
+      "FORMACAO"
+    ]
+  },
+  "tags": {
+    "AREA": "Area",
+    "ALVO UNICO": "Single Target",
+    "LINHA": "Line",
+    "SELF": "Self",
+    "GLOBAL": "Global",
+    "DANO": "Damage",
+    "CURA": "Heal",
+    "ESCUDO": "Shield",
+    "BUFF": "Buff",
+    "DEBUFF": "Debuff",
+    "BLEED": "Bleed",
+    "BURN": "Burn",
+    "POISON": "Poison",
+    "STUN": "Stun",
+    "SNARE": "Snare",
+    "SILENCE": "Silence",
+    "TELEPORT": "Teleport",
+    "PUSH": "Push",
+    "PULL": "Pull",
+    "DASH": "Dash",
+    "TRUE DAMAGE": "True Damage",
+    "PURGE": "Purge",
+    "REVIVE": "Revive",
+    "SETUP": "Setup",
+    "FINISH": "Finish",
+    "CONDICIONAL": "Conditional",
+    "MULTI-TICK": "Multi-Tick",
+    "MARK": "Mark",
+    "LIFESTEAL": "Lifesteal",
+    "EVADE": "Evade",
+    "REFLECT": "Reflect",
+    "MURALHA": "Wall",
+    "TRAP": "Trap",
+    "MIND-GAMES": "Mind Games",
+    "LAST-STAND": "Last Stand",
+    "ESCAPE": "Escape",
+    "COOLDOWN": "Cooldown",
+    "IMOVEL": "Immobile",
+    "IMUNIDADE": "Immunity",
+    "CLEANSE": "Cleanse",
+    "ANTI-SHIELD": "Anti-Shield",
+    "SINERGIA-BLEED": "Bleed Synergy",
+    "RESTRICAO-REI": "King-Restricted",
+    "REI-RESTRICAO-PARCIAL": "King-Restricted (Partial)",
+    "DUAL-USE": "Dual-Use",
+    "MOV-DOWN": "Slow",
+    "OFENSIVO": "Offensive",
+    "MOVIMENTO": "Movement",
+    "FORMACAO": "Formation",
+    "REGEN": "Regen",
+    "TRADE-OFF": "Trade-off",
+    "BURST": "Burst",
+    "SETUP-FINISH": "Setup-Finish",
+    "POSICIONAL": "Positional",
+    "ESCALAVEL": "Scalable",
+    "BUFF AREA": "Buff Area",
+    "DAMAGE-REDIRECT": "Damage Redirect",
+    "DOT": "DoT",
+    "ALIADO-SHIELD": "Ally-Shield",
+    "REI-RESTRICAO": "King-Restricted",
+    "1X-PARTIDA": "Once per Match"
   }
 }

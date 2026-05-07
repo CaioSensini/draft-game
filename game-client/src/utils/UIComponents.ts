@@ -1606,8 +1606,19 @@ export const UI = {
       name: string; effectType: string; power: number;
       group: string; unitClass: string; level: number;
       progress?: number; description?: string;
-      /** Multi-paragraph lore / mechanics copy (ETAPA 6.5). Optional. */
-      longDescription?: string;
+      /** Multi-paragraph lore / mechanics copy. v1.1: accepts the
+       *  structured 4-section form OR a legacy single string. The card
+       *  picks the right rendering path based on the runtime shape. */
+      longDescription?: string | {
+        flavor?: string; detail?: string; synergies?: string; counter?: string;
+      };
+      /** Tags for the small card — also surfaced as a row at the top of
+       *  the detail card (v1.1). */
+      tags?: ReadonlyArray<string>;
+      /** Type label rendered above the title. */
+      typeLabel?: string;
+      /** Optional duration line (e.g. "2 turnos", "Instantâneo"). */
+      durationLabel?: string;
       /** Max level for the progress dots. Defaults to 5. */
       maxLevel?: number;
       targetType?: string; range?: number;
@@ -1847,27 +1858,86 @@ export const UI = {
     els.push(sg3)
     curY += 8
 
-    // ── Long description (ETAPA 6.5 — placeholder until catalog is filled) ──
-    els.push(scene.add.text(-hw + 18, curY, t('common.section.long-description'), {
-      fontFamily: fontFamily.body, fontSize: typeScale.meta,
-      color: fg.tertiaryHex, fontStyle: '700',
-    }).setLetterSpacing(1.6))
-    curY += 18
+    // ── Long description (v1.1) — flavor + detail + synergies + counter ──
+    // Each section gets its own gold header and a body block. Empty
+    // sections are skipped silently. Legacy single-string longDescription
+    // is mapped to `detail` only.
+    const longRaw = skill.longDescription
+    const sections: { headerKey: string; body: string; italic?: boolean }[] = []
 
-    const longBody = (skill.longDescription && skill.longDescription.trim().length > 0)
-      ? skill.longDescription
-      : 'Descrição detalhada em breve.'
-    const isPlaceholder = !(skill.longDescription && skill.longDescription.trim().length > 0)
-    const longMaxH = hh - curY - 14
-    let lfs = 12
-    const longTx = scene.add.text(0, curY, longBody, {
-      fontFamily: fontFamily.body, fontSize: `${lfs}px`,
-      color: isPlaceholder ? fg.disabledHex : fg.secondaryHex,
-      fontStyle: isPlaceholder ? 'italic' : 'normal',
-      wordWrap: { width: cardW - 30 }, align: 'left', lineSpacing: 4,
-    }).setOrigin(0.5, 0)
-    while (longTx.height > longMaxH && lfs > 10) { lfs--; longTx.setFontSize(lfs) }
-    els.push(longTx)
+    const flavor    = typeof longRaw === 'string' ? '' : (longRaw?.flavor    ?? '').trim()
+    const detail    = typeof longRaw === 'string' ? longRaw.trim() : (longRaw?.detail    ?? '').trim()
+    const synergies = typeof longRaw === 'string' ? '' : (longRaw?.synergies ?? '').trim()
+    const counter   = typeof longRaw === 'string' ? '' : (longRaw?.counter   ?? '').trim()
+
+    if (flavor)    sections.push({ headerKey: '', body: flavor, italic: true })
+    if (detail)    sections.push({ headerKey: 'common.section.detail',    body: detail })
+    if (synergies) sections.push({ headerKey: 'common.section.synergies', body: synergies })
+    if (counter)   sections.push({ headerKey: 'common.section.counter',   body: counter })
+
+    // No content at all → fall back to the legacy placeholder line.
+    if (sections.length === 0) {
+      els.push(scene.add.text(-hw + 18, curY, t('common.section.long-description'), {
+        fontFamily: fontFamily.body, fontSize: typeScale.meta,
+        color: fg.tertiaryHex, fontStyle: '700',
+      }).setLetterSpacing(1.6))
+      curY += 18
+      const placeholder = scene.add.text(0, curY, 'Descrição detalhada em breve.', {
+        fontFamily: fontFamily.body, fontSize: '12px',
+        color: fg.disabledHex, fontStyle: 'italic',
+        wordWrap: { width: cardW - 30 }, align: 'center', lineSpacing: 4,
+      }).setOrigin(0.5, 0)
+      els.push(placeholder)
+    } else {
+      // Body font size is auto-tuned: render once at 12 px, shrink if the
+      // total stack would overflow `hh - curY - 14`. Tuning is global so
+      // every section uses the same size — keeps the visual rhythm.
+      const sectionsAvailable = hh - curY - 14
+      let bfs = 12
+      const layout = (): { totalH: number; meta: { headerH: number; bodyH: number; gap: number }[] } => {
+        let totalH = 0
+        const meta: { headerH: number; bodyH: number; gap: number }[] = []
+        const tmpStyle = (italic: boolean) => ({
+          fontFamily: fontFamily.body, fontSize: `${bfs}px`,
+          color: fg.secondaryHex,
+          fontStyle: italic ? 'italic' : 'normal',
+          wordWrap: { width: cardW - 30 }, align: 'left' as const, lineSpacing: 3,
+        })
+        for (const s of sections) {
+          const headerH = s.headerKey ? 16 : 0
+          const tmp = scene.add.text(-9999, 0, s.body, tmpStyle(s.italic ?? false))
+          const bodyH = tmp.height
+          tmp.destroy()
+          const gap = 6
+          meta.push({ headerH, bodyH, gap })
+          totalH += headerH + bodyH + gap
+        }
+        return { totalH, meta }
+      }
+      let { totalH, meta } = layout()
+      while (totalH > sectionsAvailable && bfs > 10) {
+        bfs--
+        ;({ totalH, meta } = layout())
+      }
+
+      sections.forEach((s, idx) => {
+        const m = meta[idx]
+        if (s.headerKey) {
+          els.push(scene.add.text(-hw + 18, curY, t(s.headerKey), {
+            fontFamily: fontFamily.body, fontSize: typeScale.meta,
+            color: accent.primaryHex, fontStyle: '700',
+          }).setLetterSpacing(1.6))
+          curY += m.headerH
+        }
+        els.push(scene.add.text(0, curY, s.body, {
+          fontFamily: fontFamily.body, fontSize: `${bfs}px`,
+          color: fg.secondaryHex,
+          fontStyle: s.italic ? 'italic' : 'normal',
+          wordWrap: { width: cardW - 30 }, align: 'left', lineSpacing: 3,
+        }).setOrigin(0.5, 0))
+        curY += m.bodyH + m.gap
+      })
+    }
 
     // Silence unused-var for bHex which served only for the legacy group ref
     void bHex
