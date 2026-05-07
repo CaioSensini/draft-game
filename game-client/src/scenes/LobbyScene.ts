@@ -200,8 +200,15 @@ export default class LobbyScene extends Phaser.Scene {
     const goldBounds = goldPill.getBounds()
     goldPill.setX(dgPill.x - dgBounds.width / 2 - 12 - goldBounds.width / 2)
 
+    // ── DEBUG — God-mode test toggle (centred on top bar) ──
+    // Pre-launch only. Toggles a PlayerData snapshot/restore: full
+    // gold + dg, level 100, every catalog skill at level 5. Removed
+    // before launch; the widget is intentionally garish (red on /
+    // grey off) so it never gets confused for a shipping feature.
+    const godPill = this._drawGodModeToggle(W / 2, avatarY)
+
     // ── Entrance: top bar fades + slides down ──
-    const topBarElements = [bg, avatar, xpBg, gearIcon, gearHit, dgPill, goldPill]
+    const topBarElements = [bg, avatar, xpBg, gearIcon, gearHit, dgPill, goldPill, godPill]
     topBarElements.forEach(el => {
       if ('setAlpha' in el) (el as unknown as Phaser.GameObjects.Components.Alpha).setAlpha(0)
     })
@@ -212,6 +219,68 @@ export default class LobbyScene extends Phaser.Scene {
     })
     // Silence legacy identifiers kept for backward compat (icon, hit zones).
     void GOLD_ACCENT; void GOLD_HEX; void GOLD_DIM; void ICE_BLUE; void ICE_BLUE_HEX
+  }
+
+  /** Pre-launch debug widget — top-bar centred toggle for god mode. */
+  private _drawGodModeToggle(cx: number, cy: number): Phaser.GameObjects.Container {
+    const w = 220
+    const h = 32
+    const container = this.add.container(cx, cy)
+
+    const bg = this.add.graphics()
+    const labelText = this.add.text(0, 0, '', {
+      fontFamily: fontFamily.body, fontSize: typeScale.meta,
+      color: '#ffffff', fontStyle: '900',
+      shadow: { offsetX: 0, offsetY: 1, color: '#000000', blur: 2, fill: true },
+    }).setOrigin(0.5).setLetterSpacing(1.4)
+
+    const render = () => {
+      const on = playerData.isGodMode()
+      bg.clear()
+      // Drop shadow
+      bg.fillStyle(0x000000, 0.55)
+      bg.fillRoundedRect(-w / 2 + 1, -h / 2 + 2, w, h, 8)
+      // Body — red when active, dark grey when off
+      bg.fillStyle(on ? 0xdc2626 : 0x1f2937, 0.96)
+      bg.fillRoundedRect(-w / 2, -h / 2, w, h, 8)
+      // Top inset highlight
+      bg.fillStyle(0xffffff, 0.10)
+      bg.fillRoundedRect(-w / 2 + 2, -h / 2 + 2, w - 4, 8, { tl: 6, tr: 6, bl: 0, br: 0 })
+      // Outer rim
+      bg.lineStyle(1.5, on ? 0xfca5a5 : 0x4b5563, 1)
+      bg.strokeRoundedRect(-w / 2, -h / 2, w, h, 8)
+      labelText.setText(on ? '⚡ TEST: GOD MODE ON' : 'TEST: GOD MODE OFF')
+      labelText.setColor(on ? '#fff5f5' : '#9ca3af')
+    }
+    render()
+
+    const hit = this.add.rectangle(0, 0, w, h, 0, 0.001)
+      .setInteractive({ useHandCursor: true })
+
+    hit.on('pointerover', () => {
+      this.tweens.add({ targets: bg, alpha: 1.05, duration: 120 })
+    })
+    hit.on('pointerout', () => {
+      this.tweens.add({ targets: bg, alpha: 1, duration: 120 })
+    })
+    hit.on('pointerdown', () => {
+      playerData.setGodMode(!playerData.isGodMode())
+      render()
+      // Brief flash so the toggle is felt
+      this.tweens.add({
+        targets: container,
+        scaleX: { from: 1.06, to: 1 },
+        scaleY: { from: 1.06, to: 1 },
+        duration: 160,
+        ease: 'Back.Out',
+      })
+      // Restart this scene so currencies + everything refresh from
+      // the now-mutated playerData.
+      this.scene.restart()
+    })
+
+    container.add([bg, labelText, hit])
+    return container
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
