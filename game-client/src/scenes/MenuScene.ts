@@ -6,7 +6,6 @@ import {
   accent, fg, fontFamily, typeScale,
 } from '../utils/DesignTokens'
 import { transitionTo } from '../utils/SceneTransition'
-import { playerData } from '../utils/PlayerDataManager'
 import { t } from '../i18n'
 
 export default class MenuScene extends Phaser.Scene {
@@ -406,84 +405,9 @@ export default class MenuScene extends Phaser.Scene {
       ease: 'Quad.Out',
     })
 
-    // =========================================================================
-    // DEBUG — God-mode test toggle (top-left). REMOVE BEFORE LAUNCH.
-    // Toggling ON snapshots the current player state (gold / dg / level /
-    // mastery / ownedSkills) and replaces it with maxed values: gold +
-    // dg = 999_999, level = 100, every catalog skill owned at level 5.
-    // Toggling OFF restores the snapshot exactly.
-    //
-    // The widget is intentionally garish (red on, grey off) so it is
-    // never confused with a shipping feature.
-    // =========================================================================
-    this._drawGodModeToggle()
-  }
-
-  /** Pre-launch debug widget — top-left toggle for full-power test mode. */
-  private _drawGodModeToggle() {
-    const x = 16
-    const y = 16
-    const w = 200
-    const h = 36
-    const cx = x + w / 2
-    const cy = y + h / 2
-
-    const bg = this.add.graphics().setDepth(15)
-    const labelText = this.add.text(cx, cy, '', {
-      fontFamily: fontFamily.body, fontSize: typeScale.meta,
-      color: '#ffffff', fontStyle: '900',
-      shadow: { offsetX: 0, offsetY: 1, color: '#000000', blur: 2, fill: true },
-    }).setOrigin(0.5).setDepth(16).setLetterSpacing(1.4)
-
-    const render = () => {
-      const on = playerData.isGodMode()
-      bg.clear()
-      // Drop shadow
-      bg.fillStyle(0x000000, 0.55)
-      bg.fillRoundedRect(x + 1, y + 3, w, h, 8)
-      // Body — red when active, dark grey when off
-      bg.fillStyle(on ? 0xdc2626 : 0x1f2937, 0.96)
-      bg.fillRoundedRect(x, y, w, h, 8)
-      // Top inset highlight
-      bg.fillStyle(0xffffff, 0.10)
-      bg.fillRoundedRect(x + 2, y + 2, w - 4, 10, { tl: 6, tr: 6, bl: 0, br: 0 })
-      // Outer rim
-      bg.lineStyle(1.5, on ? 0xfca5a5 : 0x4b5563, 1)
-      bg.strokeRoundedRect(x, y, w, h, 8)
-      labelText.setText(on ? '⚡ TEST: GOD MODE ON' : 'TEST: GOD MODE OFF')
-      labelText.setColor(on ? '#fff5f5' : '#9ca3af')
-    }
-    render()
-
-    const hit = this.add.rectangle(cx, cy, w, h, 0, 0.001)
-      .setInteractive({ useHandCursor: true })
-      .setDepth(17)
-
-    hit.on('pointerover', () => {
-      this.tweens.add({ targets: bg, alpha: 1.05, duration: 120 })
-    })
-    hit.on('pointerout', () => {
-      this.tweens.add({ targets: bg, alpha: 1, duration: 120 })
-    })
-    hit.on('pointerdown', () => {
-      playerData.setGodMode(!playerData.isGodMode())
-      render()
-      // Brief flash so the toggle is felt
-      this.tweens.add({
-        targets: [bg, labelText],
-        scaleX: { from: 1.06, to: 1 },
-        scaleY: { from: 1.06, to: 1 },
-        duration: 160,
-        ease: 'Back.Out',
-      })
-    })
-
-    // Tooltip-ish hint underneath (smaller, italic) so QA knows this
-    // is debug-only.
-    this.add.text(cx, y + h + 10, 'debug — remove before launch', {
-      fontFamily: fontFamily.serif, fontSize: '10px',
-      color: '#6b7280', fontStyle: 'italic',
-    }).setOrigin(0.5).setDepth(15)
+    // (god-mode test toggle moved to LobbyScene's top bar — the auth
+    // flow skips MenuScene when the user is already logged in, so the
+    // widget needs to live where it's actually visible.)
   }
 
   // =========================================================================
