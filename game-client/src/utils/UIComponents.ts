@@ -1606,8 +1606,19 @@ export const UI = {
       name: string; effectType: string; power: number;
       group: string; unitClass: string; level: number;
       progress?: number; description?: string;
-      /** Multi-paragraph lore / mechanics copy (ETAPA 6.5). Optional. */
-      longDescription?: string;
+      /** Multi-paragraph lore / mechanics copy. v1.1: accepts the
+       *  structured 4-section form OR a legacy single string. The card
+       *  picks the right rendering path based on the runtime shape. */
+      longDescription?: string | {
+        flavor?: string; detail?: string; synergies?: string; counter?: string;
+      };
+      /** Tags for the small card — also surfaced as a row at the top of
+       *  the detail card (v1.1). */
+      tags?: ReadonlyArray<string>;
+      /** Type label rendered above the title. */
+      typeLabel?: string;
+      /** Optional duration line (e.g. "2 turnos", "Instantâneo"). */
+      durationLabel?: string;
       /** Max level for the progress dots. Defaults to 5. */
       maxLevel?: number;
       targetType?: string; range?: number;
@@ -1854,10 +1865,21 @@ export const UI = {
     }).setLetterSpacing(1.6))
     curY += 18
 
-    const longBody = (skill.longDescription && skill.longDescription.trim().length > 0)
-      ? skill.longDescription
+    // v1.1 — longDescription can be a string OR a structured 4-section
+    // object. For Sub B we stay on a flat string render; Sub D replaces
+    // this block with proper section rendering.
+    const longRaw = skill.longDescription
+    const longBodyResolved = typeof longRaw === 'string'
+      ? longRaw
+      : longRaw
+        ? [longRaw.flavor, longRaw.detail, longRaw.synergies, longRaw.counter]
+            .filter((s) => s && s.trim().length > 0)
+            .join('\n\n')
+        : ''
+    const longBody = longBodyResolved.trim().length > 0
+      ? longBodyResolved
       : 'Descrição detalhada em breve.'
-    const isPlaceholder = !(skill.longDescription && skill.longDescription.trim().length > 0)
+    const isPlaceholder = longBodyResolved.trim().length === 0
     const longMaxH = hh - curY - 14
     let lfs = 12
     const longTx = scene.add.text(0, curY, longBody, {
