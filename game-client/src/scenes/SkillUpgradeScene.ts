@@ -101,8 +101,14 @@ export default class SkillUpgradeScene extends Phaser.Scene {
   private invGroup: Phaser.GameObjects.GameObject[] = []
   private invContainer: Phaser.GameObjects.Container | null = null
   private scrollY = 0
-  private invCardPositions: { cx: number; cy: number; skill: OwnedSkill; origIdx: number; canUpgrade: boolean; canAfford: boolean; isEquipped: boolean }[] = []
-  private deckCardPositions: { x: number; y: number; skillId: string; slotIdx: number; category: string; group: string }[] = []
+  private invCardPositions: { cx: number; cy: number; skill: OwnedSkill; origIdx: number; canUpgrade: boolean; canAfford: boolean; isEquipped: boolean; cardObj?: Phaser.GameObjects.Container }[] = []
+  private deckCardPositions: { x: number; y: number; skillId: string; slotIdx: number; category: string; group: string; cardObj?: Phaser.GameObjects.Container }[] = []
+  /** True while a Clash-Royale-style swap animation is playing — input is locked. */
+  private _swapAnimating = false
+  /** Tween tracking the "lifted" card so we can revert it cleanly when the
+   *  user deselects or the redraw happens. */
+  private _liftedCard: Phaser.GameObjects.Container | null = null
+  private _liftedCardOrig: { x: number; y: number; sx: number; sy: number } | null = null
   private _deckCardClicked = false
   private _clickTooltip: Phaser.GameObjects.Container | null = null
   private _hoverTooltip: Phaser.GameObjects.Container | null = null
@@ -507,6 +513,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
             // Register deck card position for click/tooltip/swap
             this.deckCardPositions.push({
               x: cardX, y: cy, skillId: sid, slotIdx: si, category: grp.cat, group: def.group,
+              cardObj: card,
             })
 
             // Click on deck card → select for swap + drag + tooltip
@@ -757,7 +764,13 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     })
 
     // ── Card grid (single row, equipped + non-equipped both shown) ──
-    const cardAreaTop = tabBarY + tabBarH + 10
+    // Card area is vertically centred between the bottom of the tab bar
+    // and the bottom of the inventory panel — this puts the row visually
+    // dead-centre in its available space (no top-heavy or bottom-heavy
+    // feel).
+    const cardAreaBoxTop = tabBarY + tabBarH
+    const cardAreaBoxBottom = iy + ih
+    const cardAreaTop = Math.floor((cardAreaBoxTop + cardAreaBoxBottom) / 2 - INV_CARD_H / 2)
     const allGroupSkills = filtered.filter((s) => {
       const d = this.getSkillDef(s.skill.skillId)
       return d && d.group === this.activeInventoryTab
@@ -823,32 +836,40 @@ export default class SkillUpgradeScene extends Phaser.Scene {
         card.setAlpha(0).setScale(0.96)
         this.tweens.add({
           targets: card,
-          alpha: isEquipped ? 0.7 : 1,
+          alpha: isEquipped ? 0.42 : 1,
           scaleX: 1, scaleY: 1,
           duration: 220,
           delay: gi * 35,
           ease: 'Back.Out',
         })
 
-        // Equipped overlay — compact in-card visual signals so nothing
-        // overflows the inventory panel:
-        //   1. Card alpha 0.7 (slight wash so it reads "different state"
-        //      but the icon + name stay legible).
-        //   2. Gold rim around the entire card outline.
-        //   3. A gold check disc at the top-right CORNER (sits half-
-        //      outside the boundary, never overlaps the class banner).
-        // The "EQUIPADO" text label has been removed from below the
-        // card to keep all visual signals INSIDE the panel — the gold
-        // rim + corner ✓ disc are unmistakable on their own.
+        // Equipped overlay — strong "already in your deck" visual:
+        //   1. Card alpha 0.42 (much more washed out than the previous
+        //      0.7 — clearly tells the eye "this is taken").
+        //   2. Gray-out overlay rect on top of the card body, alpha 0.4.
+        //      This pushes the colored class banner / icon / power
+        //      number toward grayscale so they read as "muted, in
+        //      use" instead of "fully active".
+        //   3. A gold check disc at the top-right CORNER — the only
+        //      bright element on the card, screams "EQUIPPED".
+        //   4. A subtle gold rim around the card outline so the player
+        //      can still scan the "equipped" state at a glance.
         if (isEquipped) {
-          // (2) gold rim
+          // (2) grayscale-feel overlay
+          const gray = this.add.graphics()
+          gray.fillStyle(0x1a1f2c, 0.55)
+          gray.fillRoundedRect(-INV_CARD_W / 2 + 1, -INV_CARD_H / 2 + 1,
+            INV_CARD_W - 2, INV_CARD_H - 2, radii.md - 1)
+          card.add(gray)
+
+          // (3) gold rim
           const rim = this.add.graphics()
-          rim.lineStyle(2.5, accent.primary, 0.9)
+          rim.lineStyle(2.5, accent.primary, 0.95)
           rim.strokeRoundedRect(-INV_CARD_W / 2, -INV_CARD_H / 2,
             INV_CARD_W, INV_CARD_H, radii.md)
           card.add(rim)
 
-          // (3) corner check disc — sits HALF-OUTSIDE the top-right
+          // (4) corner check disc — sits HALF-OUTSIDE the top-right
           // corner so it never overlaps the class banner inside the
           // card body. 18 px disc with a 12 px gold check glyph.
           const discR = 9
@@ -857,7 +878,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
           const discG = this.add.graphics()
           discG.fillStyle(0x000000, 0.55)
           discG.fillCircle(discCx + 1, discCy + 1, discR)
-          discG.fillStyle(accent.primary, 0.98)
+          discG.fillStyle(accent.primary, 1)
           discG.fillCircle(discCx, discCy, discR)
           discG.lineStyle(1, 0x000000, 0.5)
           discG.strokeCircle(discCx, discCy, discR)
@@ -882,6 +903,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
           cx: contentX + cx, cy: contentY + cy,
           skill: item.skill, origIdx: item.origIdx,
           canUpgrade, canAfford, isEquipped,
+          cardObj: card,
         })
       })
     }
@@ -950,6 +972,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
 
     // Click + drag start
     invClickZone.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (this._swapAnimating) return
       destroyClickTooltip()
       destroyHover()
       this._destroyAllHoverTooltips()
@@ -1075,12 +1098,14 @@ export default class SkillUpgradeScene extends Phaser.Scene {
   // ═══════════════════════════════════════════════════════════════════════════
 
   private onInventoryClick(skill: OwnedSkill, idx: number) {
+    if (this._swapAnimating) return
     this.clearHighlights()
+    this._restoreLiftedCard()
     if (this.fusionSlot1?.idx === idx) { this.fusionSlot1 = null; this._clickTooltip?.destroy(true); this._clickTooltip = null; this.redrawAll(); return }
     this.fusionSlot1 = { skill, idx }
     this.redrawAll()
 
-    // Accent glow on selected inventory card
+    // Accent glow on selected inventory card + Clash-Royale-style lift
     const pos = this.invCardPositions.find(p => p.origIdx === idx)
     if (pos) {
       const ay = pos.cy - this.scrollY
@@ -1089,6 +1114,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
       selGlow.strokeRoundedRect(pos.cx - INV_CARD_W / 2 - 3, ay - INV_CARD_H / 2 - 3, INV_CARD_W + 6, INV_CARD_H + 6, radii.md)
       this.highlightObjs.push(selGlow)
       this.highlightTweens.push(this.tweens.add({ targets: selGlow, alpha: { from: 0.6, to: 1 }, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.InOut' }))
+      if (pos.cardObj) this._liftCardForSelection(pos.cardObj)
     }
 
     // Gold glow on valid deck slots
@@ -1097,7 +1123,9 @@ export default class SkillUpgradeScene extends Phaser.Scene {
 
   /** Click on an equipped deck card → highlight compatible inventory cards + other deck slot for swap */
   private onDeckCardClick(_skillId: string, slotIdx: number, category: string, group: string) {
+    if (this._swapAnimating) return
     this.clearHighlights()
+    this._restoreLiftedCard()
     this.fusionSlot1 = null
 
     const { gridStartX, gridStartY } = this._deckGridGeometry()
@@ -1117,6 +1145,10 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     selGlow.strokeRoundedRect(baseX - 3, selY - 3, DECK_CARD_W + 6, DECK_CARD_H + 6, radii.md)
     this.highlightObjs.push(selGlow)
     this.highlightTweens.push(this.tweens.add({ targets: selGlow, alpha: { from: 0.6, to: 1 }, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.InOut' }))
+
+    // Clash-Royale-style lift on the selected deck card
+    const selDeckPos = this.deckCardPositions.find(p => p.slotIdx === slotIdx && p.category === category)
+    if (selDeckPos?.cardObj) this._liftCardForSelection(selDeckPos.cardObj)
 
     // ── INFO glow on OTHER deck slot (swap within deck) ──
     for (let si = startSlot; si < endSlot; si++) {
@@ -1159,14 +1191,25 @@ export default class SkillUpgradeScene extends Phaser.Scene {
       }
 
       hit.on('pointerdown', () => {
-        // Swap the two slots within the deck
-        const cfg = (playerData.getDeckConfig()[this.activeRole]) ?? { attackCards: [] as string[], defenseCards: [] as string[] }
-        const cards = category === 'attack' ? [...cfg.attackCards] : [...cfg.defenseCards]
-        const temp = cards[slotIdx]; cards[slotIdx] = cards[si]; cards[si] = temp
-        if (category === 'attack') playerData.saveDeckConfig(this.activeRole, cards, cfg.defenseCards)
-        else playerData.saveDeckConfig(this.activeRole, cfg.attackCards, cards)
-        this._clickTooltip?.destroy(true); this._clickTooltip = null
-        this.clearHighlights(); this.loadData(); this.redrawAll()
+        if (this._swapAnimating) return
+        // Swap the two slots within the deck — with Clash-Royale-style
+        // animation on the two card containers.
+        const performSwap = () => {
+          const cfg = (playerData.getDeckConfig()[this.activeRole]) ?? { attackCards: [] as string[], defenseCards: [] as string[] }
+          const cards = category === 'attack' ? [...cfg.attackCards] : [...cfg.defenseCards]
+          const temp = cards[slotIdx]; cards[slotIdx] = cards[si]; cards[si] = temp
+          if (category === 'attack') playerData.saveDeckConfig(this.activeRole, cards, cfg.defenseCards)
+          else playerData.saveDeckConfig(this.activeRole, cfg.attackCards, cards)
+          this._clickTooltip?.destroy(true); this._clickTooltip = null
+          this.clearHighlights(); this.loadData(); this.redrawAll()
+        }
+        const srcPos = this.deckCardPositions.find(p => p.slotIdx === slotIdx && p.category === category)
+        const dstPos = this.deckCardPositions.find(p => p.slotIdx === si && p.category === category)
+        if (srcPos?.cardObj && dstPos?.cardObj) {
+          this._animateCardSwap(srcPos.cardObj, dstPos.cardObj, performSwap)
+        } else {
+          performSwap()
+        }
       })
     }
 
@@ -1241,33 +1284,196 @@ export default class SkillUpgradeScene extends Phaser.Scene {
   }
 
   private equipSkill(skill: OwnedSkill, slotIdx: number, category: string) {
-    const cfg = (playerData.getDeckConfig()[this.activeRole]) ?? { attackCards: [] as string[], defenseCards: [] as string[] }
-    const atkCards = [...cfg.attackCards]
-    const defCards = [...cfg.defenseCards]
+    const performDataSwap = () => {
+      const cfg = (playerData.getDeckConfig()[this.activeRole]) ?? { attackCards: [] as string[], defenseCards: [] as string[] }
+      const atkCards = [...cfg.attackCards]
+      const defCards = [...cfg.defenseCards]
 
-    // Ensure arrays are exactly 4 elements
-    while (atkCards.length < 4) atkCards.push('')
-    while (defCards.length < 4) defCards.push('')
-    atkCards.length = 4
-    defCards.length = 4
+      // Ensure arrays are exactly 4 elements
+      while (atkCards.length < 4) atkCards.push('')
+      while (defCards.length < 4) defCards.push('')
+      atkCards.length = 4
+      defCards.length = 4
 
-    const cards = category === 'attack' ? atkCards : defCards
+      const cards = category === 'attack' ? atkCards : defCards
 
-    // Remove this skill from any other slot it might be in (prevent duplicates)
-    for (let i = 0; i < atkCards.length; i++) {
-      if (atkCards[i] === skill.skillId) atkCards[i] = ''
+      // Remove this skill from any other slot it might be in (prevent duplicates)
+      for (let i = 0; i < atkCards.length; i++) {
+        if (atkCards[i] === skill.skillId) atkCards[i] = ''
+      }
+      for (let i = 0; i < defCards.length; i++) {
+        if (defCards[i] === skill.skillId) defCards[i] = ''
+      }
+
+      // Place skill in the target slot (swap: old skill goes back to inventory)
+      cards[slotIdx] = skill.skillId
+
+      playerData.saveDeckConfig(this.activeRole, atkCards, defCards)
+      this._clickTooltip?.destroy(true); this._clickTooltip = null
+      this._destroyAllHoverTooltips()
+      this.clearHighlights(); this.fusionSlot1 = null; this.loadData(); this.redrawAll()
     }
-    for (let i = 0; i < defCards.length; i++) {
-      if (defCards[i] === skill.skillId) defCards[i] = ''
+
+    // ── Clash-Royale-style swap animation ──
+    // If we still have refs to both card containers (inv source + deck
+    // slot card), animate them flying past each other before the data
+    // swap. If the slot is empty (nothing to swap with), the source
+    // card flies into the slot solo.
+    const srcInvPos = this.invCardPositions.find(p => p.skill.skillId === skill.skillId)
+    const dstDeckPos = this.deckCardPositions.find(p => p.slotIdx === slotIdx && p.category === category)
+
+    if (srcInvPos?.cardObj && dstDeckPos?.cardObj) {
+      this._animateCardSwap(srcInvPos.cardObj, dstDeckPos.cardObj, performDataSwap)
+      return
     }
+    if (srcInvPos?.cardObj && !dstDeckPos) {
+      // Empty slot — single-card fly-into-slot animation.
+      const def = this.getSkillDef(skill.skillId)
+      if (def) {
+        const groupToCol: Record<string, number> = { attack1: 0, attack2: 1, defense1: 2, defense2: 3 }
+        const col = groupToCol[def.group] ?? 0
+        const startSlot = (def.group === 'attack1' || def.group === 'defense1') ? 0 : 2
+        const row = slotIdx - startSlot
+        const { gridStartX, gridStartY } = this._deckGridGeometry()
+        const dstX = gridStartX + col * (DECK_CARD_W + DECK_GAP) + DECK_CARD_W / 2
+        const dstY = gridStartY + row * (DECK_CARD_H + DECK_GAP) + DECK_CARD_H / 2
+        this._animateCardFlyTo(srcInvPos.cardObj, { x: dstX, y: dstY }, performDataSwap)
+        return
+      }
+    }
+    // Fallback — no anim refs available, just commit the swap.
+    performDataSwap()
+  }
 
-    // Place skill in the target slot (swap: old skill goes back to inventory)
-    cards[slotIdx] = skill.skillId
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CLASH-ROYALE-STYLE SWAP ANIMATIONS
+  // ═══════════════════════════════════════════════════════════════════════════
 
-    playerData.saveDeckConfig(this.activeRole, atkCards, defCards)
-    this._clickTooltip?.destroy(true); this._clickTooltip = null
+  /** Lift a card in place — Clash-Royale "selected card" feedback. The
+   *  card scales up slightly and nudges upward; depth is raised so the
+   *  selection glow ring still sits above sibling cards. */
+  private _liftCardForSelection(card: Phaser.GameObjects.Container) {
+    this._restoreLiftedCard()
+    this._liftedCard = card
+    this._liftedCardOrig = { x: card.x, y: card.y, sx: card.scaleX, sy: card.scaleY }
+    card.setDepth(50)
+    this.tweens.killTweensOf(card)
+    this.tweens.add({
+      targets: card,
+      scaleX: 1.06, scaleY: 1.06,
+      y: card.y - 5,
+      duration: 200,
+      ease: 'Back.Out',
+    })
+  }
+
+  /** Restore the previously lifted card. Safe to call when nothing is
+   *  lifted (no-op). Called automatically by clearHighlights /
+   *  redrawAll-equivalent paths. */
+  private _restoreLiftedCard() {
+    if (!this._liftedCard || !this._liftedCardOrig) return
+    const c = this._liftedCard, o = this._liftedCardOrig
+    this._liftedCard = null
+    this._liftedCardOrig = null
+    if (!c.scene) return  // already destroyed
+    this.tweens.killTweensOf(c)
+    this.tweens.add({
+      targets: c, x: o.x, y: o.y, scaleX: o.sx, scaleY: o.sy,
+      duration: 140, ease: 'Quad.Out',
+      onComplete: () => { try { c.setDepth(0) } catch { /* noop */ } },
+    })
+  }
+
+  /** Reparent a card from a Container into the scene's display list,
+   *  preserving its world-space position. Used to animate inventory
+   *  cards (which live inside `invContainer`) and deck cards (scene
+   *  level) in the same coordinate space. Returns the world-space
+   *  position the card now sits at. */
+  private _detachCardToScene(card: Phaser.GameObjects.Container) {
+    const parent = card.parentContainer
+    const wx = (parent?.x ?? 0) + card.x
+    const wy = (parent?.y ?? 0) + card.y
+    if (parent) {
+      parent.remove(card, false)
+      this.add.existing(card)
+      card.setPosition(wx, wy)
+    }
+    return { x: wx, y: wy }
+  }
+
+  /** Two-card cross-flight swap — both cards fly to each other's
+   *  positions in parallel with a satisfying ease, then destroy
+   *  themselves and trigger the data swap (which redraws). While the
+   *  animation runs, _swapAnimating is true so other input is ignored. */
+  private _animateCardSwap(
+    srcCard: Phaser.GameObjects.Container,
+    dstCard: Phaser.GameObjects.Container,
+    onComplete: () => void,
+  ) {
+    this._swapAnimating = true
+    this._restoreLiftedCard()
+    this.clearHighlights()
     this._destroyAllHoverTooltips()
-    this.clearHighlights(); this.fusionSlot1 = null; this.loadData(); this.redrawAll()
+    this._clickTooltip?.destroy(true); this._clickTooltip = null
+
+    const srcWorld = this._detachCardToScene(srcCard)
+    const dstWorld = this._detachCardToScene(dstCard)
+    srcCard.setDepth(60)
+    dstCard.setDepth(60)
+    this.tweens.killTweensOf(srcCard)
+    this.tweens.killTweensOf(dstCard)
+
+    let done = 0
+    const finish = () => {
+      if (++done < 2) return
+      try { srcCard.destroy(true) } catch { /* noop */ }
+      try { dstCard.destroy(true) } catch { /* noop */ }
+      this._swapAnimating = false
+      onComplete()
+    }
+    this.tweens.add({
+      targets: srcCard,
+      x: dstWorld.x, y: dstWorld.y,
+      scaleX: 1, scaleY: 1,
+      duration: 380, ease: 'Cubic.InOut',
+      onComplete: finish,
+    })
+    this.tweens.add({
+      targets: dstCard,
+      x: srcWorld.x, y: srcWorld.y,
+      scaleX: 1, scaleY: 1,
+      duration: 380, ease: 'Cubic.InOut',
+      onComplete: finish,
+    })
+  }
+
+  /** Single-card "fly into slot" — used when the destination slot is
+   *  empty (no card to swap with). */
+  private _animateCardFlyTo(
+    srcCard: Phaser.GameObjects.Container,
+    dstWorldPos: { x: number; y: number },
+    onComplete: () => void,
+  ) {
+    this._swapAnimating = true
+    this._restoreLiftedCard()
+    this.clearHighlights()
+    this._destroyAllHoverTooltips()
+    this._clickTooltip?.destroy(true); this._clickTooltip = null
+
+    this._detachCardToScene(srcCard)
+    srcCard.setDepth(60)
+    this.tweens.killTweensOf(srcCard)
+    this.tweens.add({
+      targets: srcCard,
+      x: dstWorldPos.x, y: dstWorldPos.y,
+      scaleX: 1, scaleY: 1,
+      duration: 380, ease: 'Cubic.InOut',
+      onComplete: () => {
+        try { srcCard.destroy(true) } catch { /* noop */ }
+        this._swapAnimating = false
+        onComplete()
+      },
+    })
   }
 
   private performUpgrade(skillId: string) {
@@ -1380,7 +1586,14 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     }
   }
 
-  private redrawAll() { this._destroyAllHoverTooltips(); this.clearHighlights(); this.drawClassTabs(); this.drawLeft(); this.drawDeck(); this.drawInventory() }
+  private redrawAll() {
+    // The lifted card belongs to the previous render — clear the ref so
+    // _restoreLiftedCard doesn't try to tween a destroyed object.
+    this._liftedCard = null
+    this._liftedCardOrig = null
+    this._destroyAllHoverTooltips(); this.clearHighlights()
+    this.drawClassTabs(); this.drawLeft(); this.drawDeck(); this.drawInventory()
+  }
 
   /** Fill any empty deck slots with starter skills so player never enters battle with gaps */
   private _fillEmptySlots() {
