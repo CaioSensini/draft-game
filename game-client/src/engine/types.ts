@@ -174,6 +174,8 @@ export const EventType = {
   DOUBLE_ATTACK_READY:    'DOUBLE_ATTACK_READY',
   DEFENSE_SILENCED:       'DEFENSE_SILENCED',
   CLONE_SPAWNED:          'CLONE_SPAWNED',
+  OBSTACLE_PLACED:        'OBSTACLE_PLACED',
+  OBSTACLE_REMOVED:       'OBSTACLE_REMOVED',
 
   // ── Passives
   PASSIVE_TRIGGERED:      'PASSIVE_TRIGGERED',
@@ -292,6 +294,33 @@ export type EngineEvent =
       positions: Array<{ col: number; row: number }>
       /** How many turns the clones persist (purely UI hint). */
       duration: number }
+
+  /**
+   * Obstacle was placed on the grid (Muralha Viva, Prisão, Escudo do
+   * Protetor, Armadilha Oculta). Scene reads this to render the
+   * corresponding wall/trap sprite.
+   */
+  | { type: 'OBSTACLE_PLACED'
+      col:  number
+      row:  number
+      /** Obstacle kind — drives the visual style. */
+      kind: 'wall_viva' | 'wall_ring' | 'wall_shield' | 'trap'
+      /** Side of the caster (informational; some obstacles are visible
+       *  only to one side, e.g. traps). */
+      side: 'left' | 'right'
+      /** Turns remaining when placed. */
+      ticksRemaining: number
+      /** Source character id — needed so the scene can clear traps
+       *  when their caster moves / triggers them. */
+      sourceId: string }
+
+  /**
+   * Obstacle was removed (expired tick / broken by atk1 / triggered).
+   */
+  | { type: 'OBSTACLE_REMOVED'
+      col:  number
+      row:  number
+      kind: 'wall_viva' | 'wall_ring' | 'wall_shield' | 'trap' }
 
   // ── Passives ──
   /**
