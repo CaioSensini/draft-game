@@ -792,17 +792,33 @@ export class Character {
 
     // v3 §6.4 Adrenalina penalty. When the queued counter reaches zero,
     // apply the stored HP cost via takeDamage so active shields can absorb
-    // it first (v3: "bloqueável por shield"). If the cost kills the
-    // Executor, death is registered through the normal takeDamage path.
+    // it first (v3: "bloqueável por shield").
+    //
+    // Balance Pass v1.1 — non-lethal cap: the penalty NEVER reduces HP
+    // below 1. So if the Executor only has 10 HP and the queued cost is
+    // 18, the cost is clamped to (currentHp - 1) so they sit at 1 HP
+    // with the buff "spent" — no accidental suicide-by-Adrenalina. Active
+    // shields still absorb full cost before the cap kicks in (a shielded
+    // Executor with 10 HP and 18 shield takes 0 HP damage, stays at 10).
     if (this._adrenalinePenaltyTicks > 0) {
       this._adrenalinePenaltyTicks--
       if (this._adrenalinePenaltyTicks === 0 && this._adrenalinePenaltyHp > 0) {
-        const cost = this._adrenalinePenaltyHp
+        const queuedCost = this._adrenalinePenaltyHp
         this._adrenalinePenaltyHp = 0
-        // Use takeDamage so existing shields apply; no reflect/evade can
-        // intervene because we aren't emitting a hit event, just direct
-        // damage attributed to self.
-        this.takeDamage(cost)
+
+        const totalShield = this.totalShield
+        if (queuedCost <= totalShield) {
+          // Shield fully absorbs the cost — original behaviour.
+          this.takeDamage(queuedCost)
+        } else {
+          // Shield absorbs what it can; the remainder is clamped to leave
+          // at least 1 HP. Apply the absorbed slice + the clamped residual
+          // separately so shield bookkeeping stays correct.
+          const residual = queuedCost - totalShield
+          const safeResidual = Math.min(residual, Math.max(0, this.hp - 1))
+          const safeCost = totalShield + safeResidual
+          if (safeCost > 0) this.takeDamage(safeCost)
+        }
       }
     }
 

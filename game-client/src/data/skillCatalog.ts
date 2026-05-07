@@ -97,8 +97,8 @@ const LEFT_SPECIALIST: SkillDefinition[] = [
   // ── defense1 (forte) ───────────────────────────────────────────────────────
   {
     id: 'ls_d1', name: 'Cura Suprema', category: 'defense', group: 'defense1',
-    effectType: 'heal', targetType: 'single', power: 35,
-    description: 'Cura 35 HP em 1 aliado (não-rei).',
+    effectType: 'heal', targetType: 'single', power: 40,
+    description: 'Cura 40 HP em 1 aliado (não-rei).',
   },
   {
     id: 'ls_d2', name: 'Renascimento Parcial', category: 'defense', group: 'defense1',
@@ -256,8 +256,9 @@ const LEFT_WARRIOR: SkillDefinition[] = [
   {
     id: 'lw_d8', name: 'Bater em Retirada', category: 'defense', group: 'defense1',
     effectType: 'retreat_allies', targetType: 'all_allies', power: 15,
+    secondaryEffects: [{ effectType: 'evade_chance', power: 50, ticks: 1 }],
     description:
-      'Move todos aliados 1 casa pra trás em 4x4. +1 mov próximo turno + -15% dano por 1 turno.',
+      'Move todos aliados 1 casa pra trás em 4x4. -15% dano por 1 turno + 50% chance de evadir o próximo dano direto sofrido.',
   },
 
   // ── defense2 (leve) ────────────────────────────────────────────────────────
@@ -344,7 +345,7 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
     areaShape: { type: 'line', direction: 'north', length: 3 },
     secondaryEffects: [{ effectType: 'bleed', power: 8, ticks: 2 }],
     description:
-      '12 dano em 8 sqm vertical (4 de baixo, 2 grossura). Remove shields (cura 20% deles como HP). ' +
+      '12 dano em 8 sqm vertical (4 de baixo, 2 grossura). Remove shields dos atingidos. ' +
       'Bleed 8/turno por 2t.',
   },
   {
@@ -366,7 +367,7 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
     id: 'le_d2', name: 'Adrenalina', category: 'defense', group: 'defense1',
     effectType: 'atk_up', targetType: 'self', power: 25,
     description:
-      '+25% ATK por 2 turnos. Ao final: perde 15% HP máximo (bloqueável por shield).',
+      '+25% ATK por 2 turnos. Ao final: perde 15% HP máximo (bloqueável por shield, nunca abaixo de 1 HP).',
   },
   {
     id: 'le_d3', name: 'Ataque em Dobro', category: 'defense', group: 'defense1',
@@ -432,16 +433,16 @@ const LEFT_KING: SkillDefinition[] = [
   },
   {
     id: 'lk_a3', name: 'Sequência de Socos', category: 'attack', group: 'attack1',
-    effectType: 'lifesteal', targetType: 'area', power: 15, range: 0,
+    effectType: 'lifesteal', targetType: 'area', power: 17, range: 0,
     areaShape: { type: 'square', radius: 1 },
     description:
-      '15 dano em 3x2 + lifesteal 30%. Exceção à regra de imunidade do rei (self-heal da própria skill).',
+      '17 dano em 3x2 + lifesteal 35%. Exceção à regra de imunidade do rei (self-heal da própria skill).',
   },
   {
     id: 'lk_a4', name: 'Domínio Real', category: 'attack', group: 'attack1',
     effectType: 'area', targetType: 'area', power: 18, range: 0,
     areaShape: { type: 'square', radius: 1 },
-    description: '18 dano em 3x3 + self shield = 25% do dano total causado por 1 turno.',
+    description: '18 dano em 3x3 + self shield = 25% do dano total causado (cap 30 HP) por 1 turno.',
   },
 
   // ── attack2 (controle) ─────────────────────────────────────────────────────
@@ -498,7 +499,7 @@ const LEFT_KING: SkillDefinition[] = [
     id: 'lk_d4', name: 'Espírito de Sobrevivência', category: 'defense', group: 'defense1',
     effectType: 'shield', targetType: 'self', power: 10,
     description:
-      'Se HP ≤ 50%: +15% HP max + shield 10% HP max por 1 turno. Se HP > 50%: +10% HP max.',
+      'Apenas se HP ≤ 60%: +15% HP max + shield 10% HP max por 1 turno. Sem efeito acima desse limiar.',
   },
 
   // ── defense2 (leve) ────────────────────────────────────────────────────────

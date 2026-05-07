@@ -421,28 +421,28 @@ describe('Specialist — Attack 2 (controle)', () => {
 // ── Defense 1 ────────────────────────────────────────────────────────────────
 
 describe('Specialist — Defense 1 (forte)', () => {
-  describe('ls_d1 — Cura Suprema (heal 35 single non-king)', () => {
+  describe('ls_d1 — Cura Suprema (Balance Pass v1.1: heal 40 single non-king)', () => {
     it('catalog entry', () => {
       const s = specialistSkill('ls_d1')
       expect(s.name).toBe('Cura Suprema')
-      expect(s.power).toBe(35)
+      expect(s.power).toBe(40)
       expect(s.effectType).toBe('heal')
       expect(s.targetType).toBe('single')
     })
 
-    it('heals a warrior ally for 35 HP', () => {
+    it('heals a warrior ally for 40 HP', () => {
       const ally = mkChar('a', 'warrior', 'left')
       ally.applyPureDamage(100)
       const hpBefore = ally.hp
-      ally.heal(35)
-      expect(ally.hp - hpBefore).toBe(35)
+      ally.heal(40)
+      expect(ally.hp - hpBefore).toBe(40)
     })
 
     it('Rei cannot receive this heal (King immune)', () => {
       const king = mkChar('k', 'king', 'left')
       king.applyPureDamage(50)
       const hpBefore = king.hp
-      const res = king.heal(35)
+      const res = king.heal(40)
       expect(res.actual).toBe(0)
       expect(king.hp).toBe(hpBefore)
     })

@@ -3012,6 +3012,7 @@ export default class BattleScene extends Phaser.Scene {
       case 'regen':
         this._vfx.healEffect(x, y, 25); break
       case 'evade':
+      case 'evade_chance':
         this._vfx.evadeEffect(x, y); break
       case 'reflect':
         this._vfx.reflectEffect(x, y); break

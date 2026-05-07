@@ -72,6 +72,11 @@ export type SkillEffectType =
   | 'shield'
   /** Negate the next single incoming hit. Charges are consumed one at a time. */
   | 'evade'
+  /** Probabilistic evade — `power` = chance percent (0-100). Each time the
+   *  target would take direct damage, roll RNG: on success, fully negate the
+   *  hit and consume the charge. Used by Bater em Retirada (lw_d8) v1.1.
+   *  Only triggers ON application of damage; does not block DoT ticks. */
+  | 'evade_chance'
   /** Retaliate against the next attacker — deal `power` damage back. */
   | 'reflect'
   /** Grant a revive buffer: on fatal damage, restore to a low HP instead of dying. */
@@ -175,7 +180,7 @@ export function isHealEffect(t: SkillEffectType): boolean {
 
 /** Positive stat/buff effects. */
 export const BUFF_EFFECTS = [
-  'shield', 'evade', 'reflect', 'revive',
+  'shield', 'evade', 'evade_chance', 'reflect', 'revive',
   'def_up', 'atk_up', 'mov_up',
   'double_attack', 'invisibility',
 ] as const
@@ -211,7 +216,7 @@ export function isMovementEffect(t: SkillEffectType): boolean {
 export const ALL_EFFECT_TYPES: readonly SkillEffectType[] = [
   'damage', 'true_damage',
   'heal', 'regen', 'lifesteal',
-  'shield', 'evade', 'reflect', 'revive',
+  'shield', 'evade', 'evade_chance', 'reflect', 'revive',
   'bleed', 'burn', 'poison',
   'stun', 'snare', 'silence_attack', 'silence_defense',
   'push', 'pull', 'teleport_self', 'teleport_target',
@@ -356,6 +361,7 @@ export class Skill {
                               // path is validated separately by the engine.
       case 'shield':
       case 'evade':
+      case 'evade_chance':
       case 'reflect':
       case 'revive':
       case 'def_up':
