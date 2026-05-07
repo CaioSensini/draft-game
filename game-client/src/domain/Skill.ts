@@ -455,6 +455,15 @@ export interface SecondaryEffectDef {
   /** Duration in rounds. Uses the engine's default when omitted. */
   readonly ticks?:     number
   /**
+   * For `effectType: 'push'` only — overrides the default "away from
+   * caster" direction with a uniform vector. 'forward' pushes every
+   * target one step toward the enemy half (left caster → +col, right
+   * caster → -col). Used by line-shape area skills like Colisão
+   * Titânica where every hit should be displaced the same way instead
+   * of a per-target diagonal vector.
+   */
+  readonly pushDirection?: 'away_from_caster' | 'forward'
+  /**
    * Who the secondary lands on. Defaults to 'target' (the same character
    * the primary hit). Set to 'caster' for self-buffs that ride attack
    * skills — e.g. Soco Real / Chute Real grant the King a self-shield

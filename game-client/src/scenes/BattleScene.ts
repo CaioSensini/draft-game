@@ -529,6 +529,23 @@ export default class BattleScene extends Phaser.Scene {
 
         // Training mode: reset dummies after each round
         if (this._isTrainingMode) this._resetTrainingDummies()
+
+        // Restore invisible sprites that have ticked back to visible.
+        // Fuga Sombria expires after the King's next damage hit OR
+        // after the natural ticks counter wears off; either way this
+        // round-start sweep re-syncs the alpha for any sprite that
+        // was faded but is no longer invisible on the domain side.
+        for (const [unitId, sprite] of this._sprites) {
+          const ch = this._ctrl.getCharacter(unitId)
+          if (ch && !ch.isInvisible && sprite.charGraphics.alpha < 1) {
+            this.tweens.add({
+              targets: sprite.charGraphics,
+              alpha: 1,
+              duration: 200,
+              ease: 'Quad.Out',
+            })
+          }
+        }
       })
       .onHUD(EventType.PHASE_STARTED, (e) => {
         const sideLabel  = t(e.side  === 'left'     ? 'scenes.battle.team.left-color'   : 'scenes.battle.team.right-color')
@@ -853,35 +870,137 @@ export default class BattleScene extends Phaser.Scene {
       // turns, don't block targeting, and don't take damage. The fake-
       // versus-real choice lives entirely in the viewer's mind — the
       // bot targets the real King normally.
+      // ── Obstacles (wall_viva, wall_ring, wall_shield, trap) ───────────────
+      // The engine emits OBSTACLE_PLACED for every wall/trap created
+      // by skills (Muralha Viva, Prisão de Muralha Morta, Escudo do
+      // Protetor, Armadilha Oculta). The scene tracks them in an
+      // internal map keyed by "col,row,kind" so duplicates are safe.
+      // Each obstacle gets a small graphics container at its tile
+      // with a kind-specific look. They auto-destroy after their
+      // ticksRemaining × ~4000ms turn duration.
+      .onAnimation(EventType.OBSTACLE_PLACED, (e) => {
+        const { x, y } = _tileCenter(e.col, e.row)
+        const sz = TILE - 6
+        const obs = this.add.container(x, y).setDepth(4)
+
+        // Kind-specific styling
+        if (e.kind === 'wall_viva') {
+          // Living wall — green/brown, leafy texture suggested by 3 vertical bars
+          const bg = this.add.rectangle(0, 0, sz, sz, 0x2d5a2d, 0.85)
+            .setStrokeStyle(2, 0x4ade80, 1)
+          const leaf1 = this.add.rectangle(-8, 0, 4, sz - 6, 0x4ade80, 0.7)
+          const leaf2 = this.add.rectangle( 0, 0, 4, sz - 6, 0x4ade80, 0.7)
+          const leaf3 = this.add.rectangle( 8, 0, 4, sz - 6, 0x4ade80, 0.7)
+          obs.add([bg, leaf1, leaf2, leaf3])
+        } else if (e.kind === 'wall_ring') {
+          // Stone prison wall — grey, brick pattern
+          const bg = this.add.rectangle(0, 0, sz, sz, 0x44403c, 0.92)
+            .setStrokeStyle(2, 0xa8a29e, 1)
+          const brick1 = this.add.rectangle(-8, -6, 14, 8, 0x6b6562, 0.9).setStrokeStyle(1, 0x000000, 0.5)
+          const brick2 = this.add.rectangle( 8, -6, 14, 8, 0x6b6562, 0.9).setStrokeStyle(1, 0x000000, 0.5)
+          const brick3 = this.add.rectangle( 0,  6, 18, 8, 0x6b6562, 0.9).setStrokeStyle(1, 0x000000, 0.5)
+          obs.add([bg, brick1, brick2, brick3])
+        } else if (e.kind === 'wall_shield') {
+          // Energy shield — cyan/blue translucent panel
+          const bg = this.add.rectangle(0, 0, sz, sz, 0x3b82f6, 0.45)
+            .setStrokeStyle(2, 0x60a5fa, 1)
+          const sheen = this.add.rectangle(0, 0, sz - 6, 4, 0xffffff, 0.35)
+          obs.add([bg, sheen])
+          // Subtle pulse — energy
+          this.tweens.add({
+            targets: bg,
+            alpha: 0.65,
+            duration: 700,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.InOut',
+          })
+        } else if (e.kind === 'trap') {
+          // Hidden trap — small spike marker visible only to the caster's
+          // side (we don't enforce that here; just a small indicator).
+          const ring = this.add.circle(0, 0, sz / 3, 0xef4444, 0)
+            .setStrokeStyle(2, 0xef4444, 0.85)
+          const spike = this.add.text(0, 0, '⚠', {
+            fontFamily: fontFamily.body, fontSize: '14px',
+            color: '#fbbf24',
+          }).setOrigin(0.5)
+          obs.add([ring, spike])
+          this.tweens.add({
+            targets: ring,
+            alpha: { from: 0.4, to: 1.0 },
+            duration: 600,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.InOut',
+          })
+        }
+
+        // Pop-in animation
+        obs.setScale(0)
+        this.tweens.add({
+          targets: obs,
+          scale: 1,
+          duration: 220,
+          ease: 'Back.Out',
+        })
+
+        // Auto-fade based on ticksRemaining (~4 s per turn, plus a
+        // 600 ms fade tail so the disappearance reads).
+        const lifeMs = Math.max(2000, e.ticksRemaining * 4000)
+        this.tweens.add({
+          targets: obs,
+          alpha: 0,
+          delay: lifeMs - 600,
+          duration: 600,
+          onComplete: () => obs.destroy(),
+        })
+      })
+      .onAnimation(EventType.OBSTACLE_REMOVED, (_e) => {
+        // No-op for now — auto-fade handles natural expiration. A future
+        // pass can map (col,row,kind) back to its container and shrink
+        // it on demand for snappier "broken on atk1" feedback.
+      })
+
       .onAnimation(EventType.CLONE_SPAWNED, (e) => {
         const kingSprite = this._sprite(e.casterId)
         if (!kingSprite) return
         const KING_GOLD = 0xfbbf24
         for (const pos of e.positions) {
           const { x, y } = _tileCenter(pos.col, pos.row)
-          // Ghost body — soft gold ellipse with violet rim to read as
-          // "this isn't really there", plus a tiny crown silhouette.
-          const ghost = this.add.container(x, y).setDepth(kingSprite.container.depth - 1)
-          const body = this.add.ellipse(0, 0, CHAR_SIZE - 8, CHAR_SIZE - 4, KING_GOLD, 0.25)
-            .setStrokeStyle(2, 0x9c8fff, 0.7)
-          const crown = this.add.text(0, -4, '♚', {
+          // Ghost body — full-sized gold ellipse + violet rim + crown
+          // glyph. Drawn ABOVE the grid (depth 5) so it reads even
+          // when the King is in the same row. Spawn pop-in animation
+          // (scale 0 → 1) so the appearance is noticeable.
+          const ghost = this.add.container(x, y).setDepth(5).setScale(0).setAlpha(0)
+          const body = this.add.ellipse(0, 0, CHAR_SIZE, CHAR_SIZE, KING_GOLD, 0.55)
+            .setStrokeStyle(3, 0x9c8fff, 0.9)
+          const crown = this.add.text(0, -2, '♚', {
             fontFamily: fontFamily.display,
-            fontSize: '20px',
-            color: '#fbbf24',
-          }).setOrigin(0.5).setAlpha(0.6)
+            fontSize: '28px',
+            color: '#fde68a',
+            stroke: '#3a2606',
+            strokeThickness: 3,
+          }).setOrigin(0.5)
           ghost.add([body, crown])
-          // Subtle bob to communicate "decoy"
+          // Pop-in
           this.tweens.add({
             targets: ghost,
-            y: y - 4,
-            duration: 900,
+            scale: 1, alpha: 0.85,
+            duration: 220, ease: 'Back.Out',
+          })
+          // Subtle bob — clearer than before so the decoy reads as alive
+          this.tweens.add({
+            targets: ghost,
+            y: y - 6,
+            duration: 800,
             yoyo: true,
             repeat: -1,
             ease: 'Sine.InOut',
+            delay: 220,
           })
           // Fade out after `duration` turns. Time-based estimate
-          // (one full turn ≈ 4000 ms in the current pacing) because
-          // the scene doesn't have a clean turn-end hook.
+          // (one full turn ≈ 4000 ms in the current pacing) since the
+          // scene doesn't have a clean turn-end hook.
           const lifeMs = Math.max(2000, e.duration * 4000)
           this.tweens.add({
             targets: ghost,
@@ -1095,11 +1214,29 @@ export default class BattleScene extends Phaser.Scene {
           const icons: Record<string, string> = {
             bleed: '🩸', stun: '⚡', regen: '🌿', evade: '💨',
             reflect: '🪞', def_down: '🔻DEF', atk_down: '🔻ATK',
+            invisibility: '👻',
           }
           this._floatingText(e.unitId, icons[e.status] ?? e.status, '#ffdd44')
           this._addStatusDot(e.unitId, e.status)
           this._refreshStatusPanels()
           this._rebuildStatusPanel(e.unitId)
+
+          // Invisibility (Fuga Sombria lk_d1) — fade the sprite to
+          // ~45% alpha + violet tint while invisible. The "wears off"
+          // signal is on Character (HP damage clears it / tickEffects
+          // expires it), so the scene polls the character state on
+          // each subsequent damage/heal event to re-sync alpha.
+          if (e.status === 'invisibility') {
+            const sprite = this._sprite(e.unitId)
+            if (sprite) {
+              this.tweens.add({
+                targets: sprite.charGraphics,
+                alpha: 0.45,
+                duration: 280,
+                ease: 'Quad.Out',
+              })
+            }
+          }
         })
       })
       .onHUD(EventType.STAT_MODIFIER_EXPIRED, (e) => {
