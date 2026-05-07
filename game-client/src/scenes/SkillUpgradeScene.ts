@@ -1284,25 +1284,48 @@ export default class SkillUpgradeScene extends Phaser.Scene {
 
   /** Lift a card in place — Clash-Royale "selected card" feedback. The
    *  card scales up slightly and nudges upward; depth is raised so the
-   *  selection glow ring still sits above sibling cards. */
+   *  selection glow ring still sits above sibling cards.
+   *
+   *  Bug fix: previously this read `card.y` AFTER `_restoreLiftedCard`,
+   *  but the restore was a tween (not synchronous), so card.y was still
+   *  at the lifted position when read. Repeated clicks accumulated the
+   *  −5 px offset and cards eventually drifted off the screen. We now
+   *  reuse the saved `_liftedCardOrig` baseline when the same card is
+   *  re-clicked, which guarantees the lift target is always
+   *  baseline−5 px regardless of how many times the user clicks. */
   private _liftCardForSelection(card: Phaser.GameObjects.Container) {
-    this._restoreLiftedCard()
-    this._liftedCard = card
-    this._liftedCardOrig = { x: card.x, y: card.y, sx: card.scaleX, sy: card.scaleY }
+    // If we're re-lifting the SAME card that's already lifted, reuse
+    // its baseline so we don't accumulate offsets.
+    let baseline: { x: number; y: number; sx: number; sy: number }
+    if (this._liftedCard === card && this._liftedCardOrig) {
+      baseline = this._liftedCardOrig
+      this.tweens.killTweensOf(card)
+      // Snap to baseline first so the lift tween always starts from the
+      // same reference point.
+      card.setPosition(baseline.x, baseline.y)
+      card.setScale(baseline.sx, baseline.sy)
+    } else {
+      this._restoreLiftedCard()
+      baseline = { x: card.x, y: card.y, sx: card.scaleX, sy: card.scaleY }
+      this._liftedCard = card
+      this._liftedCardOrig = baseline
+    }
     card.setDepth(50)
     this.tweens.killTweensOf(card)
     this.tweens.add({
       targets: card,
       scaleX: 1.06, scaleY: 1.06,
-      y: card.y - 5,
+      y: baseline.y - 5,
       duration: 200,
       ease: 'Back.Out',
     })
   }
 
   /** Restore the previously lifted card. Safe to call when nothing is
-   *  lifted (no-op). Called automatically by clearHighlights /
-   *  redrawAll-equivalent paths. */
+   *  lifted (no-op). Snap-restores synchronously so subsequent reads of
+   *  card.x/y get the correct baseline; a tiny tween-out is layered on
+   *  top purely for visual polish but the data baseline is set
+   *  immediately. */
   private _restoreLiftedCard() {
     if (!this._liftedCard || !this._liftedCardOrig) return
     const c = this._liftedCard, o = this._liftedCardOrig
@@ -1310,11 +1333,11 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     this._liftedCardOrig = null
     if (!c.scene) return  // already destroyed
     this.tweens.killTweensOf(c)
-    this.tweens.add({
-      targets: c, x: o.x, y: o.y, scaleX: o.sx, scaleY: o.sy,
-      duration: 140, ease: 'Quad.Out',
-      onComplete: () => { try { c.setDepth(0) } catch { /* noop */ } },
-    })
+    // Snap synchronously — this is the critical fix that prevents the
+    // lift accumulation bug.
+    c.setPosition(o.x, o.y)
+    c.setScale(o.sx, o.sy)
+    c.setDepth(0)
   }
 
   /** Reparent a card from a Container into the scene's display list,
@@ -1512,16 +1535,29 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     this.highlightObjs.forEach(o => o.destroy()); this.highlightObjs = []
   }
 
-  /** Destroy any floating hover tooltips (from deck highlights or inv hover) */
+  /** Destroy any floating hover tooltips (from deck highlights or inv
+   *  hover). Comprehensive sweep covers BOTH the singleton ref
+   *  (this._hoverTooltip) AND any tooltips stored as `data` on hit
+   *  rectangles in the deck/inventory/highlight groups. Without the
+   *  data sweep, a redrawAll mid-hover would destroy the hit rect but
+   *  leave its tooltip floating in the scene as a "stuck" detail card
+   *  (the bug visible in the user's print 4). */
   private _destroyAllHoverTooltips() {
     this._hoverTooltip?.destroy(true); this._hoverTooltip = null
-    // Also destroy tooltips stored on highlight hit areas
-    for (const obj of this.highlightObjs) {
-      if ('getData' in obj) {
-        const tt = (obj as Phaser.GameObjects.Rectangle).getData?.('hoverTT') as Phaser.GameObjects.Container | undefined
-        tt?.destroy(true)
+    const sweep = (obj: Phaser.GameObjects.GameObject) => {
+      const dm = (obj as unknown as { getData?: (k: string) => unknown; setData?: (k: string, v: unknown) => void })
+      if (!dm.getData || !dm.setData) return
+      for (const key of ['hoverTT', 'tooltip']) {
+        const tt = dm.getData(key) as Phaser.GameObjects.Container | undefined
+        if (tt) {
+          try { tt.destroy(true) } catch { /* noop */ }
+          dm.setData(key, null)
+        }
       }
     }
+    for (const o of this.highlightObjs) sweep(o)
+    for (const o of this.deckGroup) sweep(o)
+    for (const o of this.invGroup) sweep(o)
   }
 
   private redrawAll() {
