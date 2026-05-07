@@ -1838,86 +1838,47 @@ export class CombatEngine {
   }
 
   /**
-   * v3 §6.5 Intimidação (lk_a7 / rk_a7) post-hit — teleport the target
-   * plus all adjacent enemies to a cluster in caster's territory. The
-   * destination is picked by the engine (deterministic): two tiles
-   * "forward" from the caster (toward the enemy half), then expanding
-   * out as needed for the adjacent enemies.
+   * v3 §6.5 Intimidação (lk_a7 / rk_a7) post-hit.
    *
-   * Constraints honoured from the doc:
-   *   - "Não pode posicionar nas bordas do mapa" — borders (row 0, row
-   *     ROWS-1, col 0, col COLS-1) are not used.
-   *   - Skip tiles that are out of bounds, walls, or already occupied
-   *     by living characters.
+   * Doc spec is "teleport target + adjacent units to a tile chosen by
+   * the King". Initial implementation faithfully spiral-spawned them
+   * inside caster's territory — but in playtest that displaced TWO of
+   * the user's characters into the enemy half on a single cast, which
+   * felt punishing/unfair.
+   *
+   * Conservative scope (per user feedback 2026-05-08):
+   *   - Move ONLY the target — adjacents stay put.
+   *   - Destination is exactly ONE tile pulled toward the caster's
+   *     side (left caster → west, right caster → east). Vertical row
+   *     preserved. Result: target ends one column closer to caster.
+   *   - No-op silently when destination is OOB / wall / occupied
+   *     (the 10 dmg from the primary still landed).
+   *
+   * Future polish: real UI tile picker so the King chooses where to
+   * place the target, restoring the spec's full flexibility without
+   * the autopilot pulling characters all the way across the arena.
    */
   private _applyIntimidacao(caster: Character, target: Character): void {
-    const enemySide = caster.side === 'left' ? 'right' : 'left'
-    // Adjacent enemies (Chebyshev distance 1) at the moment of cast.
-    const adjacents = this.battle.teamOf(enemySide).living.filter((c) => {
-      if (c.id === target.id || !c.alive) return false
-      return Math.max(Math.abs(c.col - target.col), Math.abs(c.row - target.row)) <= 1
-    }) as Character[]
+    const pullDc = caster.side === 'left' ? -1 : +1
+    const dest   = { col: target.col + pullDc, row: target.row }
 
-    // Anchor for the destination cluster: 2 tiles forward from caster,
-    // mid-row (3). Then collect a spiral of empty non-border tiles in
-    // caster's own territory.
-    const fwdDc   = caster.side === 'left' ? 2 : -2
-    const anchor  = { col: caster.col + fwdDc, row: 3 }
-    const cols    = 16, rows = 6
-    const isUsable = (c: number, r: number): boolean => {
-      if (c <= 0 || c >= cols - 1) return false  // skip outer columns (borders)
-      if (r <= 0 || r >= rows - 1) return false  // skip outer rows (borders)
-      if (!this._grid.isWalkable(c, r)) return false
-      const occ = this._grid.occupantAt(c, r)
-      return occ === null
-    }
+    if (!this._grid.isWalkable(dest.col, dest.row)) return
+    if (this._grid.occupantAt(dest.col, dest.row) !== null) return
 
-    // Spiral search from anchor outward (rings of growing radius).
-    const slots: Array<{ col: number; row: number }> = []
-    const need = 1 + adjacents.length
-    outer: for (let radius = 0; radius <= 3 && slots.length < need; radius++) {
-      if (radius === 0) {
-        if (isUsable(anchor.col, anchor.row)) slots.push({ ...anchor })
-        continue
-      }
-      for (let dc = -radius; dc <= radius; dc++) {
-        for (let dr = -radius; dr <= radius; dr++) {
-          if (Math.max(Math.abs(dc), Math.abs(dr)) !== radius) continue
-          const c = anchor.col + dc, r = anchor.row + dr
-          if (!isUsable(c, r)) continue
-          slots.push({ col: c, row: r })
-          if (slots.length >= need) break outer
-        }
-      }
-    }
-    if (slots.length === 0) return  // no destination found, abort silently
-
-    // Move target to slot 0; adjacents to slots 1..N (skip those with
-    // no slot — partial relocation is acceptable when arena is full).
-    const moves: Array<{ unit: Character; to: { col: number; row: number } }> = [
-      { unit: target, to: slots[0] },
-    ]
-    for (let i = 0; i < adjacents.length && i + 1 < slots.length; i++) {
-      moves.push({ unit: adjacents[i], to: slots[i + 1] })
-    }
-
-    for (const { unit, to } of moves) {
-      if (unit.col === to.col && unit.row === to.row) continue
-      const fromCol = unit.col, fromRow = unit.row
-      const moveRes = this._grid.moveCharacter(unit.id, to.col, to.row)
-      if (!moveRes.ok) continue
-      unit.moveTo(to.col, to.row)
-      this.emit({
-        type: EventType.UNIT_PUSHED,
-        unitId: unit.id,
-        fromCol, fromRow,
-        toCol: to.col, toRow: to.row,
-        force: 1,
-        distanceMoved: Math.max(Math.abs(to.col - fromCol), Math.abs(to.row - fromRow)),
-        blocked: false,
-        collidedWith: null,
-      })
-    }
+    const fromCol = target.col, fromRow = target.row
+    const moveRes = this._grid.moveCharacter(target.id, dest.col, dest.row)
+    if (!moveRes.ok) return
+    target.moveTo(dest.col, dest.row)
+    this.emit({
+      type: EventType.UNIT_PUSHED,
+      unitId: target.id,
+      fromCol, fromRow,
+      toCol: dest.col, toRow: dest.row,
+      force: 1,
+      distanceMoved: 1,
+      blocked: false,
+      collidedWith: null,
+    })
   }
 
   /**
