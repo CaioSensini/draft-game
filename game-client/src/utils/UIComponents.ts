@@ -753,9 +753,15 @@ export const UI = {
     const hw = w / 2
     const hh = h / 2
 
-    // ── Class + category tokens ──
-    const CLASS_COLOR: Record<string, number> = {
-      king: 0xfbbf24, warrior: 0x8b5cf6, specialist: 0x10b981, executor: 0xdc2626,
+    // ── Group + category tokens ──
+    // Skill cards are coloured by GROUP (attack1/attack2/defense1/defense2)
+    // — not by character class. The visual grouping makes "all atk1
+    // cards" look uniform regardless of which class casts them.
+    const GROUP_COLOR: Record<string, number> = {
+      attack1:  0xef4444,   // red    — heavy damage
+      attack2:  0xf59e0b,   // amber  — control
+      defense1: 0x3b82f6,   // blue   — strong defense
+      defense2: 0x10b981,   // green  — light defense
     }
     const CLASS_NAME: Record<string, string> = {
       king: t('skills.roles.king'),
@@ -763,7 +769,7 @@ export const UI = {
       specialist: t('skills.roles.specialist'),
       executor: t('skills.roles.executor'),
     }
-    const classColor = CLASS_COLOR[skill.unitClass] ?? accent.primary
+    const classColor = GROUP_COLOR[skill.group] ?? accent.primary
     const classHex   = '#' + classColor.toString(16).padStart(6, '0')
     const className  = CLASS_NAME[skill.unitClass]  ?? skill.unitClass.toUpperCase()
 
@@ -1146,10 +1152,15 @@ export const UI = {
       'Fortaleza Inabalavel': [t('skills.roles.warrior'), t('skills.roles.king')],
     }
 
-    const classHex = CLASS_COLORS_HEX[skill.unitClass] ?? '#f0c850'
+    // v1.1 — every coloured element on the skill card derives from
+    // GROUP (atk1/atk2/def1/def2). The class label keeps its TEXT but
+    // shares the group hex so atk1 from the King reads identical in
+    // hue to atk1 from the Executor.
     const borderColor = GROUP_COLORS[skill.group] ?? 0xf0c850
-    const borderHex = GROUP_COLORS_HEX[skill.group] ?? classHex
+    const borderHex = GROUP_COLORS_HEX[skill.group] ?? '#f0c850'
+    const classHex = borderHex
     const className = CLASS_FULL_NAMES[skill.unitClass] ?? skill.unitClass
+    void CLASS_COLORS_HEX  // reserved — sprites + HUD still use class colour
     const sharedClasses = SHARED_SKILLS[skill.name]
     const displayClass = sharedClasses ? sharedClasses.join('/') : className
     const abbrev = EFFECT_ABBREVS[skill.effectType] ?? '??'
@@ -1682,11 +1693,18 @@ export const UI = {
     const HEAL_TYPES = new Set(['heal', 'regen', 'revive'])
     const SHIELD_TYPES = new Set(['shield'])
 
+    // v1.1 — every coloured element on the detail card derives from
+    // GROUP. The class label keeps the class TEXT (REI, GUERREIRO…)
+    // but uses the group hex so atk1 from any class shares the same
+    // visual signature. The legacy CLASS_COLOR map stays unused here
+    // for the moment (sprites + HUD still consume the canonical class
+    // tokens elsewhere).
     const bColor = GROUP_TINT[skill.group] ?? accent.primary
-    const cColor = CLASS_COLOR[skill.unitClass] ?? accent.primary
+    const cColor = bColor
     const cHex = '#' + cColor.toString(16).padStart(6, '0')
     const bHex = '#' + bColor.toString(16).padStart(6, '0')
     const cName = CLASS_NAMES[skill.unitClass] ?? skill.unitClass
+    void CLASS_COLOR  // reserved for sprites/HUD elsewhere
     const abbr = ABBREVS[skill.effectType] ?? '??'
     const tgtLabel = TARGET_LABELS[skill.targetType ?? 'single'] ?? ''
 
