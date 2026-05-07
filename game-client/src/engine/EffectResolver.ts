@@ -32,6 +32,7 @@ import {
   RegenEffect,
   ShieldEffect,
   EvadeEffect,
+  EvadeChanceEffect,
   ReflectEffect,
   HealReductionEffect,
   DefReductionEffect,
@@ -394,6 +395,20 @@ const handleEvade: EffectHandler = (ctx) => {
   return {
     ...EMPTY,
     events: [{ type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'evade', value: 1 }],
+  }
+}
+
+// ── Evade with chance gate (Bater em Retirada secondary, Balance Pass v1.1) ──
+//
+// `power` carries the chance percent (0-100). The buff is single-charge: on
+// the next direct hit, the bearer rolls RNG; on success the hit is fully
+// negated, on failure the buff is still consumed (one shot regardless).
+const handleEvadeChance: EffectHandler = (ctx) => {
+  if (!ctx.target.alive) return EMPTY
+  ctx.target.addEffect(new EvadeChanceEffect(ctx.power, 1))
+  return {
+    ...EMPTY,
+    events: [{ type: EventType.STATUS_APPLIED, unitId: ctx.target.id, status: 'evade_chance', value: ctx.power }],
   }
 }
 
@@ -919,7 +934,8 @@ export function createDefaultResolver(): EffectResolver {
 
   // Damage mitigation
   r.register('shield',  handleShield)
-  r.register('evade',   handleEvade)
+  r.register('evade',         handleEvade)
+  r.register('evade_chance',  handleEvadeChance)
   r.register('reflect', handleReflect)
 
   // Stat buffs

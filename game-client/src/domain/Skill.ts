@@ -72,6 +72,11 @@ export type SkillEffectType =
   | 'shield'
   /** Negate the next single incoming hit. Charges are consumed one at a time. */
   | 'evade'
+  /** Probabilistic evade — `power` = chance percent (0-100). Each time the
+   *  target would take direct damage, roll RNG: on success, fully negate the
+   *  hit and consume the charge. Used by Bater em Retirada (lw_d8) v1.1.
+   *  Only triggers ON application of damage; does not block DoT ticks. */
+  | 'evade_chance'
   /** Retaliate against the next attacker — deal `power` damage back. */
   | 'reflect'
   /** Grant a revive buffer: on fatal damage, restore to a low HP instead of dying. */
@@ -175,7 +180,7 @@ export function isHealEffect(t: SkillEffectType): boolean {
 
 /** Positive stat/buff effects. */
 export const BUFF_EFFECTS = [
-  'shield', 'evade', 'reflect', 'revive',
+  'shield', 'evade', 'evade_chance', 'reflect', 'revive',
   'def_up', 'atk_up', 'mov_up',
   'double_attack', 'invisibility',
 ] as const
@@ -211,7 +216,7 @@ export function isMovementEffect(t: SkillEffectType): boolean {
 export const ALL_EFFECT_TYPES: readonly SkillEffectType[] = [
   'damage', 'true_damage',
   'heal', 'regen', 'lifesteal',
-  'shield', 'evade', 'reflect', 'revive',
+  'shield', 'evade', 'evade_chance', 'reflect', 'revive',
   'bleed', 'burn', 'poison',
   'stun', 'snare', 'silence_attack', 'silence_defense',
   'push', 'pull', 'teleport_self', 'teleport_target',
@@ -228,8 +233,20 @@ export class Skill {
   readonly id:              string
   readonly name:            string
   readonly description:     string
-  /** Multi-paragraph lore / mechanics detail. Empty string when unset. */
-  readonly longDescription: string
+  /**
+   * Multi-paragraph lore / mechanics detail. v1.1 introduces a structured
+   * shape with four discrete sections; the legacy single-string form is
+   * still accepted for backward compatibility (it maps to `detail`).
+   */
+  readonly longDescription: SkillLongDescription
+  /** Visual tags for the small card (e.g. ["AREA", "DAMAGE", "SHIELD"]).
+   *  Hand-curated from CARTAS_DRAFT_v1.1.md — never invent. */
+  readonly tags:            ReadonlyArray<string>
+  /** Human-readable type label, e.g. "Ataque (Pesado)", "Defesa (Forte)". */
+  readonly typeLabel:       string
+  /** Optional duration line shown on the detail card, e.g. "2 turnos",
+   *  "Instantâneo", "Permanente". Undefined when not applicable. */
+  readonly durationLabel:   string | undefined
 
   // ── Classification ────────────────────────────────────────────────────────
   readonly category:    SkillCategory    // 'attack' or 'defense'
@@ -286,7 +303,10 @@ export class Skill {
     this.id              = def.id
     this.name            = def.name
     this.description     = def.description ?? ''
-    this.longDescription = def.longDescription ?? ''
+    this.longDescription = normalizeLongDescription(def.longDescription)
+    this.tags            = Object.freeze([...(def.tags ?? [])])
+    this.typeLabel       = def.typeLabel ?? ''
+    this.durationLabel   = def.durationLabel
     this.category        = def.category
     this.group           = def.group
     this.effectType      = def.effectType
@@ -356,6 +376,7 @@ export class Skill {
                               // path is validated separately by the engine.
       case 'shield':
       case 'evade':
+      case 'evade_chance':
       case 'reflect':
       case 'revive':
       case 'def_up':
@@ -437,17 +458,65 @@ export interface SecondaryEffectDef {
 
 // ── Definition shape used to construct Skills ─────────────────────────────────
 
+/**
+ * Structured long description used by the hover detail card. Each section
+ * has its own header in the UI (FLAVOR / DETALHE / SINERGIAS / COUNTER).
+ *
+ * Always normalised to this shape inside `Skill` even if the catalog
+ * passes a legacy single-string `longDescription` (backward-compat:
+ * legacy string lands in `detail`, the other fields stay empty).
+ */
+export interface SkillLongDescription {
+  /** Italic narrative line ("flavor text") — short, evocative. */
+  readonly flavor:    string
+  /** Mechanical detail paragraph — what the skill does, in full. */
+  readonly detail:    string
+  /** Combos / synergies with other cards — empty when none documented. */
+  readonly synergies: string
+  /** Counter-play hints — empty when none documented. */
+  readonly counter:   string
+}
+
+const EMPTY_LONG_DESCRIPTION: SkillLongDescription = Object.freeze({
+  flavor:    '',
+  detail:    '',
+  synergies: '',
+  counter:   '',
+})
+
+export function normalizeLongDescription(
+  value: string | SkillLongDescription | undefined,
+): SkillLongDescription {
+  if (value == null) return EMPTY_LONG_DESCRIPTION
+  if (typeof value === 'string') {
+    return Object.freeze({ ...EMPTY_LONG_DESCRIPTION, detail: value })
+  }
+  return Object.freeze({
+    flavor:    value.flavor    ?? '',
+    detail:    value.detail    ?? '',
+    synergies: value.synergies ?? '',
+    counter:   value.counter   ?? '',
+  })
+}
+
 export interface SkillDefinition {
   id:               string
   name:             string
   description?:     string
   /**
    * Extended multi-paragraph description rendered in the hover detail card
-   * (UI.skillDetailCard "DESCRIÇÃO DETALHADA" section). Optional — when
-   * absent, the detail card falls back to a placeholder. Populated
-   * per-skill over time; ETAPA 6 only adds the schema hook.
+   * (UI.skillDetailCard sections). v1.1+ accepts a structured object with
+   * 4 sections (flavor / detail / synergies / counter); legacy single-
+   * string form is still supported and lands in `detail` after
+   * `normalizeLongDescription`.
    */
-  longDescription?: string
+  longDescription?: string | SkillLongDescription
+  /** Visual tags for the small card (2-4 entries, uppercase). */
+  tags?:            string[]
+  /** Human-readable type label (rendered above the title in UI.skillDetailCard). */
+  typeLabel?:       string
+  /** Optional duration line, rendered below the type label when present. */
+  durationLabel?:   string
   category:         SkillCategory
   group:            SkillGroup
   effectType:       SkillEffectType

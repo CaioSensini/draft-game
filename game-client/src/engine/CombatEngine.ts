@@ -1601,13 +1601,17 @@ export class CombatEngine {
   private _applyEspiritoSobrevivencia(caster: Character): void {
     if (!caster.alive) return
 
-    const baseMax = caster.baseStats.maxHp
+    // Balance Pass v1.1 — single branch + threshold gate.
+    // Skill only fires when the caster is at or below 60% HP. Above the
+    // threshold the skill is a no-op (UI should disable the button, but
+    // the engine also enforces so manual fires from queue rotation are
+    // safely absorbed). Reward when active is fixed: +15% max HP +
+    // shield 10% max HP for 1 turn.
     const hpRatio = caster.hp / caster.maxHp
-    const critical = hpRatio <= 0.50
+    if (hpRatio > 0.60) return
 
-    const bonusPct = critical ? 0.15 : 0.10
-    const bonus    = Math.round(baseMax * bonusPct)
-
+    const baseMax = caster.baseStats.maxHp
+    const bonus   = Math.round(baseMax * 0.15)
     caster.addMaxHpBonus(bonus, 1)
     this.emit({
       type:   EventType.STATUS_APPLIED,
@@ -1616,17 +1620,15 @@ export class CombatEngine {
       value:  bonus,
     })
 
-    if (critical) {
-      const shieldAmount = Math.round(baseMax * 0.10)
-      if (shieldAmount > 0) {
-        caster.addShield(shieldAmount)
-        this.emit({
-          type:   EventType.STATUS_APPLIED,
-          unitId: caster.id,
-          status: 'shield' as const,
-          value:  shieldAmount,
-        })
-      }
+    const shieldAmount = Math.round(baseMax * 0.10)
+    if (shieldAmount > 0) {
+      caster.addShield(shieldAmount)
+      this.emit({
+        type:   EventType.STATUS_APPLIED,
+        unitId: caster.id,
+        status: 'shield' as const,
+        value:  shieldAmount,
+      })
     }
   }
 
@@ -1910,12 +1912,13 @@ export class CombatEngine {
 
         // v3 §6.4 Marca da Morte (le_a7 / ra_a7): strip every hit target's
         // shields BEFORE the damage loop so the 12 damage hits HP directly
-        // (matches v3 "anti-shield assassin" identity), then heal the
-        // Executor by 20% of the total shield HP stripped.
-        let totalShieldStripped = 0
+        // (matches v3 "anti-shield assassin" identity).
+        // Balance Pass v1.1 — removed the 20%-of-shield self-heal: the skill
+        // was doing too much (anti-shield + bleed + lifesteal). Heal hook
+        // gone; shield strip + bleed remain as the identity.
         if (skill.id === 'le_a7' || skill.id === 'ra_a7') {
           for (const hit of hits) {
-            totalShieldStripped += hit.removeAllShields()
+            hit.removeAllShields()
           }
         }
 
@@ -2015,23 +2018,8 @@ export class CombatEngine {
           }
         }
 
-        // Marca da Morte — apply heal after damage phase.
-        if ((skill.id === 'le_a7' || skill.id === 'ra_a7') && totalShieldStripped > 0 && caster.alive) {
-          const healAmount = Math.round(totalShieldStripped * 0.20)
-          if (healAmount > 0) {
-            const res = caster.heal(healAmount)
-            if (res.actual > 0) {
-              this.emit({
-                type:    EventType.HEAL_APPLIED,
-                unitId:  caster.id,
-                amount:  res.actual,
-                newHp:   caster.hp,
-                sourceId: caster.id,
-              })
-              this._addStat(caster.id, 'healsGiven', res.actual)
-            }
-          }
-        }
+        // Marca da Morte legacy lifesteal hook removed in Balance Pass v1.1
+        // (skill no longer self-heals from stripped shields).
         // Always emit AREA_RESOLVED (even on 0 hits) so the renderer can show the blast
         this.emit({
           type: EventType.AREA_RESOLVED,
@@ -2039,9 +2027,11 @@ export class CombatEngine {
           hitIds: hits.map((c) => c.id),
         })
         // v3 §6.5 Domínio Real (lk_a4 / rk_a4): self-shield = 25% of total damage
-        // dealt, applied to the caster. If no damage landed (all evaded), no shield.
+        // dealt, applied to the caster, CAPPED at 30 HP per Balance Pass v1.1.
+        // If no damage landed (all evaded), no shield.
         if ((skill.id === 'lk_a4' || skill.id === 'rk_a4') && totalDamageDealt > 0 && caster.alive) {
-          const shieldAmount = Math.round(totalDamageDealt * 0.25)
+          const rawShield   = Math.round(totalDamageDealt * 0.25)
+          const shieldAmount = Math.min(rawShield, 30)   // v1.1 cap anti-stacking
           if (shieldAmount > 0) {
             caster.addShield(shieldAmount)
             this.emit({

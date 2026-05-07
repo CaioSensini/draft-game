@@ -18,7 +18,10 @@
   "studio-name": "CODEFORJE VIO",
   "section": {
     "description": "AÇIKLAMA",
-    "long-description": "DETAYLI AÇIKLAMA"
+    "long-description": "DETAYLI AÇIKLAMA",
+    "detail": "AÇIKLAMA",
+    "synergies": "SİNERJİ",
+    "counter": "KARŞI OYUN"
   },
   "labels": {
     "level-cap-max": "MAX",

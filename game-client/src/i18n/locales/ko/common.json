@@ -18,7 +18,10 @@
   "studio-name": "CODEFORJE VIO",
   "section": {
     "description": "설명",
-    "long-description": "상세 설명"
+    "long-description": "상세 설명",
+    "detail": "설명",
+    "synergies": "시너지",
+    "counter": "카운터"
   },
   "labels": {
     "level-cap-max": "MAX",

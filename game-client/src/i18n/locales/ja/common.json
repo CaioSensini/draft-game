@@ -18,7 +18,10 @@
   "studio-name": "CODEFORJE VIO",
   "section": {
     "description": "説明",
-    "long-description": "詳細説明"
+    "long-description": "詳細説明",
+    "detail": "説明",
+    "synergies": "シナジー",
+    "counter": "カウンタープレイ"
   },
   "labels": {
     "level-cap-max": "MAX",

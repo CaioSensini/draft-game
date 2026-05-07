@@ -29,6 +29,7 @@ export type EffectType =
   // ── Damage buffers ──
   | 'shield'
   | 'evade'
+  | 'evade_chance'
   | 'reflect'
   // ── Stat debuffs ──
   | 'def_down'
@@ -412,6 +413,45 @@ export class EvadeEffect extends Effect {
 }
 
 /**
+ * Probabilistic evade — rolls RNG on the next direct hit. On success, fully
+ * negates and consumes the charge; on failure, also consumes the charge so
+ * the buff is "spent" regardless of outcome (mirrors how `Esquiva` works
+ * but with a chance gate). Used by Bater em Retirada (lw_d8) v1.1: 50%
+ * chance to dodge the next hit.
+ *
+ * `chancePercent` is 0-100. RNG uses `Math.random()` by default; tests
+ * override via the optional `roller` constructor argument so behaviour is
+ * deterministic.
+ */
+export class EvadeChanceEffect extends Effect {
+  readonly type = 'evade_chance' as const
+  readonly kind = 'buff' as const
+  private _charges: number
+  private readonly _chance: number
+  private readonly _roller: () => number
+
+  constructor(chancePercent: number, charges = 1, roller: () => number = Math.random) {
+    super()
+    this._chance  = Math.max(0, Math.min(100, chancePercent)) / 100
+    this._charges = charges
+    this._roller  = roller
+  }
+
+  get isExpired(): boolean { return this._charges <= 0 }
+  get charges():   number  { return this._charges }
+  get chance():    number  { return this._chance }
+
+  tick(): null { return null }
+
+  override interceptDamage(_rawDamage: number): DamageInterception {
+    if (this._charges <= 0) return { absorbed: 0, reflected: 0, evaded: false }
+    this._charges--
+    const evaded = this._roller() < this._chance
+    return { absorbed: 0, reflected: 0, evaded }
+  }
+}
+
+/**
  * Sends `power` damage back to the attacker on the next hit.
  * Single-use: expires after reflecting once.
  */
@@ -782,6 +822,7 @@ export function createEffect(type: EffectType, value: number, ticks?: number): E
     case 'heal_reduction': return new HealReductionEffect(value, ticks)
     case 'shield':        return new ShieldEffect(value)
     case 'evade':         return new EvadeEffect(value)
+    case 'evade_chance':  return new EvadeChanceEffect(value)
     case 'reflect':       return new ReflectEffect(value)
     case 'def_down':      return new DefReductionEffect(value, ticks)
     case 'atk_down':      return new AtkReductionEffect(value, ticks)

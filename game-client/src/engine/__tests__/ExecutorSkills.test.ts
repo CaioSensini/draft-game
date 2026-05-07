@@ -349,44 +349,18 @@ describe('Executor — Attack 2 (bleeds)', () => {
       expect(target.totalShield).toBe(0)   // fully stripped
     })
 
-    it('heals Executor for 20% of the total shield HP stripped', () => {
+    // Balance Pass v1.1 — the 20%-of-shield self-heal hook was REMOVED. The
+    // skill now keeps strip + bleed only, no longer self-heals. Tests that
+    // previously asserted lifesteal behaviour are deleted intentionally.
+    it('does NOT self-heal Executor from stripped shields (v1.1 nerf)', () => {
       const exec   = mkChar('e', 'executor', 'left',  5, 3)
       const target = mkChar('t', 'warrior',  'right', 5, 5)
       exec.applyPureDamage(50)               // give Executor headroom
       const hpBefore = exec.hp
-      target.addShield(80)                    // 80 shield → heal 16
-
+      target.addShield(80)                    // would have healed 16 pre-v1.1
       applyAttack(exec, target, 'le_a7')
-
-      // Executor gains 20% × 80 = 16 HP (if heal cap + heal reduction don't cut it).
-      expect(exec.hp - hpBefore).toBe(16)
-    })
-
-    it('no heal when target has no shield', () => {
-      const exec   = mkChar('e', 'executor', 'left',  5, 3)
-      const target = mkChar('t', 'warrior',  'right', 5, 5)
-      exec.applyPureDamage(30)
-      const hpBefore = exec.hp
-      applyAttack(exec, target, 'le_a7')
-      expect(exec.hp).toBe(hpBefore)  // no heal — no shield to convert
-    })
-
-    it('multi-target area: sums shield from all targets for the heal', () => {
-      const exec = mkChar('e', 'executor', 'left',  5, 3)
-      const t1 = mkChar('t1', 'warrior', 'right', 5, 4)  // within vertical line 3
-      const t2 = mkChar('t2', 'warrior', 'right', 5, 5)
-      const t3 = mkChar('t3', 'warrior', 'right', 5, 6)  // out of bounds check
-      t1.addShield(30)
-      t2.addShield(50)
-      exec.applyPureDamage(50)
-      const hpBefore = exec.hp
-
-      applyAttack(exec, mkChar('center', 'warrior', 'right', 5, 5), 'le_a7',
-                  [exec], [t1, t2, t3])
-
-      // Total shield stripped from hits in the line area: at least t1+t2 = 80.
-      // Heal = round(80 × 0.20) = 16 minimum (could be more if t3 also in line).
-      expect(exec.hp - hpBefore).toBeGreaterThanOrEqual(16)
+      // Executor must NOT gain HP from the shield strip anymore.
+      expect(exec.hp).toBe(hpBefore)
     })
   })
 
@@ -636,15 +610,19 @@ describe('Executor — Defense 1 (self-buffs)', () => {
       expect(exec.totalShield).toBe(30 - 18)
     })
 
-    it('lethal penalty can kill the Executor if HP ≤ cost and no shield', () => {
+    // Balance Pass v1.1 — non-lethal cap. The penalty NEVER reduces HP
+    // below 1 anymore; the Executor cannot suicide-by-Adrenalina even
+    // when the queued cost would otherwise exceed remaining HP.
+    it('penalty clamps to leave the Executor at 1 HP when cost > current HP', () => {
       const exec = mkChar('e', 'executor', 'left', 5, 3)
       exec.applyPureDamage(exec.hp - 10)  // leave 10 HP
       applyAdrenalina(exec)
 
       exec.tickEffects()
-      exec.tickEffects()   // 18 damage > 10 HP → death
+      exec.tickEffects()   // 18 cost > 10 HP, but cap leaves Executor at 1
 
-      expect(exec.alive).toBe(false)
+      expect(exec.alive).toBe(true)
+      expect(exec.hp).toBe(1)
     })
   })
 

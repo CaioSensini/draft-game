@@ -39,12 +39,14 @@ const LEFT_SPECIALIST: SkillDefinition[] = [
     effectType: 'area', targetType: 'area', power: 28, range: 0,
     areaShape: { type: 'square', radius: 1 }, // 2x2 campo inimigo (aprox 3x3 no grid atual)
     secondaryEffects: [{ effectType: 'burn', power: 6, ticks: 2 }],
+    tags: ["AREA", "DANO", "BURN", "DOT"],
     description: '28 dano em área 2x2 no campo inimigo. Aplica queimação 6/turno por 2 turnos.',
   },
   {
     id: 'ls_a2', name: 'Chuva de Mana', category: 'attack', group: 'attack1',
     effectType: 'area', targetType: 'area', power: 22, range: 0,
     areaShape: { type: 'line', direction: 'north', length: 2 },
+    tags: ["AREA", "DANO", "MULTI-TICK"],
     description: '22 dano em 2 ticks (11+11) em linha vertical de 3 tiles no campo inimigo.',
   },
   {
@@ -52,11 +54,13 @@ const LEFT_SPECIALIST: SkillDefinition[] = [
     effectType: 'area', targetType: 'area', power: 25, range: 0,
     areaShape: { type: 'line', direction: 'east', length: 6 },
     secondaryEffects: [{ effectType: 'purge', power: 0 }],
+    tags: ["LINHA", "DANO", "PURGE", "ALIADO-SHIELD"],
     description: '25 dano + purge em inimigos na linha. Aliados atingidos ganham shield 10.',
   },
   {
     id: 'ls_a4', name: 'Explosão Central', category: 'attack', group: 'attack1',
     effectType: 'mark', targetType: 'single', power: 50, range: 0,
+    tags: ["ALVO UNICO", "MARK", "BURST", "SETUP-FINISH"],
     description:
       '1º uso: marca o alvo (não-removível). 2º uso em marcado: 50 dano + 50% extra se alvo tem debuff. ' +
       'Ignora Esquiva e imunidades.',
@@ -71,12 +75,14 @@ const LEFT_SPECIALIST: SkillDefinition[] = [
       { effectType: 'def_down', power: 25, ticks: 1 },
       { effectType: 'mov_down', power: 1,  ticks: 1 },
     ],
+    tags: ["AREA", "DANO", "DEBUFF", "MOV-DOWN"],
     description: '12 dano em área 3x3. def_down 25% + mov_down 1 por 1 turno.',
   },
   {
     id: 'ls_a6', name: 'Correntes Rígidas', category: 'attack', group: 'attack2',
     effectType: 'snare', targetType: 'area', power: 10, range: 0,
     areaShape: { type: 'diamond', radius: 1 },
+    tags: ["AREA", "DANO", "SNARE"],
     description: '10 dano em formato + (5 casas). Prende inimigos por 1 turno.',
   },
   {
@@ -84,6 +90,7 @@ const LEFT_SPECIALIST: SkillDefinition[] = [
     effectType: 'area', targetType: 'area', power: 0, range: 0,
     areaShape: { type: 'square', radius: 7 },
     secondaryEffects: [{ effectType: 'def_down', power: 15, ticks: 2 }],
+    tags: ["GLOBAL", "DUAL-USE", "BUFF", "DEBUFF"],
     description:
       'Toda arena inimiga. Aliados: def_up 15%. Inimigos: def_down 15% + cura recebida -30% por 2 turnos.',
   },
@@ -91,18 +98,21 @@ const LEFT_SPECIALIST: SkillDefinition[] = [
     id: 'ls_a8', name: 'Congelamento', category: 'attack', group: 'attack2',
     effectType: 'stun', targetType: 'single', power: 18, range: 0,
     secondaryEffects: [{ effectType: 'def_down', power: 20, ticks: 1 }],
+    tags: ["ALVO UNICO", "DANO", "STUN", "DEBUFF"],
     description: '18 dano + stun 1t + def_down 20% por 1 turno.',
   },
 
   // ── defense1 (forte) ───────────────────────────────────────────────────────
   {
     id: 'ls_d1', name: 'Cura Suprema', category: 'defense', group: 'defense1',
-    effectType: 'heal', targetType: 'single', power: 35,
-    description: 'Cura 35 HP em 1 aliado (não-rei).',
+    effectType: 'heal', targetType: 'single', power: 40,
+    tags: ["ALVO UNICO", "CURA", "RESTRICAO-REI"],
+    description: 'Cura 40 HP em 1 aliado (não-rei).',
   },
   {
     id: 'ls_d2', name: 'Renascimento Parcial', category: 'defense', group: 'defense1',
     effectType: 'revive', targetType: 'lowest_ally', power: 25,
+    tags: ["ALVO UNICO", "REVIVE", "CONDICIONAL", "1X-PARTIDA"],
     description:
       'Revive latente (2 turnos) no aliado de menor HP (não-rei). Revive com 25 HP se morrer. ' +
       'Máximo 1x por aliado por partida.',
@@ -112,12 +122,14 @@ const LEFT_SPECIALIST: SkillDefinition[] = [
     effectType: 'heal', targetType: 'area', power: 12, range: 0,
     areaShape: { type: 'square', radius: 1 },
     secondaryEffects: [{ effectType: 'shield', power: 10, ticks: 1 }],
+    tags: ["AREA", "CURA", "ESCUDO", "REI-RESTRICAO-PARCIAL"],
     description: 'Cura 12 HP + shield 10 (1t) em área 3x3. Rei só recebe shield.',
   },
   {
     id: 'ls_d4', name: 'Proteção', category: 'defense', group: 'defense1',
     effectType: 'cleanse', targetType: 'area', power: 0, range: 0,
     areaShape: { type: 'diamond', radius: 1 },
+    tags: ["AREA", "CLEANSE", "IMUNIDADE"],
     description:
       'Formato + (5 casas). Remove todos debuffs aliados + imunidade a novos debuffs por 1 turno.',
   },
@@ -127,17 +139,20 @@ const LEFT_SPECIALIST: SkillDefinition[] = [
     id: 'ls_d5', name: 'Campo de Cura Contínuo', category: 'defense', group: 'defense2',
     effectType: 'regen', targetType: 'area', power: 6, range: 0,
     areaShape: { type: 'square', radius: 1 },
+    tags: ["AREA", "REGEN", "CONDICIONAL", "REI-RESTRICAO"],
     description:
       'Regen 6 HP/turno por 2 turnos em área 3x3. Rei não recebe. Cancelado se aliado tomar dano.',
   },
   {
     id: 'ls_d6', name: 'Esquiva', category: 'defense', group: 'defense2',
     effectType: 'evade', targetType: 'self', power: 0,
+    tags: ["SELF", "EVADE"],
     description: 'Evita completamente o primeiro ataque direto no próximo turno.',
   },
   {
     id: 'ls_d7', name: 'Bloqueio Total', category: 'defense', group: 'defense2',
     effectType: 'shield', targetType: 'self', power: 60,
+    tags: ["SELF", "ESCUDO"],
     description: 'Shield 60. Persiste até ser quebrado ou 2 turnos.',
   },
   {
@@ -145,6 +160,7 @@ const LEFT_SPECIALIST: SkillDefinition[] = [
     effectType: 'shield', targetType: 'area', power: 12, range: 0,
     areaShape: { type: 'diamond', radius: 2 },
     secondaryEffects: [{ effectType: 'atk_up', power: 10, ticks: 1 }],
+    tags: ["AREA", "ESCUDO", "BUFF"],
     description: 'Shield 12 + atk_up 10% por 1 turno em área diamante r2.',
   },
 ]
@@ -163,6 +179,7 @@ const LEFT_WARRIOR: SkillDefinition[] = [
     effectType: 'area', targetType: 'area', power: 22, range: 0,
     areaShape: { type: 'line', direction: 'north', length: 5 },
     secondaryEffects: [{ effectType: 'push', power: 1 }],
+    tags: ["AREA", "DANO", "PUSH", "CONDICIONAL"],
     description: '22 dano em retângulo 6x2 vertical + push 1 sqm. Se bloqueado: snare 1t.',
   },
   {
@@ -173,6 +190,7 @@ const LEFT_WARRIOR: SkillDefinition[] = [
       { effectType: 'def_down', power: 18, ticks: 1 },
       { effectType: 'mov_down', power: 1,  ticks: 1 },
     ],
+    tags: ["AREA", "DANO", "DEBUFF"],
     description: '28 dano em área 3x3. def_down 18% + mov_down 1 por 1 turno.',
   },
   {
@@ -180,6 +198,7 @@ const LEFT_WARRIOR: SkillDefinition[] = [
     effectType: 'area', targetType: 'area', power: 30, range: 0,
     areaShape: { type: 'square', radius: 1 },
     secondaryEffects: [{ effectType: 'purge', power: 0 }],
+    tags: ["AREA", "DANO", "PURGE"],
     description: '30 dano em área 2x2. Remove buffs e quebra shields dos atingidos.',
   },
   {
@@ -188,6 +207,7 @@ const LEFT_WARRIOR: SkillDefinition[] = [
     areaShape: { type: 'line', direction: 'north', length: 2 },
     // Push is handled per-line inside CombatEngine (central vs flanks)
     // rather than as a uniform secondary — see v3 §6.3.
+    tags: ["LINHA", "DANO", "PUSH"],
     description:
       '24 dano em linha vertical 3 sqm. Linha central: push 1 + snare 1t se bloqueado. ' +
       'Linhas cima/baixo: empurradas perpendicular.',
@@ -201,6 +221,7 @@ const LEFT_WARRIOR: SkillDefinition[] = [
       { effectType: 'silence_defense', power: 0,  ticks: 1 },
       { effectType: 'def_down',        power: 15, ticks: 1 },
     ],
+    tags: ["ALVO UNICO", "DANO", "DEBUFF", "SILENCE"],
     description: '10 dano + def_down 15% + silence_defense 1t em 1 inimigo.',
   },
   {
@@ -208,6 +229,7 @@ const LEFT_WARRIOR: SkillDefinition[] = [
     effectType: 'summon_wall', targetType: 'area', power: 0, range: 0,
     areaShape: { type: 'line', direction: 'north', length: 1 },
     secondaryEffects: [{ effectType: 'def_down', power: 15, ticks: 2 }],
+    tags: ["AREA", "MURALHA", "DEBUFF", "DOT"],
     description:
       'Parede de 2 sqm vertical no campo inimigo dura 2t. Inimigos adjacentes: def_down 15%, mov_down 1, 3 dano/turno.',
   },
@@ -219,6 +241,7 @@ const LEFT_WARRIOR: SkillDefinition[] = [
       { effectType: 'def_down', power: 15, ticks: 1 },
       { effectType: 'mov_down', power: 1,  ticks: 1 },
     ],
+    tags: ["LINHA", "DANO", "DEBUFF"],
     description: '12 dano em linha vertical 3 sqm. def_down 15% + mov_down 1 por 1 turno.',
   },
   {
@@ -226,6 +249,7 @@ const LEFT_WARRIOR: SkillDefinition[] = [
     effectType: 'summon_wall', targetType: 'area', power: 12, range: 0,
     areaShape: { type: 'ring', radius: 1 },
     secondaryEffects: [{ effectType: 'snare', power: 0, ticks: 2 }],
+    tags: ["AREA", "MURALHA", "DANO", "SNARE"],
     description:
       '12 dano no centro + 8 paredes temporárias ao redor. Inimigos dentro: snare 2t. ' +
       'Paredes quebram com qualquer atk1.',
@@ -236,6 +260,7 @@ const LEFT_WARRIOR: SkillDefinition[] = [
     id: 'lw_d1', name: 'Escudo do Protetor', category: 'defense', group: 'defense1',
     effectType: 'shield', targetType: 'all_allies', power: 50,
     preMovement: { maxTiles: 2 },
+    tags: ["SELF", "MURALHA", "BUFF AREA"],
     description:
       'Move até 2 sqm + cria parede de escudo 3 casas à frente vertical. ' +
       'Aliados no retângulo 6 sqm atrás: -50% dano por 1 turno.',
@@ -243,6 +268,7 @@ const LEFT_WARRIOR: SkillDefinition[] = [
   {
     id: 'lw_d2', name: 'Guardião', category: 'defense', group: 'defense1',
     effectType: 'damage_redirect', targetType: 'lowest_ally', power: 60,
+    tags: ["ALVO UNICO", "BUFF", "DAMAGE-REDIRECT"],
     description:
       '60% do dano recebido pelo aliado é redirecionado ao guerreiro, reduzido 30% no guerreiro (1 turno).',
   },
@@ -251,13 +277,16 @@ const LEFT_WARRIOR: SkillDefinition[] = [
     effectType: 'shield', targetType: 'self', power: 65,
     secondaryEffects: [{ effectType: 'def_up', power: 25, ticks: 1 }],
     preMovement: { maxTiles: 1 },
+    tags: ["SELF", "BUFF", "POSICIONAL"],
     description: 'Guerreiro + aliado atrás: -65% dano por 1 turno. Pode mover 1 sqm antes.',
   },
   {
     id: 'lw_d8', name: 'Bater em Retirada', category: 'defense', group: 'defense1',
     effectType: 'retreat_allies', targetType: 'all_allies', power: 15,
+    secondaryEffects: [{ effectType: 'evade_chance', power: 50, ticks: 1 }],
+    tags: ["AREA", "BUFF", "MOVIMENTO", "EVADE"],
     description:
-      'Move todos aliados 1 casa pra trás em 4x4. +1 mov próximo turno + -15% dano por 1 turno.',
+      'Move todos aliados 1 casa pra trás em 4x4. -15% dano por 1 turno + 50% chance de evadir o próximo dano direto sofrido.',
   },
 
   // ── defense2 (leve) ────────────────────────────────────────────────────────
@@ -265,23 +294,27 @@ const LEFT_WARRIOR: SkillDefinition[] = [
     id: 'lw_d4', name: 'Fortaleza Inabalável', category: 'defense', group: 'defense2',
     effectType: 'shield', targetType: 'self', power: 0,
     secondaryEffects: [{ effectType: 'stun', power: 0, ticks: 1 }],
+    tags: ["SELF", "BUFF", "IMOVEL"],
     description: '-80% dano recebido por 1 turno. Não pode mover no próximo turno de movimento.',
   },
   {
     id: 'lw_d5', name: 'Escudo de Grupo', category: 'defense', group: 'defense2',
     effectType: 'shield', targetType: 'all_allies', power: 15,
+    tags: ["GLOBAL", "ESCUDO"],
     description: 'Shield 15 em todos aliados por 2 turnos.',
   },
   {
     id: 'lw_d6', name: 'Postura Defensiva', category: 'defense', group: 'defense2',
     effectType: 'shield', targetType: 'area', power: 25, range: 0,
     areaShape: { type: 'square', radius: 1 },
+    tags: ["AREA", "BUFF"],
     description: 'Aliados em 3x3 ao redor: -25% dano por 1 turno.',
   },
   {
     id: 'lw_d7', name: 'Avançar', category: 'defense', group: 'defense2',
     effectType: 'advance_allies', targetType: 'all_allies', power: 10,
     secondaryEffects: [{ effectType: 'atk_up', power: 10, ticks: 1 }],
+    tags: ["AREA", "BUFF", "MOVIMENTO"],
     description:
       'Move aliados em 4x4 1 casa à frente. +1 mov + -10% dano + +10% ATK por 1 turno.',
   },
@@ -300,6 +333,7 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
     id: 'le_a1', name: 'Corte Mortal', category: 'attack', group: 'attack1',
     effectType: 'damage', targetType: 'single', power: 45, range: 0,
     secondaryEffects: [{ effectType: 'cleanse', power: 0 }],
+    tags: ["ALVO UNICO", "DANO", "PURGE", "SINERGIA-BLEED"],
     description:
       '45 dano + remove debuffs do alvo. Se alvo tinha bleed: +50% dano (67 total).',
   },
@@ -307,11 +341,13 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
     id: 'le_a2', name: 'Tempestade de Lâminas', category: 'attack', group: 'attack1',
     effectType: 'area', targetType: 'area', power: 26, range: 0,
     areaShape: { type: 'square', radius: 1 },
+    tags: ["AREA", "DANO", "SINERGIA-BLEED"],
     description: '26 dano em área 3x3. Se alvos tinham bleed: +50% dano neles.',
   },
   {
     id: 'le_a3', name: 'Disparo Preciso', category: 'attack', group: 'attack1',
     effectType: 'true_damage', targetType: 'single', power: 30, range: 0,
+    tags: ["ALVO UNICO", "LINHA", "TRUE DAMAGE", "ANTI-SHIELD"],
     description:
       '30 true damage (ignora DEF). Se alvo tinha bleed: ignora também shields.',
   },
@@ -320,6 +356,7 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
     effectType: 'damage', targetType: 'area', power: 22, range: 0,
     areaShape: { type: 'line', direction: 'east', length: 1 },
     secondaryEffects: [{ effectType: 'purge', power: 0 }],
+    tags: ["AREA", "DANO", "PURGE"],
     description: '22 dano em 2 sqm horizontal + purge.',
   },
 
@@ -329,6 +366,7 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
     effectType: 'bleed', targetType: 'area', power: 8, range: 0,
     areaShape: { type: 'line', direction: 'east', length: 1 },
     secondaryEffects: [{ effectType: 'bleed', power: 4, ticks: 3 }],
+    tags: ["AREA", "DANO", "BLEED", "SETUP"],
     description: '8 dano + bleed 4/turno por 3t em 2 sqm horizontal. Acumulativo se re-aplicado.',
   },
   {
@@ -336,6 +374,7 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
     effectType: 'bleed', targetType: 'area', power: 10, range: 0,
     areaShape: { type: 'diamond', radius: 2 },
     secondaryEffects: [{ effectType: 'bleed', power: 5, ticks: 2 }],
+    tags: ["AREA", "DANO", "BLEED", "SETUP"],
     description: '10 dano + bleed 5/turno por 2t em diamante r2.',
   },
   {
@@ -343,8 +382,9 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
     effectType: 'area', targetType: 'area', power: 12, range: 0,
     areaShape: { type: 'line', direction: 'north', length: 3 },
     secondaryEffects: [{ effectType: 'bleed', power: 8, ticks: 2 }],
+    tags: ["LINHA", "DANO", "ANTI-SHIELD", "BLEED"],
     description:
-      '12 dano em 8 sqm vertical (4 de baixo, 2 grossura). Remove shields (cura 20% deles como HP). ' +
+      '12 dano em 8 sqm vertical (4 de baixo, 2 grossura). Remove shields dos atingidos. ' +
       'Bleed 8/turno por 2t.',
   },
   {
@@ -352,6 +392,7 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
     effectType: 'damage', targetType: 'area', power: 15, range: 0,
     areaShape: { type: 'single' },
     secondaryEffects: [{ effectType: 'bleed', power: 4, ticks: 3 }],
+    tags: ["ALVO UNICO", "TRAP", "DANO", "SNARE", "BLEED"],
     description:
       'Arma tile (não em casa ocupada). Ao pisar: 15 dano + snare 1t + bleed 4/turno por 3t.',
   },
@@ -360,18 +401,21 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
   {
     id: 'le_d1', name: 'Refletir', category: 'defense', group: 'defense1',
     effectType: 'reflect', targetType: 'self', power: 25,
+    tags: ["SELF", "BUFF", "REFLECT"],
     description: '-25% dano recebido + reflete o mitigado ao atacante no próximo turno.',
   },
   {
     id: 'le_d2', name: 'Adrenalina', category: 'defense', group: 'defense1',
     effectType: 'atk_up', targetType: 'self', power: 25,
+    tags: ["SELF", "BUFF", "TRADE-OFF"],
     description:
-      '+25% ATK por 2 turnos. Ao final: perde 15% HP máximo (bloqueável por shield).',
+      '+25% ATK por 2 turnos. Ao final: perde 15% HP máximo (bloqueável por shield, nunca abaixo de 1 HP).',
   },
   {
     id: 'le_d3', name: 'Ataque em Dobro', category: 'defense', group: 'defense1',
     effectType: 'double_attack', targetType: 'self', power: 0,
     cooldownTurns: 2,
+    tags: ["SELF", "OFENSIVO", "COOLDOWN"],
     description:
       'Próximo turno: 2 skills atk, 0 def. Cooldown: 2 turnos (não usável consecutivamente).',
   },
@@ -379,6 +423,7 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
     id: 'le_d4', name: 'Teleport', category: 'defense', group: 'defense1',
     effectType: 'teleport_self', targetType: 'self', power: 5,
     preMovement: { maxTiles: 5, ignoresObstacles: true, consumesNextMovement: true },
+    tags: ["SELF", "TELEPORT", "MOVIMENTO"],
     description: 'Teleporta até 5 sqm. Consome próximo turno de movimento.',
   },
 
@@ -387,21 +432,25 @@ const LEFT_EXECUTOR: SkillDefinition[] = [
     id: 'le_d5', name: 'Recuo Rápido', category: 'defense', group: 'defense2',
     effectType: 'shield', targetType: 'self', power: 20,
     preMovement: { maxTiles: 2, restrictToOwnSide: true },
+    tags: ["SELF", "MOVIMENTO", "ESCUDO"],
     description: 'Move até 2 sqm pra trás + shield 20 por 1 turno.',
   },
   {
     id: 'le_d6', name: 'Esquiva', category: 'defense', group: 'defense2',
     effectType: 'evade', targetType: 'self', power: 0,
+    tags: ["SELF", "EVADE"],
     description: 'Evita completamente o primeiro ataque direto no próximo turno.',
   },
   {
     id: 'le_d7', name: 'Bloqueio Total', category: 'defense', group: 'defense2',
     effectType: 'shield', targetType: 'self', power: 60,
+    tags: ["SELF", "ESCUDO"],
     description: 'Shield 60. Persiste até ser quebrado ou 2 turnos.',
   },
   {
     id: 'le_d8', name: 'Shield', category: 'defense', group: 'defense2',
     effectType: 'shield', targetType: 'self', power: 25,
+    tags: ["SELF", "ESCUDO"],
     description: 'Shield 25 por 1 turno.',
   },
 ]
@@ -421,6 +470,7 @@ const LEFT_KING: SkillDefinition[] = [
     effectType: 'damage', targetType: 'area', power: 25, range: 0,
     areaShape: { type: 'line', direction: 'east', length: 1 },
     secondaryEffects: [{ effectType: 'shield', power: 15, ticks: 2 }],
+    tags: ["AREA", "DANO", "ESCUDO"],
     description: '25 dano em 2 sqm horizontal + self shield 15 por 2 turnos.',
   },
   {
@@ -428,20 +478,23 @@ const LEFT_KING: SkillDefinition[] = [
     effectType: 'damage', targetType: 'area', power: 27, range: 0,
     areaShape: { type: 'line', direction: 'north', length: 1 },
     secondaryEffects: [{ effectType: 'shield', power: 15, ticks: 2 }],
+    tags: ["AREA", "DANO", "ESCUDO"],
     description: '27 dano em 2 sqm vertical + self shield 15 por 2 turnos.',
   },
   {
     id: 'lk_a3', name: 'Sequência de Socos', category: 'attack', group: 'attack1',
-    effectType: 'lifesteal', targetType: 'area', power: 15, range: 0,
+    effectType: 'lifesteal', targetType: 'area', power: 17, range: 0,
     areaShape: { type: 'square', radius: 1 },
+    tags: ["AREA", "DANO", "LIFESTEAL"],
     description:
-      '15 dano em 3x2 + lifesteal 30%. Exceção à regra de imunidade do rei (self-heal da própria skill).',
+      '17 dano em 3x2 + lifesteal 35%. Exceção à regra de imunidade do rei (self-heal da própria skill).',
   },
   {
     id: 'lk_a4', name: 'Domínio Real', category: 'attack', group: 'attack1',
     effectType: 'area', targetType: 'area', power: 18, range: 0,
     areaShape: { type: 'square', radius: 1 },
-    description: '18 dano em 3x3 + self shield = 25% do dano total causado por 1 turno.',
+    tags: ["AREA", "DANO", "ESCUDO", "ESCALAVEL"],
+    description: '18 dano em 3x3 + self shield = 25% do dano total causado (cap 30 HP) por 1 turno.',
   },
 
   // ── attack2 (controle) ─────────────────────────────────────────────────────
@@ -449,6 +502,7 @@ const LEFT_KING: SkillDefinition[] = [
     id: 'lk_a5', name: 'Empurrão Real', category: 'attack', group: 'attack2',
     effectType: 'push', targetType: 'area', power: 12, range: 0,
     areaShape: { type: 'line', direction: 'east', length: 6 },
+    tags: ["LINHA", "DANO", "PUSH"],
     description: '12 dano em linha vertical 3 sqm até fim do mapa + push até 3 sqm.',
   },
   {
@@ -456,18 +510,21 @@ const LEFT_KING: SkillDefinition[] = [
     effectType: 'area', targetType: 'area', power: 15, range: 0,
     areaShape: { type: 'square', radius: 1 },
     secondaryEffects: [{ effectType: 'push', power: 1 }],
+    tags: ["AREA", "DANO", "PUSH"],
     description: '15 dano em 3x3 + push 1 sqm afastando do centro. Centro não move.',
   },
   {
     id: 'lk_a7', name: 'Intimidação', category: 'attack', group: 'attack2',
     effectType: 'damage', targetType: 'single', power: 10, range: 0,
     secondaryEffects: [{ effectType: 'teleport_target', power: 0 }],
+    tags: ["ALVO UNICO", "DANO", "TELEPORT"],
     description:
       '10 dano + teleporta alvo e adjacentes pra local escolhido. Não pode colocar em bordas.',
   },
   {
     id: 'lk_a8', name: 'Desarme', category: 'attack', group: 'attack2',
     effectType: 'silence_attack', targetType: 'single', power: 6, range: 0,
+    tags: ["ALVO UNICO", "DANO", "SILENCE"],
     description:
       '6 dano + cancela skill atk do alvo no turno + silence_attack 1t. Não afeta reis.',
   },
@@ -476,6 +533,7 @@ const LEFT_KING: SkillDefinition[] = [
   {
     id: 'lk_d1', name: 'Fuga Sombria', category: 'defense', group: 'defense1',
     effectType: 'invisibility', targetType: 'self', power: 0,
+    tags: ["SELF", "TELEPORT", "STEALTH", "ESCAPE"],
     description:
       'Teleporta qualquer lugar da metade aliada. Rei fica untargetable por skills single-target ' +
       'até receber dano ou mover.',
@@ -483,6 +541,7 @@ const LEFT_KING: SkillDefinition[] = [
   {
     id: 'lk_d2', name: 'Recuperação Real', category: 'defense', group: 'defense1',
     effectType: 'regen', targetType: 'self', power: 0,
+    tags: ["SELF", "CURA", "CONDICIONAL"],
     description:
       'Recupera 20% HP max em 2 turnos (10% agora, 10% próximo turno se não tomar dano). ' +
       'Exceção à imunidade de cura do rei.',
@@ -490,6 +549,7 @@ const LEFT_KING: SkillDefinition[] = [
   {
     id: 'lk_d3', name: 'Sombra Real', category: 'defense', group: 'defense1',
     effectType: 'clone', targetType: 'self', power: 2,
+    tags: ["SELF", "STEALTH", "MIND-GAMES"],
     description:
       'Cria 2 clones em células vazias. Rei pode trocar de posição com um. Clones duram 2 turnos. ' +
       'Inimigos não sabem qual é real.',
@@ -497,31 +557,36 @@ const LEFT_KING: SkillDefinition[] = [
   {
     id: 'lk_d4', name: 'Espírito de Sobrevivência', category: 'defense', group: 'defense1',
     effectType: 'shield', targetType: 'self', power: 10,
+    tags: ["SELF", "CURA", "ESCUDO", "LAST-STAND"],
     description:
-      'Se HP ≤ 50%: +15% HP max + shield 10% HP max por 1 turno. Se HP > 50%: +10% HP max.',
+      'Apenas se HP ≤ 60%: +15% HP max + shield 10% HP max por 1 turno. Sem efeito acima desse limiar.',
   },
 
   // ── defense2 (leve) ────────────────────────────────────────────────────────
   {
     id: 'lk_d5', name: 'Escudo Self', category: 'defense', group: 'defense2',
     effectType: 'shield', targetType: 'self', power: 30,
+    tags: ["SELF", "ESCUDO"],
     description: 'Shield 30 por 2 turnos.',
   },
   {
     id: 'lk_d6', name: 'Fortaleza Inabalável', category: 'defense', group: 'defense2',
     effectType: 'shield', targetType: 'self', power: 0,
     secondaryEffects: [{ effectType: 'stun', power: 0, ticks: 1 }],
+    tags: ["SELF", "BUFF", "IMOVEL"],
     description: '-80% dano recebido por 1 turno. Não pode mover no próximo turno de movimento.',
   },
   {
     id: 'lk_d7', name: 'Esquiva', category: 'defense', group: 'defense2',
     effectType: 'evade', targetType: 'self', power: 0,
+    tags: ["SELF", "EVADE"],
     description: 'Evita completamente o primeiro ataque direto no próximo turno.',
   },
   {
     id: 'lk_d8', name: 'Ordem Real', category: 'defense', group: 'defense2',
     effectType: 'teleport_target', targetType: 'all_allies', power: 0,
     secondaryEffects: [{ effectType: 'def_up', power: 15, ticks: 1 }],
+    tags: ["GLOBAL", "BUFF", "TELEPORT", "FORMACAO"],
     description:
       'Rei volta pra posição inicial, aliados teleportados pra posições adjacentes. ' +
       'Aliados adjacentes: -15% dano. Rei: -15% por aliado adjacente (máx -45%) por 1 turno.',
