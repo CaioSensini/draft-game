@@ -552,7 +552,8 @@
       "header": "インベントリ",
       "hint": "クリックまたはドラッグで装備",
       "all-equipped": "全て装備中",
-      "owned-counter": "{owned} / {max}"
+      "owned-counter": "{owned} / {max}",
+      "equipped-badge": "装備中"
     },
     "groups": {
       "attack1": "攻撃 · ダメージ",

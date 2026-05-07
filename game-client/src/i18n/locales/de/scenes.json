@@ -552,7 +552,8 @@
       "header": "INVENTAR",
       "hint": "Klicken oder ziehen zum Ausrüsten",
       "all-equipped": "Alle ausgerüstet",
-      "owned-counter": "{owned} / {max}"
+      "owned-counter": "{owned} / {max}",
+      "equipped-badge": "AUSGERÜSTET"
     },
     "groups": {
       "attack1": "ANGRIFF · SCHADEN",

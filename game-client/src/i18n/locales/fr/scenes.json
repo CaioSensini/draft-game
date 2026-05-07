@@ -552,7 +552,8 @@
       "header": "INVENTAIRE",
       "hint": "Cliquez ou glissez pour équiper",
       "all-equipped": "Toutes équipées",
-      "owned-counter": "{owned} / {max}"
+      "owned-counter": "{owned} / {max}",
+      "equipped-badge": "ÉQUIPÉ"
     },
     "groups": {
       "attack1": "ATTAQUE · DÉGÂTS",

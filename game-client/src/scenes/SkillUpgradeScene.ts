@@ -84,8 +84,11 @@ const STAT_CFG = [
 
 // ── Scene ────────────────────────────────────────────────────────────────────
 
+type InventoryTab = 'attack1' | 'attack2' | 'defense1' | 'defense2'
+
 export default class SkillUpgradeScene extends Phaser.Scene {
   private activeRole: UnitRole = 'king'
+  private activeInventoryTab: InventoryTab = 'attack1'
   private allSkills: OwnedSkill[] = []
   private gold = 0
   private fusionSlot1: { skill: OwnedSkill; idx: number } | null = null
@@ -600,12 +603,15 @@ export default class SkillUpgradeScene extends Phaser.Scene {
   private drawInventory() {
     this.invGroup.forEach(o => o.destroy()); this.invGroup = []
     this.invContainer?.destroy(true); this.invContainer = null
+    // Scroll model is gone — kept for backwards-compat with helpers that
+    // still reference scrollY in their hover/click maths.
+    this.scrollY = 0
 
     const cls = CLASSES.find(c => c.role === this.activeRole)!
     const deckH = this._deckPanelHeight()
     const ix = CONTENT_X; const iy = TOP_BAR_H + 8 + deckH + 6; const iw = CONTENT_W; const ih = H - iy - 8
 
-    // Panel — surface.panel + border.default + radii.lg + top inset
+    // ── Panel chrome ──
     const pg = this.add.graphics()
     pg.fillStyle(surface.panel, 0.92); pg.fillRoundedRect(ix, iy, iw, ih, radii.lg)
     pg.lineStyle(1, border.default, 1); pg.strokeRoundedRect(ix, iy, iw, ih, radii.lg)
@@ -617,7 +623,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     pg.fillRoundedRect(ix, iy, iw, 2, { tl: radii.lg, tr: radii.lg, bl: 0, br: 0 })
     this.invGroup.push(pg)
 
-    // Title — Manrope meta + hint on the right
+    // Title (left) + hint (right) — same band as before
     this.invGroup.push(this.add.text(ix + 16, iy + 18, t('scenes.skill-upgrade.inventory-section.header'), {
       fontFamily: fontFamily.body, fontSize: typeScale.meta,
       color: accent.primaryHex, fontStyle: '700',
@@ -629,83 +635,137 @@ export default class SkillUpgradeScene extends Phaser.Scene {
 
     const filtered = this.getFilteredSkills()
     const equippedSet = this.getEquippedIds()
-    const contentX = ix + 8; const contentY = iy + 36; const contentW = iw - 16; const contentH = ih - 44
 
-    const container = this.add.container(contentX, contentY - this.scrollY)
-    this.invContainer = container
-    this.invCardPositions = []
-
-    // Scroll mask
-    const maskG = this.add.graphics().setVisible(false)
-    maskG.fillStyle(0xffffff); maskG.fillRect(contentX, contentY, contentW, contentH)
-    container.setMask(maskG.createGeometryMask())
-    this.invGroup.push(maskG)
-
-    const groupLabels: Record<string, string> = {
+    // ── Tab bar (replaces vertical scroll) ──
+    // Each tab = one of the 4 groups (attack1/attack2/defense1/defense2).
+    // Active tab styled with the group's tone + a glow underline; inactive
+    // tabs render as muted pills. The bar sits 36 px below the header.
+    const groupLabels: Record<InventoryTab, string> = {
       attack1:  t('scenes.skill-upgrade.groups.attack1'),
       attack2:  t('scenes.skill-upgrade.groups.attack2'),
       defense1: t('scenes.skill-upgrade.groups.defense1'),
       defense2: t('scenes.skill-upgrade.groups.defense2'),
     }
-    // Group header tint aligned with DeckBuildScene (state-based semantic)
-    const groupTint: Record<string, string> = {
-      attack1: state.errorHex,
-      attack2: accent.hotHex,
-      defense1: state.infoHex,
-      defense2: state.successHex,
+    const groupTone: Record<InventoryTab, { hex: string; color: number }> = {
+      attack1:  { hex: state.errorHex,   color: state.error   },
+      attack2:  { hex: accent.hotHex,    color: accent.hot    },
+      defense1: { hex: state.infoHex,    color: state.info    },
+      defense2: { hex: state.successHex, color: state.success },
     }
 
-    let cursorY = 0
+    const tabs: InventoryTab[] = ['attack1', 'attack2', 'defense1', 'defense2']
+    const tabBarY = iy + 50
+    const tabBarH = 36
+    const tabPadX = 16
+    const tabAreaW = iw - tabPadX * 2
+    const tabW = (tabAreaW - 12 * (tabs.length - 1)) / tabs.length
+    const tabBarX = ix + tabPadX
 
-    GROUP_ORDER.forEach(group => {
-      // All skills of this group (for counting total owned)
-      const allGroupSkills = filtered.filter(s => { const d = this.getSkillDef(s.skill.skillId); return d && d.group === group })
-      // Only NON-equipped skills shown in inventory
-      const skills = allGroupSkills.filter(s => !equippedSet.has(s.skill.skillId))
-      const totalOwned = allGroupSkills.length
-      const maxPerGroup = 4 // each group has 4 possible skills
+    tabs.forEach((g, i) => {
+      const tx = tabBarX + i * (tabW + 12)
+      const tone = groupTone[g]
+      const isActive = g === this.activeInventoryTab
+      const ownedInGroup = filtered.filter((s) => {
+        const d = this.getSkillDef(s.skill.skillId)
+        return d && d.group === g
+      }).length
 
-      // Group header: "ATAQUE · DANO   2/4"
-      container.add(this.add.text(4, cursorY, groupLabels[group] ?? group, {
-        fontFamily: fontFamily.body, fontSize: typeScale.meta,
-        color: groupTint[group] ?? accent.primaryHex,
-        fontStyle: '700',
-      }).setLetterSpacing(1.6))
-      container.add(this.add.text(contentW - 8, cursorY, t('scenes.skill-upgrade.inventory-section.owned-counter', { owned: totalOwned, max: maxPerGroup }), {
-        fontFamily: fontFamily.mono, fontSize: typeScale.meta,
-        color: fg.tertiaryHex, fontStyle: '700',
-      }).setOrigin(1, 0))
-      cursorY += 20
-
-      if (skills.length === 0) {
-        // No unequipped skills in this group
-        container.add(this.add.text(4, cursorY + 6, t('scenes.skill-upgrade.inventory-section.all-equipped'), {
-          fontFamily: fontFamily.body, fontSize: typeScale.small,
-          color: fg.disabledHex, fontStyle: '500',
-        }))
-        cursorY += 26
-        return
+      const tabG = this.add.graphics()
+      tabG.fillStyle(0x000000, 0.45)
+      tabG.fillRoundedRect(tx + 1, tabBarY + 2, tabW, tabBarH, radii.md)
+      tabG.fillStyle(isActive ? tone.color : surface.deepest, isActive ? 0.85 : 0.96)
+      tabG.fillRoundedRect(tx, tabBarY, tabW, tabBarH, radii.md)
+      tabG.fillStyle(0xffffff, isActive ? 0.16 : 0.06)
+      tabG.fillRoundedRect(tx + 2, tabBarY + 2, tabW - 4, 8,
+        { tl: radii.md - 1, tr: radii.md - 1, bl: 0, br: 0 })
+      tabG.lineStyle(isActive ? 2 : 1, isActive ? tone.color : border.default, isActive ? 1 : 0.7)
+      tabG.strokeRoundedRect(tx, tabBarY, tabW, tabBarH, radii.md)
+      // Active glow underline
+      if (isActive) {
+        tabG.fillStyle(tone.color, 0.7)
+        tabG.fillRoundedRect(tx + 6, tabBarY + tabBarH + 2, tabW - 12, 2, 1)
       }
+      this.invGroup.push(tabG)
 
-      // UPAR is now integrated into the card footer (ETAPA 6.4 refactor),
-      // so the inventory stride no longer reserves an extra 18px for the
-      // external chip.
-      const ROW_STRIDE = INV_CARD_H + INV_GAP
+      // Label centred
+      this.invGroup.push(this.add.text(tx + tabW / 2 - 14, tabBarY + tabBarH / 2,
+        groupLabels[g], {
+          fontFamily: fontFamily.body, fontSize: typeScale.meta,
+          color: isActive ? '#ffffff' : tone.hex,
+          fontStyle: '900',
+          shadow: isActive ? { offsetX: 0, offsetY: 1, color: '#000000', blur: 3, fill: true } : undefined,
+        }).setOrigin(0.5).setLetterSpacing(1.4))
+
+      // Owned counter pill on the right side of the tab
+      const counter = this.add.text(tx + tabW - 12, tabBarY + tabBarH / 2,
+        `${ownedInGroup}/4`, {
+          fontFamily: fontFamily.mono, fontSize: '10px',
+          color: isActive ? '#ffffff' : fg.tertiaryHex, fontStyle: '700',
+          backgroundColor: isActive ? '#00000055' : '#0a0f1d99',
+          padding: { x: 5, y: 2 },
+        }).setOrigin(1, 0.5)
+      this.invGroup.push(counter)
+
+      // Hit zone
+      const tabHit = this.add.rectangle(tx + tabW / 2, tabBarY + tabBarH / 2, tabW, tabBarH, 0, 0.001)
+        .setInteractive({ useHandCursor: true }).setDepth(2)
+      tabHit.on('pointerdown', () => {
+        if (this.activeInventoryTab === g) return
+        this.activeInventoryTab = g
+        this.fusionSlot1 = null
+        this.deckSelecting = null
+        this.clearHighlights()
+        this.redrawAll()
+      })
+      this.invGroup.push(tabHit)
+    })
+
+    // ── Card grid (single row, equipped + non-equipped both shown) ──
+    const cardAreaTop = tabBarY + tabBarH + 20
+    const allGroupSkills = filtered.filter((s) => {
+      const d = this.getSkillDef(s.skill.skillId)
+      return d && d.group === this.activeInventoryTab
+    })
+
+    const contentX = ix + 8; const contentY = cardAreaTop; const contentW = iw - 16
+    const container = this.add.container(contentX, contentY)
+    this.invContainer = container
+    this.invCardPositions = []
+
+    if (allGroupSkills.length === 0) {
+      this.invGroup.push(this.add.text(ix + iw / 2, cardAreaTop + 60,
+        t('scenes.skill-upgrade.inventory-section.all-equipped'), {
+          fontFamily: fontFamily.serif, fontSize: '14px',
+          color: fg.disabledHex, fontStyle: 'italic',
+        }).setOrigin(0.5))
+      // Helpful "abrir loja" hint in the empty state — purely decorative
+      this.invGroup.push(this.add.text(ix + iw / 2, cardAreaTop + 86,
+        t('scenes.skill-upgrade.inventory-section.hint'), {
+          fontFamily: fontFamily.body, fontSize: '11px',
+          color: fg.tertiaryHex, fontStyle: '500',
+        }).setOrigin(0.5))
+    } else {
+      // Centre the row when fewer than INV_COLS cards exist.
       const COL_STRIDE = INV_CARD_W + INV_GAP
+      const usedCols = Math.min(INV_COLS, allGroupSkills.length)
+      const rowW = usedCols * INV_CARD_W + (usedCols - 1) * INV_GAP
+      const rowStartX = (contentW - rowW) / 2 + INV_CARD_W / 2
 
-      skills.forEach((item, gi) => {
+      allGroupSkills.forEach((item, gi) => {
         const col = gi % INV_COLS; const row = Math.floor(gi / INV_COLS)
-        const cx = col * COL_STRIDE + INV_CARD_W / 2
-        const cy = cursorY + row * ROW_STRIDE + INV_CARD_H / 2
+        const cx = rowStartX + col * COL_STRIDE
+        const cy = row * (INV_CARD_H + INV_GAP) + INV_CARD_H / 2
         const isSelected = this.fusionSlot1?.idx === item.origIdx
+        const isEquipped = equippedSet.has(item.skill.skillId)
         const def = this.getSkillDef(item.skill.skillId)
         if (!def) return
 
-        const canUpgrade = item.skill.progress >= item.skill.level && item.skill.level < MAX_SKILL_LEVEL
+        const canUpgrade = !isEquipped
+          && item.skill.progress >= item.skill.level
+          && item.skill.level < MAX_SKILL_LEVEL
         const cost = playerData.getUpgradeCost(item.skill.level)
         const canAfford = this.gold >= cost
 
-        // Canonical 120x160 vertical skill card with in-footer UPAR chip
         const card = UI.skillCard(this, cx, cy, {
           name: def.name, effectType: def.effectType, power: def.power,
           group: def.group, unitClass: item.skill.unitClass, level: item.skill.level,
@@ -723,6 +783,41 @@ export default class SkillUpgradeScene extends Phaser.Scene {
           } : undefined,
         })
 
+        // Stagger reveal — feels AAA without adding load
+        card.setAlpha(0).setScale(0.96)
+        this.tweens.add({
+          targets: card,
+          alpha: isEquipped ? 0.55 : 1,
+          scaleX: 1, scaleY: 1,
+          duration: 220,
+          delay: gi * 35,
+          ease: 'Back.Out',
+        })
+
+        // Equipped overlay — dim the card visually + corner ribbon so the
+        // player still sees what they have but can tell it's already in
+        // the deck.
+        if (isEquipped) {
+          // "EQUIPADO" gold ribbon corner top-right of the card.
+          const ribbonW = 76
+          const ribbonH = 16
+          const ribbonX = INV_CARD_W / 2 - ribbonW / 2 - 4
+          const ribbonY = -INV_CARD_H / 2 + ribbonH / 2 + 4
+          const ribbonG = this.add.graphics()
+          ribbonG.fillStyle(0x000000, 0.55)
+          ribbonG.fillRoundedRect(ribbonX - ribbonW / 2 + 1, ribbonY - ribbonH / 2 + 2, ribbonW, ribbonH, 6)
+          ribbonG.fillStyle(accent.primary, 0.95)
+          ribbonG.fillRoundedRect(ribbonX - ribbonW / 2, ribbonY - ribbonH / 2, ribbonW, ribbonH, 6)
+          ribbonG.lineStyle(1, 0x000000, 0.4)
+          ribbonG.strokeRoundedRect(ribbonX - ribbonW / 2, ribbonY - ribbonH / 2, ribbonW, ribbonH, 6)
+          card.add(ribbonG)
+          card.add(this.add.text(ribbonX, ribbonY,
+            t('scenes.skill-upgrade.inventory-section.equipped-badge'), {
+              fontFamily: fontFamily.body, fontSize: '9px',
+              color: '#1a1408', fontStyle: '900',
+            }).setOrigin(0.5).setLetterSpacing(1.4))
+        }
+
         if (isSelected) {
           const glow = this.add.graphics()
           glow.lineStyle(2, accent.primary, 0.85)
@@ -733,27 +828,13 @@ export default class SkillUpgradeScene extends Phaser.Scene {
 
         container.add(card)
 
-        // Register position for click detection
         this.invCardPositions.push({
           cx: contentX + cx, cy: contentY + cy,
           skill: item.skill, origIdx: item.origIdx,
-          canUpgrade, canAfford, isEquipped: false,
+          canUpgrade, canAfford, isEquipped,
         })
       })
-
-      const rows = Math.ceil(skills.length / INV_COLS)
-      cursorY += rows * ROW_STRIDE + 10
-    })
-
-    // Scroll — use scene-level wheel event so it doesn't block card clicks
-    const maxScroll = Math.max(0, cursorY - contentH)
-    const invBounds = new Phaser.Geom.Rectangle(ix, iy, iw, ih)
-
-    this.input.on('wheel', (_p: Phaser.Input.Pointer, _go: Phaser.GameObjects.GameObject[], _dx: number, dy: number) => {
-      if (!invBounds.contains(_p.x, _p.y)) return
-      this.scrollY = Phaser.Math.Clamp(this.scrollY + dy * 0.4, 0, maxScroll)
-      container.y = contentY - this.scrollY
-    })
+    }
 
     // ── Global tooltip (for both inv and deck) ──
     const destroyClickTooltip = () => { this._clickTooltip?.destroy(true); this._clickTooltip = null }
@@ -838,7 +919,16 @@ export default class SkillUpgradeScene extends Phaser.Scene {
           }
         }
 
-        if (pos.isEquipped) return
+        if (pos.isEquipped) {
+          // Equipped cards are read-only in the inventory: no drag, no
+          // selection, no equip flow. Clicking them opens the skill
+          // detail in the left panel so the player can inspect stats.
+          this.fusionSlot1 = null
+          this.deckSelecting = null
+          this.clearHighlights()
+          showTooltipAt(pos.skill.skillId, 0, 0)
+          return
+        }
 
         // Start drag — create visual card at screen position
         this.dragSource = { skill: pos.skill, origIdx: pos.origIdx, fromDeck: false }

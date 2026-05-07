@@ -552,7 +552,8 @@
       "header": "ENVANTER",
       "hint": "Donatmak için tıkla veya sürükle",
       "all-equipped": "Hepsi donatıldı",
-      "owned-counter": "{owned} / {max}"
+      "owned-counter": "{owned} / {max}",
+      "equipped-badge": "DONATILDI"
     },
     "groups": {
       "attack1": "SALDIRI · HASAR",

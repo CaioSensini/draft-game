@@ -552,7 +552,8 @@
       "header": "인벤토리",
       "hint": "클릭 또는 드래그로 장착",
       "all-equipped": "모두 장착됨",
-      "owned-counter": "{owned} / {max}"
+      "owned-counter": "{owned} / {max}",
+      "equipped-badge": "장착됨"
     },
     "groups": {
       "attack1": "공격 · 피해",
