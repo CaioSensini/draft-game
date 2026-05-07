@@ -552,7 +552,8 @@
       "header": "INVENTÁRIO",
       "hint": "Clique ou arraste para equipar",
       "all-equipped": "Todas equipadas",
-      "owned-counter": "{owned} / {max}"
+      "owned-counter": "{owned} / {max}",
+      "equipped-badge": "EQUIPADO"
     },
     "groups": {
       "attack1": "ATAQUE · DANO",

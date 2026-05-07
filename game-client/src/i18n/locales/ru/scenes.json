@@ -552,7 +552,8 @@
       "header": "ИНВЕНТАРЬ",
       "hint": "Нажмите или перетащите для надевания",
       "all-equipped": "Все надеты",
-      "owned-counter": "{owned} / {max}"
+      "owned-counter": "{owned} / {max}",
+      "equipped-badge": "СНАРЯЖЕНО"
     },
     "groups": {
       "attack1": "АТАКА · УРОН",
