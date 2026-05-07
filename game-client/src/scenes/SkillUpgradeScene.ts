@@ -654,15 +654,18 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     }
 
     const tabs: InventoryTab[] = ['attack1', 'attack2', 'defense1', 'defense2']
-    const tabBarY = iy + 50
-    const tabBarH = 36
-    const tabPadX = 16
+    // Compact layout — pull tabs UP and shrink vertical footprint so the
+    // 160 px cards + their accents fit cleanly inside the panel without
+    // bleeding past the bottom edge.
+    const tabBarY = iy + 38
+    const tabBarH = 30
+    const tabPadX = 14
     const tabAreaW = iw - tabPadX * 2
-    const tabW = (tabAreaW - 12 * (tabs.length - 1)) / tabs.length
+    const tabW = (tabAreaW - 10 * (tabs.length - 1)) / tabs.length
     const tabBarX = ix + tabPadX
 
     tabs.forEach((g, i) => {
-      const tx = tabBarX + i * (tabW + 12)
+      const tx = tabBarX + i * (tabW + 10)
       const tone = groupTone[g]
       const isActive = g === this.activeInventoryTab
       const ownedInGroup = filtered.filter((s) => {
@@ -670,45 +673,78 @@ export default class SkillUpgradeScene extends Phaser.Scene {
         return d && d.group === g
       }).length
 
+      // ── AAA-grade tab pill ───────────────────────────────────────────
+      // Pure-black drop shadow (NEVER tinted), gradient sheen for the
+      // active state, faint tone-tinted hairline border for the inactive
+      // state. The previous design had a colored underline that read as
+      // a "colored shadow" — that's gone now.
       const tabG = this.add.graphics()
-      tabG.fillStyle(0x000000, 0.45)
-      tabG.fillRoundedRect(tx + 1, tabBarY + 2, tabW, tabBarH, radii.md)
-      tabG.fillStyle(isActive ? tone.color : surface.deepest, isActive ? 0.85 : 0.96)
-      tabG.fillRoundedRect(tx, tabBarY, tabW, tabBarH, radii.md)
-      tabG.fillStyle(0xffffff, isActive ? 0.16 : 0.06)
-      tabG.fillRoundedRect(tx + 2, tabBarY + 2, tabW - 4, 8,
-        { tl: radii.md - 1, tr: radii.md - 1, bl: 0, br: 0 })
-      tabG.lineStyle(isActive ? 2 : 1, isActive ? tone.color : border.default, isActive ? 1 : 0.7)
-      tabG.strokeRoundedRect(tx, tabBarY, tabW, tabBarH, radii.md)
-      // Active glow underline
+
+      // Drop shadow (pure black, 2-layer for soft edge)
+      tabG.fillStyle(0x000000, 0.32)
+      tabG.fillRoundedRect(tx + 1, tabBarY + 3, tabW, tabBarH, radii.md)
+      tabG.fillStyle(0x000000, 0.5)
+      tabG.fillRoundedRect(tx + 1, tabBarY + 1, tabW, tabBarH, radii.md)
+
       if (isActive) {
-        tabG.fillStyle(tone.color, 0.7)
-        tabG.fillRoundedRect(tx + 6, tabBarY + tabBarH + 2, tabW - 12, 2, 1)
+        // ACTIVE: solid tone fill with top sheen + bottom darken for
+        // depth + bright tone-colored border + inner white rim.
+        tabG.fillStyle(tone.color, 1)
+        tabG.fillRoundedRect(tx, tabBarY, tabW, tabBarH, radii.md)
+        // top highlight (sheen)
+        tabG.fillStyle(0xffffff, 0.22)
+        tabG.fillRoundedRect(tx + 2, tabBarY + 2, tabW - 4, tabBarH * 0.45,
+          { tl: radii.md - 1, tr: radii.md - 1, bl: 0, br: 0 })
+        // bottom darken
+        tabG.fillStyle(0x000000, 0.18)
+        tabG.fillRoundedRect(tx + 2, tabBarY + tabBarH * 0.6, tabW - 4, tabBarH * 0.4 - 2,
+          { tl: 0, tr: 0, bl: radii.md - 1, br: radii.md - 1 })
+        // outer tone border
+        tabG.lineStyle(1.5, tone.color, 1)
+        tabG.strokeRoundedRect(tx, tabBarY, tabW, tabBarH, radii.md)
+        // 1-px inner light rim for that polished glass feel
+        tabG.lineStyle(1, 0xffffff, 0.18)
+        tabG.strokeRoundedRect(tx + 1.5, tabBarY + 1.5, tabW - 3, tabBarH - 3, radii.md - 1)
+      } else {
+        // INACTIVE: muted dark fill with very subtle sheen + faint
+        // tone-tinted border. Reads "available, not selected".
+        tabG.fillStyle(surface.deepest, 1)
+        tabG.fillRoundedRect(tx, tabBarY, tabW, tabBarH, radii.md)
+        // soft top sheen
+        tabG.fillStyle(0xffffff, 0.05)
+        tabG.fillRoundedRect(tx + 2, tabBarY + 2, tabW - 4, tabBarH * 0.4,
+          { tl: radii.md - 1, tr: radii.md - 1, bl: 0, br: 0 })
+        // faint tone border
+        tabG.lineStyle(1, tone.color, 0.42)
+        tabG.strokeRoundedRect(tx, tabBarY, tabW, tabBarH, radii.md)
       }
       this.invGroup.push(tabG)
 
-      // Label centred
-      this.invGroup.push(this.add.text(tx + tabW / 2 - 14, tabBarY + tabBarH / 2,
+      // Label centred — counter is offset to the right edge
+      const labelColor = isActive ? '#ffffff' : tone.hex
+      this.invGroup.push(this.add.text(tx + tabW / 2 - 12, tabBarY + tabBarH / 2,
         groupLabels[g], {
-          fontFamily: fontFamily.body, fontSize: typeScale.meta,
-          color: isActive ? '#ffffff' : tone.hex,
+          fontFamily: fontFamily.body, fontSize: '11px',
+          color: labelColor,
           fontStyle: '900',
-          shadow: isActive ? { offsetX: 0, offsetY: 1, color: '#000000', blur: 3, fill: true } : undefined,
+          shadow: isActive ? { offsetX: 0, offsetY: 1, color: '#000000', blur: 2, fill: true } : undefined,
         }).setOrigin(0.5).setLetterSpacing(1.4))
 
-      // Owned counter pill on the right side of the tab
-      const counter = this.add.text(tx + tabW - 12, tabBarY + tabBarH / 2,
+      // Owned counter chip on the right side of the tab
+      const counter = this.add.text(tx + tabW - 8, tabBarY + tabBarH / 2,
         `${ownedInGroup}/4`, {
-          fontFamily: fontFamily.mono, fontSize: '10px',
+          fontFamily: fontFamily.mono, fontSize: '9px',
           color: isActive ? '#ffffff' : fg.tertiaryHex, fontStyle: '700',
           backgroundColor: isActive ? '#00000055' : '#0a0f1d99',
-          padding: { x: 5, y: 2 },
+          padding: { x: 4, y: 2 },
         }).setOrigin(1, 0.5)
       this.invGroup.push(counter)
 
-      // Hit zone
+      // Hit zone — depth 5 so it sits ABOVE the inventory click zone
+      // (depth 4) which would otherwise eat the click before it reaches
+      // the tab.
       const tabHit = this.add.rectangle(tx + tabW / 2, tabBarY + tabBarH / 2, tabW, tabBarH, 0, 0.001)
-        .setInteractive({ useHandCursor: true }).setDepth(2)
+        .setInteractive({ useHandCursor: true }).setDepth(5)
       tabHit.on('pointerdown', () => {
         if (this.activeInventoryTab === g) return
         this.activeInventoryTab = g
@@ -721,7 +757,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     })
 
     // ── Card grid (single row, equipped + non-equipped both shown) ──
-    const cardAreaTop = tabBarY + tabBarH + 20
+    const cardAreaTop = tabBarY + tabBarH + 10
     const allGroupSkills = filtered.filter((s) => {
       const d = this.getSkillDef(s.skill.skillId)
       return d && d.group === this.activeInventoryTab
@@ -794,17 +830,16 @@ export default class SkillUpgradeScene extends Phaser.Scene {
           ease: 'Back.Out',
         })
 
-        // Equipped overlay — visual signals layered to read at a glance
-        // without overlapping the card's own header / icon / stats:
+        // Equipped overlay — compact in-card visual signals so nothing
+        // overflows the inventory panel:
         //   1. Card alpha 0.7 (slight wash so it reads "different state"
         //      but the icon + name stay legible).
         //   2. Gold rim around the entire card outline.
-        //   3. A small gold check disc at top-right CORNER of the card,
-        //      hugging the boundary instead of crashing into the
-        //      class banner inside the body.
-        //   4. A gold "EQUIPADO" pill OUTSIDE the bottom of the card,
-        //      between rows, so the label never collides with the
-        //      level dots / stats text inside the card.
+        //   3. A gold check disc at the top-right CORNER (sits half-
+        //      outside the boundary, never overlaps the class banner).
+        // The "EQUIPADO" text label has been removed from below the
+        // card to keep all visual signals INSIDE the panel — the gold
+        // rim + corner ✓ disc are unmistakable on their own.
         if (isEquipped) {
           // (2) gold rim
           const rim = this.add.graphics()
@@ -831,25 +866,6 @@ export default class SkillUpgradeScene extends Phaser.Scene {
             fontFamily: fontFamily.body, fontSize: '12px',
             color: '#1a1408', fontStyle: '900',
           }).setOrigin(0.5))
-
-          // (4) gold pill below card — text label outside the card so
-          // it never overlaps the level dots / stats inside.
-          const pillY = INV_CARD_H / 2 + 12
-          const pillW = 88
-          const pillH = 16
-          const pillG = this.add.graphics()
-          pillG.fillStyle(0x000000, 0.55)
-          pillG.fillRoundedRect(-pillW / 2 + 1, pillY - pillH / 2 + 2, pillW, pillH, pillH / 2)
-          pillG.fillStyle(accent.primary, 0.98)
-          pillG.fillRoundedRect(-pillW / 2, pillY - pillH / 2, pillW, pillH, pillH / 2)
-          pillG.lineStyle(1, 0x000000, 0.4)
-          pillG.strokeRoundedRect(-pillW / 2, pillY - pillH / 2, pillW, pillH, pillH / 2)
-          card.add(pillG)
-          card.add(this.add.text(0, pillY,
-            t('scenes.skill-upgrade.inventory-section.equipped-badge'), {
-              fontFamily: fontFamily.body, fontSize: '10px',
-              color: '#1a1408', fontStyle: '900',
-            }).setOrigin(0.5).setLetterSpacing(1.4))
         }
 
         if (isSelected) {
