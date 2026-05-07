@@ -751,7 +751,16 @@ export class CombatEngine {
           }
           return allies
         }
-        return this._targeting.getValidUnitTargets(skill, char, this.battle)
+        // Attack single-target — filter enemy Kings out for skills the
+        // doc explicitly forbids targeting Kings (Desarme lk_a8 silences
+        // attack skills, doc says "Não afeta reis").
+        {
+          const enemies = this._targeting.getValidUnitTargets(skill, char, this.battle)
+          if (skill.id === 'lk_a8' || skill.id === 'rk_a8') {
+            return enemies.filter((c) => c.role !== 'king')
+          }
+          return enemies
+        }
       case 'lowest_ally':
         return [char, ...this.battle.alliesOf(char)] as Character[]
       case 'all_allies':
@@ -1326,6 +1335,117 @@ export class CombatEngine {
       return
     }
 
+    // v3 §6.5 Ordem Real (lk_d8 / rk_d8). King teleports to its starting
+    // position; living allies are pulled to fixed offsets around the
+    // King (Warrior forward, Specialist north, Executor backward).
+    // Each ally that landed adjacent gets def_up 15% for 1 turn (the
+    // catalog secondary already declares this); the KING gets a stacking
+    // -15% DR per adjacent ally (max -45%) modelled as a self positional
+    // DR with a custom fraction.
+    if (skill.id === 'lk_d8' || skill.id === 'rk_d8') {
+      this.emit({
+        type: EventType.SKILL_USED, unitId: char.id, skillId: skill.id,
+        skillName: skill.name, category: 'defense', targetId: char.id,
+      })
+
+      // Step 1: teleport King to spawn position (left=1,2 / right=14,3 per
+      // initialUnits.ts; encoded inline so the engine doesn't reach out
+      // into data/).
+      const kingHomeCol = char.side === 'left' ? 1  : 14
+      const kingHomeRow = char.side === 'left' ? 2  : 3
+      const kingFromCol = char.col
+      const kingFromRow = char.row
+      if (kingFromCol !== kingHomeCol || kingFromRow !== kingHomeRow) {
+        const moveRes = this._grid.moveCharacter(char.id, kingHomeCol, kingHomeRow)
+        if (moveRes.ok) {
+          char.moveTo(kingHomeCol, kingHomeRow)
+          this.emit({
+            type: EventType.UNIT_PUSHED,
+            unitId: char.id,
+            fromCol: kingFromCol, fromRow: kingFromRow,
+            toCol: kingHomeCol,   toRow: kingHomeRow,
+            force: 1,
+            distanceMoved: Math.abs(kingHomeCol - kingFromCol) + Math.abs(kingHomeRow - kingFromRow),
+            blocked: false,
+            collidedWith: null,
+          })
+        }
+      }
+
+      // Step 2: relocate living allies by role to defined offsets around
+      // the King. Forward = toward enemy half (left → +col, right → -col).
+      const fwdDc = char.side === 'left' ? 1 : -1
+      const slotByRole: Record<string, { dc: number; dr: number }> = {
+        warrior:    { dc:  fwdDc, dr:  0 },   // à frente
+        specialist: { dc:  0,     dr: -1 },   // acima (north)
+        executor:   { dc: -fwdDc, dr:  0 },   // atrás
+      }
+      const allies = this.battle.alliesOf(char) as Character[]
+      for (const ally of allies) {
+        if (!ally.alive) continue
+        const slot = slotByRole[ally.role]
+        if (!slot) continue
+        const dest = { col: kingHomeCol + slot.dc, row: kingHomeRow + slot.dr }
+        if (!this._grid.isInBounds(dest.col, dest.row)) continue
+        // Skip when destination tile is already occupied by something
+        // other than this ally (defensive).
+        const occupant = this._grid.occupantAt(dest.col, dest.row)
+        if (occupant && occupant !== ally.id) continue
+
+        const fromCol = ally.col
+        const fromRow = ally.row
+        if (fromCol === dest.col && fromRow === dest.row) continue
+        const moveRes = this._grid.moveCharacter(ally.id, dest.col, dest.row)
+        if (!moveRes.ok) continue
+        ally.moveTo(dest.col, dest.row)
+        this.emit({
+          type: EventType.UNIT_PUSHED,
+          unitId: ally.id,
+          fromCol, fromRow,
+          toCol: dest.col, toRow: dest.row,
+          force: 1,
+          distanceMoved: Math.abs(dest.col - fromCol) + Math.abs(dest.row - fromRow),
+          blocked: false,
+          collidedWith: null,
+        })
+      }
+
+      // Step 3: apply def_up 15% (1t) to every ally adjacent to the King
+      // post-relocation. Catalog declares this as a secondary, but the
+      // generic loop targets the resolved defense targets (which for
+      // 'all_allies' is the entire team) — restricting to ADJACENT after
+      // the teleport is more faithful to the spec ("aliados adjacentes").
+      const adjacentAllies = allies.filter((a) => {
+        if (!a.alive) return false
+        const dx = Math.abs(a.col - kingHomeCol)
+        const dy = Math.abs(a.row - kingHomeRow)
+        return Math.max(dx, dy) === 1
+      })
+      for (const a of adjacentAllies) {
+        a.addEffect(new DefBoostEffect(15, 1))
+        this.emit({
+          type:   EventType.STATUS_APPLIED,
+          unitId: a.id,
+          status: 'def_up' as const,
+          value:  15,
+        })
+      }
+
+      // Step 4: King's stacked DR — 15% per adjacent ally, max 45%.
+      const adjCount = adjacentAllies.length
+      const kingDrFrac = Math.min(0.45, 0.15 * adjCount)
+      if (kingDrFrac > 0) {
+        char.addEffect(new PositionalDrEffect(
+          'square_3x3',
+          { col: kingHomeCol, row: kingHomeRow },
+          char.side,
+          kingDrFrac,
+          1,
+        ))
+      }
+      return
+    }
+
     // v3 §6.5 Recuperação Real (lk_d2 / rk_d2). Self-regen 10% max HP
     // for 2 ticks, exception to Rei's heal-immunity passive. Doc spec:
     // "Recupera 20% HP max em 2 turnos (10% agora, 10% próximo turno
@@ -1718,6 +1838,89 @@ export class CombatEngine {
   }
 
   /**
+   * v3 §6.5 Intimidação (lk_a7 / rk_a7) post-hit — teleport the target
+   * plus all adjacent enemies to a cluster in caster's territory. The
+   * destination is picked by the engine (deterministic): two tiles
+   * "forward" from the caster (toward the enemy half), then expanding
+   * out as needed for the adjacent enemies.
+   *
+   * Constraints honoured from the doc:
+   *   - "Não pode posicionar nas bordas do mapa" — borders (row 0, row
+   *     ROWS-1, col 0, col COLS-1) are not used.
+   *   - Skip tiles that are out of bounds, walls, or already occupied
+   *     by living characters.
+   */
+  private _applyIntimidacao(caster: Character, target: Character): void {
+    const enemySide = caster.side === 'left' ? 'right' : 'left'
+    // Adjacent enemies (Chebyshev distance 1) at the moment of cast.
+    const adjacents = this.battle.teamOf(enemySide).living.filter((c) => {
+      if (c.id === target.id || !c.alive) return false
+      return Math.max(Math.abs(c.col - target.col), Math.abs(c.row - target.row)) <= 1
+    }) as Character[]
+
+    // Anchor for the destination cluster: 2 tiles forward from caster,
+    // mid-row (3). Then collect a spiral of empty non-border tiles in
+    // caster's own territory.
+    const fwdDc   = caster.side === 'left' ? 2 : -2
+    const anchor  = { col: caster.col + fwdDc, row: 3 }
+    const cols    = 16, rows = 6
+    const isUsable = (c: number, r: number): boolean => {
+      if (c <= 0 || c >= cols - 1) return false  // skip outer columns (borders)
+      if (r <= 0 || r >= rows - 1) return false  // skip outer rows (borders)
+      if (!this._grid.isWalkable(c, r)) return false
+      const occ = this._grid.occupantAt(c, r)
+      return occ === null
+    }
+
+    // Spiral search from anchor outward (rings of growing radius).
+    const slots: Array<{ col: number; row: number }> = []
+    const need = 1 + adjacents.length
+    outer: for (let radius = 0; radius <= 3 && slots.length < need; radius++) {
+      if (radius === 0) {
+        if (isUsable(anchor.col, anchor.row)) slots.push({ ...anchor })
+        continue
+      }
+      for (let dc = -radius; dc <= radius; dc++) {
+        for (let dr = -radius; dr <= radius; dr++) {
+          if (Math.max(Math.abs(dc), Math.abs(dr)) !== radius) continue
+          const c = anchor.col + dc, r = anchor.row + dr
+          if (!isUsable(c, r)) continue
+          slots.push({ col: c, row: r })
+          if (slots.length >= need) break outer
+        }
+      }
+    }
+    if (slots.length === 0) return  // no destination found, abort silently
+
+    // Move target to slot 0; adjacents to slots 1..N (skip those with
+    // no slot — partial relocation is acceptable when arena is full).
+    const moves: Array<{ unit: Character; to: { col: number; row: number } }> = [
+      { unit: target, to: slots[0] },
+    ]
+    for (let i = 0; i < adjacents.length && i + 1 < slots.length; i++) {
+      moves.push({ unit: adjacents[i], to: slots[i + 1] })
+    }
+
+    for (const { unit, to } of moves) {
+      if (unit.col === to.col && unit.row === to.row) continue
+      const fromCol = unit.col, fromRow = unit.row
+      const moveRes = this._grid.moveCharacter(unit.id, to.col, to.row)
+      if (!moveRes.ok) continue
+      unit.moveTo(to.col, to.row)
+      this.emit({
+        type: EventType.UNIT_PUSHED,
+        unitId: unit.id,
+        fromCol, fromRow,
+        toCol: to.col, toRow: to.row,
+        force: 1,
+        distanceMoved: Math.max(Math.abs(to.col - fromCol), Math.abs(to.row - fromRow)),
+        blocked: false,
+        collidedWith: null,
+      })
+    }
+  }
+
+  /**
    * v3 §6.5 Sombra Real — pick empty cells near the King for clone spawn.
    *
    * Greedy search of the 8-adjacent cells (and falling back to radius 2
@@ -1857,6 +2060,18 @@ export class CombatEngine {
         }
 
         this._applyOffensiveSkill(caster, targetChar, skill)
+
+        // v3 §6.5 Intimidação (lk_a7 / rk_a7): after the 10 damage hit,
+        // teleport the target + all adjacent enemies to a destination
+        // cluster picked by the engine (UI tile picker is future work).
+        // Strategy: find a destination tile in caster's territory near
+        // the caster (forward-from-caster, toward enemy), then place
+        // the target there and its adjacent enemies in surrounding
+        // empty tiles. Doc forbids placing on map borders — destination
+        // skips them.
+        if ((skill.id === 'lk_a7' || skill.id === 'rk_a7') && targetChar.alive) {
+          this._applyIntimidacao(caster, targetChar)
+        }
         break
       }
 
