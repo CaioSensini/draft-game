@@ -537,8 +537,10 @@ const handlePush: EffectHandler = (ctx) => {
   const dr = Math.sign(targetPos.row - casterPos.row)
   const direction = _offsetToDirection(dc, dr)
 
-  // Push force = power (capped at reasonable range)
-  const force = Math.max(1, Math.min(ctx.power, 5))
+  // Push force comes straight from the secondary's `power`. Cap at 6
+  // so a runaway value can't shove a target across the entire arena;
+  // every documented push (1-3) sits comfortably below the cap.
+  const force = Math.max(1, Math.min(ctx.power, 6))
 
   return {
     ...hit,

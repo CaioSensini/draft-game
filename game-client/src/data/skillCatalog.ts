@@ -469,7 +469,7 @@ const LEFT_KING: SkillDefinition[] = [
     id: 'lk_a1', name: 'Soco Real', category: 'attack', group: 'attack1',
     effectType: 'damage', targetType: 'area', power: 25, range: 0,
     areaShape: { type: 'line', direction: 'east', length: 1 },
-    secondaryEffects: [{ effectType: 'shield', power: 15, ticks: 2 }],
+    secondaryEffects: [{ effectType: 'shield', power: 15, ticks: 2, target: 'caster' }],
     tags: ["AREA", "DANO", "ESCUDO"],
     description: '25 dano em 2 sqm horizontal + self shield 15 por 2 turnos.',
   },
@@ -477,7 +477,7 @@ const LEFT_KING: SkillDefinition[] = [
     id: 'lk_a2', name: 'Chute Real', category: 'attack', group: 'attack1',
     effectType: 'damage', targetType: 'area', power: 27, range: 0,
     areaShape: { type: 'line', direction: 'north', length: 1 },
-    secondaryEffects: [{ effectType: 'shield', power: 15, ticks: 2 }],
+    secondaryEffects: [{ effectType: 'shield', power: 15, ticks: 2, target: 'caster' }],
     tags: ["AREA", "DANO", "ESCUDO"],
     description: '27 dano em 2 sqm vertical + self shield 15 por 2 turnos.',
   },
@@ -500,8 +500,9 @@ const LEFT_KING: SkillDefinition[] = [
   // ── attack2 (controle) ─────────────────────────────────────────────────────
   {
     id: 'lk_a5', name: 'Empurrão Real', category: 'attack', group: 'attack2',
-    effectType: 'push', targetType: 'area', power: 12, range: 0,
+    effectType: 'area', targetType: 'area', power: 12, range: 0,
     areaShape: { type: 'line', direction: 'east', length: 6 },
+    secondaryEffects: [{ effectType: 'push', power: 3 }],
     tags: ["LINHA", "DANO", "PUSH"],
     description: '12 dano em linha vertical 3 sqm até fim do mapa + push até 3 sqm.',
   },
