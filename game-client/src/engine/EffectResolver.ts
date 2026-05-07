@@ -70,6 +70,12 @@ export interface EffectContext {
   readonly ticks?:    number
   /** Current battle round — included in CHARACTER_DIED events. */
   readonly round:     number
+  /**
+   * For `push` only — when 'forward', the target is pushed uniformly
+   * toward the enemy half regardless of caster→target geometry. Default
+   * (undefined) uses the per-target away-from-caster vector.
+   */
+  readonly pushDirection?: 'away_from_caster' | 'forward'
 }
 
 // ── Result ────────────────────────────────────────────────────────────────────
@@ -530,12 +536,23 @@ const handlePush: EffectHandler = (ctx) => {
   const hit = ctx.rawDamage > 0 ? _applyRawDamage(ctx) : EMPTY
   if (hit.evaded || hit.killed || !ctx.target.alive) return hit
 
-  // Determine push direction: away from caster
-  const casterPos = Position.of(ctx.caster.col, ctx.caster.row)
-  const targetPos = Position.of(ctx.target.col, ctx.target.row)
-  const dc = Math.sign(targetPos.col - casterPos.col)
-  const dr = Math.sign(targetPos.row - casterPos.row)
-  const direction = _offsetToDirection(dc, dr)
+  // Direction selection
+  // - `pushDirection: 'forward'` → uniform "toward enemy half" vector,
+  //   used by line-shape area skills (Colisão Titânica) where every hit
+  //   needs to be displaced the same way regardless of geometry.
+  // - default → away-from-caster per-target vector, the legacy
+  //   behaviour for radial pushes (Contra-ataque, Empurrão Real on
+  //   diagonal targets, etc.).
+  let direction: Direction
+  if (ctx.pushDirection === 'forward') {
+    direction = ctx.caster.side === 'left' ? 'east' : 'west'
+  } else {
+    const casterPos = Position.of(ctx.caster.col, ctx.caster.row)
+    const targetPos = Position.of(ctx.target.col, ctx.target.row)
+    const dc = Math.sign(targetPos.col - casterPos.col)
+    const dr = Math.sign(targetPos.row - casterPos.row)
+    direction = _offsetToDirection(dc, dr)
+  }
 
   // Push force comes straight from the secondary's `power`. Cap at 6
   // so a runaway value can't shove a target across the entire arena;

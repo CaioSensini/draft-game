@@ -447,10 +447,29 @@ export class CombatEngine {
   private _applyPreMovement(char: Character, category: 'attack' | 'defense'): boolean {
     const sel = this.selections.get(char.id)
     if (!sel) return false
-    const dest = category === 'attack' ? sel.preMoveAttack : sel.preMoveDefense
-    if (!dest) return false
     const skill = category === 'attack' ? sel.attackSkill : sel.defenseSkill
     if (!skill?.preMovement) return false
+
+    // Pick the destination: explicit selection wins; otherwise fall
+    // through to an engine default (one tile forward toward the enemy
+    // half, within `maxTiles`). This keeps preMovement-bearing skills
+    // functional while the UI tile picker is still missing.
+    let dest = category === 'attack' ? sel.preMoveAttack : sel.preMoveDefense
+    if (!dest) {
+      const fwdDc = char.side === 'left' ? 1 : -1
+      // Try moving forward up to `maxTiles` until we find an empty tile.
+      // Stop at 0 (skip the move altogether) if every step is blocked.
+      let chosen: { col: number; row: number } | null = null
+      for (let step = 1; step <= skill.preMovement.maxTiles; step++) {
+        const c = char.col + fwdDc * step
+        const r = char.row
+        if (!this._grid.isWalkable(c, r)) break
+        if (this._grid.occupantAt(c, r) !== null) break
+        chosen = { col: c, row: r }
+      }
+      if (!chosen) return false
+      dest = chosen
+    }
 
     const fromCol = char.col
     const fromRow = char.row
@@ -1026,6 +1045,19 @@ export class CombatEngine {
         if (tick.effectType === 'regen' && tick.value > 0) {
           this.emit({ type: EventType.REGEN_TICK,  unitId: char.id, heal: tick.value,   newHp: char.hp })
         }
+        // v3 §6.2 Chuva de Mana — second-tick damage (DelayedDamageEffect)
+        // never had a renderer event, so the player never saw the second
+        // hit land. Surface it as a generic DAMAGE_APPLIED so the standard
+        // damage flash + HP-bar-update + log entry fire.
+        if (tick.effectType === 'delayed_damage' && tick.value > 0) {
+          this.emit({
+            type: EventType.DAMAGE_APPLIED,
+            unitId: char.id,
+            amount: tick.value,
+            newHp: char.hp,
+            sourceId: null,
+          })
+        }
         // Emit when a stat modifier expires so the renderer can clear its debuff icon
         if (tick.expired && _isStatModType(tick.effectType)) {
           this.emit({
@@ -1484,7 +1516,9 @@ export class CombatEngine {
       return
     }
 
-    // v3 §6.5 Fuga Sombria (lk_d1 / rk_d1). Grant invisibility for 1t.
+    // v3 §6.5 Fuga Sombria (lk_d1 / rk_d1). King teleports to any empty
+    // tile in own territory + becomes untargetable by single-target
+    // skills until damaged or moved (tracked by setInvisibility).
     // Breaks on HP damage (handled in Character.takeDamage) or naturally
     // expires via tickEffects.
     if (skill.id === 'lk_d1' || skill.id === 'rk_d1') {
@@ -1492,6 +1526,48 @@ export class CombatEngine {
         type: EventType.SKILL_USED, unitId: char.id, skillId: skill.id,
         skillName: skill.name, category: 'defense', targetId: char.id,
       })
+
+      // Engine-picked teleport destination: scan own half for the first
+      // empty walkable tile (UI tile picker is future polish). Prefers
+      // tiles in the back rows (rows 1-4) and away from the wall edge so
+      // the King ends up in a "safe" pocket. Falls through to any open
+      // tile if the preferred zone is full.
+      const sideRange: [number, number] = char.side === 'left' ? [0, 7] : [8, 15]
+      const findEmpty = (preferredCols: number[]): { col: number; row: number } | null => {
+        for (const c of preferredCols) {
+          for (const r of [2, 3, 1, 4, 0, 5]) {   // mid rows first
+            if (c < sideRange[0] || c > sideRange[1]) continue
+            if (this._grid.isWalkable(c, r) && this._grid.occupantAt(c, r) === null) {
+              return { col: c, row: r }
+            }
+          }
+        }
+        return null
+      }
+      // Try home column first (col 0 or 15 → far back), then walking
+      // forward toward the mid-line.
+      const cols = char.side === 'left'
+        ? [0, 1, 2, 3, 4, 5, 6, 7]
+        : [15, 14, 13, 12, 11, 10, 9, 8]
+      const dest = findEmpty(cols)
+      if (dest && (dest.col !== char.col || dest.row !== char.row)) {
+        const fromCol = char.col, fromRow = char.row
+        const moveRes = this._grid.moveCharacter(char.id, dest.col, dest.row)
+        if (moveRes.ok) {
+          char.moveTo(dest.col, dest.row)
+          this.emit({
+            type: EventType.UNIT_PUSHED,
+            unitId: char.id,
+            fromCol, fromRow,
+            toCol: dest.col, toRow: dest.row,
+            force: 1,
+            distanceMoved: Math.max(Math.abs(dest.col - fromCol), Math.abs(dest.row - fromRow)),
+            blocked: false,
+            collidedWith: null,
+          })
+        }
+      }
+
       char.setInvisibility(1)
       this.emit({
         type:   EventType.STATUS_APPLIED,
@@ -1541,8 +1617,15 @@ export class CombatEngine {
       const forwardDc = char.side === 'left' ? 1 : -1
       const wallCol = char.col + forwardDc
       for (const dr of [-1, 0, 1]) {
+        const r = char.row + dr
         this._grid.placeObstacle({
-          col: wallCol, row: char.row + dr,
+          col: wallCol, row: r,
+          kind: 'wall_shield', side: char.side,
+          ticksRemaining: 1, sourceId: char.id,
+        })
+        this.emit({
+          type: EventType.OBSTACLE_PLACED,
+          col: wallCol, row: r,
           kind: 'wall_shield', side: char.side,
           ticksRemaining: 1, sourceId: char.id,
         })
@@ -2055,8 +2138,15 @@ export class CombatEngine {
           // (v3: "2 sqm vertical"). If either is blocked (OOB / wall /
           // occupied), skip that position silently.
           for (const dr of [0, -1]) {
+            const r = target.row + dr
             this._grid.placeObstacle({
-              col: target.col, row: target.row + dr,
+              col: target.col, row: r,
+              kind: 'wall_viva', side: caster.side,
+              ticksRemaining: 2, sourceId: caster.id,
+            })
+            this.emit({
+              type: EventType.OBSTACLE_PLACED,
+              col: target.col, row: r,
               kind: 'wall_viva', side: caster.side,
               ticksRemaining: 2, sourceId: caster.id,
             })
@@ -2074,8 +2164,15 @@ export class CombatEngine {
             [-1, 0],       [1, 0],
             [-1, 1],[0, 1],[1, 1],
           ]) {
+            const c = target.col + dc, r = target.row + dr
             this._grid.placeObstacle({
-              col: target.col + dc, row: target.row + dr,
+              col: c, row: r,
+              kind: 'wall_ring', side: caster.side,
+              ticksRemaining: 2, sourceId: caster.id,
+            })
+            this.emit({
+              type: EventType.OBSTACLE_PLACED,
+              col: c, row: r,
               kind: 'wall_ring', side: caster.side,
               ticksRemaining: 2, sourceId: caster.id,
             })
@@ -2097,6 +2194,12 @@ export class CombatEngine {
           const existingObstacle = this._grid.obstacleAt(target.col, target.row)
           if (!occupant && !existingObstacle && this._grid.isInBounds(target.col, target.row)) {
             this._grid.placeObstacle({
+              col: target.col, row: target.row,
+              kind: 'trap', side: caster.side,
+              ticksRemaining: 3, sourceId: caster.id,
+            })
+            this.emit({
+              type: EventType.OBSTACLE_PLACED,
               col: target.col, row: target.row,
               kind: 'trap', side: caster.side,
               ticksRemaining: 3, sourceId: caster.id,
@@ -2204,17 +2307,18 @@ export class CombatEngine {
           }
         }
 
-        // v3 §6.2 Chuva de Mana (ls_a2 / rs_a2): 22 damage split across 2
-        // ticks (11 + 11). Primary hit lands now for half of the declared
-        // power; the remaining half is queued as a DelayedDamageEffect that
-        // fires next round via Character.tickEffects. Queimação heal-
-        // reduction does NOT stack twice because the passive's onDamageDealt
-        // hook fires per caster-target pair, not per damage pulse.
+        // v3 §6.2 Chuva de Mana (ls_a2 / rs_a2): 22 damage split across
+        // 2 ticks (11 + 11). The catalog stores the per-tick value
+        // (skill.power = 11) so the primary hit lands for 11 mitigated
+        // damage; an equal DelayedDamageEffect fires next round via
+        // Character.tickEffects to deliver the second 11.
+        // Queimação heal-reduction does NOT stack twice because the
+        // passive's onDamageDealt hook fires per caster-target pair,
+        // not per damage pulse.
         if (skill.id === 'ls_a2' || skill.id === 'rs_a2') {
-          const halfPower = Math.max(1, Math.round(skill.power / 2))
           for (const hit of hits) {
             if (!hit.alive) continue
-            hit.addEffect(new DelayedDamageEffect(halfPower, 1))
+            hit.addEffect(new DelayedDamageEffect(skill.power, 1))
           }
         }
 
@@ -2464,6 +2568,7 @@ export class CombatEngine {
         const secTarget = onCaster ? caster : target
         const secCtx: EffectContext = {
           caster, target: secTarget, power: sec.power, rawDamage: 0, ticks: sec.ticks, round: this.battle.round,
+          pushDirection: sec.pushDirection,
         }
         const secResult = this.resolver.resolve(sec.effectType, secCtx)
         this._processResult(caster, secTarget, secResult)

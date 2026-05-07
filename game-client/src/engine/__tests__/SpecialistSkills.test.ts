@@ -109,7 +109,10 @@ describe('Specialist — Attack 1 (dano alto)', () => {
     it('catalog entry', () => {
       const s = specialistSkill('ls_a2')
       expect(s.name).toBe('Chuva de Mana')
-      expect(s.power).toBe(22)
+      // power is the per-tick value (11). 22 total damage = 11 primary +
+      // 11 delayed. Bug fix 2026-05-08: previously stored as 22 which
+      // double-counted the primary (22 + 11 = 33).
+      expect(s.power).toBe(11)
       expect(s.effectType).toBe('area')
     })
 
