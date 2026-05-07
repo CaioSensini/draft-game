@@ -149,6 +149,53 @@ Engine tem cobertura robusta das mecânicas signature do Executor (sinergia blee
 
 ---
 
-## Próxima etapa
+## ETAPA 3 — Stubs implementados em 2026-05-07
 
-- **Etapa 3**: implementar os 3 stubs do Rei (teleport_target multi-unit + UI tile picker, clone visuais com bot AI heuristic, summon_wall variants já cobertas pelos bespoke). Plus: e2e pipeline tests (GameController → Engine), polish dos minor items detectados (lk_a3 area, lk_a8 filter).
+### Polish
+
+- **lk_a8 Desarme** — `getValidTargets` agora filtra Reis inimigos quando o skill ID é lk_a8/rk_a8. UI nunca mostrará o Rei como alvo selecionável. (O resolver-level já bloqueava a aplicação do silence em Reis; agora a UX é coerente também.)
+- **lk_a3 / lw_a3 area shapes** — diferenças sutis entre catalog (square radius 1 = 3×3) e doc (3×2 / 2×2). **Deferido**: introduzir uma primitiva `rect` exigiria mudanças no Grid.areaOffsets + AreaShape union + previewArea + visual area preview no scene + tests dos 4 callers afetados. Custo alto, valor marginal (gameplay funciona, área um pouco maior). Marcar como polish futuro.
+
+### Stubs implementados
+
+- **lk_d8 Ordem Real** — bespoke handler completo em `_applyDefenseSkill`:
+  - Teleporta o Rei para a posição inicial (col 1,row 2 lado azul / col 14,row 3 lado vermelho).
+  - Realoca aliados vivos para posições fixas relativas ao Rei: Guerreiro à frente (forward), Especialista acima (north), Executor atrás (back). Skip silencioso para destinos OOB ou ocupados.
+  - Para cada aliado adjacente pós-relocação: aplica `DefBoostEffect(15, 1)` (def_up 15% por 1 turno).
+  - Para o Rei: aplica `PositionalDrEffect` com fração `min(0.45, 0.15 × adjacent_count)` — escala -15% por aliado adjacente até cap -45%.
+  - Emite UNIT_PUSHED para cada movimentação, animação visual feita pelo handler de UNIT_PUSHED no BattleScene (Etapa 1).
+
+- **lk_a7 Intimidação** — handler `_applyIntimidacao` invocado após o dano primário:
+  - Coleta inimigos adjacentes ao alvo (Chebyshev 1) no momento do cast.
+  - Procura em espiral (raios 0→3) tiles vazios em território do caster, evitando bordas (cols 0 / 15, rows 0 / 5) per spec "Não pode posicionar nas bordas do mapa".
+  - Realoca o alvo no slot 0; adjacentes nos slots 1..N (relocação parcial é aceitável quando arena está cheia).
+  - **Limitação**: destino é engine-picked (2 tiles forward do caster, ancora em row 3) — UI tile picker fica como polish futuro. Mecânica funciona; só falta o jogador escolher onde.
+
+- **lk_d3 Sombra Real** — visuais implementados no BattleScene:
+  - Engine já emitia `CLONE_SPAWNED` corretamente (com positions). Antes não tinha listener no scene.
+  - Novo `onAnimation(CLONE_SPAWNED)` desenha 2 ghosts: Container com ellipse dourada (KING_GOLD 0xfbbf24, alpha 0.25) + crown char "♚" + bob tween + fade-out após `duration × 4000ms`.
+  - Decoys são puramente visuais (Option B). Bot AI continua atacando o Rei real — confusão "qual é o real?" vive na cabeça do jogador humano em modos PvP futuros.
+
+### Não implementados nesta etapa
+
+- **e2e pipeline tests (GameController → Engine)** — escopo grande, exigiria mocks da scene e dos buses. Os 549 testes existentes cobrem engine isolado; a confiança no pipeline vem do playtest.
+- **UI tile picker para Intimidação** — exige novo modo de seleção "tile vazio" (diferente de "unidade" e "área de skill"). Polish futuro.
+- **Bot AI heuristic para Sombra Real** — clones visuais bastam para PvP humano-vs-humano. Em PvE bot continua escolhendo o Rei real (legitimamente — clone é falso).
+
+---
+
+## STATUS FINAL DAS 3 ETAPAS
+
+| Categoria | Antes | Depois Etapa 1 | Depois Etapa 2 | Depois Etapa 3 |
+|---|---|---|---|---|
+| Skills funcionando | ~58/64 | 61/64 | 61/64 (audit confirmou) | **64/64** ✅ |
+| Stubs reais | 3 (lk_a7, lk_d3, lk_d8) | 3 | 3 | **0** |
+| Polish minor | 4 | 4 | 4 | 1 (rect shape, deferido) |
+| Tests passando | 547/547 | 549/549 | 549/549 | **549/549** |
+
+**Bugs do usuário todos endereçados:**
+- ✅ "Não consigo selecionar meu campo" → Cura Suprema agora abre target picker
+- ✅ "Empurrões não estão funcionando" → Empurrão Real respeita 3 sqm, animação visual adicionada
+- ✅ "Defesas não funcionando como deveriam" → Cura Suprema, Soco/Chute Real (shield-on-self), Recuperação Real (regen 10% maxHp), Ordem Real (relocação completa) — todas funcionais agora.
+
+Plus 3 stubs do Rei implementados como bespoke handlers, alinhando com o restante do design pattern do engine.

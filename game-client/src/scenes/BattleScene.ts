@@ -846,6 +846,53 @@ export default class BattleScene extends Phaser.Scene {
         this._refreshStatusPanels()
       })
 
+      // ── Clone spawn (Sombra Real lk_d3) — visual decoys ────────────────────
+      // The engine emits CLONE_SPAWNED with the positions; we render
+      // two ghost-king shapes at those tiles. Decoys are visual-only
+      // (Option B per DECISIONS.md): they fade away after `duration`
+      // turns, don't block targeting, and don't take damage. The fake-
+      // versus-real choice lives entirely in the viewer's mind — the
+      // bot targets the real King normally.
+      .onAnimation(EventType.CLONE_SPAWNED, (e) => {
+        const kingSprite = this._sprite(e.casterId)
+        if (!kingSprite) return
+        const KING_GOLD = 0xfbbf24
+        for (const pos of e.positions) {
+          const { x, y } = _tileCenter(pos.col, pos.row)
+          // Ghost body — soft gold ellipse with violet rim to read as
+          // "this isn't really there", plus a tiny crown silhouette.
+          const ghost = this.add.container(x, y).setDepth(kingSprite.container.depth - 1)
+          const body = this.add.ellipse(0, 0, CHAR_SIZE - 8, CHAR_SIZE - 4, KING_GOLD, 0.25)
+            .setStrokeStyle(2, 0x9c8fff, 0.7)
+          const crown = this.add.text(0, -4, '♚', {
+            fontFamily: fontFamily.display,
+            fontSize: '20px',
+            color: '#fbbf24',
+          }).setOrigin(0.5).setAlpha(0.6)
+          ghost.add([body, crown])
+          // Subtle bob to communicate "decoy"
+          this.tweens.add({
+            targets: ghost,
+            y: y - 4,
+            duration: 900,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.InOut',
+          })
+          // Fade out after `duration` turns. Time-based estimate
+          // (one full turn ≈ 4000 ms in the current pacing) because
+          // the scene doesn't have a clean turn-end hook.
+          const lifeMs = Math.max(2000, e.duration * 4000)
+          this.tweens.add({
+            targets: ghost,
+            alpha: 0,
+            delay: lifeMs - 600,
+            duration: 600,
+            onComplete: () => ghost.destroy(),
+          })
+        }
+      })
+
       // ── Skill pulse animation ──────────────────────────────────────────────
       .onAnimation(EventType.SKILL_USED, (e) => {
         const casterSprite = this._sprite(e.unitId)
