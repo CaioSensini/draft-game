@@ -787,33 +787,67 @@ export default class SkillUpgradeScene extends Phaser.Scene {
         card.setAlpha(0).setScale(0.96)
         this.tweens.add({
           targets: card,
-          alpha: isEquipped ? 0.55 : 1,
+          alpha: isEquipped ? 0.7 : 1,
           scaleX: 1, scaleY: 1,
           duration: 220,
           delay: gi * 35,
           ease: 'Back.Out',
         })
 
-        // Equipped overlay — dim the card visually + corner ribbon so the
-        // player still sees what they have but can tell it's already in
-        // the deck.
+        // Equipped overlay — visual signals layered to read at a glance
+        // without overlapping the card's own header / icon / stats:
+        //   1. Card alpha 0.7 (slight wash so it reads "different state"
+        //      but the icon + name stay legible).
+        //   2. Gold rim around the entire card outline.
+        //   3. A small gold check disc at top-right CORNER of the card,
+        //      hugging the boundary instead of crashing into the
+        //      class banner inside the body.
+        //   4. A gold "EQUIPADO" pill OUTSIDE the bottom of the card,
+        //      between rows, so the label never collides with the
+        //      level dots / stats text inside the card.
         if (isEquipped) {
-          // "EQUIPADO" gold ribbon corner top-right of the card.
-          const ribbonW = 76
-          const ribbonH = 16
-          const ribbonX = INV_CARD_W / 2 - ribbonW / 2 - 4
-          const ribbonY = -INV_CARD_H / 2 + ribbonH / 2 + 4
-          const ribbonG = this.add.graphics()
-          ribbonG.fillStyle(0x000000, 0.55)
-          ribbonG.fillRoundedRect(ribbonX - ribbonW / 2 + 1, ribbonY - ribbonH / 2 + 2, ribbonW, ribbonH, 6)
-          ribbonG.fillStyle(accent.primary, 0.95)
-          ribbonG.fillRoundedRect(ribbonX - ribbonW / 2, ribbonY - ribbonH / 2, ribbonW, ribbonH, 6)
-          ribbonG.lineStyle(1, 0x000000, 0.4)
-          ribbonG.strokeRoundedRect(ribbonX - ribbonW / 2, ribbonY - ribbonH / 2, ribbonW, ribbonH, 6)
-          card.add(ribbonG)
-          card.add(this.add.text(ribbonX, ribbonY,
+          // (2) gold rim
+          const rim = this.add.graphics()
+          rim.lineStyle(2.5, accent.primary, 0.9)
+          rim.strokeRoundedRect(-INV_CARD_W / 2, -INV_CARD_H / 2,
+            INV_CARD_W, INV_CARD_H, radii.md)
+          card.add(rim)
+
+          // (3) corner check disc — sits HALF-OUTSIDE the top-right
+          // corner so it never overlaps the class banner inside the
+          // card body. 18 px disc with a 12 px gold check glyph.
+          const discR = 9
+          const discCx = INV_CARD_W / 2 - 2
+          const discCy = -INV_CARD_H / 2 + 2
+          const discG = this.add.graphics()
+          discG.fillStyle(0x000000, 0.55)
+          discG.fillCircle(discCx + 1, discCy + 1, discR)
+          discG.fillStyle(accent.primary, 0.98)
+          discG.fillCircle(discCx, discCy, discR)
+          discG.lineStyle(1, 0x000000, 0.5)
+          discG.strokeCircle(discCx, discCy, discR)
+          card.add(discG)
+          card.add(this.add.text(discCx, discCy + 0.5, '✓', {
+            fontFamily: fontFamily.body, fontSize: '12px',
+            color: '#1a1408', fontStyle: '900',
+          }).setOrigin(0.5))
+
+          // (4) gold pill below card — text label outside the card so
+          // it never overlaps the level dots / stats inside.
+          const pillY = INV_CARD_H / 2 + 12
+          const pillW = 88
+          const pillH = 16
+          const pillG = this.add.graphics()
+          pillG.fillStyle(0x000000, 0.55)
+          pillG.fillRoundedRect(-pillW / 2 + 1, pillY - pillH / 2 + 2, pillW, pillH, pillH / 2)
+          pillG.fillStyle(accent.primary, 0.98)
+          pillG.fillRoundedRect(-pillW / 2, pillY - pillH / 2, pillW, pillH, pillH / 2)
+          pillG.lineStyle(1, 0x000000, 0.4)
+          pillG.strokeRoundedRect(-pillW / 2, pillY - pillH / 2, pillW, pillH, pillH / 2)
+          card.add(pillG)
+          card.add(this.add.text(0, pillY,
             t('scenes.skill-upgrade.inventory-section.equipped-badge'), {
-              fontFamily: fontFamily.body, fontSize: '9px',
+              fontFamily: fontFamily.body, fontSize: '10px',
               color: '#1a1408', fontStyle: '900',
             }).setOrigin(0.5).setLetterSpacing(1.4))
         }
