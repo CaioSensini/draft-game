@@ -109,12 +109,18 @@ export default class SkillUpgradeScene extends Phaser.Scene {
    *  user deselects or the redraw happens. */
   private _liftedCard: Phaser.GameObjects.Container | null = null
   private _liftedCardOrig: { x: number; y: number; sx: number; sy: number } | null = null
+  /** Cards that were reparented from their container into the scene's
+   *  display list for the swap animation. Tracked so we can guarantee
+   *  cleanup if the tween is interrupted (otherwise they'd leak as
+   *  visible "ghost cards" since redrawAll only destroys items inside
+   *  invContainer / deckGroup, not arbitrary scene children). */
+  private _floatingSwapCards: Phaser.GameObjects.Container[] = []
   private _deckCardClicked = false
   private _clickTooltip: Phaser.GameObjects.Container | null = null
   private _hoverTooltip: Phaser.GameObjects.Container | null = null
-  private dragCard: Phaser.GameObjects.Container | null = null
-  private dragOrigX = 0; private dragOrigY = 0; private dragOrigDepth = 0
-  private dragSource: { skill: OwnedSkill; origIdx: number; fromDeck: boolean; slotIdx?: number; category?: string; group?: string } | null = null
+  // Drag-and-drop for swap was removed in the Clash-Royale-style refactor —
+  // the scene is now click-only. Fields retained as `null` placeholders
+  // would just be dead code; the previous fields have been deleted.
 
   constructor() { super('SkillUpgradeScene') }
 
@@ -948,7 +954,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     const destroyHover = () => { this._hoverTooltip?.destroy(true); this._hoverTooltip = null }
 
     invClickZone.on('pointermove', (p: Phaser.Input.Pointer) => {
-      if (this.dragCard) { destroyHover(); return }
+      if (this._swapAnimating) { destroyHover(); return }
       const pos = findInvCard(p.x, p.y)
       if (pos) {
         destroyHover()
@@ -970,19 +976,16 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     })
     invClickZone.on('pointerout', destroyHover)
 
-    // Click + drag start
+    // Pure click-to-select / click-to-target flow (no drag) — matches
+    // Clash-Royale's card-swap UX exactly: tap source, tap destination,
+    // animation plays.
     invClickZone.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (this._swapAnimating) return
-      destroyClickTooltip()
       destroyHover()
       this._destroyAllHoverTooltips()
       const pos = findInvCard(pointer.x, pointer.y)
 
       if (pos) {
-        // UPAR chip handles its own click below each card — no in-card guard
-        // needed. The chip's hit area stopPropagation prevents the event
-        // from bubbling into this zone when the user clicks it directly.
-
         // Deck-selecting mode: replace deck slot
         if (this.deckSelecting && !pos.isEquipped) {
           const posDef = this.getSkillDef(pos.skill.skillId)
@@ -993,39 +996,25 @@ export default class SkillUpgradeScene extends Phaser.Scene {
         }
 
         if (pos.isEquipped) {
-          // Equipped cards are read-only in the inventory: no drag, no
-          // selection, no equip flow. Clicking them opens the skill
-          // detail in the left panel so the player can inspect stats.
+          // Equipped cards are read-only in the inventory: clicking
+          // them opens the skill detail in the left panel.
           this.fusionSlot1 = null
           this.deckSelecting = null
           this.clearHighlights()
+          this._restoreLiftedCard()
           showTooltipAt(pos.skill.skillId, 0, 0)
           return
         }
 
-        // Start drag — create visual card at screen position
-        this.dragSource = { skill: pos.skill, origIdx: pos.origIdx, fromDeck: false }
-        const dragAy = pos.cy - this.scrollY
-        const dragDef = this.getSkillDef(pos.skill.skillId)
-        if (dragDef) {
-          const dragCard = UI.skillCard(this, pos.cx, dragAy, {
-            name: dragDef.name, effectType: dragDef.effectType, power: dragDef.power,
-            group: dragDef.group, unitClass: pos.skill.unitClass, level: pos.skill.level,
-            progress: pos.skill.progress, description: dragDef.description,
-          }, { width: INV_CARD_W, height: INV_CARD_H })
-          dragCard.setDepth(200).setAlpha(0.9)
-          this.dragCard = dragCard
-          this.dragOrigX = pos.cx
-          this.dragOrigY = dragAy
-          this.dragOrigDepth = 0
-        }
-
-        // Also do normal select + show detail in left panel (only if actually selected)
+        // Click-select on a non-equipped card → lift + highlight valid
+        // deck slots so the user can tap one to swap.
         this.deckSelecting = null
         this.onInventoryClick(pos.skill, pos.origIdx)
-        // Only show tooltip if the card is now selected (not if it was toggled off)
         if (this.fusionSlot1) {
           showTooltipAt(pos.skill.skillId, 0, 0)
+        } else {
+          // Toggled off — make sure the detail card is gone
+          destroyClickTooltip()
         }
         return
       }
@@ -1034,62 +1023,6 @@ export default class SkillUpgradeScene extends Phaser.Scene {
       this.fusionSlot1 = null; this.deckSelecting = null
       destroyClickTooltip()
       this.clearHighlights(); this.redrawAll()
-    })
-
-    // ── Global drag move + drop ──
-    this.input.on('pointermove', (p: Phaser.Input.Pointer) => {
-      if (this.dragCard) {
-        this.dragCard.setPosition(p.x, p.y)
-      }
-    })
-
-    this.input.on('pointerup', (p: Phaser.Input.Pointer) => {
-      if (!this.dragCard || !this.dragSource) return
-      const card = this.dragCard
-      const src = this.dragSource
-      this.dragCard = null
-      this.dragSource = null
-
-      // Check if dropped on a deck slot
-      for (const dp of this.deckCardPositions) {
-        if (p.x >= dp.x && p.x <= dp.x + DECK_CARD_W && p.y >= dp.y && p.y <= dp.y + DECK_CARD_H) {
-          const srcDef = this.getSkillDef(src.skill.skillId)
-          if (!srcDef || srcDef.group !== dp.group) continue  // try next slot
-
-          if (src.fromDeck && src.slotIdx !== undefined && src.category) {
-            // Deck → Deck swap
-            const cfg2 = (playerData.getDeckConfig()[this.activeRole]) ?? { attackCards: [] as string[], defenseCards: [] as string[] }
-            const cards2 = src.category === 'attack' ? [...cfg2.attackCards] : [...cfg2.defenseCards]
-            const tmp = cards2[src.slotIdx]; cards2[src.slotIdx] = cards2[dp.slotIdx]; cards2[dp.slotIdx] = tmp
-            if (src.category === 'attack') playerData.saveDeckConfig(this.activeRole, cards2, cfg2.defenseCards)
-            else playerData.saveDeckConfig(this.activeRole, cfg2.attackCards, cards2)
-          } else {
-            // Inventory → Deck equip
-            card.destroy(true)
-            this.equipSkill(src.skill, dp.slotIdx, dp.category)
-            return
-          }
-          card.destroy(true)
-          this._clickTooltip?.destroy(true); this._clickTooltip = null
-          this.clearHighlights(); this.fusionSlot1 = null; this.loadData(); this.redrawAll()
-          return
-        }
-      }
-
-      // Dropped elsewhere → animate card back to original position
-      card.setAlpha(1)
-      this.tweens.add({
-        targets: card,
-        x: this.dragOrigX, y: this.dragOrigY,
-        duration: 250, ease: 'Back.Out',
-        onComplete: () => {
-          if (src.fromDeck) {
-            card.setDepth(this.dragOrigDepth)
-          } else {
-            card.destroy(true) // inventory card copy → destroy after snap back
-          }
-        },
-      })
     })
   }
 
@@ -1420,12 +1353,15 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     const dstWorld = this._detachCardToScene(dstCard)
     srcCard.setDepth(60)
     dstCard.setDepth(60)
+    // Track for guaranteed cleanup
+    this._floatingSwapCards.push(srcCard, dstCard)
     this.tweens.killTweensOf(srcCard)
     this.tweens.killTweensOf(dstCard)
 
     let done = 0
     const finish = () => {
       if (++done < 2) return
+      this._floatingSwapCards = this._floatingSwapCards.filter(c => c !== srcCard && c !== dstCard)
       try { srcCard.destroy(true) } catch { /* noop */ }
       try { dstCard.destroy(true) } catch { /* noop */ }
       this._swapAnimating = false
@@ -1462,6 +1398,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
 
     this._detachCardToScene(srcCard)
     srcCard.setDepth(60)
+    this._floatingSwapCards.push(srcCard)
     this.tweens.killTweensOf(srcCard)
     this.tweens.add({
       targets: srcCard,
@@ -1469,6 +1406,7 @@ export default class SkillUpgradeScene extends Phaser.Scene {
       scaleX: 1, scaleY: 1,
       duration: 380, ease: 'Cubic.InOut',
       onComplete: () => {
+        this._floatingSwapCards = this._floatingSwapCards.filter(c => c !== srcCard)
         try { srcCard.destroy(true) } catch { /* noop */ }
         this._swapAnimating = false
         onComplete()
@@ -1591,6 +1529,15 @@ export default class SkillUpgradeScene extends Phaser.Scene {
     // _restoreLiftedCard doesn't try to tween a destroyed object.
     this._liftedCard = null
     this._liftedCardOrig = null
+    // Safety: destroy any swap-animation ghost cards that might still
+    // be reparented to the scene (e.g. if a tween was interrupted).
+    // Without this they'd appear as stuck "description cards" on top
+    // of the new render.
+    this._floatingSwapCards.forEach(c => { try { c.destroy(true) } catch { /* noop */ } })
+    this._floatingSwapCards = []
+    // Click-detail card on the left panel must also be cleared, otherwise
+    // it stays pinned through swaps and tab changes.
+    this._clickTooltip?.destroy(true); this._clickTooltip = null
     this._destroyAllHoverTooltips(); this.clearHighlights()
     this.drawClassTabs(); this.drawLeft(); this.drawDeck(); this.drawInventory()
   }
