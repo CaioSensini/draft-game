@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(ls -la /c/Projetos/Draft/.cursor* /c/Projetos/Draft/.github*)",
-      "Bash(xargs ls:*)"
-    ]
-  }
-}

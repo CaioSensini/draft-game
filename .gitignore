@@ -44,3 +44,6 @@ game-client/.claude/
 # Design system handoff — parallel workstream, not part of the game client build
 design-system-handoff/
 .scripts/
+
+# Claude Code
+.claude/
